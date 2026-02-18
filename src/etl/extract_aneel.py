@@ -29,6 +29,8 @@ import requests
 from pathlib import Path
 from datetime import datetime
 
+from src.etl.schema_contracts import validate_raw_contracts
+
 # ==============================================================================
 # CONFIGURAÇÃO — Catálogo de recursos do portal Dados Abertos ANEEL
 # ==============================================================================
@@ -179,6 +181,7 @@ def executar_extracao():
 
     total_sucesso = 0
     total_falha = 0
+    contrato_ok = False
 
     for fonte_id, fonte in CATALOGO.items():
         print(f"\n🔹 {fonte['descricao']}")
@@ -202,18 +205,30 @@ def executar_extracao():
             else:
                 total_falha += 1
 
+    if total_falha == 0:
+        erros_contrato = validate_raw_contracts(RAIZ_PROJETO / "data" / "raw")
+        if erros_contrato:
+            print("\n❌ Falha na validação de contratos dos dados brutos:")
+            for erro in erros_contrato:
+                print(f"   - {erro}")
+            total_falha += len(erros_contrato)
+        else:
+            contrato_ok = True
+
     # Resumo final
     print("\n" + "=" * 70)
     print(f"📊 RESUMO: {total_sucesso} downloads OK | {total_falha} falhas")
+    print(f"🔎 Contratos de schema bruto: {'OK' if contrato_ok else 'FALHOU'}")
     print("=" * 70)
 
-    if total_falha == 0:
+    if total_falha == 0 and contrato_ok:
         print("\n✅ Todos os arquivos foram baixados com sucesso!")
         print("   Próximo passo: python -m src.etl.transform_aneel")
     else:
-        print("\n⚠️  Alguns downloads falharam. Verifique sua conexão e tente novamente.")
+        print("\n⚠️  Extração concluída com falhas.")
+        print("   Verifique downloads e contratos de schema antes de seguir.")
 
-    return total_falha == 0
+    return total_falha == 0 and contrato_ok
 
 
 # ==============================================================================

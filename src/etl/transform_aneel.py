@@ -27,10 +27,32 @@ from pathlib import Path
 
 import pandas as pd
 
+from src.etl.schema_contracts import (
+    RAW_REQUIRED_COLUMNS,
+    RAW_SERVICOS_REQUIRED_COLUMNS,
+    missing_required_columns,
+    validate_processed_contracts,
+    validate_raw_contracts,
+)
+
 # Diretório raiz do projeto
 RAIZ_PROJETO = Path(__file__).resolve().parent.parent.parent
 DIR_RAW = RAIZ_PROJETO / "data" / "raw"
 DIR_PROCESSED = RAIZ_PROJETO / "data" / "processed"
+
+
+def validar_colunas_obrigatorias(
+    df: pd.DataFrame,
+    obrigatorias: set[str],
+    contexto: str,
+) -> bool:
+    """Valida contrato mínimo de colunas para evitar falhas silenciosas."""
+    faltantes = missing_required_columns(df.columns, obrigatorias)
+    if faltantes:
+        print(f"  ❌ Contrato de schema inválido em {contexto}.")
+        print(f"     Colunas faltantes: {', '.join(faltantes)}")
+        return False
+    return True
 
 
 # ==============================================================================
@@ -89,6 +111,12 @@ def transformar_qualidade_comercial() -> pd.DataFrame | None:
 
     # 3. Padronizar nomes de colunas (minúscula, sem espaços extras)
     df.columns = df.columns.str.strip().str.lower()
+    if not validar_colunas_obrigatorias(
+        df,
+        RAW_REQUIRED_COLUMNS["qualidade-atendimento-comercial.csv"],
+        arquivo.name,
+    ):
+        return None
 
     # ---- Informações úteis ----
     print(f"  Linhas após limpeza: {len(df):,}")
@@ -165,6 +193,8 @@ def transformar_indger_servicos() -> pd.DataFrame | None:
     df = df.drop_duplicates()
     df = df.dropna(how="all")
     df.columns = df.columns.str.strip().str.lower()
+    if not validar_colunas_obrigatorias(df, RAW_SERVICOS_REQUIRED_COLUMNS, "INDGER serviços comerciais"):
+        return None
 
     print(f"  Linhas totais: {len(df):,}")
     print(f"  Colunas: {list(df.columns)}")
@@ -216,6 +246,12 @@ def transformar_indger_comercial() -> pd.DataFrame | None:
     df = df.drop_duplicates()
     df = df.dropna(how="all")
     df.columns = df.columns.str.strip().str.lower()
+    if not validar_colunas_obrigatorias(
+        df,
+        RAW_REQUIRED_COLUMNS["indger-dados-comerciais.csv"],
+        arquivo.name,
+    ):
+        return None
 
     print(f"  Linhas: {len(df):,}")
     print(f"  Colunas: {list(df.columns)}")
@@ -247,6 +283,13 @@ def executar_transformacao():
     print(f"   Data: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     print("=" * 70)
 
+    erros_raw = validate_raw_contracts(DIR_RAW)
+    if erros_raw:
+        print("\n❌ Falha de contrato nos dados brutos. Corrija antes da transformação:")
+        for erro in erros_raw:
+            print(f"  - {erro}")
+        return False
+
     resultados = {}
 
     # 1. Qualidade Comercial
@@ -268,9 +311,23 @@ def executar_transformacao():
     for nome, status in resultados.items():
         print(f"  {status} {nome}")
 
+    sucesso = all(status == "✅" for status in resultados.values())
+    if not sucesso:
+        print("\n❌ Transformação interrompida: nem todos os datasets foram processados.")
+        return False
+
+    erros_processed = validate_processed_contracts(DIR_PROCESSED)
+    if erros_processed:
+        print("\n❌ Falha de contrato nos dados processados:")
+        for erro in erros_processed:
+            print(f"  - {erro}")
+        return False
+
     print(f"\n  📂 Arquivos processados em: {DIR_PROCESSED}")
     print("  Próximo passo: análise exploratória em src/analysis/")
+    return True
 
 
 if __name__ == "__main__":
-    executar_transformacao()
+    ok = executar_transformacao()
+    sys.exit(0 if ok else 1)

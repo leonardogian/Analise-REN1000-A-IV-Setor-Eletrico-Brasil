@@ -32,6 +32,7 @@ ANEEL API (CSVs)
 - Saída: `data/raw/*.csv`
 - **ALERTA**: Os CSVs brutos são grandes (7+ GB para serviços comerciais).
   Não tente baixá-los se o espaço for limitado.
+- **Fail-fast**: a etapa valida contrato mínimo de schema dos CSVs brutos.
 
 ## Etapa 2: Transformação (`make transform`)
 
@@ -45,6 +46,7 @@ ANEEL API (CSVs)
   - Conversão para Parquet (compressão)
 - Saída: `data/processed/*.{csv,parquet}`
 - **Arquivo grande**: `indger_servicos_comerciais.csv` = 7.7 GB (Parquet = 139 MB)
+- **Fail-fast**: se faltar coluna obrigatória ou dataset essencial, retorna erro (exit 1).
 
 ## Etapa 3: Análise (`make analysis`)
 
@@ -82,6 +84,7 @@ Gerados por `make neoenergia-diagnostico` (`src/analysis/neoenergia_diagnostico.
 
 - Lê: CSVs de `data/processed/analysis/` e `neoenergia/`
 - Gera: `dashboard/dashboard_data.json` (≈1.7 MB)
+- **Fail-fast**: falha se entradas obrigatórias estiverem ausentes ou seções críticas ficarem vazias.
 - Estrutura do JSON:
 
 ```json
@@ -111,10 +114,10 @@ Gerados por `make neoenergia-diagnostico` (`src/analysis/neoenergia_diagnostico.
 ```
 extract → transform → analysis ─┬─→ report
                                  ├─→ neoenergia-diagnostico
-                                 └─→ dashboard → serve
+                                 └─→ dashboard → serve/backend
 ```
 
-`make pipeline` executa tudo em ordem: `update-data → analysis → report → dashboard`
+`make pipeline` executa tudo em ordem: `update-data → analysis → report → neoenergia-diagnostico → dashboard`
 
 ## Como Regenerar Tudo do Zero
 
@@ -123,6 +126,7 @@ source .venv/bin/activate
 make clean-analysis   # limpa tabelas analíticas
 make pipeline         # roda tudo: ETL → análise → relatório → dashboard
 make serve            # sobe dashboard em http://localhost:8050
+make dev-serve        # sobe backend FastAPI (com preflight) em http://localhost:8050
 ```
 
 ## Gotchas e Armadilhas
@@ -136,5 +140,7 @@ make serve            # sobe dashboard em http://localhost:8050
 4. **`dashboard_data.json` não está no Git**: É gerado. Rode `make dashboard`.
 5. **Dashboard via `file://` não funciona**: Precisa de servidor HTTP (CORS).
    Use `make serve` (porta 8050).
-6. **Porta 8050**: Confirmada livre. Portas 3000/5433/6379/8000/8080/8090
+6. **Contratos de schema**: valide com `make validate-contracts` quando mudar ETL.
+7. **Backend local**: para API + estático use `make backend`/`make dev-serve`.
+8. **Porta 8050**: Confirmada livre. Portas 3000/5433/6379/8000/8080/8090
    estão ocupadas por outros serviços (AgentCycle, Airflow, Kestra).

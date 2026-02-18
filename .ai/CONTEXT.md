@@ -16,6 +16,7 @@ do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 |---------------|-------------------------------------------------|
 | ETL           | Python 3.10+, pandas, numpy, requests           |
 | Análise       | Python, pandas, numpy                            |
+| Backend local | FastAPI, Uvicorn                                 |
 | Dashboard     | HTML5, CSS3, Vanilla JS, Chart.js 4.4.7 (CDN)   |
 | Relatório     | HTML print-optimized (Ctrl+P → PDF)              |
 | Build         | GNU Make                                         |
@@ -36,11 +37,13 @@ TCC_leo_main/
 │   ├── etl/
 │   │   ├── extract_aneel.py       ← Baixa CSVs de dadosabertos.aneel.gov.br
 │   │   └── transform_aneel.py     ← Limpa e normaliza → data/processed/
-│   └── analysis/
+│   ├── analysis/
 │       ├── build_analysis_tables.py  ← Gera tabelas analíticas em CSV/Parquet
 │       ├── build_report.py           ← Gera relatório markdown
 │       ├── neoenergia_diagnostico.py ← Benchmark detalhado 5 Neoenergias
 │       └── build_dashboard_data.py   ← Gera dashboard/dashboard_data.json
+│   └── backend/
+│       └── main.py                  ← Backend local (API + static em localhost)
 │
 ├── dashboard/
 │   ├── index.html           ← Dashboard interativo (4 abas)
@@ -63,7 +66,7 @@ TCC_leo_main/
 ├── reports/                  ← Relatórios gerados (markdown)
 ├── notebooks/                ← Jupyter (exploratórios)
 ├── docs/                     ← Documentação auxiliar + imagens
-├── scripts/                  ← Utilitários (check_artifacts, smoke_imports)
+├── scripts/                  ← Utilitários (check_artifacts, smoke_imports, validate_schema_contracts)
 ├── Makefile                  ← Orquestração: make pipeline, make serve, etc.
 ├── requirements.txt          ← Dependências Python
 └── README.md                 ← Documentação principal para humanos
@@ -85,14 +88,19 @@ make transform       # limpa e transforma
 make analysis        # gera tabelas analíticas
 make report          # gera relatório markdown
 make dashboard       # gera dashboard_data.json
+make dashboard-full  # analysis + neoenergia + dashboard
 
 # Dashboard local
 make serve           # HTTP server em http://localhost:8050
+make backend         # FastAPI em http://localhost:8050
+make dev-serve       # dashboard-full + preflight + backend (--reload)
 
 # Testes
-make test-fast       # compilação + imports + artefatos
-make test-smoke      # análise + relatório + validação
-make check-artifacts # verifica se saídas existem
+make validate-contracts  # valida contratos de schema (raw + processed)
+make test-fast           # compilação + imports + contratos + artefatos core
+make test-smoke          # análise + neoenergia + dashboard + validação completa
+make check-artifacts     # verifica artefatos core
+make check-artifacts-full # verifica artefatos completos + dashboard_data.json
 
 # Limpeza
 make clean-analysis  # remove data/processed/analysis/

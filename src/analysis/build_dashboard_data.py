@@ -18,6 +18,28 @@ DIR_NEO = DIR_ANALYSIS / "neoenergia"
 DASHBOARD_DIR = ROOT / "dashboard"
 OUTPUT_PATH = DASHBOARD_DIR / "dashboard_data.json"
 
+REQUIRED_INPUT_FILES = [
+    DIR_ANALYSIS / "kpi_regulatorio_anual.csv",
+    DIR_ANALYSIS / "fato_transgressao_mensal_distribuidora.csv",
+    DIR_NEO / "neo_anual_2023_2025.csv",
+    DIR_NEO / "neo_tendencia_2023_2025.csv",
+    DIR_NEO / "neo_benchmark_porte_latest.csv",
+    DIR_NEO / "neo_classe_local_2023_2025.csv",
+    DIR_NEO / "neo_longa_resumo_2011_2023.csv",
+    DIR_NEO / "neo_mensal_2023_2025.csv",
+]
+
+REQUIRED_NON_EMPTY_SECTIONS = [
+    "serie_anual",
+    "serie_mensal_nacional",
+    "neo_anual",
+    "neo_tendencia",
+    "neo_benchmark",
+    "neo_classe_local",
+    "neo_longa_resumo",
+    "neo_mensal",
+]
+
 
 def _safe(v):
     """Convert numpy/pandas types to JSON-safe Python types."""
@@ -46,9 +68,28 @@ def _read(name: str, subdir: str | None = None) -> pd.DataFrame:
     base = DIR_NEO if subdir == "neoenergia" else DIR_ANALYSIS
     path = base / f"{name}.csv"
     if not path.exists():
-        print(f"  ⚠ Arquivo não encontrado: {path}")
-        return pd.DataFrame()
+        raise FileNotFoundError(f"Arquivo obrigatório não encontrado: {path}")
     return pd.read_csv(path)
+
+
+def validate_required_inputs() -> None:
+    missing = [str(path) for path in REQUIRED_INPUT_FILES if not path.exists()]
+    if missing:
+        msg = "Entradas obrigatórias ausentes para gerar o dashboard:\\n"
+        msg += "\\n".join(f" - {path}" for path in missing)
+        raise FileNotFoundError(msg)
+
+
+def validate_non_empty_sections(data: dict) -> None:
+    empty_sections = [
+        key
+        for key in REQUIRED_NON_EMPTY_SECTIONS
+        if key not in data or not data[key]
+    ]
+    if empty_sections:
+        msg = "Seções obrigatórias do dashboard vazias:\\n"
+        msg += "\\n".join(f" - {section}" for section in empty_sections)
+        raise RuntimeError(msg)
 
 
 def build_kpi_overview(kpi: pd.DataFrame) -> dict:
@@ -151,6 +192,7 @@ def main():
     print("🔧 Gerando dados para o dashboard...")
 
     DASHBOARD_DIR.mkdir(parents=True, exist_ok=True)
+    validate_required_inputs()
 
     # Load CSVs
     kpi = _read("kpi_regulatorio_anual")
@@ -178,6 +220,7 @@ def main():
         "neo_longa_resumo": build_neo_longa(neo_longa),
         "neo_mensal": build_neo_mensal(neo_mensal),
     }
+    validate_non_empty_sections(data)
 
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)

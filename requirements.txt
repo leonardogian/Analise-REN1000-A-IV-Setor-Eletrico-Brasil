@@ -15,3 +15,7 @@ seaborn
 
 # Machine Learning (clusterização futura)
 scikit-learn
+
+# Backend local (API + serving em localhost)
+fastapi
+uvicorn
