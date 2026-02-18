@@ -7,7 +7,6 @@ Usage:
 from __future__ import annotations
 
 from pathlib import Path
-import unicodedata
 
 import numpy as np
 import pandas as pd
@@ -42,18 +41,13 @@ def load_table(name: str) -> pd.DataFrame:
     return pd.read_parquet(path)
 
 
-def find_agent_name(frame: pd.DataFrame, terms: list[str]) -> str | None:
-    def ascii_fold(text: str) -> str:
-        folded = unicodedata.normalize("NFKD", text)
-        return "".join(ch for ch in folded if not unicodedata.combining(ch)).upper()
-
-    names = frame["nomagente"].dropna().astype(str).unique()
-    for term in terms:
-        term_norm = ascii_fold(term)
-        for name in names:
-            if term_norm in ascii_fold(name):
-                return name
-    return None
+def select_focus_names(dim_porte: pd.DataFrame, limit: int = 3) -> list[str]:
+    if dim_porte.empty:
+        return []
+    latest_year = dim_porte["ano"].max()
+    latest = dim_porte[dim_porte["ano"] == latest_year].copy()
+    latest = latest.sort_values("uc_ativa_media_mensal", ascending=False)
+    return latest["nomagente"].astype(str).head(limit).tolist()
 
 
 def build_pre_post_summary(fato_indicadores: pd.DataFrame) -> dict[str, float]:
@@ -216,7 +210,7 @@ def render_markdown(
 
     lines.append("## Benchmark de distribuidoras (porte e normalizacao)")
     if foco.empty:
-        lines.append("- Nao foi possivel montar benchmark para Coelba, Neoenergia Brasilia e Copel com os nomes atuais.")
+        lines.append("- Nao foi possivel montar benchmark com as distribuidoras foco selecionadas automaticamente.")
     else:
         lines.append(
             "| Ano | Distribuidora | Porte | Rank porte | UC ativa media mensal | Qtd fora do prazo | Taxa fora prazo | Fora prazo por 100k UC | Compensacao | Compensacao por UC |"
@@ -270,10 +264,7 @@ def main() -> None:
     pre_post = build_pre_post_summary(fato_indicadores)
     monthly_summary = build_monthly_summary(fato_mensal_porte)
 
-    coelba = find_agent_name(dim_porte, ["ESTADO DA BAHIA", "COELBA"])
-    brasilia = find_agent_name(dim_porte, ["BRASILIA"])
-    copel = find_agent_name(dim_porte, ["COPEL"])
-    focus_names = [name for name in [coelba, brasilia, copel] if name]
+    focus_names = select_focus_names(dim_porte, limit=3)
 
     foco = build_benchmark_table(fato_mensal_porte, dim_porte, focus_names)
 

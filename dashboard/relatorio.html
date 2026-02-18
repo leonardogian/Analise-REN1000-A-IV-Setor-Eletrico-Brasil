@@ -389,6 +389,10 @@
         <h1>⚡ Relatório de Análise — REN 1000/2021</h1>
         <p class="subtitle">Eficácia regulatória na qualidade comercial das distribuidoras de energia elétrica</p>
         <p class="meta">Gerado automaticamente em <span id="report-date">—</span> · Dados: ANEEL Dados Abertos</p>
+        <div style="margin-top: 12px;">
+            <label for="report-group-selector" style="font-size: 0.85rem; color: var(--text-light); margin-right: 8px;">Grupo econômico:</label>
+            <select id="report-group-selector" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);"></select>
+        </div>
     </header>
 
     <!-- Sumário Executivo -->
@@ -402,10 +406,8 @@
                 <span id="s-pos-comp">—</span> no período pós-REN 1000.
             </li>
             <li>Foram analisados <span id="s-total-serv">—</span> serviços comerciais entre 2011 e 2023.</li>
-            <li>No grupo Neoenergia, <strong>4 de 5 distribuidoras</strong> reduziram a taxa normalizada de
-                transgressões entre 2023 e 2025.</li>
-            <li><strong>Neoenergia Elektro</strong> apresenta a menor pressão (2,00/100k UC) e <strong>Coelba</strong> a
-                maior (28,39/100k UC).</li>
+            <li id="s-trend-summary">—</li>
+            <li id="s-best-worst-summary">—</li>
         </ul>
     </div>
 
@@ -442,8 +444,8 @@
     </div>
 
     <!-- 2. Neoenergia -->
-    <h2 class="page-break">2. Benchmark Neoenergia — 5 Distribuidoras</h2>
-    <p>Comparação normalizada por unidades consumidoras (UC) para ajuste por porte das distribuidoras.</p>
+    <h2 class="page-break">2. Benchmark <span id="r-group-title-main">Grupo</span> — <span id="r-group-count">0</span> Distribuidoras</h2>
+    <p>Comparação normalizada por unidades consumidoras (UC) para ajuste por porte das distribuidoras do grupo selecionado.</p>
 
     <div class="chart-section">
         <div class="chart-label">Transgressões por 100k UC-mês (2023–2025)</div>
@@ -464,8 +466,8 @@
     </table>
 
     <!-- 3. Série Mensal -->
-    <h2 class="page-break">3. Análise Regulatória Mensal</h2>
-    <p>Série temporal mensal das 5 distribuidoras Neoenergia, com taxa de transgressão e compensação financeira.</p>
+    <h2 class="page-break">3. Análise Regulatória Mensal — <span id="r-group-title-reg">Grupo</span></h2>
+    <p>Série temporal mensal das distribuidoras do <span id="r-group-label-reg">grupo selecionado</span>, com taxa de transgressão e compensação financeira.</p>
 
     <div class="chart-section">
         <div class="chart-label">Taxa Fora do Prazo — Evolução Mensal (2023–2025)</div>
@@ -473,8 +475,8 @@
     </div>
 
     <!-- 4. Diagnóstico -->
-    <h2 class="page-break">4. Série Longa e Diagnóstico</h2>
-    <p>Evolução histórica 2011–2023 da taxa fora do prazo para cada distribuidora Neoenergia.</p>
+    <h2 class="page-break">4. Série Longa e Diagnóstico — <span id="r-group-title-diag">Grupo</span></h2>
+    <p>Evolução histórica 2011–2023 da taxa fora do prazo para cada distribuidora do grupo selecionado.</p>
 
     <div class="chart-section">
         <div class="chart-label">Taxa 2011 vs 2023 por Distribuidora</div>
@@ -504,23 +506,21 @@
     </footer>
 
     <script>
-        const fmtNum = (v, d = 0) => v == null || isNaN(v) ? '—' : v.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
-        const fmtPct = (v, d = 2) => v == null || isNaN(v) ? '—' : (v * 100).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%';
+        const fmtNum = (v, d = 0) => v == null || isNaN(v) ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+        const fmtPct = (v, d = 2) => v == null || isNaN(v) ? '—' : (Number(v) * 100).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%';
         const fmtMoney = (v) => {
             if (v == null || isNaN(v)) return '—';
             if (Math.abs(v) >= 1e6) return 'R$ ' + (v / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + 'M';
-            return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         };
 
         const C = { blue: '#00A443', cyan: '#00843D', green: '#34d399', amber: '#F4A100', rose: '#fb7185' };
-        const NEO_C = { 'Neoenergia Coelba': C.blue, 'Neoenergia Pernambuco': C.cyan, 'Neoenergia Elektro': C.green, 'Neoenergia Cosern': C.amber, 'Neoenergia Brasilia': C.rose };
-        const reportState = { data: null, charts: [] };
+        const PALETTE = ['#00A443', '#00843D', '#34d399', '#F4A100', '#fb7185', '#0ea5e9', '#8b5cf6', '#f97316'];
+        const reportState = { data: null, charts: [], selectedGroupId: null };
 
         function getPreferredTheme() {
             const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light' || savedTheme === 'dark') {
-                return savedTheme;
-            }
+            if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme;
             return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
         }
 
@@ -544,18 +544,14 @@
 
         function updateThemeButton(theme) {
             const btn = document.getElementById('theme-toggle-report');
-            if (btn) {
-                btn.textContent = theme === 'dark' ? '🌙' : '☀️';
-            }
+            if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
         }
 
         function applyReportTheme(theme, { rerender = false } = {}) {
             document.documentElement.setAttribute('data-theme', theme);
             updateThemeButton(theme);
             applyChartTheme(theme);
-            if (rerender && reportState.data) {
-                renderReport(reportState.data);
-            }
+            if (rerender && reportState.data) renderReport(reportState.data);
         }
 
         function initReportTheme() {
@@ -582,6 +578,80 @@
             return chart;
         }
 
+        function normalizePayload(data) {
+            if (data.group_views && data.distributor_groups) return data;
+            return {
+                ...data,
+                distributor_groups: [{
+                    group_id: 'neoenergia',
+                    group_label: 'Grupo Neoenergia',
+                    distributor_count: (data.neo_anual || []).length ? new Set((data.neo_anual || []).map(r => r.neo_distribuidora)).size : 0,
+                    selector_enabled: true,
+                    years: [...new Set((data.neo_anual || []).map(r => r.ano))].sort(),
+                }],
+                group_views: {
+                    neoenergia: {
+                        anual: (data.neo_anual || []).map(r => ({ ...r, distributor_label: r.neo_distribuidora, distributor_id: r.neo_distribuidora })),
+                        tendencia: (data.neo_tendencia || []).map(r => ({ ...r, distributor_label: r.neo_distribuidora, distributor_id: r.neo_distribuidora })),
+                        benchmark: (data.neo_benchmark || []).map(r => ({
+                            ...r,
+                            distributor_label: r.neo_distribuidora,
+                            distributor_id: r.neo_distribuidora,
+                            rank_porte_grupo: r.rank_porte_neo,
+                            indice_fora_vs_mediana_grupo: r.indice_fora_vs_mediana_neo,
+                            indice_comp_vs_mediana_grupo: r.indice_comp_vs_mediana_neo,
+                        })),
+                        mensal: (data.neo_mensal || []).map(r => ({ ...r, distributor_label: r.neo_distribuidora, distributor_id: r.neo_distribuidora })),
+                        longa_resumo: (data.neo_longa_resumo || []).map(r => ({ ...r, distributor_label: r.neo_distribuidora, distributor_id: r.neo_distribuidora })),
+                    },
+                },
+                default_group_id: 'neoenergia',
+            };
+        }
+
+        function getGroups(data) {
+            const groups = Array.isArray(data.distributor_groups) ? data.distributor_groups : [];
+            const enabled = groups.filter(g => g.selector_enabled);
+            return enabled.length ? enabled : groups;
+        }
+
+        function getContext(data) {
+            const groups = getGroups(data);
+            const pref = reportState.selectedGroupId || localStorage.getItem('selected_group_id') || data.default_group_id;
+            const selected = groups.find(g => g.group_id === pref) || groups[0];
+            reportState.selectedGroupId = selected.group_id;
+            return { group: selected, view: data.group_views[selected.group_id] || {} };
+        }
+
+        function getDistributors(view) {
+            const map = new Map();
+            ['anual', 'mensal', 'benchmark', 'tendencia', 'longa_resumo'].forEach(section => {
+                (view[section] || []).forEach(row => {
+                    const key = row.distributor_id || row.distributor_label;
+                    if (!map.has(key)) map.set(key, row.distributor_label || key);
+                });
+            });
+            return [...map.entries()].map(([key, label]) => ({ key, label })).sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
+        }
+
+        function colorMap(distributors) {
+            const map = {};
+            distributors.forEach((d, idx) => { map[d.key] = PALETTE[idx % PALETTE.length]; });
+            return map;
+        }
+
+        function initGroupSelector(data) {
+            const selector = document.getElementById('report-group-selector');
+            const groups = getGroups(data);
+            selector.innerHTML = groups.map(g => `<option value="${g.group_id}">${g.group_label} (${g.distributor_count})</option>`).join('');
+            selector.value = reportState.selectedGroupId || data.default_group_id || groups[0].group_id;
+            selector.addEventListener('change', () => {
+                reportState.selectedGroupId = selector.value;
+                localStorage.setItem('selected_group_id', selector.value);
+                renderReport(reportState.data);
+            });
+        }
+
         Chart.defaults.font.family = "'Inter', sans-serif";
         Chart.defaults.font.size = 11;
         Chart.defaults.plugins.tooltip.borderWidth = 1;
@@ -590,67 +660,153 @@
 
         function renderReport(data) {
             destroyReportCharts();
-            const kpi = data.kpi_overview;
+            const kpi = data.kpi_overview || {};
+            const { group, view } = getContext(data);
+            const anual = view.anual || [];
+            const trend = view.tendencia || [];
+            const mensal = view.mensal || [];
+            const longa = view.longa_resumo || [];
+            const benchmark = view.benchmark || [];
+            const distributors = getDistributors(view);
+            const colors = colorMap(distributors);
 
             document.getElementById('report-date').textContent = new Date(data.meta.generated_at).toLocaleString('pt-BR');
+            document.getElementById('r-group-title-main').textContent = group.group_label;
+            document.getElementById('r-group-count').textContent = String(group.distributor_count || 0);
+            document.getElementById('r-group-title-reg').textContent = group.group_label;
+            document.getElementById('r-group-label-reg').textContent = group.group_label.toLowerCase();
+            document.getElementById('r-group-title-diag').textContent = group.group_label;
 
-            // Summary
             document.getElementById('s-pre-taxa').textContent = fmtPct(kpi.pre_taxa_media);
             document.getElementById('s-pos-taxa').textContent = fmtPct(kpi.pos_taxa_media);
             document.getElementById('s-pre-comp').textContent = fmtMoney(kpi.pre_compensacao_total);
             document.getElementById('s-pos-comp').textContent = fmtMoney(kpi.pos_compensacao_total);
-            document.getElementById('s-total-serv').textContent = fmtNum(kpi.pre_servicos_total + kpi.pos_servicos_total);
+            document.getElementById('s-total-serv').textContent = fmtNum((kpi.pre_servicos_total || 0) + (kpi.pos_servicos_total || 0));
 
-            // KPIs
+            if (trend.length) {
+                const comparable = trend.filter(t => t.delta_fora_prazo_por_100k_uc_mes_pct != null && !isNaN(t.delta_fora_prazo_por_100k_uc_mes_pct));
+                const improved = comparable.filter(t => t.delta_fora_prazo_por_100k_uc_mes_pct <= 0);
+                document.getElementById('s-trend-summary').innerHTML = `No ${group.group_label.toLowerCase()}, <strong>${improved.length} de ${comparable.length} distribuidoras</strong> reduziram a taxa normalizada de transgressões entre 2023 e 2025.`;
+            } else {
+                document.getElementById('s-trend-summary').textContent = `Sem dados de tendência suficientes para o ${group.group_label.toLowerCase()}.`;
+            }
+
+            if (benchmark.length) {
+                const best = [...benchmark].sort((a, b) => (a.fora_prazo_por_100k_uc_mes || 0) - (b.fora_prazo_por_100k_uc_mes || 0))[0];
+                const worst = [...benchmark].sort((a, b) => (b.fora_prazo_por_100k_uc_mes || 0) - (a.fora_prazo_por_100k_uc_mes || 0))[0];
+                document.getElementById('s-best-worst-summary').innerHTML = `<strong>${best.distributor_label}</strong> apresenta a menor pressão (${fmtNum(best.fora_prazo_por_100k_uc_mes, 2)}/100k UC) e <strong>${worst.distributor_label}</strong> a maior (${fmtNum(worst.fora_prazo_por_100k_uc_mes, 2)}/100k UC).`;
+            } else {
+                document.getElementById('s-best-worst-summary').textContent = 'Sem dados de benchmark suficientes para identificar melhor e pior desempenho.';
+            }
+
             document.getElementById('r-taxa-pre').textContent = fmtPct(kpi.pre_taxa_media);
             document.getElementById('r-taxa-pos').textContent = fmtPct(kpi.pos_taxa_media);
-            const d = document.getElementById('r-taxa-delta');
-            d.textContent = fmtPct(kpi.delta_taxa);
-            d.classList.remove('good', 'bad');
-            d.classList.add(kpi.delta_taxa <= 0 ? 'good' : 'bad');
+            const deltaEl = document.getElementById('r-taxa-delta');
+            deltaEl.textContent = fmtPct(kpi.delta_taxa);
+            deltaEl.classList.remove('good', 'bad');
+            deltaEl.classList.add((kpi.delta_taxa ?? 0) <= 0 ? 'good' : 'bad');
 
-            // Serie anual - taxa
-            const serie = data.serie_anual;
-            createReportChart('r-chart-taxa', { type: 'line', data: { labels: serie.map(r => r.ano), datasets: [{ label: 'Taxa fora do prazo (%)', data: serie.map(r => r.taxa_fora_prazo * 100), borderColor: C.blue, backgroundColor: C.blue + '15', fill: true, tension: .4, pointRadius: 4, borderWidth: 2.5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => v.toFixed(1) + '%' } } } } });
+            const serie = data.serie_anual || [];
+            createReportChart('r-chart-taxa', {
+                type: 'line',
+                data: { labels: serie.map(r => r.ano), datasets: [{ label: 'Taxa fora do prazo (%)', data: serie.map(r => (r.taxa_fora_prazo || 0) * 100), borderColor: C.blue, backgroundColor: C.blue + '15', fill: true, tension: .4, pointRadius: 4, borderWidth: 2.5 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => v.toFixed(1) + '%' } } } },
+            });
 
-            // Serie anual - comp
             const bgC = serie.map(r => r.periodo_regulatorio === 'pre_2022' ? C.blue : C.cyan);
-            createReportChart('r-chart-comp', { type: 'bar', data: { labels: serie.map(r => r.ano), datasets: [{ label: 'Compensação', data: serie.map(r => r.compensacao_rs), backgroundColor: bgC.map(c => c + 'aa'), borderColor: bgC, borderWidth: 1.5, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => fmtMoney(v) } } } } });
+            createReportChart('r-chart-comp', {
+                type: 'bar',
+                data: { labels: serie.map(r => r.ano), datasets: [{ label: 'Compensação', data: serie.map(r => r.compensacao_rs || 0), backgroundColor: bgC.map(c => c + 'aa'), borderColor: bgC, borderWidth: 1.5, borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => fmtMoney(v) } } } },
+            });
 
-            // Neo fora
-            const neo = data.neo_anual;
-            const dists = [...new Set(neo.map(r => r.neo_distribuidora))];
-            const anos = [...new Set(neo.map(r => r.ano))].sort();
-            createReportChart('r-chart-neo-fora', { type: 'bar', data: { labels: anos, datasets: dists.map(dist => ({ label: dist.replace('Neoenergia ', ''), data: anos.map(ano => { const row = neo.find(x => x.neo_distribuidora === dist && x.ano === ano); return row ? row.fora_prazo_por_100k_uc_mes : 0; }), backgroundColor: NEO_C[dist] + 'cc', borderColor: NEO_C[dist], borderWidth: 1.5, borderRadius: 3 })) }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } } });
+            const anos = [...new Set(anual.map(r => r.ano))].sort();
+            const anualMap = new Map(anual.map(r => [`${r.distributor_id || r.distributor_label}|${r.ano}`, r]));
+            createReportChart('r-chart-neo-fora', {
+                type: 'bar',
+                data: {
+                    labels: anos,
+                    datasets: distributors.map(d => ({
+                        label: d.label,
+                        data: anos.map(ano => {
+                            const row = anualMap.get(`${d.key}|${ano}`);
+                            return row ? row.fora_prazo_por_100k_uc_mes : 0;
+                        }),
+                        backgroundColor: colors[d.key] + 'cc',
+                        borderColor: colors[d.key],
+                        borderWidth: 1.5,
+                        borderRadius: 3,
+                    })),
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } },
+            });
 
-            // Trend table
-            const trend = data.neo_tendencia;
             document.getElementById('r-trend-body').innerHTML = trend.map(t => {
                 const dp = t.delta_fora_prazo_por_100k_uc_mes_pct;
                 const deltaClass = dp <= 0 ? 'good' : 'bad';
-                return `<tr><td>${t.neo_distribuidora.replace('Neoenergia ', '')}</td><td class="num">${fmtNum(t.fora_prazo_por_100k_uc_mes_2023, 2)}</td><td class="num">${fmtNum(t.fora_prazo_por_100k_uc_mes_2025, 2)}</td><td class="num trend-delta ${deltaClass}">${fmtPct(dp)}</td></tr>`;
+                return `<tr><td>${t.distributor_label}</td><td class="num">${fmtNum(t.fora_prazo_por_100k_uc_mes_2023, 2)}</td><td class="num">${fmtNum(t.fora_prazo_por_100k_uc_mes_2025, 2)}</td><td class="num trend-delta ${deltaClass}">${fmtPct(dp)}</td></tr>`;
             }).join('');
 
-            // Monthly
-            const mensal = data.neo_mensal;
             const mos = [...new Set(mensal.map(r => `${r.ano}-${String(r.mes).padStart(2, '0')}`))].sort();
-            createReportChart('r-chart-mensal', { type: 'line', data: { labels: mos, datasets: dists.map(dist => { const distData = mensal.filter(r => r.neo_distribuidora === dist); return { label: dist.replace('Neoenergia ', ''), data: mos.map(monthRef => { const [year, month] = monthRef.split('-').map(Number); const row = distData.find(x => x.ano === year && x.mes === month); return row ? row.taxa_fora_prazo * 100 : null; }), borderColor: NEO_C[dist], borderWidth: 1.5, tension: .3, pointRadius: 0, spanGaps: true, fill: false }; }) }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } }, scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 15, callback: function (v) { const l = this.getLabelForValue(v); return l.endsWith('-01') ? l : ''; } } }, y: { beginAtZero: true, ticks: { callback: v => v.toFixed(2) + '%' } } } } });
+            createReportChart('r-chart-mensal', {
+                type: 'line',
+                data: {
+                    labels: mos,
+                    datasets: distributors.map(d => {
+                        const distData = mensal.filter(r => (r.distributor_id || r.distributor_label) === d.key);
+                        return {
+                            label: d.label,
+                            data: mos.map(monthRef => {
+                                const [year, month] = monthRef.split('-').map(Number);
+                                const row = distData.find(x => x.ano === year && x.mes === month);
+                                return row ? row.taxa_fora_prazo * 100 : null;
+                            }),
+                            borderColor: colors[d.key],
+                            borderWidth: 1.5,
+                            tension: .3,
+                            pointRadius: 0,
+                            spanGaps: true,
+                            fill: false,
+                        };
+                    }),
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { maxTicksLimit: 15, callback: function (v) { const l = this.getLabelForValue(v); return l.endsWith('-01') ? l : ''; } } },
+                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(2) + '%' } },
+                    },
+                },
+            });
 
-            // Longa
-            const longa = data.neo_longa_resumo;
-            createReportChart('r-chart-longa', { type: 'bar', data: { labels: longa.map(r => r.neo_distribuidora.replace('Neoenergia ', '')), datasets: [{ label: 'Taxa 2011', data: longa.map(r => r.taxa_inicio * 100), backgroundColor: C.blue + 'cc', borderColor: C.blue, borderWidth: 1.5, borderRadius: 3 }, { label: 'Taxa 2023', data: longa.map(r => r.taxa_fim * 100), backgroundColor: C.cyan + 'cc', borderColor: C.cyan, borderWidth: 1.5, borderRadius: 3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => v.toFixed(1) + '%' } } } } });
+            createReportChart('r-chart-longa', {
+                type: 'bar',
+                data: {
+                    labels: longa.map(r => r.distributor_label),
+                    datasets: [
+                        { label: 'Taxa 2011', data: longa.map(r => (r.taxa_inicio || 0) * 100), backgroundColor: C.blue + 'cc', borderColor: C.blue, borderWidth: 1.5, borderRadius: 3 },
+                        { label: 'Taxa 2023', data: longa.map(r => (r.taxa_fim || 0) * 100), backgroundColor: C.cyan + 'cc', borderColor: C.cyan, borderWidth: 1.5, borderRadius: 3 },
+                    ],
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => v.toFixed(1) + '%' } } } },
+            });
 
             document.getElementById('r-longa-body').innerHTML = longa.map(r => {
                 const deltaClass = r.delta_taxa_pct <= 0 ? 'good' : 'bad';
-                return `<tr><td>${r.neo_distribuidora.replace('Neoenergia ', '')}</td><td class="num">${r.ano_inicio}</td><td class="num">${r.ano_fim}</td><td class="num">${fmtPct(r.taxa_inicio)}</td><td class="num">${fmtPct(r.taxa_fim)}</td><td class="num trend-delta ${deltaClass}">${fmtPct(r.delta_taxa_pct)}</td></tr>`;
+                return `<tr><td>${r.distributor_label}</td><td class="num">${r.ano_inicio}</td><td class="num">${r.ano_fim}</td><td class="num">${fmtPct(r.taxa_inicio)}</td><td class="num">${fmtPct(r.taxa_fim)}</td><td class="num trend-delta ${deltaClass}">${fmtPct(r.delta_taxa_pct)}</td></tr>`;
             }).join('');
         }
 
         async function init() {
             initReportTheme();
             const res = await fetch('dashboard_data.json');
-            const data = await res.json();
+            const raw = await res.json();
+            const data = normalizePayload(raw);
             reportState.data = data;
+            initGroupSelector(data);
             renderReport(data);
         }
 

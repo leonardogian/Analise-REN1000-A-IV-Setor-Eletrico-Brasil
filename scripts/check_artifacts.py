@@ -19,20 +19,21 @@ CORE_REQUIRED = [
 ]
 
 FULL_REQUIRED = CORE_REQUIRED + [
+    "data/processed/analysis/dim_distributor_group.parquet",
+    "data/processed/analysis/grupos/grupos_mensal_2023_2025.csv",
+    "data/processed/analysis/grupos/grupos_anual_2023_2025.csv",
+    "data/processed/analysis/grupos/grupos_anual_sem_cod_69_93.csv",
+    "data/processed/analysis/grupos/grupos_tendencia_2023_2025.csv",
+    "data/processed/analysis/grupos/grupos_classe_local_2023_2025.csv",
+    "data/processed/analysis/grupos/grupos_share_codigos_69_93.csv",
+    "data/processed/analysis/grupos/grupos_alertas_comparabilidade.csv",
+    "data/processed/analysis/grupos/grupos_longa_2011_2023.csv",
+    "data/processed/analysis/grupos/grupos_longa_resumo_2011_2023.csv",
+    "data/processed/analysis/grupos/grupos_benchmark_porte_latest.csv",
+    "data/processed/analysis/grupos/grupos_data_quality_checks.csv",
+    "data/processed/analysis/grupos/grupos_cobertura_mensal.csv",
+    "data/processed/analysis/grupos/grupos_outliers_taxa.csv",
     "reports/neoenergia_diagnostico.md",
-    "data/processed/analysis/neoenergia/neo_mensal_2023_2025.csv",
-    "data/processed/analysis/neoenergia/neo_anual_2023_2025.csv",
-    "data/processed/analysis/neoenergia/neo_anual_sem_cod_69_93.csv",
-    "data/processed/analysis/neoenergia/neo_tendencia_2023_2025.csv",
-    "data/processed/analysis/neoenergia/neo_classe_local_2023_2025.csv",
-    "data/processed/analysis/neoenergia/neo_share_codigos_69_93.csv",
-    "data/processed/analysis/neoenergia/neo_alertas_comparabilidade.csv",
-    "data/processed/analysis/neoenergia/neo_longa_2011_2023.csv",
-    "data/processed/analysis/neoenergia/neo_longa_resumo_2011_2023.csv",
-    "data/processed/analysis/neoenergia/neo_benchmark_porte_latest.csv",
-    "data/processed/analysis/neoenergia/neo_data_quality_checks.csv",
-    "data/processed/analysis/neoenergia/neo_cobertura_mensal.csv",
-    "data/processed/analysis/neoenergia/neo_outliers_taxa.csv",
     "dashboard/dashboard_data.json",
 ]
 
@@ -41,12 +42,9 @@ REQUIRED_DASHBOARD_KEYS = {
     "kpi_overview",
     "serie_anual",
     "serie_mensal_nacional",
-    "neo_anual",
-    "neo_tendencia",
-    "neo_benchmark",
-    "neo_classe_local",
-    "neo_longa_resumo",
-    "neo_mensal",
+    "distributor_groups",
+    "group_views",
+    "default_group_id",
 }
 
 
@@ -70,6 +68,21 @@ def check_dashboard_json() -> list[str]:
         errors.append(
             "dashboard JSON missing keys: " + ", ".join(missing)
         )
+
+    if isinstance(payload.get("group_views"), dict) and "neoenergia" in payload["group_views"]:
+        legacy_required = {
+            "neo_anual",
+            "neo_tendencia",
+            "neo_benchmark",
+            "neo_classe_local",
+            "neo_longa_resumo",
+            "neo_mensal",
+        }
+        missing_legacy = sorted(legacy_required - set(payload.keys()))
+        if missing_legacy:
+            errors.append(
+                "dashboard JSON missing legacy neo keys: " + ", ".join(missing_legacy)
+            )
 
     return errors
 

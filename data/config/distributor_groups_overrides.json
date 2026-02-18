@@ -1,0 +1,10 @@
+{
+  "distributor_to_group": {},
+  "group_labels": {
+    "neoenergia": "Grupo Neoenergia",
+    "cpfl": "Grupo CPFL",
+    "equatorial": "Grupo Equatorial",
+    "enel": "Grupo Enel",
+    "energisa": "Grupo Energisa"
+  }
+}

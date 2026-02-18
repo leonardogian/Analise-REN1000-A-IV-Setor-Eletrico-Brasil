@@ -1,4 +1,1 @@
 neo_distribuidora,ano,qtd_serv_realizado,delta_serv_pct,share_serv_focus,delta_share_focus_abs,alerta_quebra_volume,alerta_quebra_mix
-Neoenergia Cosern,2025,5513087,-0.6879421162986794,0.8837014543757427,-0.090976124389894,True,False
-Neoenergia Elektro,2024,50085158,-0.5098955384557244,0.9758004956278664,-0.014675948989740895,True,False
-Neoenergia Pernambuco,2025,1481135,-0.9544974271884643,0.011007774443247914,-0.948073718950863,True,True

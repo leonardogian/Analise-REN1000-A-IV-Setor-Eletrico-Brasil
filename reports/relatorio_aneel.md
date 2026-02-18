@@ -53,15 +53,15 @@
 ## Benchmark de distribuidoras (porte e normalizacao)
 | Ano | Distribuidora | Porte | Rank porte | UC ativa media mensal | Qtd fora do prazo | Taxa fora prazo | Fora prazo por 100k UC | Compensacao | Compensacao por UC |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 2023 | CEMIG DISTRIBUIÇÃO S.A. | GG | 1 | 10.337.222 | 107.304 | 0.173% | 21.65 | R$ 81.427.220,05 | R$ 0,1645 |
 | 2023 | COMPANHIA DE ELETRICIDADE DO ESTADO DA BAHIA | GG | 3 | 6.617.578 | 35.045 | 0.051% | 11.05 | R$ 19.076.328,16 | R$ 0,0599 |
-| 2023 | COPEL DISTRIBUIÇÃO S.A. | GG | 4 | 5.171.026 | 10.638 | 0.029% | 4.28 | R$ 1.736.398,05 | R$ 0,0070 |
-| 2023 | NEOENERGIA DISTRIBUIÇÃO BRASÍLIA S.A. | GG | 25 | 1.176.820 | 3.034 | 0.465% | 5.37 | R$ 2.777.969,71 | R$ 0,0491 |
+| 2023 | ELETROPAULO METROPOLITANA ELETRICIDADE DE SÃO PAULO S.A. | GG | 2 | 8.294.507 | 23.165 | 0.061% | 5.81 | R$ 11.340.248,57 | R$ 0,0283 |
+| 2024 | CEMIG DISTRIBUIÇÃO S.A. | GG | 1 | 10.476.921 | 57.485 | 0.116% | 11.43 | R$ 34.935.633,06 | R$ 0,0696 |
 | 2024 | COMPANHIA DE ELETRICIDADE DO ESTADO DA BAHIA | GG | 3 | 6.762.797 | 28.707 | 0.040% | 8.85 | R$ 41.095.381,80 | R$ 0,1259 |
-| 2024 | COPEL DISTRIBUIÇÃO S.A. | GG | 4 | 5.265.472 | 7.753 | 0.039% | 3.07 | R$ 2.730.936,67 | R$ 0,0108 |
-| 2024 | NEOENERGIA DISTRIBUIÇÃO BRASÍLIA S.A. | GG | 25 | 1.185.878 | 4.084 | 0.752% | 7.19 | R$ 6.817.583,02 | R$ 0,1186 |
+| 2024 | ELETROPAULO METROPOLITANA ELETRICIDADE DE SÃO PAULO S.A. | GG | 2 | 8.461.874 | 12.735 | 0.028% | 3.13 | R$ 15.926.437,21 | R$ 0,0393 |
+| 2025 | CEMIG DISTRIBUIÇÃO S.A. | GG | 1 | 10.678.152 | 49.799 | 0.089% | 9.74 | R$ 42.312.798,18 | R$ 0,0827 |
 | 2025 | COMPANHIA DE ELETRICIDADE DO ESTADO DA BAHIA | GG | 3 | 6.956.267 | 23.697 | 0.059% | 7.09 | R$ 35.872.530,09 | R$ 0,1073 |
-| 2025 | COPEL DISTRIBUIÇÃO S.A. | GG | 4 | 5.359.913 | 10.129 | 0.064% | 3.93 | R$ 2.503.281,54 | R$ 0,0097 |
-| 2025 | NEOENERGIA DISTRIBUIÇÃO BRASÍLIA S.A. | GG | 26 | 1.212.704 | 3.035 | 0.552% | 5.24 | R$ 4.272.767,30 | R$ 0,0735 |
+| 2025 | ELETROPAULO METROPOLITANA ELETRICIDADE DE SÃO PAULO S.A. | GG | 2 | 8.607.974 | 26.791 | 0.085% | 6.46 | R$ 7.883.179,84 | R$ 0,0191 |
 
 ## Proximos acompanhamentos
 - Atualizar mensalmente a tabela `fato_transgressao_mensal_porte`.

@@ -58,7 +58,7 @@
           <span class="tab-icon">📊</span> Visão Geral
         </button>
         <button class="nav-tab" data-tab="tab-neoenergia">
-          <span class="tab-icon">🏢</span> Neoenergia
+          <span class="tab-icon">🏢</span> Grupos Econômicos
         </button>
         <button class="nav-tab" data-tab="tab-regulatory">
           <span class="tab-icon">📈</span> Análise Regulatória
@@ -169,10 +169,19 @@
       <!-- ============ TAB 2: NEOENERGIA ============ -->
       <section id="tab-neoenergia" class="tab-panel">
 
-        <h2 class="section-title"><span class="icon">🏢</span> Benchmark Neoenergia — 5 Distribuidoras</h2>
+        <div class="group-selector-row">
+          <label class="group-selector-label" for="group-selector">Grupo econômico:</label>
+          <select id="group-selector" class="group-selector"></select>
+        </div>
+
+        <h2 class="section-title">
+          <span class="icon">🏢</span>
+          Benchmark <span id="group-title-main">Grupo</span> —
+          <span id="group-count-main">0</span> Distribuidoras
+        </h2>
         <p class="section-description">
-          Análise comparativa das 5 distribuidoras do grupo Neoenergia: Coelba, Pernambuco, Cosern, Elektro e Brasília.
-          Métricas normalizadas por unidades consumidoras (UC) para comparação justa por porte.
+          Análise comparativa do <span id="group-label-desc">grupo selecionado</span>.
+          Métricas normalizadas por unidades consumidoras (UC) para comparação justa por porte das distribuidoras.
         </p>
 
         <div class="chart-grid two-col">
@@ -182,7 +191,7 @@
                 <div class="chart-title">Transgressões por 100k UC-mês</div>
                 <div class="chart-subtitle">Normalizado pelo porte da distribuidora</div>
               </div>
-              <span class="chart-tag">2023–2025</span>
+              <span class="chart-tag" id="group-period-tag">2023–2025</span>
             </div>
             <div class="chart-canvas-wrapper">
               <canvas id="chart-neo-fora"></canvas>
@@ -246,9 +255,13 @@
       <!-- ============ TAB 3: ANÁLISE REGULATÓRIA ============ -->
       <section id="tab-regulatory" class="tab-panel">
 
-        <h2 class="section-title"><span class="icon">📈</span> Análise Regulatória Mensal — Neoenergia</h2>
+        <h2 class="section-title">
+          <span class="icon">📈</span>
+          Análise Regulatória Mensal — <span id="group-title-reg">Grupo</span>
+        </h2>
         <p class="section-description">
-          Série temporal mensal das 5 distribuidoras Neoenergia, com taxa de transgressão e compensação financeira.
+          Série temporal mensal das distribuidoras do <span id="group-label-reg">grupo selecionado</span>,
+          com taxa de transgressão e compensação financeira.
           Permite identificar sazonalidade e tendências de curto prazo.
         </p>
 
@@ -287,35 +300,14 @@
         <h2 class="section-title"><span class="icon">🔍</span> Diagnóstico Detalhado</h2>
         <p class="section-description">
           Análise por classe de consumo (urbana, rural, grupo A) e série longa 2011–2023
-          para cada distribuidora Neoenergia.
+          para cada distribuidora do <span id="group-label-diag">grupo selecionado</span>.
         </p>
 
         <!-- Donuts -->
         <h3 class="subsection-title">
           📊 Distribuição das Transgressões por Classe/Localização (2023–2025)
         </h3>
-        <div class="chart-grid chart-grid-compact">
-          <div class="chart-card chart-card-compact">
-            <div class="chart-title chart-title-compact">Brasília</div>
-            <div class="chart-canvas-wrapper chart-canvas-wrapper-small"><canvas id="chart-donut-0"></canvas></div>
-          </div>
-          <div class="chart-card chart-card-compact">
-            <div class="chart-title chart-title-compact">Coelba</div>
-            <div class="chart-canvas-wrapper chart-canvas-wrapper-small"><canvas id="chart-donut-1"></canvas></div>
-          </div>
-          <div class="chart-card chart-card-compact">
-            <div class="chart-title chart-title-compact">Cosern</div>
-            <div class="chart-canvas-wrapper chart-canvas-wrapper-small"><canvas id="chart-donut-2"></canvas></div>
-          </div>
-          <div class="chart-card chart-card-compact">
-            <div class="chart-title chart-title-compact">Elektro</div>
-            <div class="chart-canvas-wrapper chart-canvas-wrapper-small"><canvas id="chart-donut-3"></canvas></div>
-          </div>
-          <div class="chart-card chart-card-compact">
-            <div class="chart-title chart-title-compact">Pernambuco</div>
-            <div class="chart-canvas-wrapper chart-canvas-wrapper-small"><canvas id="chart-donut-4"></canvas></div>
-          </div>
-        </div>
+        <div id="diagnostico-donuts" class="chart-grid chart-grid-compact"></div>
 
         <!-- Serie longa -->
         <div class="chart-grid two-col section-spacing-top">
@@ -361,25 +353,15 @@
         <div class="insight-grid section-spacing-top-sm">
           <div class="insight-card">
             <span class="insight-icon">🏆</span>
-            <div class="insight-text">
-              <strong>Neoenergia Elektro</strong> apresenta a menor pressão normalizada: apenas 2,00 transgressões por
-              100k UC-mês.
-            </div>
+            <div class="insight-text" id="diag-insight-best">—</div>
           </div>
           <div class="insight-card">
             <span class="insight-icon">⚠️</span>
-            <div class="insight-text">
-              <strong>Neoenergia Coelba</strong> lidera em pressão normalizada (28,39/100k UC-mês), mas abrange o maior
-              volume de consumidores.
-            </div>
+            <div class="insight-text" id="diag-insight-worst">—</div>
           </div>
           <div class="insight-card">
             <span class="insight-icon">📉</span>
-            <div class="insight-text">
-              <strong>4 de 5</strong> distribuidoras Neoenergia reduziram a taxa normalizada de transgressões entre 2023
-              e 2025 —
-              destaque para Cosern (−74%) e Elektro (−73%).
-            </div>
+            <div class="insight-text" id="diag-insight-trend">—</div>
           </div>
         </div>
       </section>

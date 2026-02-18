@@ -23,6 +23,11 @@ make dev-serve
 # API:    http://localhost:8050/api/dashboard
 ```
 
+```bash
+# Porta customizada local (exemplo 8060):
+make backend PORT=8060
+```
+
 ### Visão Geral — Impacto Pré vs Pós REN 1000
 
 KPIs comparando os períodos regulatórios, séries temporais de taxa fora do prazo (2011–2023) e evolução das compensações financeiras:
@@ -98,16 +103,30 @@ Distribuição por classe/localização (donut charts) e evolução da série lo
 ## 🛠️ Configurando o Ambiente
 
 ```bash
-# 1. Crie o ambiente virtual
-python3 -m venv .venv
+# Fluxo canonico de recuperacao do ambiente local:
+make venv-recreate
+make install
+make doctor
+make preflight-backend
 
-# 2. Ative o ambiente
-source .venv/bin/activate        # Linux/Mac
-# .venv\Scripts\activate         # Windows
-
-# 3. Instale as dependências
-pip install -r requirements.txt
+# Subir backend/API + estatico:
+make backend
+# ou:
+make serve
 ```
+
+### 🐳 Docker (1 container: FastAPI + estaticos)
+
+```bash
+# Porta padrao 8050
+docker compose up --build
+
+# Compatibilidade com 8060 (porta externa)
+HOST_PORT=8060 docker compose up --build
+```
+
+- Internamente o app roda em `8050` no container.
+- A porta publica e controlada por `HOST_PORT` (default `8050`).
 
 ---
 
@@ -138,15 +157,17 @@ python3 -m src.analysis.build_dashboard_data
 
 ```bash
 make help                       # lista todos os targets
+make venv-recreate             # recria .venv do zero
 make update-data                # extract + transform
 make analysis                   # gera tabelas analíticas
 make report                     # gera relatório markdown
 make neoenergia-diagnostico     # benchmark detalhado das 5 Neoenergias
 make dashboard                  # gera JSON + instruções para abrir
 make dashboard-full             # analysis + neoenergia + dashboard
-make serve                      # servidor local em http://localhost:8050
-make backend                    # backend FastAPI local em http://localhost:8050
-make dev-serve                  # dashboard-full + preflight + backend (--reload)
+make serve                      # servidor local em http://localhost:${PORT} (default 8050)
+make backend                    # backend FastAPI local em http://localhost:${PORT}
+make dev-serve                  # dashboard-full + preflight + backend (--reload, PORT customizavel)
+make doctor                     # valida .venv + imports criticos (numpy/pandas/fastapi/uvicorn)
 make validate-contracts         # valida contratos de schema (raw + processed)
 make check-artifacts-full       # valida artefatos completos + dashboard JSON
 make pipeline                   # tudo: ETL → análise → relatório → neoenergia → dashboard

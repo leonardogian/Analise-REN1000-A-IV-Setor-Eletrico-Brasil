@@ -44,7 +44,7 @@ dashboard/
 make serve
 ```
 
-Isso gera o JSON (se necessário) e inicia um servidor Python em `http://localhost:8050`.
+Isso gera o JSON (se necessário) e inicia um servidor Python em `http://localhost:8050` (ou `PORT` customizada).
 
 ### Opção 1B: `make dev-serve` (recomendado para backend local)
 
@@ -59,12 +59,39 @@ Isso executa preflight (artefatos + contratos), sobe backend FastAPI em `http://
 - `GET /api/dashboard`
 - `GET /api/dashboard/{section}`
 
+### Recuperação rápida de ambiente (quando não sobe)
+
+```bash
+# raiz do projeto
+make venv-recreate
+make install
+make doctor
+make preflight-backend
+make backend
+```
+
+Porta customizada (exemplo `8060`):
+
+```bash
+make backend PORT=8060
+```
+
 ### Opção 2: Servidor HTTP manual
 
 ```bash
 cd dashboard
 python3 -m http.server 8050
 # Abra http://localhost:8050 no navegador
+```
+
+### Opção 4: Docker Compose
+
+```bash
+# Na raiz do projeto
+docker compose up --build
+
+# Porta externa alternativa (mantendo 8050 dentro do container)
+HOST_PORT=8060 docker compose up --build
 ```
 
 ### Opção 3: Extensão Live Server (VS Code)

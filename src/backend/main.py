@@ -15,13 +15,19 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 DASHBOARD_DIR = ROOT / "dashboard"
 DASHBOARD_JSON_PATH = DASHBOARD_DIR / "dashboard_data.json"
 ANALYSIS_DIR = ROOT / "data" / "processed" / "analysis"
-NEO_DIR = ANALYSIS_DIR / "neoenergia"
+GROUPS_DIR = ANALYSIS_DIR / "grupos"
 
 REQUIRED_JSON_KEYS = {
     "meta",
     "kpi_overview",
     "serie_anual",
     "serie_mensal_nacional",
+    "distributor_groups",
+    "group_views",
+    "default_group_id",
+}
+
+LEGACY_NEO_KEYS = {
     "neo_anual",
     "neo_tendencia",
     "neo_benchmark",
@@ -33,12 +39,13 @@ REQUIRED_JSON_KEYS = {
 REQUIRED_INPUTS = [
     ANALYSIS_DIR / "kpi_regulatorio_anual.csv",
     ANALYSIS_DIR / "fato_transgressao_mensal_distribuidora.csv",
-    NEO_DIR / "neo_anual_2023_2025.csv",
-    NEO_DIR / "neo_tendencia_2023_2025.csv",
-    NEO_DIR / "neo_benchmark_porte_latest.csv",
-    NEO_DIR / "neo_classe_local_2023_2025.csv",
-    NEO_DIR / "neo_longa_resumo_2011_2023.csv",
-    NEO_DIR / "neo_mensal_2023_2025.csv",
+    ANALYSIS_DIR / "dim_distributor_group.csv",
+    GROUPS_DIR / "grupos_anual_2023_2025.csv",
+    GROUPS_DIR / "grupos_tendencia_2023_2025.csv",
+    GROUPS_DIR / "grupos_benchmark_porte_latest.csv",
+    GROUPS_DIR / "grupos_classe_local_2023_2025.csv",
+    GROUPS_DIR / "grupos_longa_resumo_2011_2023.csv",
+    GROUPS_DIR / "grupos_mensal_2023_2025.csv",
 ]
 
 
@@ -63,6 +70,14 @@ def _load_dashboard_payload() -> dict[str, Any]:
             status_code=500,
             detail=f"Dashboard JSON missing keys: {', '.join(missing)}",
         )
+    group_views = payload.get("group_views", {})
+    if isinstance(group_views, dict) and "neoenergia" in group_views:
+        missing_legacy = sorted(LEGACY_NEO_KEYS - set(payload.keys()))
+        if missing_legacy:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Dashboard JSON missing legacy keys for neoenergia: {', '.join(missing_legacy)}",
+            )
 
     return payload
 

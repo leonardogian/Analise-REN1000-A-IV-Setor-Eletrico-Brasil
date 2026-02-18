@@ -13,6 +13,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from src.analysis.distributor_groups import (
+    annotate_distributor_group,
+    build_group_dimension,
+    load_group_overrides,
+)
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 DIR_PROCESSED = ROOT / "data" / "processed"
 DIR_ANALYSIS = DIR_PROCESSED / "analysis"
@@ -125,7 +131,10 @@ def assign_porte_bucket(values: pd.Series) -> pd.Series:
     ).astype("string")
 
 
-def load_qualidade_comercial() -> pd.DataFrame:
+def load_qualidade_comercial(
+    distributor_to_group: dict[str, str],
+    group_labels: dict[str, str],
+) -> pd.DataFrame:
     path = DIR_PROCESSED / "qualidade_comercial.parquet"
     if not path.exists():
         raise FileNotFoundError(f"Missing file: {path}")
@@ -144,6 +153,13 @@ def load_qualidade_comercial() -> pd.DataFrame:
     frame["ano"] = pd.to_numeric(frame["anoindice"], errors="coerce").astype("Int64")
     frame["periodo"] = pd.to_numeric(frame["numperiodoindice"], errors="coerce").astype("Int64")
     frame["valor"] = parse_br_number(frame["vlrindiceenviado"]).fillna(0.0)
+    frame = annotate_distributor_group(
+        frame,
+        sig_col="sigagente",
+        name_col="nomagente",
+        distributor_to_group=distributor_to_group,
+        group_labels=group_labels,
+    )
     return frame
 
 
@@ -197,9 +213,9 @@ def build_fato_indicadores_anuais(qualidade: pd.DataFrame, dim_indicador: pd.Dat
         how="left",
     )
     enriched = enriched[enriched["familia_indicador"].isin(FAMILIAS_VALIDAS)].copy()
-    enriched = enriched.dropna(subset=["ano", "sigagente", "codigo_base"])
+    enriched = enriched.dropna(subset=["ano", "sigagente", "codigo_base", "distributor_id", "group_id"])
 
-    keys = ["ano", "sigagente", "codigo_base", "classe_local"]
+    keys = ["ano", "group_id", "distributor_id", "sigagente", "codigo_base", "classe_local"]
 
     qs = (
         enriched[enriched["familia_indicador"] == "QS"]
@@ -244,10 +260,13 @@ def build_fato_indicadores_anuais(qualidade: pd.DataFrame, dim_indicador: pd.Dat
     fact["periodo_regulatorio"] = np.where(fact["ano"] <= 2021, "pre_2022", "pos_2022")
     fact["ano_comparavel_principal"] = fact["ano"].between(2011, 2023, inclusive="both")
 
-    return fact.sort_values(["ano", "sigagente", "codigo_base"]).reset_index(drop=True)
+    return fact.sort_values(["ano", "group_id", "distributor_id", "codigo_base"]).reset_index(drop=True)
 
 
-def build_dim_distribuidora_porte() -> pd.DataFrame:
+def build_dim_distribuidora_porte(
+    distributor_to_group: dict[str, str],
+    group_labels: dict[str, str],
+) -> pd.DataFrame:
     path = DIR_PROCESSED / "indger_dados_comerciais.parquet"
     if not path.exists():
         raise FileNotFoundError(f"Missing file: {path}")
@@ -269,15 +288,28 @@ def build_dim_distribuidora_porte() -> pd.DataFrame:
     frame["ano"] = frame["dt_ref"].dt.year
     frame["mes"] = frame["dt_ref"].dt.month
     frame["uc_ativa"] = parse_br_number(frame["qtducativa"]).fillna(0.0)
+    frame = annotate_distributor_group(
+        frame,
+        sig_col="sigagente",
+        name_col="nomagente",
+        distributor_to_group=distributor_to_group,
+        group_labels=group_labels,
+    )
 
     monthly = (
-        frame.groupby(["ano", "mes", "sigagente", "nomagente"], dropna=False)["uc_ativa"]
+        frame.groupby(
+            ["ano", "mes", "group_id", "distributor_id", "sigagente", "nomagente"],
+            dropna=False,
+        )["uc_ativa"]
         .sum()
         .reset_index()
     )
 
     dim = (
-        monthly.groupby(["ano", "sigagente", "nomagente"], dropna=False)["uc_ativa"]
+        monthly.groupby(
+            ["ano", "group_id", "distributor_id", "sigagente", "nomagente"],
+            dropna=False,
+        )["uc_ativa"]
         .mean()
         .reset_index()
         .rename(columns={"uc_ativa": "uc_ativa_media_mensal"})
@@ -289,10 +321,13 @@ def build_dim_distribuidora_porte() -> pd.DataFrame:
     dim["bucket_porte"] = dim.groupby("ano", group_keys=False)["uc_ativa_media_mensal"].apply(assign_porte_bucket)
     dim["share_uc_ano"] = dim["uc_ativa_media_mensal"] / dim.groupby("ano")["uc_ativa_media_mensal"].transform("sum")
 
-    return dim.sort_values(["ano", "rank_porte_ano", "sigagente"]).reset_index(drop=True)
+    return dim.sort_values(["ano", "rank_porte_ano", "group_id", "distributor_id"]).reset_index(drop=True)
 
 
-def build_uc_ativa_mensal_distribuidora() -> pd.DataFrame:
+def build_uc_ativa_mensal_distribuidora(
+    distributor_to_group: dict[str, str],
+    group_labels: dict[str, str],
+) -> pd.DataFrame:
     """Build monthly UC active totals per distributor."""
     path = DIR_PROCESSED / "indger_dados_comerciais.parquet"
     if not path.exists():
@@ -315,17 +350,30 @@ def build_uc_ativa_mensal_distribuidora() -> pd.DataFrame:
     frame["ano"] = frame["dt_ref"].dt.year
     frame["mes"] = frame["dt_ref"].dt.month
     frame["uc_ativa"] = parse_br_number(frame["qtducativa"]).fillna(0.0)
+    frame = annotate_distributor_group(
+        frame,
+        sig_col="sigagente",
+        name_col="nomagente",
+        distributor_to_group=distributor_to_group,
+        group_labels=group_labels,
+    )
 
     monthly = (
-        frame.groupby(["ano", "mes", "sigagente", "nomagente"], dropna=False)["uc_ativa"]
+        frame.groupby(
+            ["ano", "mes", "group_id", "distributor_id", "sigagente", "nomagente"],
+            dropna=False,
+        )["uc_ativa"]
         .sum()
         .reset_index()
         .rename(columns={"uc_ativa": "uc_ativa_mes"})
     )
-    return monthly.sort_values(["ano", "mes", "sigagente"]).reset_index(drop=True)
+    return monthly.sort_values(["ano", "mes", "group_id", "distributor_id"]).reset_index(drop=True)
 
 
-def build_fato_servicos_municipio_mes() -> pd.DataFrame:
+def build_fato_servicos_municipio_mes(
+    distributor_to_group: dict[str, str],
+    group_labels: dict[str, str],
+) -> pd.DataFrame:
     path = DIR_PROCESSED / "indger_servicos_comerciais.parquet"
     if not path.exists():
         raise FileNotFoundError(f"Missing file: {path}")
@@ -355,6 +403,13 @@ def build_fato_servicos_municipio_mes() -> pd.DataFrame:
     frame = frame.dropna(subset=["dt_ref", "sigagente"])
     frame["ano"] = frame["dt_ref"].dt.year
     frame["mes"] = frame["dt_ref"].dt.month
+    frame = annotate_distributor_group(
+        frame,
+        sig_col="sigagente",
+        name_col="nomagente",
+        distributor_to_group=distributor_to_group,
+        group_labels=group_labels,
+    )
 
     frame["codmunicipioibge"] = (
         frame["codmunicipioibge"].astype("string").str.replace(".0", "", regex=False).str.strip()
@@ -369,6 +424,8 @@ def build_fato_servicos_municipio_mes() -> pd.DataFrame:
     keys = [
         "ano",
         "mes",
+        "group_id",
+        "distributor_id",
         "sigagente",
         "nomagente",
         "codmunicipioibge",
@@ -392,7 +449,9 @@ def build_fato_servicos_municipio_mes() -> pd.DataFrame:
     fact["periodo_regulatorio"] = np.where(fact["ano"] <= 2021, "pre_2022", "pos_2022")
     fact["ano_comparavel_principal"] = fact["ano"].between(2023, 2025, inclusive="both")
 
-    return fact.sort_values(["ano", "mes", "sigagente", "codmunicipioibge", "codtiposervico"]).reset_index(drop=True)
+    return fact.sort_values(
+        ["ano", "mes", "group_id", "distributor_id", "codmunicipioibge", "codtiposervico"]
+    ).reset_index(drop=True)
 
 
 def build_fato_transgressao_mensal_porte(
@@ -403,7 +462,16 @@ def build_fato_transgressao_mensal_porte(
     """Monthly transgression/compensation by distributor, normalized by size."""
     mensal = (
         fato_servicos_municipio_mes.groupby(
-            ["ano", "mes", "sigagente", "nomagente", "classe_local_servico"], as_index=False
+            [
+                "ano",
+                "mes",
+                "group_id",
+                "distributor_id",
+                "sigagente",
+                "nomagente",
+                "classe_local_servico",
+            ],
+            as_index=False,
         )
         .agg(
             qtd_serv_realizado=("qtd_serv_realizado", "sum"),
@@ -413,13 +481,24 @@ def build_fato_transgressao_mensal_porte(
     )
 
     mensal = mensal.merge(
-        uc_ativa_mensal_distribuidora[["ano", "mes", "sigagente", "uc_ativa_mes"]],
-        on=["ano", "mes", "sigagente"],
+        uc_ativa_mensal_distribuidora[
+            ["ano", "mes", "distributor_id", "group_id", "uc_ativa_mes"]
+        ],
+        on=["ano", "mes", "distributor_id", "group_id"],
         how="left",
     )
     mensal = mensal.merge(
-        dim_porte[["ano", "sigagente", "bucket_porte", "rank_porte_ano", "uc_ativa_media_mensal"]],
-        on=["ano", "sigagente"],
+        dim_porte[
+            [
+                "ano",
+                "distributor_id",
+                "group_id",
+                "bucket_porte",
+                "rank_porte_ano",
+                "uc_ativa_media_mensal",
+            ]
+        ],
+        on=["ano", "distributor_id", "group_id"],
         how="left",
     )
 
@@ -446,7 +525,9 @@ def build_fato_transgressao_mensal_porte(
     mensal["periodo_regulatorio"] = np.where(mensal["ano"] <= 2021, "pre_2022", "pos_2022")
     mensal["ano_comparavel_principal"] = mensal["ano"].between(2023, 2025, inclusive="both")
 
-    return mensal.sort_values(["ano", "mes", "sigagente", "classe_local_servico"]).reset_index(drop=True)
+    return mensal.sort_values(
+        ["ano", "mes", "group_id", "distributor_id", "classe_local_servico"]
+    ).reset_index(drop=True)
 
 
 def build_fato_transgressao_mensal_distribuidora(
@@ -458,6 +539,8 @@ def build_fato_transgressao_mensal_distribuidora(
             [
                 "ano",
                 "mes",
+                "group_id",
+                "distributor_id",
                 "sigagente",
                 "nomagente",
                 "uc_ativa_mes",
@@ -495,12 +578,25 @@ def build_fato_transgressao_mensal_distribuidora(
     )
     fact["periodo_regulatorio"] = np.where(fact["ano"] <= 2021, "pre_2022", "pos_2022")
     fact["ano_comparavel_principal"] = fact["ano"].between(2023, 2025, inclusive="both")
-    return fact.sort_values(["ano", "mes", "sigagente"]).reset_index(drop=True)
+    return fact.sort_values(["ano", "mes", "group_id", "distributor_id"]).reset_index(drop=True)
 
 
 def merge_fato_with_porte(fato_indicadores: pd.DataFrame, dim_porte: pd.DataFrame) -> pd.DataFrame:
-    merge_cols = ["ano", "sigagente", "uc_ativa_media_mensal", "bucket_porte", "rank_porte_ano", "nomagente"]
-    enriched = fato_indicadores.merge(dim_porte[merge_cols], on=["ano", "sigagente"], how="left")
+    merge_cols = [
+        "ano",
+        "group_id",
+        "distributor_id",
+        "sigagente",
+        "uc_ativa_media_mensal",
+        "bucket_porte",
+        "rank_porte_ano",
+        "nomagente",
+    ]
+    enriched = fato_indicadores.merge(
+        dim_porte[merge_cols],
+        on=["ano", "group_id", "distributor_id", "sigagente"],
+        how="left",
+    )
 
     enriched["fora_prazo_por_100k_uc"] = np.where(
         enriched["uc_ativa_media_mensal"] > 0,
@@ -541,14 +637,15 @@ def build_kpi_overview(fato_indicadores: pd.DataFrame) -> pd.DataFrame:
 
 
 def run_all() -> dict[str, pd.DataFrame]:
-    qualidade = load_qualidade_comercial()
+    distributor_to_group, group_labels = load_group_overrides()
+    qualidade = load_qualidade_comercial(distributor_to_group, group_labels)
     domain = load_domain_indicators()
 
     dim_indicador = build_dim_indicador_servico(qualidade, domain)
     fato_indicadores = build_fato_indicadores_anuais(qualidade, dim_indicador)
-    dim_porte = build_dim_distribuidora_porte()
-    uc_ativa_mensal = build_uc_ativa_mensal_distribuidora()
-    fato_servicos = build_fato_servicos_municipio_mes()
+    dim_porte = build_dim_distribuidora_porte(distributor_to_group, group_labels)
+    uc_ativa_mensal = build_uc_ativa_mensal_distribuidora(distributor_to_group, group_labels)
+    fato_servicos = build_fato_servicos_municipio_mes(distributor_to_group, group_labels)
     fato_transgressao_mensal_porte = build_fato_transgressao_mensal_porte(
         fato_servicos, uc_ativa_mensal, dim_porte
     )
@@ -558,9 +655,25 @@ def run_all() -> dict[str, pd.DataFrame]:
 
     fato_indicadores = merge_fato_with_porte(fato_indicadores, dim_porte)
     kpi_overview = build_kpi_overview(fato_indicadores)
+    dim_group = build_group_dimension(dim_porte)
+
+    fact_tables = {
+        "dim_distribuidora_porte": dim_porte,
+        "fato_uc_ativa_mensal_distribuidora": uc_ativa_mensal,
+        "fato_indicadores_anuais": fato_indicadores,
+        "fato_servicos_municipio_mes": fato_servicos,
+        "fato_transgressao_mensal_porte": fato_transgressao_mensal_porte,
+        "fato_transgressao_mensal_distribuidora": fato_transgressao_mensal_distribuidora,
+    }
+    for table_name, table in fact_tables.items():
+        if "group_id" in table.columns and table["group_id"].isna().any():
+            raise RuntimeError(f"group_id contains nulls in table {table_name}")
+        if "distributor_id" in table.columns and table["distributor_id"].isna().any():
+            raise RuntimeError(f"distributor_id contains nulls in table {table_name}")
 
     save_table(dim_indicador, "dim_indicador_servico")
     save_table(dim_porte, "dim_distribuidora_porte")
+    save_table(dim_group, "dim_distributor_group")
     save_table(uc_ativa_mensal, "fato_uc_ativa_mensal_distribuidora")
     save_table(fato_indicadores, "fato_indicadores_anuais")
     save_table(fato_servicos, "fato_servicos_municipio_mes", write_csv=False)
@@ -571,6 +684,7 @@ def run_all() -> dict[str, pd.DataFrame]:
     return {
         "dim_indicador_servico": dim_indicador,
         "dim_distribuidora_porte": dim_porte,
+        "dim_distributor_group": dim_group,
         "fato_uc_ativa_mensal_distribuidora": uc_ativa_mensal,
         "fato_indicadores_anuais": fato_indicadores,
         "fato_servicos_municipio_mes": fato_servicos,

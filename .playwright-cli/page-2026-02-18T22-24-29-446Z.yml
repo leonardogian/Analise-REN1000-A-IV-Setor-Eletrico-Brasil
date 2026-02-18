@@ -1,0 +1,89 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - heading "⚡ Análise REN 1000/2021 — ANEEL" [level=1] [ref=e6]
+        - paragraph [ref=e7]: Qualidade comercial das distribuidoras de energia — Prazos, transgressões e compensações
+      - generic [ref=e8]:
+        - text: "Atualizado:"
+        - generic [ref=e10]: 18/02/2026, 18:51:19
+  - generic [ref=e11]:
+    - navigation [ref=e12]:
+      - button "📊 Visão Geral" [ref=e13] [cursor=pointer]:
+        - generic [ref=e14]: 📊
+        - text: Visão Geral
+      - button "🏢 Grupos Econômicos" [ref=e15] [cursor=pointer]:
+        - generic [ref=e16]: 🏢
+        - text: Grupos Econômicos
+      - button "📈 Análise Regulatória" [ref=e17] [cursor=pointer]:
+        - generic [ref=e18]: 📈
+        - text: Análise Regulatória
+      - button "🔍 Diagnóstico Detalhado" [ref=e19] [cursor=pointer]:
+        - generic [ref=e20]: 🔍
+        - text: Diagnóstico Detalhado
+      - link "📄 Relatório" [ref=e21] [cursor=pointer]:
+        - /url: relatorio.html
+        - generic [ref=e22]: 📄
+        - text: Relatório
+      - button "☀️" [ref=e23] [cursor=pointer]:
+        - generic [ref=e24]: ☀️
+    - generic [ref=e25]:
+      - heading "📊 Impacto da REN 1000 — Pré vs Pós 2022" [level=2] [ref=e26]:
+        - generic [ref=e27]: 📊
+        - text: Impacto da REN 1000 — Pré vs Pós 2022
+      - paragraph [ref=e28]: Comparação dos indicadores de qualidade comercial antes e depois da vigência da Resolução Normativa ANEEL nº 1.000/2021, que consolidou as regras de distribuição de energia.
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]: Taxa Fora do Prazo (Pré-2022)
+          - generic [ref=e32]: 3,55%
+          - generic [ref=e33]: Média anual (REN 414)
+        - generic [ref=e34]:
+          - generic [ref=e35]: Taxa Fora do Prazo (Pós-2022)
+          - generic [ref=e36]: 2,31%
+          - generic [ref=e37]: "-1,24%"
+        - generic [ref=e38]:
+          - generic [ref=e39]: Compensação Total (Pré-2022)
+          - generic [ref=e40]: R$ 335,3M
+          - generic [ref=e41]: 2011–2021
+        - generic [ref=e42]:
+          - generic [ref=e43]: Compensação Total (Pós-2022)
+          - generic [ref=e44]: R$ 87,6M
+          - generic [ref=e45]: R$ -247,7M
+        - generic [ref=e46]:
+          - generic [ref=e47]: Total de Serviços Analisados
+          - generic [ref=e48]: 291.719.313
+          - generic [ref=e49]: 2011–2023
+        - generic [ref=e50]:
+          - generic [ref=e51]: Total Fora do Prazo
+          - generic [ref=e52]: 10.126.749
+          - generic [ref=e53]: Transgressões acumuladas
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e56]: 📉
+          - generic [ref=e57]:
+            - text: A
+            - strong [ref=e58]: taxa de transgressões caiu
+            - text: após a REN 1000, indicando melhoria na prestação dos serviços comerciais dentro do prazo regulamentar.
+        - generic [ref=e59]:
+          - generic [ref=e60]: 💰
+          - generic [ref=e61]:
+            - text: A
+            - strong [ref=e62]: compensação financeira também diminuiu
+            - text: ", mas é preciso observar que os anos pós-2022 ainda estão em consolidação."
+      - generic [ref=e63]:
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - generic [ref=e67]: Taxa Fora do Prazo — Série Anual
+            - generic [ref=e68]: Linha tracejada marca a vigência da REN 1000 (2022)
+          - generic [ref=e69]: 2011–2023
+        - generic [ref=e73]:
+          - generic [ref=e74]:
+            - generic [ref=e75]: Compensações Financeiras — Série Anual
+            - generic [ref=e76]: Valor total pago em compensações aos consumidores
+          - generic [ref=e77]: R$
+  - contentinfo [ref=e80]:
+    - paragraph [ref=e81]:
+      - text: "TCC — Análise de Eficácia da REN 1000/2021 (ANEEL) · Dados:"
+      - link "dadosabertos.aneel.gov.br" [ref=e82] [cursor=pointer]:
+        - /url: https://dadosabertos.aneel.gov.br
+      - text: · Gerado automaticamente a partir dos dados processados

@@ -526,6 +526,35 @@ body {
   max-width: 720px;
 }
 
+.group-selector-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.group-selector-label {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.group-selector {
+  min-width: 260px;
+  padding: 10px 12px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--glass-border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+}
+
+.group-selector:focus {
+  outline: 2px solid rgba(0, 164, 67, 0.3);
+  outline-offset: 1px;
+}
+
 .subsection-title {
   font-size: 1rem;
   font-weight: 600;
@@ -617,6 +646,16 @@ body {
 
   .kpi-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .group-selector-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .group-selector {
+    min-width: 100%;
+    width: 100%;
   }
 
   .kpi-value {

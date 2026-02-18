@@ -1,0 +1,103 @@
+group_id,group_label,distributor_id,sigagente,nomagente,distributor_count,selector_enabled
+amazonas,Grupo Amazonas,amazonas_energia,Amazonas Energia,AMAZONAS ENERGIA S.A.,1,False
+ampla,Grupo Ampla,enel_rj,Enel RJ,AMPLA ENERGIA E SERVIÇOS S.A.,1,False
+celesc,Grupo Celesc,celesc_dis,Celesc-Dis,CELESC DISTRIBUIÇÃO S.A.,1,False
+cemig,Grupo Cemig,cemig_d,Cemig-D,CEMIG DISTRIBUIÇÃO S.A.,1,False
+centrais,Grupo Centrais,eletrocar,Eletrocar,CENTRAIS ELÉTRICAS DE CARAZINHO S.A.,1,False
+companhia,Grupo Companhia,cocel,Cocel,COMPANHIA CAMPOLARGUENSE DE ENERGIA,12,True
+companhia,Grupo Companhia,cea_equatorial,CEA Equatorial,COMPANHIA DE ELETRICIDADE DO AMAPA,12,True
+companhia,Grupo Companhia,neoenergia_coelba,Neoenergia Coelba,COMPANHIA DE ELETRICIDADE DO ESTADO DA BAHIA,12,True
+companhia,Grupo Companhia,neoenergia_pernambuco,Neoenergia Pernambuco,COMPANHIA ENERGÉTICA DE PERNAMBUCO,12,True
+companhia,Grupo Companhia,enel_ce,Enel CE,COMPANHIA ENERGÉTICA DO CEARÁ,12,True
+companhia,Grupo Companhia,neoenergia_cosern,Neoenergia Cosern,COMPANHIA ENERGÉTICA DO RIO GRANDE DO NORTE,12,True
+companhia,Grupo Companhia,ceee_equatorial,CEEE Equatorial,COMPANHIA ESTADUAL DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA,12,True
+companhia,Grupo Companhia,chesp,Chesp,COMPANHIA HIDROELÉTRICA SÃO PATRÍCIO,12,True
+companhia,Grupo Companhia,cpfl_santa_cruz,CPFL Santa Cruz,COMPANHIA JAGUARI DE ENERGIA - CPFL SANTA CRUZ,12,True
+companhia,Grupo Companhia,cpfl_paulista,CPFL Paulista,COMPANHIA PAULISTA DE FORÇA E LUZ,12,True
+companhia,Grupo Companhia,cpfl_piratininga,CPFL Piratininga,COMPANHIA PIRATININGA DE FORÇA E LUZ,12,True
+companhia,Grupo Companhia,sulgipe,Sulgipe,COMPANHIA SUL SERGIPANA DE ELETRICIDADE,12,True
+cooperativa,Grupo Cooperativa,cooperalianca,Cooperaliança,COOPERATIVA ALIANÇA,50,True
+cooperativa,Grupo Cooperativa,creluz_d,Creluz-D,COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA,50,True
+cooperativa,Grupo Cooperativa,ceral_anitapolis,Ceral Anitápolis,COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA DE ANITÁPOLIS,50,True
+cooperativa,Grupo Cooperativa,castro_dis,Castro-Dis,COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA DE CASTRO,50,True
+cooperativa,Grupo Cooperativa,codesam,Codesam,COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA DE SANTA MARIA,50,True
+cooperativa,Grupo Cooperativa,cersad,Cersad,COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA SALTO DONNER,50,True
+cooperativa,Grupo Cooperativa,certhil,Certhil,COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA ENTRE RIOS LTDA,50,True
+cooperativa,Grupo Cooperativa,cerfox,Cerfox,COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA FONTOURA XAVIER,50,True
+cooperativa,Grupo Cooperativa,certel_energia,Certel Energia,COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA TEUTÔNIA,50,True
+cooperativa,Grupo Cooperativa,cermissoes,Cermissões,COOPERATIVA DE DISTRIBUIÇÃO E GERAÇÃO DE ENERGIA DAS MISSÕES,50,True
+cooperativa,Grupo Cooperativa,cersul,Cersul,COOPERATIVA DE DISTRIBUIÇÃOI DE ENERGIA,50,True
+cooperativa,Grupo Cooperativa,cergral,Cergral,COOPERATIVA DE ELETRICIDADE DE GRAVATAL,50,True
+cooperativa,Grupo Cooperativa,cergapa,Cergapa,COOPERATIVA DE ELETRICIDADE DE GRÃO PARÁ,50,True
+cooperativa,Grupo Cooperativa,cegero,Cegero,COOPERATIVA DE ELETRICIDADE DE SÃO LUDGERO,50,True
+cooperativa,Grupo Cooperativa,cejama,Cejama,COOPERATIVA DE ELETRICIDADE JACINTO MACHADO,50,True
+cooperativa,Grupo Cooperativa,ceprag,Ceprag,COOPERATIVA DE ELETRICIDADE PRAIA GRANDE,50,True
+cooperativa,Grupo Cooperativa,celetro,Celetro,COOPERATIVA DE ELETRIFICAÇÃO CENTRO JACUÍ LTDA.,50,True
+cooperativa,Grupo Cooperativa,cedrap,Cedrap,COOPERATIVA DE ELETRIFICAÇÃO DA REGIÃO DO ALTO DA PARAÍBA,50,True
+cooperativa,Grupo Cooperativa,cerbranorte,Cerbranorte,COOPERATIVA DE ELETRIFICAÇÃO DE BRAÇO DO NORTE,50,True
+cooperativa,Grupo Cooperativa,cetril,Cetril,COOPERATIVA DE ELETRIFICAÇÃO DE IBIÚNA E REGIÃO,50,True
+cooperativa,Grupo Cooperativa,cerpalo,Cerpalo,COOPERATIVA DE ELETRIFICAÇÃO DE PAULO LOPES,50,True
+cooperativa,Grupo Cooperativa,cerim,Cerim,COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO DA REGIÃO DE ITU-MAIRINQUE,50,True
+cooperativa,Grupo Cooperativa,cermc,Cermc,COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO DA REGIÃO DE MOGI DAS CRUZES,50,True
+cooperativa,Grupo Cooperativa,cemirim,Cemirim,COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO DA REGIÃO DE MOGI MIRIM,50,True
+cooperativa,Grupo Cooperativa,cerrp,Cerrp,COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO DA REGIÃO DE SÃO JOSÉ DO RIO PRETO,50,True
+cooperativa,Grupo Cooperativa,cercos,Cercos,COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO RURAL CENTRO SUL DE SERGIPE LTDA,50,True
+cooperativa,Grupo Cooperativa,cernhe,Cernhe,COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO RURAL DA REGIÃO DE NOVO HORIZONTE,50,True
+cooperativa,Grupo Cooperativa,cedri,Cedri,COOPERATIVA DE ELETRIFICAÇÃO E DISTRIBUIÇÃO DA REGIÃO DE ITARIRI,50,True
+cooperativa,Grupo Cooperativa,coopermila,Coopermila,COOPERATIVA DE ELETRIFICAÇÃO LAURO MÜLLER,50,True
+cooperativa,Grupo Cooperativa,cergal,Cergal,COOPERATIVA DE ELETRIFICAÇÃO RURAL ANITA GARIBALDI LTDA,50,True
+cooperativa,Grupo Cooperativa,cerci,Cerci,COOPERATIVA DE ELETRIFICAÇÃO RURAL CACHOEIRAS- ITABORAÍ LTDA,50,True
+cooperativa,Grupo Cooperativa,ceris,Ceris,COOPERATIVA DE ELETRIFICAÇÃO RURAL DA REGIÃO DE ITAPECERICA DA SERRA,50,True
+cooperativa,Grupo Cooperativa,cerpro,Cerpro,COOPERATIVA DE ELETRIFICAÇÃO RURAL DA REGIÃO DE PROMISSÃO,50,True
+cooperativa,Grupo Cooperativa,ceral_araruama,Ceral Araruama,COOPERATIVA DE ELETRIFICAÇÃO RURAL DE ARARUAMA,50,True
+cooperativa,Grupo Cooperativa,ceripa,Ceripa,COOPERATIVA DE ELETRIFICAÇÃO RURAL DE ITAÍ-PARANAPANEMA-AVARÉ,50,True
+cooperativa,Grupo Cooperativa,ceres,Ceres,COOPERATIVA DE ELETRIFICAÇÃO RURAL DE RESENDE LTDA.,50,True
+cooperativa,Grupo Cooperativa,certrel,Certrel,COOPERATIVA DE ENERGIA TREVISO,50,True
+cooperativa,Grupo Cooperativa,cervam,Cervam,COOPERATIVA DE ENERGIZAÇÃO E DE DESENVOLVIMENTO DO VALE DO MOGI,50,True
+cooperativa,Grupo Cooperativa,cerej,Cerej,COOPERATIVA DE PRESTAÇÃO DE SERVIÇOS PÚBLICOS DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA SENADOR ESTEVES JÚNIOR,50,True
+cooperativa,Grupo Cooperativa,cooperluz,Cooperluz,COOPERATIVA DISTRIBUIDORA DE ENERGIA FRONTEIRA NOROESTE,50,True
+cooperativa,Grupo Cooperativa,ceraca,Ceraçá,COOPERATIVA DISTRIBUIDORA DE ENERGIA VALE DO ARAÇÁ,50,True
+cooperativa,Grupo Cooperativa,coopercocal,Coopercocal,COOPERATIVA ENERGÉTICA COCAL,50,True
+cooperativa,Grupo Cooperativa,cermoful,Cermoful,COOPERATIVA FUMACENSE DE ELETRICIDADE,50,True
+cooperativa,Grupo Cooperativa,coopera,Coopera,COOPERATIVA PIONEIRA DE ELETRIFICAÇÃO,50,True
+cooperativa,Grupo Cooperativa,coopernorte,Coopernorte,COOPERATIVA REGIONAL DE DISTRIBUIÇÃO DE ENERGIA DO LITORAL NORTE,50,True
+cooperativa,Grupo Cooperativa,creral,Creral,COOPERATIVA REGIONAL DE ELETRIFICAÇÃO RURAL DO ALTO URUGUAI,50,True
+cooperativa,Grupo Cooperativa,coopersul,Coopersul,COOPERATIVA REGIONAL DE ELETRIFICAÇÃO RURAL FRONTEIRA SUL LTDA,50,True
+cooperativa,Grupo Cooperativa,ceriluz,Ceriluz,COOPERATIVA REGIONAL DE ENERGIA E DESENVOLVIMENTO IJUÍ LTDA,50,True
+cooperativa,Grupo Cooperativa,certaja_energia,Certaja Energia,COOPERATIVA REGIONAL DE ENERGIA TAQUARI JACUÍ,50,True
+cooperativa,Grupo Cooperativa,coorsel,Coorsel,COOPERATIVA REGIONAL SUL DE ELETRIFICAÇÃO RURAL,50,True
+cooperzem,Grupo Cooperzem,cooperzem,Cooperzem,COOPERZEM COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA,1,False
+copel,Grupo Copel,copel_dis,Copel-Dis,COPEL DISTRIBUIÇÃO S.A.,1,False
+coprel,Grupo Coprel,coprel,Coprel,COPREL COOPERATIVA DE ENERGIA,1,False
+departamento,Grupo Departamento,demei,Demei,DEPARTAMENTO MUNICIPAL DE ENERGIA DE IJUÍ,1,False
+distribuidora,Grupo Distribuidora,dcelt,Dcelt,DISTRIBUIDORA CATARINENSE DE ENERGIA ELÉTRICA S/A.,1,False
+dme,Grupo DME,dmed,Dmed,DME DISTRIBUIÇÃO S.A.,1,False
+edp,Grupo EDP,edp_es,EDP ES,EDP ESPÍRITO SANTO DISTRIBUIÇÃO DE ENERGIA S.A.,2,True
+edp,Grupo EDP,edp_sp,EDP SP,EDP SÃO PAULO DISTRIBUIÇÃO DE ENERGIA S.A.,2,True
+elektro,Grupo Elektro,neoenergia_elektro,Neoenergia Elektro,ELEKTRO REDES S.A.,1,False
+eletropaulo,Grupo Eletropaulo,enel_sp,Enel SP,ELETROPAULO METROPOLITANA ELETRICIDADE DE SÃO PAULO S.A.,1,False
+empresa,Grupo Empresa,eflul,Eflul,EMPRESA FORÇA E LUZ DE URUSSANGA LTDA.,3,True
+empresa,Grupo Empresa,joao_cesa,João Cesa,EMPRESA FORÇA E LUZ JOÃO CESA LTDA.,3,True
+empresa,Grupo Empresa,santa_maria,Santa Maria,EMPRESA LUZ E FORÇA SANTA MARIA S.A.,3,True
+energisa,Grupo Energisa,energisa_ac,Energisa AC,ENERGISA ACRE - DISTRIBUIDORA DE ENERGIA S.A.,9,True
+energisa,Grupo Energisa,energisa_mt,Energisa MT,ENERGISA MATO GROSSO DISTRIBUIDORA DE ENERGIA S.A.,9,True
+energisa,Grupo Energisa,energisa_ms,Energisa MS,ENERGISA MATO GROSSO DO SUL DISTRIBUIDORA DE ENERGIA S.A.,9,True
+energisa,Grupo Energisa,energisa_minas_rio,Energisa Minas Rio,ENERGISA MINAS RIO - DISTRIBUIDORA DE ENERGIA S.A.,9,True
+energisa,Grupo Energisa,energisa_pb,Energisa PB,ENERGISA PARAÍBA DISTRIBUIDORA DE ENERGIA S.A.,9,True
+energisa,Grupo Energisa,energisa_ro,Energisa RO,ENERGISA RONDÔNIA DISTRIBUIDORA DE ENERGIA S.A.,9,True
+energisa,Grupo Energisa,energisa_se,Energisa SE,ENERGISA SERGIPE DISTRIBUIDORA DE ENERGIA S.A.,9,True
+energisa,Grupo Energisa,energisa_sul_sudeste,Energisa Sul-Sudeste,ENERGISA SUL-SUDESTE DISTRIBUIDORA DE ENERGIA S.A.,9,True
+energisa,Grupo Energisa,energisa_to,Energisa TO,ENERGISA TOCANTINS DISTRIBUIDORA DE ENERGIA S.A.,9,True
+equatorial,Grupo Equatorial,equatorial_al,Equatorial AL,EQUATORIAL ALAGOAS DISTRIBUIDORA DE ENERGIA S.A.,5,True
+equatorial,Grupo Equatorial,enel_go,Enel GO,EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.,5,True
+equatorial,Grupo Equatorial,equatorial_ma,Equatorial MA,EQUATORIAL MARANHÃO DISTRIBUIDORA DE ENERGIA S.A.,5,True
+equatorial,Grupo Equatorial,equatorial_pa,Equatorial PA,EQUATORIAL PARÁ DISTRIBUIDORA DE ENERGIA S.A.,5,True
+equatorial,Grupo Equatorial,equatorial_pi,Equatorial PI,EQUATORIAL PIAUÍ DISTRIBUIDORA DE ENERGIA S.A.,5,True
+forca,Grupo Forca,forcel,Forcel,FORÇA E LUZ CORONEL VIVIDA LTDA,1,False
+hidropan,Grupo Hidropan,hidropan,Hidropan,HIDROPAN DISTRIBUIÇÃO DE ENERGIA S.A.,1,False
+light,Grupo Light,light,Light,LIGHT SERVIÇOS DE ELETRICIDADE S.A.,1,False
+muxfeldt,Grupo Muxfeldt,mux_energia,Mux Energia,"MUXFELDT, MARIN & CIA LTDA",1,False
+neoenergia,Grupo Neoenergia,neoenergia_brasilia,Neoenergia Brasília,NEOENERGIA DISTRIBUIÇÃO BRASÍLIA S.A.,1,False
+nova,Grupo NOVA,nova_palma,Nova Palma,NOVA PALMA ENERGIA LTDA.,1,False
+rge,Grupo RGE,rge,RGE,RGE SUL DISTRIBUIDORA DE ENERGIA S.A.,1,False
+roraima,Grupo Roraima,roraima_energia,Roraima Energia,RORAIMA ENERGIA S.A.,1,False
