@@ -390,8 +390,8 @@
         <p class="subtitle">Eficácia regulatória na qualidade comercial das distribuidoras de energia elétrica</p>
         <p class="meta">Gerado automaticamente em <span id="report-date">—</span> · Dados: ANEEL Dados Abertos</p>
         <div style="margin-top: 12px;">
-            <label for="report-group-selector" style="font-size: 0.85rem; color: var(--text-light); margin-right: 8px;">Grupo econômico:</label>
-            <select id="report-group-selector" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);"></select>
+            <label for="report-regulatory-selector" style="font-size: 0.85rem; color: var(--text-light); margin-right: 8px;">Classe regulatória:</label>
+            <select id="report-regulatory-selector" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);"></select>
         </div>
     </header>
 
@@ -408,6 +408,7 @@
             <li>Foram analisados <span id="s-total-serv">—</span> serviços comerciais entre 2011 e 2023.</li>
             <li id="s-trend-summary">—</li>
             <li id="s-best-worst-summary">—</li>
+            <li><strong>Nota metodológica:</strong> Tarifa social/bolsa e nível de tensão não estão disponíveis de forma estruturada nesta base.</li>
         </ul>
     </div>
 
@@ -444,8 +445,8 @@
     </div>
 
     <!-- 2. Neoenergia -->
-    <h2 class="page-break">2. Benchmark <span id="r-group-title-main">Grupo</span> — <span id="r-group-count">0</span> Distribuidoras</h2>
-    <p>Comparação normalizada por unidades consumidoras (UC) para ajuste por porte das distribuidoras do grupo selecionado.</p>
+    <h2 class="page-break">2. Benchmark da Classe Regulatória <span id="r-group-title-main">Classe</span> — <span id="r-group-count">0</span> Distribuidoras</h2>
+    <p>Comparação normalizada por unidades consumidoras (UC) para ajuste por porte das distribuidoras na classe regulatória selecionada.</p>
 
     <div class="chart-section">
         <div class="chart-label">Transgressões por 100k UC-mês (2023–2025)</div>
@@ -466,8 +467,8 @@
     </table>
 
     <!-- 3. Série Mensal -->
-    <h2 class="page-break">3. Análise Regulatória Mensal — <span id="r-group-title-reg">Grupo</span></h2>
-    <p>Série temporal mensal das distribuidoras do <span id="r-group-label-reg">grupo selecionado</span>, com taxa de transgressão e compensação financeira.</p>
+    <h2 class="page-break">3. Análise Regulatória Mensal — <span id="r-group-title-reg">Classe</span></h2>
+    <p>Série temporal mensal das distribuidoras na <span id="r-group-label-reg">classe regulatória selecionada</span>, com taxa de transgressão e compensação financeira.</p>
 
     <div class="chart-section">
         <div class="chart-label">Taxa Fora do Prazo — Evolução Mensal (2023–2025)</div>
@@ -475,8 +476,8 @@
     </div>
 
     <!-- 4. Diagnóstico -->
-    <h2 class="page-break">4. Série Longa e Diagnóstico — <span id="r-group-title-diag">Grupo</span></h2>
-    <p>Evolução histórica 2011–2023 da taxa fora do prazo para cada distribuidora do grupo selecionado.</p>
+    <h2 class="page-break">4. Série Longa e Diagnóstico — <span id="r-group-title-diag">Classe</span></h2>
+    <p>Evolução histórica 2011–2023 da taxa fora do prazo para cada distribuidora na classe regulatória selecionada.</p>
 
     <div class="chart-section">
         <div class="chart-label">Taxa 2011 vs 2023 por Distribuidora</div>
@@ -516,7 +517,7 @@
 
         const C = { blue: '#00A443', cyan: '#00843D', green: '#34d399', amber: '#F4A100', rose: '#fb7185' };
         const PALETTE = ['#00A443', '#00843D', '#34d399', '#F4A100', '#fb7185', '#0ea5e9', '#8b5cf6', '#f97316'];
-        const reportState = { data: null, charts: [], selectedGroupId: null };
+        const reportState = { data: null, charts: [], selectedRegulatoryId: null };
 
         function getPreferredTheme() {
             const savedTheme = localStorage.getItem('theme');
@@ -579,18 +580,38 @@
         }
 
         function normalizePayload(data) {
-            if (data.group_views && data.distributor_groups) return data;
+            if (data.regulatory_views && data.regulatory_groups) return data;
+            if (data.group_views && data.distributor_groups) {
+                const fallbackClassId = 'legacy';
+                const fallbackView = data.group_views[data.default_group_id] || { anual: [], tendencia: [], benchmark: [], mensal: [], longa_resumo: [] };
+                return {
+                    ...data,
+                    regulatory_groups: [{
+                        class_id: fallbackClassId,
+                        class_label: 'Classe legada',
+                        distributor_count: (fallbackView.anual || []).length ? new Set((fallbackView.anual || []).map(r => r.distributor_label)).size : 0,
+                        selector_enabled: true,
+                        monthly_coverage: (fallbackView.mensal || []).length > 0,
+                        annual_coverage: (fallbackView.anual || []).length > 0,
+                        years: [...new Set((fallbackView.anual || []).map(r => r.ano))].sort(),
+                    }],
+                    regulatory_views: { [fallbackClassId]: fallbackView },
+                    default_regulatory_id: fallbackClassId,
+                };
+            }
             return {
                 ...data,
-                distributor_groups: [{
-                    group_id: 'neoenergia',
-                    group_label: 'Grupo Neoenergia',
+                regulatory_groups: [{
+                    class_id: 'legacy',
+                    class_label: 'Classe legada',
                     distributor_count: (data.neo_anual || []).length ? new Set((data.neo_anual || []).map(r => r.neo_distribuidora)).size : 0,
                     selector_enabled: true,
+                    monthly_coverage: (data.neo_mensal || []).length > 0,
+                    annual_coverage: (data.neo_anual || []).length > 0,
                     years: [...new Set((data.neo_anual || []).map(r => r.ano))].sort(),
                 }],
-                group_views: {
-                    neoenergia: {
+                regulatory_views: {
+                    legacy: {
                         anual: (data.neo_anual || []).map(r => ({ ...r, distributor_label: r.neo_distribuidora, distributor_id: r.neo_distribuidora })),
                         tendencia: (data.neo_tendencia || []).map(r => ({ ...r, distributor_label: r.neo_distribuidora, distributor_id: r.neo_distribuidora })),
                         benchmark: (data.neo_benchmark || []).map(r => ({
@@ -605,22 +626,28 @@
                         longa_resumo: (data.neo_longa_resumo || []).map(r => ({ ...r, distributor_label: r.neo_distribuidora, distributor_id: r.neo_distribuidora })),
                     },
                 },
-                default_group_id: 'neoenergia',
+                default_regulatory_id: 'legacy',
             };
         }
 
-        function getGroups(data) {
-            const groups = Array.isArray(data.distributor_groups) ? data.distributor_groups : [];
-            const enabled = groups.filter(g => g.selector_enabled);
-            return enabled.length ? enabled : groups;
+        function getRegulatoryClasses(data) {
+            const classes = Array.isArray(data.regulatory_groups) ? data.regulatory_groups : [];
+            const enabled = classes.filter(item => item.selector_enabled);
+            return enabled.length ? enabled : classes;
         }
 
         function getContext(data) {
-            const groups = getGroups(data);
-            const pref = reportState.selectedGroupId || localStorage.getItem('selected_group_id') || data.default_group_id;
-            const selected = groups.find(g => g.group_id === pref) || groups[0];
-            reportState.selectedGroupId = selected.group_id;
-            return { group: selected, view: data.group_views[selected.group_id] || {} };
+            const classes = getRegulatoryClasses(data);
+            if (!classes.length) {
+                return {
+                    regulatory: { class_label: 'Classe', distributor_count: 0 },
+                    view: { anual: [], tendencia: [], benchmark: [], mensal: [], longa_resumo: [] },
+                };
+            }
+            const pref = reportState.selectedRegulatoryId || localStorage.getItem('selected_regulatory_id') || data.default_regulatory_id;
+            const selected = classes.find(item => item.class_id === pref) || classes[0];
+            reportState.selectedRegulatoryId = selected.class_id;
+            return { regulatory: selected, view: data.regulatory_views[selected.class_id] || {} };
         }
 
         function getDistributors(view) {
@@ -640,14 +667,15 @@
             return map;
         }
 
-        function initGroupSelector(data) {
-            const selector = document.getElementById('report-group-selector');
-            const groups = getGroups(data);
-            selector.innerHTML = groups.map(g => `<option value="${g.group_id}">${g.group_label} (${g.distributor_count})</option>`).join('');
-            selector.value = reportState.selectedGroupId || data.default_group_id || groups[0].group_id;
+        function initRegulatorySelector(data) {
+            const selector = document.getElementById('report-regulatory-selector');
+            const classes = getRegulatoryClasses(data);
+            if (!selector || !classes.length) return;
+            selector.innerHTML = classes.map(item => `<option value="${item.class_id}">${item.class_label} (${item.distributor_count})</option>`).join('');
+            selector.value = reportState.selectedRegulatoryId || data.default_regulatory_id || classes[0].class_id;
             selector.addEventListener('change', () => {
-                reportState.selectedGroupId = selector.value;
-                localStorage.setItem('selected_group_id', selector.value);
+                reportState.selectedRegulatoryId = selector.value;
+                localStorage.setItem('selected_regulatory_id', selector.value);
                 renderReport(reportState.data);
             });
         }
@@ -661,7 +689,7 @@
         function renderReport(data) {
             destroyReportCharts();
             const kpi = data.kpi_overview || {};
-            const { group, view } = getContext(data);
+            const { regulatory, view } = getContext(data);
             const anual = view.anual || [];
             const trend = view.tendencia || [];
             const mensal = view.mensal || [];
@@ -671,11 +699,11 @@
             const colors = colorMap(distributors);
 
             document.getElementById('report-date').textContent = new Date(data.meta.generated_at).toLocaleString('pt-BR');
-            document.getElementById('r-group-title-main').textContent = group.group_label;
-            document.getElementById('r-group-count').textContent = String(group.distributor_count || 0);
-            document.getElementById('r-group-title-reg').textContent = group.group_label;
-            document.getElementById('r-group-label-reg').textContent = group.group_label.toLowerCase();
-            document.getElementById('r-group-title-diag').textContent = group.group_label;
+            document.getElementById('r-group-title-main').textContent = regulatory.class_label;
+            document.getElementById('r-group-count').textContent = String(regulatory.distributor_count || 0);
+            document.getElementById('r-group-title-reg').textContent = regulatory.class_label;
+            document.getElementById('r-group-label-reg').textContent = regulatory.class_label.toLowerCase();
+            document.getElementById('r-group-title-diag').textContent = regulatory.class_label;
 
             document.getElementById('s-pre-taxa').textContent = fmtPct(kpi.pre_taxa_media);
             document.getElementById('s-pos-taxa').textContent = fmtPct(kpi.pos_taxa_media);
@@ -686,9 +714,9 @@
             if (trend.length) {
                 const comparable = trend.filter(t => t.delta_fora_prazo_por_100k_uc_mes_pct != null && !isNaN(t.delta_fora_prazo_por_100k_uc_mes_pct));
                 const improved = comparable.filter(t => t.delta_fora_prazo_por_100k_uc_mes_pct <= 0);
-                document.getElementById('s-trend-summary').innerHTML = `No ${group.group_label.toLowerCase()}, <strong>${improved.length} de ${comparable.length} distribuidoras</strong> reduziram a taxa normalizada de transgressões entre 2023 e 2025.`;
+                document.getElementById('s-trend-summary').innerHTML = `Na classe regulatória ${regulatory.class_label.toLowerCase()}, <strong>${improved.length} de ${comparable.length} distribuidoras</strong> reduziram a taxa normalizada de transgressões entre 2023 e 2025.`;
             } else {
-                document.getElementById('s-trend-summary').textContent = `Sem dados de tendência suficientes para o ${group.group_label.toLowerCase()}.`;
+                document.getElementById('s-trend-summary').textContent = `Sem dados de tendência suficientes para a classe regulatória ${regulatory.class_label.toLowerCase()}.`;
             }
 
             if (benchmark.length) {
@@ -806,7 +834,7 @@
             const raw = await res.json();
             const data = normalizePayload(raw);
             reportState.data = data;
-            initGroupSelector(data);
+            initRegulatorySelector(data);
             renderReport(data);
         }
 

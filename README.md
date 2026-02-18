@@ -153,6 +153,33 @@ python3 -m src.analysis.build_dashboard_data
 
 ---
 
+## 🐘 Execução SQL via DBeaver (PostgreSQL)
+
+Para tirar carga do `src/analysis/grupos_diagnostico.py`, existe um script SQL específico para **PostgreSQL**:
+- `sql/grupos_diagnostico_dbeaver.sql`
+
+Pré-requisitos:
+- conexão PostgreSQL no DBeaver;
+- tabelas base: `fato_servicos_municipio_mes`, `fato_transgressao_mensal_distribuidora`, `dim_distributor_group`;
+- permissões `CREATE TABLE` e `CREATE INDEX`.
+
+Ordem de execução:
+1. Executar `sql/grupos_diagnostico_dbeaver.sql` no DBeaver.
+2. Exportar para CSV as saídas:
+   - `grupos_share_codigos_69_93.csv`
+   - `grupos_anual_sem_cod_69_93.csv`
+   - `grupos_alertas_comparabilidade.csv`
+3. Copiar os CSVs para `data/processed/analysis/grupos/`.
+
+Limitações conhecidas:
+- escopo de anos 2023–2025;
+- dependência do schema/colunas atuais do Postgres;
+- execução e criação de índices podem ser custosas em base muito grande.
+
+Guia operacional detalhado: `docs/DBEAVER_SQL_MIGRATION.md`.
+
+---
+
 ## ⚙️ Atalhos com Makefile
 
 ```bash

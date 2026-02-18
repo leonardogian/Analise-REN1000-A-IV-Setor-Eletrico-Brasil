@@ -16,6 +16,7 @@ import pandas as pd
 from src.analysis.distributor_groups import (
     annotate_distributor_group,
     build_group_dimension,
+    load_distributor_name_overrides,
     load_group_overrides,
 )
 
@@ -131,9 +132,29 @@ def assign_porte_bucket(values: pd.Series) -> pd.Series:
     ).astype("string")
 
 
+def ensure_name_columns(frame: pd.DataFrame) -> pd.DataFrame:
+    out = frame.copy()
+    if "sigagente" in out.columns and "distributor_name_sig" not in out.columns:
+        out["distributor_name_sig"] = out["sigagente"].astype("string").fillna("")
+    if "nomagente" in out.columns and "distributor_name_legal" not in out.columns:
+        out["distributor_name_legal"] = out["nomagente"].astype("string").fillna(out.get("distributor_name_sig", ""))
+    if "distributor_label" not in out.columns and "distributor_name_sig" in out.columns:
+        legal_series = (
+            out["distributor_name_legal"].astype("string").fillna("")
+            if "distributor_name_legal" in out.columns
+            else pd.Series([""] * len(out), index=out.index, dtype="string")
+        )
+        out["distributor_label"] = [
+            sig if not legal or sig == legal else f"{sig} — {legal}"
+            for sig, legal in zip(out["distributor_name_sig"].astype(str), legal_series.astype(str))
+        ]
+    return out
+
+
 def load_qualidade_comercial(
     distributor_to_group: dict[str, str],
     group_labels: dict[str, str],
+    distributor_name_overrides: dict[str, dict[str, str]],
 ) -> pd.DataFrame:
     path = DIR_PROCESSED / "qualidade_comercial.parquet"
     if not path.exists():
@@ -159,8 +180,9 @@ def load_qualidade_comercial(
         name_col="nomagente",
         distributor_to_group=distributor_to_group,
         group_labels=group_labels,
+        distributor_name_overrides=distributor_name_overrides,
     )
-    return frame
+    return ensure_name_columns(frame)
 
 
 def load_domain_indicators() -> pd.DataFrame:
@@ -266,6 +288,7 @@ def build_fato_indicadores_anuais(qualidade: pd.DataFrame, dim_indicador: pd.Dat
 def build_dim_distribuidora_porte(
     distributor_to_group: dict[str, str],
     group_labels: dict[str, str],
+    distributor_name_overrides: dict[str, dict[str, str]],
 ) -> pd.DataFrame:
     path = DIR_PROCESSED / "indger_dados_comerciais.parquet"
     if not path.exists():
@@ -294,11 +317,23 @@ def build_dim_distribuidora_porte(
         name_col="nomagente",
         distributor_to_group=distributor_to_group,
         group_labels=group_labels,
+        distributor_name_overrides=distributor_name_overrides,
     )
+    frame = ensure_name_columns(frame)
 
     monthly = (
         frame.groupby(
-            ["ano", "mes", "group_id", "distributor_id", "sigagente", "nomagente"],
+            [
+                "ano",
+                "mes",
+                "group_id",
+                "distributor_id",
+                "sigagente",
+                "nomagente",
+                "distributor_name_sig",
+                "distributor_name_legal",
+                "distributor_label",
+            ],
             dropna=False,
         )["uc_ativa"]
         .sum()
@@ -307,7 +342,16 @@ def build_dim_distribuidora_porte(
 
     dim = (
         monthly.groupby(
-            ["ano", "group_id", "distributor_id", "sigagente", "nomagente"],
+            [
+                "ano",
+                "group_id",
+                "distributor_id",
+                "sigagente",
+                "nomagente",
+                "distributor_name_sig",
+                "distributor_name_legal",
+                "distributor_label",
+            ],
             dropna=False,
         )["uc_ativa"]
         .mean()
@@ -327,6 +371,7 @@ def build_dim_distribuidora_porte(
 def build_uc_ativa_mensal_distribuidora(
     distributor_to_group: dict[str, str],
     group_labels: dict[str, str],
+    distributor_name_overrides: dict[str, dict[str, str]],
 ) -> pd.DataFrame:
     """Build monthly UC active totals per distributor."""
     path = DIR_PROCESSED / "indger_dados_comerciais.parquet"
@@ -356,11 +401,23 @@ def build_uc_ativa_mensal_distribuidora(
         name_col="nomagente",
         distributor_to_group=distributor_to_group,
         group_labels=group_labels,
+        distributor_name_overrides=distributor_name_overrides,
     )
+    frame = ensure_name_columns(frame)
 
     monthly = (
         frame.groupby(
-            ["ano", "mes", "group_id", "distributor_id", "sigagente", "nomagente"],
+            [
+                "ano",
+                "mes",
+                "group_id",
+                "distributor_id",
+                "sigagente",
+                "nomagente",
+                "distributor_name_sig",
+                "distributor_name_legal",
+                "distributor_label",
+            ],
             dropna=False,
         )["uc_ativa"]
         .sum()
@@ -373,6 +430,7 @@ def build_uc_ativa_mensal_distribuidora(
 def build_fato_servicos_municipio_mes(
     distributor_to_group: dict[str, str],
     group_labels: dict[str, str],
+    distributor_name_overrides: dict[str, dict[str, str]],
 ) -> pd.DataFrame:
     path = DIR_PROCESSED / "indger_servicos_comerciais.parquet"
     if not path.exists():
@@ -409,7 +467,9 @@ def build_fato_servicos_municipio_mes(
         name_col="nomagente",
         distributor_to_group=distributor_to_group,
         group_labels=group_labels,
+        distributor_name_overrides=distributor_name_overrides,
     )
+    frame = ensure_name_columns(frame)
 
     frame["codmunicipioibge"] = (
         frame["codmunicipioibge"].astype("string").str.replace(".0", "", regex=False).str.strip()
@@ -428,6 +488,9 @@ def build_fato_servicos_municipio_mes(
         "distributor_id",
         "sigagente",
         "nomagente",
+        "distributor_name_sig",
+        "distributor_name_legal",
+        "distributor_label",
         "codmunicipioibge",
         "codtiposervico",
         "dsctiposervico",
@@ -469,6 +532,9 @@ def build_fato_transgressao_mensal_porte(
                 "distributor_id",
                 "sigagente",
                 "nomagente",
+                "distributor_name_sig",
+                "distributor_name_legal",
+                "distributor_label",
                 "classe_local_servico",
             ],
             as_index=False,
@@ -543,6 +609,9 @@ def build_fato_transgressao_mensal_distribuidora(
                 "distributor_id",
                 "sigagente",
                 "nomagente",
+                "distributor_name_sig",
+                "distributor_name_legal",
+                "distributor_label",
                 "uc_ativa_mes",
                 "bucket_porte",
                 "rank_porte_ano",
@@ -591,7 +660,11 @@ def merge_fato_with_porte(fato_indicadores: pd.DataFrame, dim_porte: pd.DataFram
         "bucket_porte",
         "rank_porte_ano",
         "nomagente",
+        "distributor_name_sig",
+        "distributor_name_legal",
+        "distributor_label",
     ]
+    merge_cols = [c for c in merge_cols if c in dim_porte.columns]
     enriched = fato_indicadores.merge(
         dim_porte[merge_cols],
         on=["ano", "group_id", "distributor_id", "sigagente"],
@@ -638,14 +711,19 @@ def build_kpi_overview(fato_indicadores: pd.DataFrame) -> pd.DataFrame:
 
 def run_all() -> dict[str, pd.DataFrame]:
     distributor_to_group, group_labels = load_group_overrides()
-    qualidade = load_qualidade_comercial(distributor_to_group, group_labels)
+    distributor_name_overrides = load_distributor_name_overrides()
+    qualidade = load_qualidade_comercial(distributor_to_group, group_labels, distributor_name_overrides)
     domain = load_domain_indicators()
 
     dim_indicador = build_dim_indicador_servico(qualidade, domain)
     fato_indicadores = build_fato_indicadores_anuais(qualidade, dim_indicador)
-    dim_porte = build_dim_distribuidora_porte(distributor_to_group, group_labels)
-    uc_ativa_mensal = build_uc_ativa_mensal_distribuidora(distributor_to_group, group_labels)
-    fato_servicos = build_fato_servicos_municipio_mes(distributor_to_group, group_labels)
+    dim_porte = build_dim_distribuidora_porte(distributor_to_group, group_labels, distributor_name_overrides)
+    uc_ativa_mensal = build_uc_ativa_mensal_distribuidora(
+        distributor_to_group, group_labels, distributor_name_overrides
+    )
+    fato_servicos = build_fato_servicos_municipio_mes(
+        distributor_to_group, group_labels, distributor_name_overrides
+    )
     fato_transgressao_mensal_porte = build_fato_transgressao_mensal_porte(
         fato_servicos, uc_ativa_mensal, dim_porte
     )
@@ -654,6 +732,12 @@ def run_all() -> dict[str, pd.DataFrame]:
     )
 
     fato_indicadores = merge_fato_with_porte(fato_indicadores, dim_porte)
+    fato_indicadores = ensure_name_columns(fato_indicadores)
+    dim_porte = ensure_name_columns(dim_porte)
+    uc_ativa_mensal = ensure_name_columns(uc_ativa_mensal)
+    fato_servicos = ensure_name_columns(fato_servicos)
+    fato_transgressao_mensal_porte = ensure_name_columns(fato_transgressao_mensal_porte)
+    fato_transgressao_mensal_distribuidora = ensure_name_columns(fato_transgressao_mensal_distribuidora)
     kpi_overview = build_kpi_overview(fato_indicadores)
     dim_group = build_group_dimension(dim_porte)
 

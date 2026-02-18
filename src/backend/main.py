@@ -25,6 +25,11 @@ REQUIRED_JSON_KEYS = {
     "distributor_groups",
     "group_views",
     "default_group_id",
+    "regulatory_groups",
+    "regulatory_views",
+    "default_regulatory_id",
+    "top20_distributors",
+    "data_availability",
 }
 
 LEGACY_NEO_KEYS = {
@@ -39,7 +44,10 @@ LEGACY_NEO_KEYS = {
 REQUIRED_INPUTS = [
     ANALYSIS_DIR / "kpi_regulatorio_anual.csv",
     ANALYSIS_DIR / "fato_transgressao_mensal_distribuidora.csv",
+    ANALYSIS_DIR / "fato_transgressao_mensal_porte.csv",
+    ANALYSIS_DIR / "fato_indicadores_anuais.csv",
     ANALYSIS_DIR / "dim_distributor_group.csv",
+    ANALYSIS_DIR / "dim_distribuidora_porte.csv",
     GROUPS_DIR / "grupos_anual_2023_2025.csv",
     GROUPS_DIR / "grupos_tendencia_2023_2025.csv",
     GROUPS_DIR / "grupos_benchmark_porte_latest.csv",

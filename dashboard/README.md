@@ -125,6 +125,8 @@ python3 -m src.analysis.build_dashboard_data
 
 O script lê os CSVs de `data/processed/analysis/` e gera `dashboard/dashboard_data.json` (~1.6 MB).
 
+> Nota: os arquivos de `data/processed/analysis/grupos/` também podem ser gerados via SQL em PostgreSQL (DBeaver), usando `sql/grupos_diagnostico_dbeaver.sql`. Instruções: `docs/DBEAVER_SQL_MIGRATION.md`.
+
 ### Fluxo de dados
 
 ```

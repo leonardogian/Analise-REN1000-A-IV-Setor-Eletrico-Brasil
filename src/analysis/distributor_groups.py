@@ -13,6 +13,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_OVERRIDES_PATH = ROOT / "data" / "config" / "distributor_groups_overrides.json"
+DEFAULT_NAMES_OVERRIDES_PATH = ROOT / "data" / "config" / "distributor_names_overrides.json"
 
 
 @dataclass(frozen=True)
@@ -104,6 +105,37 @@ def load_group_overrides(
     return distributor_to_group, group_labels
 
 
+def load_distributor_name_overrides(
+    path: Path = DEFAULT_NAMES_OVERRIDES_PATH,
+) -> dict[str, dict[str, str]]:
+    """Load manual name normalization by distributor_id."""
+    if not path.exists():
+        return {}
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"Invalid names overrides payload: {path}")
+
+    raw_map = payload.get("distributor_name_overrides", {})
+    if not isinstance(raw_map, dict):
+        raise ValueError("distributor_names_overrides.json must contain object 'distributor_name_overrides'.")
+
+    normalized: dict[str, dict[str, str]] = {}
+    for distributor_id, item in raw_map.items():
+        if not str(distributor_id).strip() or not isinstance(item, dict):
+            continue
+        dist_id = slugify(distributor_id)
+        sig_name = str(item.get("sigagente", "")).strip()
+        legal_name = str(item.get("nomagente", "")).strip()
+        if not sig_name and not legal_name:
+            continue
+        normalized[dist_id] = {
+            "sigagente": sig_name,
+            "nomagente": legal_name,
+        }
+    return normalized
+
+
 def resolve_group_id(
     distributor_name: object,
     distributor_id: str,
@@ -123,6 +155,7 @@ def annotate_distributor_group(
     name_col: str = "nomagente",
     distributor_to_group: Mapping[str, str] | None = None,
     group_labels: Mapping[str, str] | None = None,
+    distributor_name_overrides: Mapping[str, dict[str, str]] | None = None,
 ) -> pd.DataFrame:
     """Append distributor_id/group_id/group_label columns to a dataframe."""
     if sig_col not in frame.columns:
@@ -135,29 +168,50 @@ def annotate_distributor_group(
         else pd.Series([""] * len(out), index=out.index, dtype="string")
     )
 
-    out[sig_col] = out[sig_col].astype("string").str.strip()
+    sig_series = out[sig_col].astype("string").str.strip()
     name_series = name_series.astype("string").str.strip()
+    out[sig_col] = sig_series
     out[name_col] = name_series if name_col in out.columns else name_series
 
     out["distributor_id"] = [
         build_distributor_id(sig, name)
-        for sig, name in zip(out[sig_col].tolist(), name_series.tolist())
+        for sig, name in zip(sig_series.tolist(), name_series.tolist())
     ]
-    def _first_non_empty_name(name: object, sig: object) -> object:
-        if pd.notna(name):
-            text = str(name).strip()
-            if text:
-                return text
-        return sig
+
+    name_overrides = distributor_name_overrides or {}
+    name_sig_values: list[str] = []
+    name_legal_values: list[str] = []
+
+    def _text(value: object) -> str:
+        if value is None or pd.isna(value):
+            return ""
+        return str(value).strip()
+
+    for sig, legal, dist_id in zip(sig_series.tolist(), name_series.tolist(), out["distributor_id"].tolist()):
+        mapped = name_overrides.get(dist_id, {})
+        sig_name = str(mapped.get("sigagente", "")).strip() or _text(sig)
+        legal_name = str(mapped.get("nomagente", "")).strip() or _text(legal)
+        if not legal_name:
+            legal_name = sig_name
+        name_sig_values.append(sig_name)
+        name_legal_values.append(legal_name)
+
+    out["distributor_name_sig"] = pd.Series(name_sig_values, index=out.index, dtype="string")
+    out["distributor_name_legal"] = pd.Series(name_legal_values, index=out.index, dtype="string")
+    out[sig_col] = out["distributor_name_sig"]
+    out[name_col] = out["distributor_name_legal"]
 
     out["group_id"] = [
-        resolve_group_id(_first_non_empty_name(name, sig), dist_id, distributor_to_group)
-        for name, sig, dist_id in zip(name_series.tolist(), out[sig_col].tolist(), out["distributor_id"].tolist())
+        resolve_group_id(sig, dist_id, distributor_to_group)
+        for sig, dist_id in zip(out["distributor_name_sig"].tolist(), out["distributor_id"].tolist())
     ]
 
     labels = group_labels or {}
     out["group_label"] = out["group_id"].map(lambda gid: labels.get(gid, default_group_label(gid)))
-    out["distributor_label"] = name_series.where(name_series.notna() & (name_series != ""), out[sig_col])
+    out["distributor_label"] = [
+        sig if not legal or sig == legal else f"{sig} — {legal}"
+        for sig, legal in zip(out["distributor_name_sig"].tolist(), out["distributor_name_legal"].tolist())
+    ]
 
     return out
 
@@ -179,6 +233,12 @@ def build_group_dimension(
         cols.append("group_label")
     if name_col in frame.columns:
         cols.append(name_col)
+    if "distributor_name_sig" in frame.columns:
+        cols.append("distributor_name_sig")
+    if "distributor_name_legal" in frame.columns:
+        cols.append("distributor_name_legal")
+    if "distributor_label" in frame.columns:
+        cols.append("distributor_label")
 
     dim = frame[cols].drop_duplicates(subset=["group_id", "distributor_id"]).copy()
     if "group_label" not in dim.columns:
@@ -186,6 +246,15 @@ def build_group_dimension(
     if name_col not in dim.columns:
         dim[name_col] = dim[sig_col]
     dim[name_col] = dim[name_col].astype("string").fillna(dim[sig_col].astype("string"))
+    if "distributor_name_sig" not in dim.columns:
+        dim["distributor_name_sig"] = dim[sig_col].astype("string")
+    if "distributor_name_legal" not in dim.columns:
+        dim["distributor_name_legal"] = dim[name_col].astype("string")
+    if "distributor_label" not in dim.columns:
+        dim["distributor_label"] = [
+            sig if sig == legal or not legal else f"{sig} — {legal}"
+            for sig, legal in zip(dim["distributor_name_sig"].astype(str), dim["distributor_name_legal"].astype(str))
+        ]
 
     counts = dim.groupby("group_id")["distributor_id"].nunique().rename("distributor_count")
     dim = dim.merge(counts, on="group_id", how="left")
@@ -198,6 +267,9 @@ def build_group_dimension(
             "distributor_id",
             sig_col,
             name_col,
+            "distributor_name_sig",
+            "distributor_name_legal",
+            "distributor_label",
             "distributor_count",
             "selector_enabled",
         ]
@@ -214,7 +286,7 @@ def to_group_objects(dim_group: pd.DataFrame) -> list[DistributorGroup]:
                 group_id=str(first["group_id"]),
                 group_label=str(first["group_label"]),
                 distributor_ids=sorted(block["distributor_id"].astype(str).unique().tolist()),
-                distributor_names=sorted(block["nomagente"].astype(str).unique().tolist()),
+                distributor_names=sorted(block["distributor_label"].astype(str).unique().tolist()),
                 selector_enabled=bool(first["selector_enabled"]),
             )
         )

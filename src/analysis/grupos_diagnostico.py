@@ -11,6 +11,7 @@ import pandas as pd
 from src.analysis.distributor_groups import (
     annotate_distributor_group,
     default_group_label,
+    load_distributor_name_overrides,
     load_group_overrides,
 )
 
@@ -35,12 +36,22 @@ def ensure_group_columns(
     frame: pd.DataFrame,
     distributor_to_group: dict[str, str],
     group_labels: dict[str, str],
+    distributor_name_overrides: dict[str, dict[str, str]],
 ) -> pd.DataFrame:
     if {"group_id", "distributor_id", "group_label"}.issubset(frame.columns):
         out = frame.copy()
         if "nomagente" not in out.columns:
             out["nomagente"] = out["sigagente"]
         out["nomagente"] = out["nomagente"].astype("string").fillna(out["sigagente"].astype("string"))
+        if "distributor_name_sig" not in out.columns:
+            out["distributor_name_sig"] = out["sigagente"].astype("string")
+        if "distributor_name_legal" not in out.columns:
+            out["distributor_name_legal"] = out["nomagente"].astype("string")
+        if "distributor_label" not in out.columns:
+            out["distributor_label"] = [
+                sig if sig == legal or not legal else f"{sig} — {legal}"
+                for sig, legal in zip(out["distributor_name_sig"].astype(str), out["distributor_name_legal"].astype(str))
+            ]
         return out
     return annotate_distributor_group(
         frame,
@@ -48,13 +59,21 @@ def ensure_group_columns(
         name_col="nomagente",
         distributor_to_group=distributor_to_group,
         group_labels=group_labels,
+        distributor_name_overrides=distributor_name_overrides,
     )
 
 
 def add_labels(frame: pd.DataFrame, group_labels: dict[str, str]) -> pd.DataFrame:
     out = frame.copy()
     out["group_label"] = out["group_id"].map(lambda gid: group_labels.get(str(gid), default_group_label(str(gid))))
-    out["distributor_label"] = out["nomagente"].astype("string").fillna(out["sigagente"].astype("string"))
+    if "distributor_name_sig" not in out.columns:
+        out["distributor_name_sig"] = out["sigagente"].astype("string").fillna("")
+    if "distributor_name_legal" not in out.columns:
+        out["distributor_name_legal"] = out["nomagente"].astype("string").fillna(out["distributor_name_sig"])
+    out["distributor_label"] = [
+        sig if sig == legal or not legal else f"{sig} — {legal}"
+        for sig, legal in zip(out["distributor_name_sig"].astype(str), out["distributor_name_legal"].astype(str))
+    ]
     return out
 
 
@@ -503,6 +522,7 @@ def write_outputs(outputs: dict[str, pd.DataFrame]) -> None:
 
 def run_all_groups() -> dict[str, pd.DataFrame]:
     distributor_to_group, group_labels = load_group_overrides()
+    distributor_name_overrides = load_distributor_name_overrides()
     try:
         dim_group = pd.read_parquet(DIR_ANALYSIS / "dim_distributor_group.parquet")
         if "group_id" in dim_group.columns and "group_label" in dim_group.columns:
@@ -522,19 +542,19 @@ def run_all_groups() -> dict[str, pd.DataFrame]:
     servicos = load_table("fato_servicos_municipio_mes")
 
     monthly_dist = add_labels(
-        ensure_group_columns(monthly_dist, distributor_to_group, group_labels),
+        ensure_group_columns(monthly_dist, distributor_to_group, group_labels, distributor_name_overrides),
         group_labels,
     )
     monthly_porte = add_labels(
-        ensure_group_columns(monthly_porte, distributor_to_group, group_labels),
+        ensure_group_columns(monthly_porte, distributor_to_group, group_labels, distributor_name_overrides),
         group_labels,
     )
     indicadores = add_labels(
-        ensure_group_columns(indicadores, distributor_to_group, group_labels),
+        ensure_group_columns(indicadores, distributor_to_group, group_labels, distributor_name_overrides),
         group_labels,
     )
     servicos = add_labels(
-        ensure_group_columns(servicos, distributor_to_group, group_labels),
+        ensure_group_columns(servicos, distributor_to_group, group_labels, distributor_name_overrides),
         group_labels,
     )
 

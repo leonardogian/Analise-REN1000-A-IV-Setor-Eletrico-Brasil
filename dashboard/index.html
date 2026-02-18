@@ -54,14 +54,14 @@
 
       <!-- Navigation -->
       <nav class="nav-tabs">
-        <button class="nav-tab active" data-tab="tab-overview">
+        <button class="nav-tab" data-tab="tab-overview">
           <span class="tab-icon">📊</span> Visão Geral
         </button>
         <button class="nav-tab" data-tab="tab-neoenergia">
           <span class="tab-icon">🏢</span> Grupos Econômicos
         </button>
-        <button class="nav-tab" data-tab="tab-regulatory">
-          <span class="tab-icon">📈</span> Análise Regulatória
+        <button class="nav-tab active" data-tab="tab-regulatory">
+          <span class="tab-icon">📈</span> Classes Regulatórias
         </button>
         <button class="nav-tab" data-tab="tab-diagnostico">
           <span class="tab-icon">🔍</span> Diagnóstico Detalhado
@@ -75,7 +75,7 @@
       </nav>
 
       <!-- ============ TAB 1: VISÃO GERAL ============ -->
-      <section id="tab-overview" class="tab-panel active">
+      <section id="tab-overview" class="tab-panel">
 
         <h2 class="section-title"><span class="icon">📊</span> Impacto da REN 1000 — Pré vs Pós 2022</h2>
         <p class="section-description">
@@ -253,19 +253,28 @@
       </section>
 
       <!-- ============ TAB 3: ANÁLISE REGULATÓRIA ============ -->
-      <section id="tab-regulatory" class="tab-panel">
+      <section id="tab-regulatory" class="tab-panel active">
+        <div class="group-selector-row">
+          <label class="group-selector-label" for="regulatory-selector">Classe regulatória:</label>
+          <select id="regulatory-selector" class="group-selector"></select>
+        </div>
 
         <h2 class="section-title">
           <span class="icon">📈</span>
-          Análise Regulatória Mensal — <span id="group-title-reg">Grupo</span>
+          Análise Regulatória Mensal — <span id="reg-title-main">Classe</span>
         </h2>
         <p class="section-description">
-          Série temporal mensal das distribuidoras do <span id="group-label-reg">grupo selecionado</span>,
+          Série temporal mensal das distribuidoras da <span id="reg-label-desc">classe selecionada</span>,
           com taxa de transgressão e compensação financeira.
           Permite identificar sazonalidade e tendências de curto prazo.
         </p>
 
-        <div class="chart-grid">
+        <div id="regulatory-empty-state" class="insight-card section-spacing-top-sm" style="display:none;">
+          <span class="insight-icon">ℹ️</span>
+          <div class="insight-text" id="regulatory-empty-message">Sem dados mensais disponíveis para a classe selecionada.</div>
+        </div>
+
+        <div id="regulatory-content" class="chart-grid">
           <div class="chart-card">
             <div class="chart-header">
               <div>
@@ -292,6 +301,24 @@
             </div>
           </div>
         </div>
+
+        <h3 class="subsection-title">🏢 Top 20 Distribuidoras por UC Ativa (ano mais recente)</h3>
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Distribuidora</th>
+                <th>UC Ativa Média Mensal</th>
+                <th>Porte</th>
+              </tr>
+            </thead>
+            <tbody id="top20-table-body"></tbody>
+          </table>
+        </div>
+
+        <h3 class="subsection-title">📌 Disponibilidade de Dados</h3>
+        <div id="availability-notes" class="insight-grid section-spacing-top-sm"></div>
       </section>
 
       <!-- ============ TAB 4: DIAGNÓSTICO DETALHADO ============ -->
@@ -300,7 +327,7 @@
         <h2 class="section-title"><span class="icon">🔍</span> Diagnóstico Detalhado</h2>
         <p class="section-description">
           Análise por classe de consumo (urbana, rural, grupo A) e série longa 2011–2023
-          para cada distribuidora do <span id="group-label-diag">grupo selecionado</span>.
+          para cada distribuidora da <span id="reg-label-diag">classe regulatória selecionada</span>.
         </p>
 
         <!-- Donuts -->

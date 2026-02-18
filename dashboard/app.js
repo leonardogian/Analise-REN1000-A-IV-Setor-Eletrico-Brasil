@@ -6,6 +6,7 @@
 const dashboardState = {
     data: null,
     selectedGroupId: null,
+    selectedRegulatoryId: null,
 };
 
 /* ===================== THEME TOGGLE ===================== */
@@ -145,7 +146,27 @@ function createChart(canvasId, config) {
 
 /* ===================== PAYLOAD NORMALIZATION ===================== */
 function normalizeDashboardPayload(data) {
-    if (data.group_views && data.distributor_groups) return data;
+    if (data.group_views && data.distributor_groups) {
+        if (data.regulatory_groups && data.regulatory_views) return data;
+        const fallbackClassId = 'legacy';
+        const fallbackView = data.group_views[data.default_group_id] || { anual: [], tendencia: [], benchmark: [], classe_local: [], longa_resumo: [], mensal: [] };
+        return {
+            ...data,
+            regulatory_groups: [{
+                class_id: fallbackClassId,
+                class_label: 'Classe legada',
+                distributor_count: fallbackView.anual.length,
+                monthly_coverage: (fallbackView.mensal || []).length > 0,
+                annual_coverage: (fallbackView.anual || []).length > 0,
+                selector_enabled: true,
+                years: [...new Set((fallbackView.anual || []).map(r => r.ano))].sort(),
+            }],
+            regulatory_views: { [fallbackClassId]: fallbackView },
+            default_regulatory_id: fallbackClassId,
+            top20_distributors: [],
+            data_availability: {},
+        };
+    }
 
     const neoView = {
         anual: (data.neo_anual || []).map(r => ({ ...r, distributor_label: r.neo_distribuidora, distributor_id: r.neo_distribuidora })),
@@ -175,6 +196,19 @@ function normalizeDashboardPayload(data) {
         }],
         group_views: { neoenergia: neoView },
         default_group_id: 'neoenergia',
+        regulatory_groups: [{
+            class_id: 'legacy',
+            class_label: 'Classe legada',
+            distributor_count: neoView.anual.length ? new Set(neoView.anual.map(r => r.distributor_label)).size : 0,
+            monthly_coverage: (neoView.mensal || []).length > 0,
+            annual_coverage: (neoView.anual || []).length > 0,
+            selector_enabled: true,
+            years: [...new Set(neoView.anual.map(r => r.ano))].sort(),
+        }],
+        regulatory_views: { legacy: neoView },
+        default_regulatory_id: 'legacy',
+        top20_distributors: [],
+        data_availability: {},
     };
 }
 
@@ -199,6 +233,30 @@ function getActiveGroupContext(data) {
     dashboardState.selectedGroupId = validGroup.group_id;
     const view = views[validGroup.group_id] || { anual: [], tendencia: [], benchmark: [], classe_local: [], longa_resumo: [], mensal: [] };
     return { group: validGroup, view };
+}
+
+function getRegulatoryDefs(data) {
+    const classes = Array.isArray(data.regulatory_groups) ? data.regulatory_groups : [];
+    return classes.length ? classes : [];
+}
+
+function getActiveRegulatoryContext(data) {
+    const classes = getRegulatoryDefs(data);
+    const views = data.regulatory_views || {};
+    if (!classes.length) {
+        return {
+            regulatory: null,
+            view: { anual: [], tendencia: [], benchmark: [], classe_local: [], longa_resumo: [], mensal: [] },
+        };
+    }
+
+    const preferred = dashboardState.selectedRegulatoryId
+        || localStorage.getItem('selected_regulatory_id')
+        || data.default_regulatory_id;
+    const valid = classes.find(c => c.class_id === preferred) || classes[0];
+    dashboardState.selectedRegulatoryId = valid.class_id;
+    const view = views[valid.class_id] || { anual: [], tendencia: [], benchmark: [], classe_local: [], longa_resumo: [], mensal: [] };
+    return { regulatory: valid, view };
 }
 
 function getDistributorMeta(view) {
@@ -265,6 +323,35 @@ function initGroupSelector(data) {
     });
 }
 
+function initRegulatorySelector(data) {
+    const selector = document.getElementById('regulatory-selector');
+    if (!selector) return;
+
+    const classes = getRegulatoryDefs(data);
+    selector.innerHTML = classes
+        .map(item => {
+            const coverage = item.monthly_coverage ? 'mensal' : (item.annual_coverage ? 'anual' : 'sem cobertura');
+            return `<option value="${item.class_id}">${item.class_label} (${coverage})</option>`;
+        })
+        .join('');
+
+    const preferred = dashboardState.selectedRegulatoryId
+        || localStorage.getItem('selected_regulatory_id')
+        || data.default_regulatory_id;
+    const valid = classes.find(c => c.class_id === preferred) ? preferred : (classes[0] ? classes[0].class_id : null);
+    if (valid) {
+        dashboardState.selectedRegulatoryId = valid;
+        selector.value = valid;
+    }
+
+    selector.addEventListener('change', () => {
+        dashboardState.selectedRegulatoryId = selector.value;
+        localStorage.setItem('selected_regulatory_id', selector.value);
+        destroyCharts();
+        renderAll(dashboardState.data);
+    });
+}
+
 function updateGroupTexts(group, view) {
     if (!group) return;
     const years = group.years && group.years.length
@@ -285,6 +372,36 @@ function updateGroupTexts(group, view) {
         const el = document.getElementById(id);
         if (el) el.textContent = value;
     });
+}
+
+function updateRegulatoryTexts(regulatory, view) {
+    if (!regulatory) return;
+    const label = regulatory.class_label || 'classe regulatória selecionada';
+    const setters = [
+        ['reg-title-main', label],
+        ['reg-label-desc', label.toLowerCase()],
+        ['reg-label-diag', label.toLowerCase()],
+    ];
+    setters.forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    });
+
+    const emptyBox = document.getElementById('regulatory-empty-state');
+    const emptyMsg = document.getElementById('regulatory-empty-message');
+    const content = document.getElementById('regulatory-content');
+    const hasMonthly = Array.isArray(view.mensal) && view.mensal.length > 0;
+    if (emptyBox && emptyMsg) {
+        if (hasMonthly) {
+            emptyBox.style.display = 'none';
+        } else {
+            emptyBox.style.display = 'flex';
+            emptyMsg.textContent = `Sem cobertura mensal nesta base para a classe ${label}.`;
+        }
+    }
+    if (content) {
+        content.style.display = hasMonthly ? 'grid' : 'none';
+    }
 }
 
 /* ===================== TAB 1: VISÃO GERAL ===================== */
@@ -786,20 +903,67 @@ function renderDiagnostico(view, distributors, colors) {
             const improved = comparable.filter(t => t.delta_fora_prazo_por_100k_uc_mes_pct <= 0);
             insightTrend.innerHTML = `<strong>${improved.length} de ${comparable.length}</strong> distribuidoras reduziram a taxa normalizada de transgressões entre 2023 e 2025.`;
         } else {
-            insightTrend.textContent = 'Sem dados de tendência suficientes para o grupo selecionado.';
+            insightTrend.textContent = 'Sem dados de tendência suficientes para a classe regulatória selecionada.';
         }
     }
 }
 
+function renderTop20(data) {
+    const rows = Array.isArray(data.top20_distributors) ? data.top20_distributors : [];
+    const tbody = document.getElementById('top20-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = rows.map(row => {
+        return `<tr>
+            <td class="num">${fmtNum(row.rank_top20)}</td>
+            <td>${row.distributor_label || row.distributor_name_sig || '—'}</td>
+            <td class="num">${fmtNum(row.uc_ativa_media_mensal, 0)}</td>
+            <td>${row.bucket_porte || '—'}</td>
+        </tr>`;
+    }).join('');
+}
+
+function renderDataAvailability(data) {
+    const container = document.getElementById('availability-notes');
+    if (!container) return;
+    const availability = data.data_availability || {};
+    const entries = Object.entries(availability);
+    if (!entries.length) {
+        container.innerHTML = '';
+        return;
+    }
+    container.innerHTML = entries.map(([key, info]) => {
+        const title = key === 'tensao_nivel'
+            ? 'Nível de tensão'
+            : key === 'beneficio_social_bolsa'
+                ? 'Tarifa social / bolsa'
+                : key;
+        const status = info && info.available ? 'Disponível' : 'Indisponível';
+        const reason = info && info.reason ? info.reason : '';
+        return `<div class="insight-card">
+            <span class="insight-icon">${info && info.available ? '✅' : '⚠️'}</span>
+            <div class="insight-text"><strong>${title}:</strong> ${status}. ${reason}</div>
+        </div>`;
+    }).join('');
+}
+
 function renderAll(data) {
     renderOverview(data);
-    const { group, view } = getActiveGroupContext(data);
-    updateGroupTexts(group, view);
-    const distributors = getDistributorMeta(view);
-    const colors = makeColorMap(distributors);
-    renderBenchmark(view, distributors, colors);
-    renderRegulatory(view, distributors, colors);
-    renderDiagnostico(view, distributors, colors);
+
+    const { group, view: groupView } = getActiveGroupContext(data);
+    updateGroupTexts(group, groupView);
+    const economicDistributors = getDistributorMeta(groupView);
+    const economicColors = makeColorMap(economicDistributors);
+    renderBenchmark(groupView, economicDistributors, economicColors);
+
+    const { regulatory, view: regulatoryView } = getActiveRegulatoryContext(data);
+    updateRegulatoryTexts(regulatory, regulatoryView);
+    const regulatoryDistributors = getDistributorMeta(regulatoryView);
+    const regulatoryColors = makeColorMap(regulatoryDistributors);
+    renderRegulatory(regulatoryView, regulatoryDistributors, regulatoryColors);
+    renderDiagnostico(regulatoryView, regulatoryDistributors, regulatoryColors);
+
+    renderTop20(data);
+    renderDataAvailability(data);
 }
 
 /* ===================== MAIN ===================== */
@@ -841,6 +1005,7 @@ async function init() {
         dashboardState.data = data;
 
         initGroupSelector(data);
+        initRegulatorySelector(data);
 
         document.getElementById('loading').style.display = 'none';
         document.getElementById('dashboard-content').style.display = 'block';
