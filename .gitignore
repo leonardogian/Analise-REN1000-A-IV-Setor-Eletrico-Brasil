@@ -35,6 +35,11 @@ Thumbs.db
 .idea/
 
 # ==========================
+# Dashboard (dados gerados)
+# ==========================
+dashboard/dashboard_data.json
+
+# ==========================
 # Manter estas pastas no Git (via .gitkeep)
 # ==========================
 !data/raw/.gitkeep

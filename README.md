@@ -18,7 +18,14 @@
 │   ├── etl/
 │   │   ├── extract_aneel.py    ← Baixa os dados do portal Dados Abertos
 │   │   └── transform_aneel.py  ← Limpa e salva em Parquet/CSV
-│   └── analysis/               ← Análises e clusterização (em desenvolvimento)
+│   └── analysis/               ← Análises, benchmark e geração de dados
+│
+├── dashboard/            ← Dashboard interativo + relatório imprimível
+│   ├── index.html        ← SPA com 4 abas (Chart.js + dark mode)
+│   ├── app.js            ← Lógica de gráficos e navegação
+│   ├── styles.css        ← Design system (CSS puro)
+│   ├── relatorio.html    ← Relatório otimizado para PDF
+│   └── README.md         ← Documentação detalhada do dashboard
 │
 ├── _archive/             ← Arquivos da versão anterior do projeto
 ├── requirements.txt      ← Bibliotecas Python necessárias
@@ -64,6 +71,9 @@ python -m src.analysis.build_analysis_tables
 
 # Passo 4: Gerar relatório consolidado
 python -m src.analysis.build_report
+
+# Passo 5: Gerar dashboard interativo
+python -m src.analysis.build_dashboard_data
 ```
 
 Atalho para abrir resultados principais:
@@ -82,7 +92,10 @@ make help
 make update-data
 make analysis
 make report
-make pipeline
+make neoenergia-diagnostico
+make dashboard              # gera JSON + abre dashboard
+make serve                  # servidor local em http://localhost:8080
+make pipeline               # tudo: ETL → análise → relatório → dashboard
 ```
 
 Testes rápidos e smoke test:
@@ -91,6 +104,27 @@ Testes rápidos e smoke test:
 make test-fast
 make test-smoke
 ```
+
+## 📊 Dashboard Interativo
+
+O projeto inclui um dashboard web com 4 abas de análise e um relatório imprimível:
+
+```bash
+# Gerar dados + abrir no navegador
+make serve
+```
+
+| Componente | Arquivo | Descrição |
+|---|---|---|
+| Dashboard SPA | `dashboard/index.html` | 4 abas interativas com Chart.js |
+| Relatório PDF | `dashboard/relatorio.html` | Otimizado para impressão (Ctrl+P) |
+| Dados JSON | `dashboard/dashboard_data.json` | Gerado automaticamente |
+
+**Tecnologias:** HTML5 + CSS3 + JavaScript vanilla + Chart.js 4.4.7 (CDN). Sem Node.js, sem build.
+
+> Para detalhes completos (como alterar, adicionar gráficos, arquitetura), veja:
+>
+> 👉 [`dashboard/README.md`](dashboard/README.md)
 
 ## 📈 Saídas de Análise (já implementadas)
 
@@ -105,6 +139,17 @@ Após rodar os comandos acima, o projeto gera:
 - `data/processed/analysis/fato_transgressao_mensal_distribuidora.parquet`
 - `data/processed/analysis/kpi_regulatorio_anual.parquet`
 - `reports/relatorio_aneel.md`
+- `dashboard/index.html` (dashboard interativo)
+- `dashboard/relatorio.html` (relatório imprimível)
+- `dashboard/dashboard_data.json` (dados JSON)
+
+Diagnóstico dedicado das 5 Neoenergias:
+
+- `reports/neoenergia_diagnostico.md`
+- `data/processed/analysis/neoenergia/neo_mensal_2023_2025.csv`
+- `data/processed/analysis/neoenergia/neo_anual_2023_2025.csv`
+- `data/processed/analysis/neoenergia/neo_tendencia_2023_2025.csv`
+- `data/processed/analysis/neoenergia/neo_alertas_comparabilidade.csv`
 
 Notebooks de apoio:
 

@@ -6,8 +6,8 @@ PIP ?= $(PYTHON) -m pip
 
 ANALYSIS_DIR := data/processed/analysis
 
-.PHONY: help venv install extract transform update-data analysis report pipeline \
-	check-artifacts test-fast test-smoke test clean-analysis
+.PHONY: help venv install extract transform update-data analysis report neoenergia-diagnostico \
+	dashboard serve pipeline check-artifacts test-fast test-smoke test clean-analysis
 
 help:
 	@echo "Targets disponíveis:"
@@ -18,7 +18,10 @@ help:
 	@echo "  make update-data     - extract + transform"
 	@echo "  make analysis        - gera tabelas analíticas"
 	@echo "  make report          - gera relatório markdown"
-	@echo "  make pipeline        - update-data + analysis + report"
+	@echo "  make neoenergia-diagnostico - gera benchmark detalhado das 5 Neoenergias"
+	@echo "  make dashboard       - gera JSON + abre dashboard/relatorio interativo"
+	@echo "  make serve           - servidor local para visualizar o dashboard"
+	@echo "  make pipeline        - update-data + analysis + report + dashboard"
 	@echo "  make check-artifacts - valida se saídas principais existem"
 	@echo "  make test-fast       - testes rápidos (compilação + imports + artefatos)"
 	@echo "  make test-smoke      - smoke test completo (analysis + report + validação)"
@@ -45,17 +48,31 @@ analysis:
 report:
 	$(PYTHON) -m src.analysis.build_report
 
-pipeline: update-data analysis report
+neoenergia-diagnostico:
+	$(PYTHON) -m src.analysis.neoenergia_diagnostico
+
+dashboard:
+	$(PYTHON) -m src.analysis.build_dashboard_data
+	@echo ""
+	@echo "✅ Dashboard pronto! Abra no navegador:"
+	@echo "   dashboard/index.html      (interativo)"
+	@echo "   dashboard/relatorio.html  (relatório imprimível)"
+
+serve: dashboard
+	@echo "🌐 Abrindo http://localhost:8080"
+	cd dashboard && $(PYTHON) -m http.server 8080
+
+pipeline: update-data analysis report dashboard
 
 check-artifacts:
 	$(PYTHON) scripts/check_artifacts.py
 
 test-fast:
-	$(PYTHON) -m py_compile src/etl/extract_aneel.py src/etl/transform_aneel.py src/analysis/build_analysis_tables.py src/analysis/build_report.py
+	$(PYTHON) -m py_compile src/etl/extract_aneel.py src/etl/transform_aneel.py src/analysis/build_analysis_tables.py src/analysis/build_report.py src/analysis/neoenergia_diagnostico.py
 	$(PYTHON) scripts/smoke_imports.py
 	@$(MAKE) check-artifacts
 
-test-smoke: analysis report
+test-smoke: analysis report neoenergia-diagnostico
 	@$(MAKE) check-artifacts
 
 test: test-fast

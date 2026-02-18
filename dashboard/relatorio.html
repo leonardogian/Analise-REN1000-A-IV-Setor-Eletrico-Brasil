@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Relatório — Análise de Eficácia da REN 1000/2021 ANEEL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --text: #1e293b;
+            --text-light: #475569;
+            --text-muted: #94a3b8;
+            --bg: #ffffff;
+            --bg-card: #f8fafc;
+            --border: #e2e8f0;
+            --accent: #4f46e5;
+            --accent-light: #6366f1;
+            --green: #059669;
+            --red: #dc2626;
+            --amber: #d97706;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.7;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 32px;
+        }
+
+        /* Header */
+        .report-header {
+            text-align: center;
+            padding-bottom: 32px;
+            border-bottom: 3px solid var(--accent);
+            margin-bottom: 40px;
+        }
+
+        .report-header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .report-header .subtitle {
+            font-size: 1rem;
+            color: var(--text-light);
+        }
+
+        .report-header .meta {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* Print button */
+        .print-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 100;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: var(--accent);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .print-btn:hover {
+            background: var(--accent-light);
+        }
+
+        /* Sections */
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 36px 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 24px 0 8px;
+            color: var(--text);
+        }
+
+        p {
+            margin-bottom: 12px;
+            color: var(--text-light);
+            font-size: 0.92rem;
+        }
+
+        /* KPI grid */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 20px 0 28px;
+        }
+
+        .kpi-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .kpi-box .label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .kpi-box .value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--accent);
+            margin: 4px 0;
+        }
+
+        .kpi-box .delta {
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .kpi-box .delta.good {
+            color: var(--green);
+        }
+
+        .kpi-box .delta.bad {
+            color: var(--red);
+        }
+
+        /* Chart */
+        .chart-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+
+        .chart-section .chart-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .chart-section canvas {
+            width: 100% !important;
+            height: 280px !important;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 0.82rem;
+        }
+
+        thead {
+            background: var(--bg-card);
+        }
+
+        th {
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .num {
+            text-align: right;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        /* Sumário executivo */
+        .exec-summary {
+            background: linear-gradient(135deg, #eef2ff, #f0f9ff);
+            border: 1px solid #c7d2fe;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0 32px;
+        }
+
+        .exec-summary h3 {
+            color: var(--accent);
+            margin-top: 0;
+        }
+
+        .exec-summary ul {
+            padding-left: 20px;
+        }
+
+        .exec-summary li {
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .exec-summary li strong {
+            color: var(--text);
+        }
+
+        /* Footer */
+        .report-footer {
+            margin-top: 48px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border);
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* Page breaks */
+        .page-break {
+            page-break-before: always;
+        }
+
+        @media print {
+            .print-btn {
+                display: none !important;
+            }
+
+            body {
+                padding: 20px;
+                max-width: 100%;
+            }
+
+            .exec-summary {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .kpi-box {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .chart-section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+
+    <header class="report-header">
+        <h1>⚡ Relatório de Análise — REN 1000/2021</h1>
+        <p class="subtitle">Eficácia regulatória na qualidade comercial das distribuidoras de energia elétrica</p>
+        <p class="meta">Gerado automaticamente em <span id="report-date">—</span> · Dados: ANEEL Dados Abertos</p>
+    </header>
+
+    <!-- Sumário Executivo -->
+    <div class="exec-summary">
+        <h3>📋 Sumário Executivo</h3>
+        <ul>
+            <li>A <strong>taxa média de transgressões caiu</strong> de <span id="s-pre-taxa">—</span> (pré-2022) para
+                <span id="s-pos-taxa">—</span> (pós-2022).</li>
+            <li>As <strong>compensações financeiras totais diminuíram</strong> de <span id="s-pre-comp">—</span> para
+                <span id="s-pos-comp">—</span> no período pós-REN 1000.</li>
+            <li>Foram analisados <span id="s-total-serv">—</span> serviços comerciais entre 2011 e 2023.</li>
+            <li>No grupo Neoenergia, <strong>4 de 5 distribuidoras</strong> reduziram a taxa normalizada de
+                transgressões entre 2023 e 2025.</li>
+            <li><strong>Neoenergia Elektro</strong> apresenta a menor pressão (2,00/100k UC) e <strong>Coelba</strong> a
+                maior (28,39/100k UC).</li>
+        </ul>
+    </div>
+
+    <!-- 1. Visão Geral -->
+    <h2>1. Comparação Pré vs Pós REN 1000</h2>
+    <p>Indicadores agregados antes (2011–2021, REN 414) e depois (2022–2023, REN 1000) da vigência da resolução
+        normativa.</p>
+
+    <div class="kpi-row">
+        <div class="kpi-box">
+            <div class="label">Taxa pré-2022</div>
+            <div class="value" id="r-taxa-pre">—</div>
+            <div class="label">Média anual</div>
+        </div>
+        <div class="kpi-box">
+            <div class="label">Taxa pós-2022</div>
+            <div class="value" id="r-taxa-pos">—</div>
+            <div class="label">Média anual</div>
+        </div>
+        <div class="kpi-box">
+            <div class="label">Variação</div>
+            <div class="value" id="r-taxa-delta" style="font-size:1.2rem;">—</div>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <div class="chart-label">Taxa de Transgressão — Série Anual 2011–2023</div>
+        <canvas id="r-chart-taxa"></canvas>
+    </div>
+
+    <div class="chart-section">
+        <div class="chart-label">Compensações Financeiras — Série Anual 2011–2023</div>
+        <canvas id="r-chart-comp"></canvas>
+    </div>
+
+    <!-- 2. Neoenergia -->
+    <h2 class="page-break">2. Benchmark Neoenergia — 5 Distribuidoras</h2>
+    <p>Comparação normalizada por unidades consumidoras (UC) para ajuste por porte das distribuidoras.</p>
+
+    <div class="chart-section">
+        <div class="chart-label">Transgressões por 100k UC-mês (2023–2025)</div>
+        <canvas id="r-chart-neo-fora"></canvas>
+    </div>
+
+    <h3>Tendência 2023 → 2025</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Distribuidora</th>
+                <th>Fora/100k UC 2023</th>
+                <th>Fora/100k UC 2025</th>
+                <th>Variação</th>
+            </tr>
+        </thead>
+        <tbody id="r-trend-body"></tbody>
+    </table>
+
+    <!-- 3. Série Mensal -->
+    <h2 class="page-break">3. Análise Regulatória Mensal</h2>
+    <p>Série temporal mensal das 5 distribuidoras Neoenergia, com taxa de transgressão e compensação financeira.</p>
+
+    <div class="chart-section">
+        <div class="chart-label">Taxa Fora do Prazo — Evolução Mensal (2023–2025)</div>
+        <canvas id="r-chart-mensal"></canvas>
+    </div>
+
+    <!-- 4. Diagnóstico -->
+    <h2 class="page-break">4. Série Longa e Diagnóstico</h2>
+    <p>Evolução histórica 2011–2023 da taxa fora do prazo para cada distribuidora Neoenergia.</p>
+
+    <div class="chart-section">
+        <div class="chart-label">Taxa 2011 vs 2023 por Distribuidora</div>
+        <canvas id="r-chart-longa"></canvas>
+    </div>
+
+    <h3>Resumo da Série Longa 2011–2023</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Distribuidora</th>
+                <th>Ano Início</th>
+                <th>Ano Fim</th>
+                <th>Taxa Início</th>
+                <th>Taxa Fim</th>
+                <th>Variação</th>
+            </tr>
+        </thead>
+        <tbody id="r-longa-body"></tbody>
+    </table>
+
+    <!-- Footer -->
+    <footer class="report-footer">
+        <p>TCC — Análise de Eficácia da REN 1000/2021 (ANEEL) · Dados: <a
+                href="https://dadosabertos.aneel.gov.br">dadosabertos.aneel.gov.br</a></p>
+        <p>Este relatório foi gerado automaticamente a partir dos dados processados do projeto.</p>
+    </footer>
+
+    <script>
+        const fmtNum = (v, d = 0) => v == null || isNaN(v) ? '—' : v.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+        const fmtPct = (v, d = 2) => v == null || isNaN(v) ? '—' : (v * 100).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%';
+        const fmtMoney = (v) => {
+            if (v == null || isNaN(v)) return '—';
+            if (Math.abs(v) >= 1e6) return 'R$ ' + (v / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + 'M';
+            return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
+        const C = { blue: '#4f46e5', cyan: '#0891b2', green: '#059669', amber: '#d97706', rose: '#e11d48' };
+        const NEO_C = { 'Neoenergia Coelba': C.blue, 'Neoenergia Pernambuco': C.cyan, 'Neoenergia Elektro': C.green, 'Neoenergia Cosern': C.amber, 'Neoenergia Brasilia': C.rose };
+
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.font.size = 11;
+
+        async function init() {
+            const res = await fetch('dashboard_data.json');
+            const data = await res.json();
+            const kpi = data.kpi_overview;
+
+            document.getElementById('report-date').textContent = new Date(data.meta.generated_at).toLocaleString('pt-BR');
+
+            // Summary
+            document.getElementById('s-pre-taxa').textContent = fmtPct(kpi.pre_taxa_media);
+            document.getElementById('s-pos-taxa').textContent = fmtPct(kpi.pos_taxa_media);
+            document.getElementById('s-pre-comp').textContent = fmtMoney(kpi.pre_compensacao_total);
+            document.getElementById('s-pos-comp').textContent = fmtMoney(kpi.pos_compensacao_total);
+            document.getElementById('s-total-serv').textContent = fmtNum(kpi.pre_servicos_total + kpi.pos_servicos_total);
+
+            // KPIs
+            document.getElementById('r-taxa-pre').textContent = fmtPct(kpi.pre_taxa_media);
+            document.getElementById('r-taxa-pos').textContent = fmtPct(kpi.pos_taxa_media);
+            const d = document.getElementById('r-taxa-delta');
+            d.textContent = fmtPct(kpi.delta_taxa);
+            d.classList.add(kpi.delta_taxa <= 0 ? 'good' : 'bad');
+
+            // Serie anual - taxa
+            const serie = data.serie_anual;
+            new Chart(document.getElementById('r-chart-taxa'), { type: 'line', data: { labels: serie.map(r => r.ano), datasets: [{ label: 'Taxa fora do prazo (%)', data: serie.map(r => r.taxa_fora_prazo * 100), borderColor: C.blue, backgroundColor: C.blue + '15', fill: true, tension: .4, pointRadius: 4, borderWidth: 2.5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => v.toFixed(1) + '%' } } } } });
+
+            // Serie anual - comp
+            const bgC = serie.map(r => r.periodo_regulatorio === 'pre_2022' ? C.blue : C.cyan);
+            new Chart(document.getElementById('r-chart-comp'), { type: 'bar', data: { labels: serie.map(r => r.ano), datasets: [{ label: 'Compensação', data: serie.map(r => r.compensacao_rs), backgroundColor: bgC.map(c => c + 'aa'), borderColor: bgC, borderWidth: 1.5, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => fmtMoney(v) } } } } });
+
+            // Neo fora
+            const neo = data.neo_anual;
+            const dists = [...new Set(neo.map(r => r.neo_distribuidora))];
+            const anos = [...new Set(neo.map(r => r.ano))].sort();
+            new Chart(document.getElementById('r-chart-neo-fora'), { type: 'bar', data: { labels: anos, datasets: dists.map(d => ({ label: d.replace('Neoenergia ', ''), data: anos.map(a => { const r = neo.find(x => x.neo_distribuidora === d && x.ano === a); return r ? r.fora_prazo_por_100k_uc_mes : 0; }), backgroundColor: NEO_C[d] + 'cc', borderColor: NEO_C[d], borderWidth: 1.5, borderRadius: 3 })) }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } } });
+
+            // Trend table
+            const trend = data.neo_tendencia;
+            document.getElementById('r-trend-body').innerHTML = trend.map(t => {
+                const dp = t.delta_fora_prazo_por_100k_uc_mes_pct;
+                return `<tr><td>${t.neo_distribuidora.replace('Neoenergia ', '')}</td><td class="num">${fmtNum(t.fora_prazo_por_100k_uc_mes_2023, 2)}</td><td class="num">${fmtNum(t.fora_prazo_por_100k_uc_mes_2025, 2)}</td><td class="num" style="color:${dp <= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(dp)}</td></tr>`;
+            }).join('');
+
+            // Monthly
+            const mensal = data.neo_mensal;
+            const mos = [...new Set(mensal.map(r => `${r.ano}-${String(r.mes).padStart(2, '0')}`))].sort();
+            new Chart(document.getElementById('r-chart-mensal'), { type: 'line', data: { labels: mos, datasets: dists.map(d => { const dd = mensal.filter(r => r.neo_distribuidora === d); return { label: d.replace('Neoenergia ', ''), data: mos.map(m => { const [y, mo] = m.split('-').map(Number); const r = dd.find(x => x.ano === y && x.mes === mo); return r ? r.taxa_fora_prazo * 100 : null; }), borderColor: NEO_C[d], borderWidth: 1.5, tension: .3, pointRadius: 0, spanGaps: true, fill: false }; }) }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'top', labels: { font: { size: 10 } } } }, scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 15, callback: function (v) { const l = this.getLabelForValue(v); return l.endsWith('-01') ? l : ''; } } }, y: { beginAtZero: true, ticks: { callback: v => v.toFixed(2) + '%' } } } } });
+
+            // Longa
+            const longa = data.neo_longa_resumo;
+            new Chart(document.getElementById('r-chart-longa'), { type: 'bar', data: { labels: longa.map(r => r.neo_distribuidora.replace('Neoenergia ', '')), datasets: [{ label: 'Taxa 2011', data: longa.map(r => r.taxa_inicio * 100), backgroundColor: C.blue + 'cc', borderColor: C.blue, borderWidth: 1.5, borderRadius: 3 }, { label: 'Taxa 2023', data: longa.map(r => r.taxa_fim * 100), backgroundColor: C.cyan + 'cc', borderColor: C.cyan, borderWidth: 1.5, borderRadius: 3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => v.toFixed(1) + '%' } } } } });
+
+            document.getElementById('r-longa-body').innerHTML = longa.map(r => {
+                const dc = r.delta_taxa_pct <= 0 ? 'good' : 'bad';
+                return `<tr><td>${r.neo_distribuidora.replace('Neoenergia ', '')}</td><td class="num">${r.ano_inicio}</td><td class="num">${r.ano_fim}</td><td class="num">${fmtPct(r.taxa_inicio)}</td><td class="num">${fmtPct(r.taxa_fim)}</td><td class="num delta ${dc}">${fmtPct(r.delta_taxa_pct)}</td></tr>`;
+            }).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

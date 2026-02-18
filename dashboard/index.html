@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Análise REN 1000/2021 ANEEL</title>
+  <meta name="description" content="Dashboard interativo para análise de eficácia da Resolução Normativa ANEEL nº 1.000/2021 na qualidade comercial das distribuidoras de energia." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="bg-grid"></div>
+
+<div class="app-wrapper">
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="header">
+    <div class="header-content">
+      <div>
+        <h1>⚡ Análise REN 1000/2021 — ANEEL</h1>
+        <p class="header-subtitle">Qualidade comercial das distribuidoras de energia — Prazos, transgressões e compensações</p>
+      </div>
+      <span class="header-badge">
+        <span class="dot"></span>
+        Atualizado: <span id="gen-time">—</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- ==================== LOADING ==================== -->
+  <div id="loading" class="loading-screen">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Carregando dados...</p>
+  </div>
+
+  <!-- ==================== DASHBOARD CONTENT ==================== -->
+  <div id="dashboard-content" style="display:none;">
+
+    <!-- Navigation -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="tab-overview">
+        <span class="tab-icon">📊</span> Visão Geral
+      </button>
+      <button class="nav-tab" data-tab="tab-neoenergia">
+        <span class="tab-icon">🏢</span> Neoenergia
+      </button>
+      <button class="nav-tab" data-tab="tab-regulatory">
+        <span class="tab-icon">📈</span> Análise Regulatória
+      </button>
+      <button class="nav-tab" data-tab="tab-diagnostico">
+        <span class="tab-icon">🔍</span> Diagnóstico Detalhado
+      </button>
+    </nav>
+
+    <!-- ============ TAB 1: VISÃO GERAL ============ -->
+    <section id="tab-overview" class="tab-panel active">
+
+      <h2 class="section-title"><span class="icon">📊</span> Impacto da REN 1000 — Pré vs Pós 2022</h2>
+      <p class="section-description">
+        Comparação dos indicadores de qualidade comercial antes e depois da vigência da
+        Resolução Normativa ANEEL nº 1.000/2021, que consolidou as regras de distribuição de energia.
+      </p>
+
+      <!-- KPI Row -->
+      <div class="kpi-grid">
+        <div class="kpi-card blue">
+          <div class="kpi-label">Taxa Fora do Prazo (Pré-2022)</div>
+          <div class="kpi-value blue" id="kpi-taxa-pre">—</div>
+          <div class="kpi-label" style="margin-top:4px;">Média anual (REN 414)</div>
+        </div>
+        <div class="kpi-card cyan">
+          <div class="kpi-label">Taxa Fora do Prazo (Pós-2022)</div>
+          <div class="kpi-value cyan" id="kpi-taxa-pos">—</div>
+          <div id="kpi-taxa-delta" class="kpi-delta">—</div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-label">Compensação Total (Pré-2022)</div>
+          <div class="kpi-value amber" id="kpi-comp-pre">—</div>
+          <div class="kpi-label" style="margin-top:4px;">2011–2021</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Compensação Total (Pós-2022)</div>
+          <div class="kpi-value green" id="kpi-comp-pos">—</div>
+          <div id="kpi-comp-delta" class="kpi-delta">—</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-label">Total de Serviços Analisados</div>
+          <div class="kpi-value purple" id="kpi-serv-total">—</div>
+          <div class="kpi-label" style="margin-top:4px;">2011–2023</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">Total Fora do Prazo</div>
+          <div class="kpi-value red" id="kpi-fora-total">—</div>
+          <div class="kpi-label" style="margin-top:4px;">Transgressões acumuladas</div>
+        </div>
+      </div>
+
+      <!-- Insights -->
+      <div class="insight-grid">
+        <div class="insight-card">
+          <span class="insight-icon">📉</span>
+          <div class="insight-text">
+            A <strong>taxa de transgressões caiu</strong> após a REN 1000, indicando melhoria na prestação dos serviços
+            comerciais dentro do prazo regulamentar.
+          </div>
+        </div>
+        <div class="insight-card">
+          <span class="insight-icon">💰</span>
+          <div class="insight-text">
+            A <strong>compensação financeira também diminuiu</strong>, mas é preciso observar que os anos pós-2022
+            ainda estão em consolidação.
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="chart-grid two-col">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Taxa Fora do Prazo — Série Anual</div>
+              <div class="chart-subtitle">Linha tracejada marca a vigência da REN 1000 (2022)</div>
+            </div>
+            <span class="chart-tag">2011–2023</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chart-serie-taxa"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Compensações Financeiras — Série Anual</div>
+              <div class="chart-subtitle">Valor total pago em compensações aos consumidores</div>
+            </div>
+            <span class="chart-tag">R$</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chart-serie-comp"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TAB 2: NEOENERGIA ============ -->
+    <section id="tab-neoenergia" class="tab-panel">
+
+      <h2 class="section-title"><span class="icon">🏢</span> Benchmark Neoenergia — 5 Distribuidoras</h2>
+      <p class="section-description">
+        Análise comparativa das 5 distribuidoras do grupo Neoenergia: Coelba, Pernambuco, Cosern, Elektro e Brasília.
+        Métricas normalizadas por unidades consumidoras (UC) para comparação justa por porte.
+      </p>
+
+      <div class="chart-grid two-col">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Transgressões por 100k UC-mês</div>
+              <div class="chart-subtitle">Normalizado pelo porte da distribuidora</div>
+            </div>
+            <span class="chart-tag">2023–2025</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chart-neo-fora"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Compensação R$ por UC-mês</div>
+              <div class="chart-subtitle">Impacto financeiro normalizado</div>
+            </div>
+            <span class="chart-tag">R$ / UC</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chart-neo-comp"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-grid two-col">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Radar de Benchmark — Último Ano</div>
+              <div class="chart-subtitle">Comparação multidimensional — valores em escala relativa</div>
+            </div>
+            <span class="chart-tag">2025</span>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 380px;">
+            <canvas id="chart-neo-radar"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Tendência 2023 → 2025</div>
+              <div class="chart-subtitle">Variação percentual entre os períodos</div>
+            </div>
+          </div>
+          <div class="data-table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Distribuidora</th>
+                  <th>Fora/100k UC 2023</th>
+                  <th>Fora/100k UC 2025</th>
+                  <th>Variação</th>
+                  <th>Taxa 2023</th>
+                  <th>Taxa 2025</th>
+                </tr>
+              </thead>
+              <tbody id="trend-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TAB 3: ANÁLISE REGULATÓRIA ============ -->
+    <section id="tab-regulatory" class="tab-panel">
+
+      <h2 class="section-title"><span class="icon">📈</span> Análise Regulatória Mensal — Neoenergia</h2>
+      <p class="section-description">
+        Série temporal mensal das 5 distribuidoras Neoenergia, com taxa de transgressão e compensação financeira.
+        Permite identificar sazonalidade e tendências de curto prazo.
+      </p>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Taxa Fora do Prazo — Mensal</div>
+              <div class="chart-subtitle">Evolução mensal por distribuidora (2023–2025)</div>
+            </div>
+            <span class="chart-tag">Mensal</span>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 380px;">
+            <canvas id="chart-reg-mensal"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Compensação Financeira — Mensal (Empilhado)</div>
+              <div class="chart-subtitle">Volume financeiro por distribuidora ao longo do tempo</div>
+            </div>
+            <span class="chart-tag">R$ / mês</span>
+          </div>
+          <div class="chart-canvas-wrapper" style="min-height: 380px;">
+            <canvas id="chart-reg-comp-mensal"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TAB 4: DIAGNÓSTICO DETALHADO ============ -->
+    <section id="tab-diagnostico" class="tab-panel">
+
+      <h2 class="section-title"><span class="icon">🔍</span> Diagnóstico Detalhado</h2>
+      <p class="section-description">
+        Análise por classe de consumo (urbana, rural, grupo A) e série longa 2011–2023
+        para cada distribuidora Neoenergia.
+      </p>
+
+      <!-- Donuts -->
+      <h3 style="font-size:1rem; font-weight:600; margin-bottom:16px; color:var(--text-secondary);">
+        📊 Distribuição das Transgressões por Classe/Localização (2023–2025)
+      </h3>
+      <div class="chart-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+        <div class="chart-card" style="padding: 20px;">
+          <div class="chart-title" style="font-size:0.88rem; text-align:center; margin-bottom:12px;">Brasília</div>
+          <div class="chart-canvas-wrapper" style="min-height:220px;"><canvas id="chart-donut-0"></canvas></div>
+        </div>
+        <div class="chart-card" style="padding: 20px;">
+          <div class="chart-title" style="font-size:0.88rem; text-align:center; margin-bottom:12px;">Coelba</div>
+          <div class="chart-canvas-wrapper" style="min-height:220px;"><canvas id="chart-donut-1"></canvas></div>
+        </div>
+        <div class="chart-card" style="padding: 20px;">
+          <div class="chart-title" style="font-size:0.88rem; text-align:center; margin-bottom:12px;">Cosern</div>
+          <div class="chart-canvas-wrapper" style="min-height:220px;"><canvas id="chart-donut-2"></canvas></div>
+        </div>
+        <div class="chart-card" style="padding: 20px;">
+          <div class="chart-title" style="font-size:0.88rem; text-align:center; margin-bottom:12px;">Elektro</div>
+          <div class="chart-canvas-wrapper" style="min-height:220px;"><canvas id="chart-donut-3"></canvas></div>
+        </div>
+        <div class="chart-card" style="padding: 20px;">
+          <div class="chart-title" style="font-size:0.88rem; text-align:center; margin-bottom:12px;">Pernambuco</div>
+          <div class="chart-canvas-wrapper" style="min-height:220px;"><canvas id="chart-donut-4"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Serie longa -->
+      <div class="chart-grid two-col" style="margin-top: 32px;">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Série Longa 2011 → 2023</div>
+              <div class="chart-subtitle">Evolução da taxa fora do prazo por distribuidora</div>
+            </div>
+            <span class="chart-tag">12 anos</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chart-longa-bar"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Resumo da Série Longa</div>
+              <div class="chart-subtitle">Variação da taxa fora do prazo entre 2011 e 2023</div>
+            </div>
+          </div>
+          <div class="data-table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Distribuidora</th>
+                  <th>Ano Início</th>
+                  <th>Ano Fim</th>
+                  <th>Taxa Início</th>
+                  <th>Taxa Fim</th>
+                  <th>Variação</th>
+                </tr>
+              </thead>
+              <tbody id="longa-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insights -->
+      <div class="insight-grid" style="margin-top: 24px;">
+        <div class="insight-card">
+          <span class="insight-icon">🏆</span>
+          <div class="insight-text">
+            <strong>Neoenergia Elektro</strong> apresenta a menor pressão normalizada: apenas 2,00 transgressões por 100k UC-mês.
+          </div>
+        </div>
+        <div class="insight-card">
+          <span class="insight-icon">⚠️</span>
+          <div class="insight-text">
+            <strong>Neoenergia Coelba</strong> lidera em pressão normalizada (28,39/100k UC-mês), mas abrange o maior volume de consumidores.
+          </div>
+        </div>
+        <div class="insight-card">
+          <span class="insight-icon">📉</span>
+          <div class="insight-text">
+            <strong>4 de 5</strong> distribuidoras Neoenergia reduziram a taxa normalizada de transgressões entre 2023 e 2025 — 
+            destaque para Cosern (−74%) e Elektro (−73%).
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /dashboard-content -->
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="footer">
+    <p>
+      TCC — Análise de Eficácia da REN 1000/2021 (ANEEL) &middot;
+      Dados: <a href="https://dadosabertos.aneel.gov.br" target="_blank">dadosabertos.aneel.gov.br</a> &middot;
+      Gerado automaticamente a partir dos dados processados
+    </p>
+  </footer>
+
+</div><!-- /app-wrapper -->
+
+<script src="app.js"></script>
+</body>
+</html>
