@@ -13,7 +13,7 @@ O projeto conta com um **dashboard web interativo** para visualização dos resu
 ```bash
 # Para visualizar o dashboard:
 make serve
-# Acesse http://localhost:8000
+# Acesse http://localhost:8050
 ```
 
 ### Visão Geral — Impacto Pré vs Pós REN 1000
@@ -136,7 +136,7 @@ make analysis                   # gera tabelas analíticas
 make report                     # gera relatório markdown
 make neoenergia-diagnostico     # benchmark detalhado das 5 Neoenergias
 make dashboard                  # gera JSON + instruções para abrir
-make serve                      # servidor local em http://localhost:8000
+make serve                      # servidor local em http://localhost:8050
 make pipeline                   # tudo: ETL → análise → relatório → dashboard
 make test-fast                  # testes rápidos
 make test-smoke                 # smoke test
