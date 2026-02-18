@@ -16,6 +16,13 @@ make serve
 # Acesse http://localhost:8050
 ```
 
+```bash
+# Para usar backend local (API + arquivos estáticos):
+make dev-serve
+# Health: http://localhost:8050/health
+# API:    http://localhost:8050/api/dashboard
+```
+
 ### Visão Geral — Impacto Pré vs Pós REN 1000
 
 KPIs comparando os períodos regulatórios, séries temporais de taxa fora do prazo (2011–2023) e evolução das compensações financeiras:
@@ -110,19 +117,19 @@ Execute na ordem ou use `make pipeline` para rodar tudo:
 
 ```bash
 # Passo 1: Baixar dados reais da ANEEL
-python -m src.etl.extract_aneel
+python3 -m src.etl.extract_aneel
 
 # Passo 2: Limpar e transformar os dados
-python -m src.etl.transform_aneel
+python3 -m src.etl.transform_aneel
 
 # Passo 3: Gerar tabelas analíticas (inclui normalização por porte)
-python -m src.analysis.build_analysis_tables
+python3 -m src.analysis.build_analysis_tables
 
 # Passo 4: Gerar relatório consolidado
-python -m src.analysis.build_report
+python3 -m src.analysis.build_report
 
 # Passo 5: Gerar dados do dashboard
-python -m src.analysis.build_dashboard_data
+python3 -m src.analysis.build_dashboard_data
 ```
 
 ---
@@ -136,10 +143,15 @@ make analysis                   # gera tabelas analíticas
 make report                     # gera relatório markdown
 make neoenergia-diagnostico     # benchmark detalhado das 5 Neoenergias
 make dashboard                  # gera JSON + instruções para abrir
+make dashboard-full             # analysis + neoenergia + dashboard
 make serve                      # servidor local em http://localhost:8050
-make pipeline                   # tudo: ETL → análise → relatório → dashboard
-make test-fast                  # testes rápidos
-make test-smoke                 # smoke test
+make backend                    # backend FastAPI local em http://localhost:8050
+make dev-serve                  # dashboard-full + preflight + backend (--reload)
+make validate-contracts         # valida contratos de schema (raw + processed)
+make check-artifacts-full       # valida artefatos completos + dashboard JSON
+make pipeline                   # tudo: ETL → análise → relatório → neoenergia → dashboard
+make test-fast                  # compilação + imports + contratos + artefatos core
+make test-smoke                 # smoke completo (neoenergia + dashboard)
 ```
 
 ---
@@ -210,11 +222,11 @@ Após rodar o pipeline, o projeto gera:
 ```bash
 make pipeline
 # ou passo a passo:
-python -m src.etl.extract_aneel
-python -m src.etl.transform_aneel
-python -m src.analysis.build_analysis_tables
-python -m src.analysis.build_report
-python -m src.analysis.build_dashboard_data
+python3 -m src.etl.extract_aneel
+python3 -m src.etl.transform_aneel
+python3 -m src.analysis.build_analysis_tables
+python3 -m src.analysis.build_report
+python3 -m src.analysis.build_dashboard_data
 ```
 
 ### Exploração e escrita analítica

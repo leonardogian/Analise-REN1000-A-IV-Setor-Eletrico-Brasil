@@ -14,6 +14,7 @@ Painel analítico para visualização dos dados de qualidade comercial das distr
 | **Chart.js** | 4.4.7 | Gráficos interativos (line, bar, radar, doughnut, stacked area) |
 | **Google Fonts** | — | Tipografia Inter (UI) + JetBrains Mono (números) |
 | **Python** | 3.10+ | Geração do arquivo `dashboard_data.json` a partir dos CSVs |
+| **FastAPI** | — | Backend local para API e serving estático em localhost |
 
 > **Zero dependências de build.** Não há Node.js, npm, bundlers nem transpilers.  
 > Os arquivos são servidos diretamente — basta um servidor HTTP simples.
@@ -36,7 +37,7 @@ dashboard/
 
 ## 🚀 Como Subir / Visualizar
 
-### Opção 1: `make serve` (recomendado)
+### Opção 1: `make serve`
 
 ```bash
 # A partir da raiz do projeto
@@ -44,6 +45,19 @@ make serve
 ```
 
 Isso gera o JSON (se necessário) e inicia um servidor Python em `http://localhost:8050`.
+
+### Opção 1B: `make dev-serve` (recomendado para backend local)
+
+```bash
+# A partir da raiz do projeto
+make dev-serve
+```
+
+Isso executa preflight (artefatos + contratos), sobe backend FastAPI em `http://localhost:8050` e expõe:
+
+- `GET /health`
+- `GET /api/dashboard`
+- `GET /api/dashboard/{section}`
 
 ### Opção 2: Servidor HTTP manual
 
@@ -76,7 +90,7 @@ make dashboard
 make pipeline
 
 # Opção 3: direto pelo Python
-python -m src.analysis.build_dashboard_data
+python3 -m src.analysis.build_dashboard_data
 ```
 
 O script lê os CSVs de `data/processed/analysis/` e gera `dashboard/dashboard_data.json` (~1.6 MB).
@@ -197,5 +211,7 @@ Ctrl + P  →  Salvar como PDF
 
 - `pandas` — leitura e manipulação dos CSVs
 - `numpy` — operações numéricas
+- `fastapi` — API local e static serving
+- `uvicorn` — servidor ASGI local
 
 Nenhuma dependência adicional é necessária.
