@@ -1,0 +1,17 @@
+# Manipulação e análise de dados
+pandas
+numpy
+
+# Download de dados
+requests
+
+# Formatos de arquivo
+pyarrow        # Leitura/escrita de Parquet
+openpyxl       # Leitura de Excel (.xlsx)
+
+# Visualização
+matplotlib
+seaborn
+
+# Machine Learning (clusterização futura)
+scikit-learn

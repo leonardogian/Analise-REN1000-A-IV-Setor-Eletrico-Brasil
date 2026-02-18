@@ -1,0 +1,41 @@
+# ==========================
+# Ambiente Virtual Python
+# ==========================
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# ==========================
+# Dados brutos (pesados, baixar via script)
+# ==========================
+data/raw/*.csv
+data/raw/*.zip
+data/raw/*.xlsx
+
+# ==========================
+# Dados processados (gerados via script)
+# ==========================
+data/processed/*.csv
+data/processed/*.parquet
+data/processed/*.xlsx
+
+# ==========================
+# Arquivos de sistema
+# ==========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ==========================
+# IDE
+# ==========================
+.vscode/
+.idea/
+
+# ==========================
+# Manter estas pastas no Git (via .gitkeep)
+# ==========================
+!data/raw/.gitkeep
+!data/processed/.gitkeep

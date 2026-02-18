@@ -1,0 +1,117 @@
+sigindicador,dscindicador,familia_indicador,codigo_base,servico_nome,classe_local,artigo_ren
+CRAfedMed,Créd. Prazo Viol. de solicitações de aferição dos medidores (art. 137),CR,AfedMed,solicitações de aferição dos medidores,nao_classificado,art. 137
+CRAnProj,Créd. Prazo Viol. de informação do resultado da análise do projeto (art. 27-B),CR,AnProj,informação do resultado da análise do projeto,nao_classificado,art. 27-B
+CRCmsnObra,Créd. Prazo Viol. de Comissionamento das obras. (art. 37),CR,CmsnObra,Comissionamento das obras.,nao_classificado,art. 37
+CREstProj,"Créd. Prazo Viol. por estudos, orçamentos e projetos por obras (art. 32)",CR,EstProj,"estudos, orçamentos e projetos por obras",nao_classificado,art. 32
+CRInform,Créd. Prazo Viol. de informação da relação dos atendimentos (art. 199),CR,Inform,informação da relação dos atendimentos,nao_classificado,art. 199
+CRLigA,Créd. Prazo Viol. por ligação de unidade consumidora do grupo A (art. 31),CR,LigA,ligação de unidade consumidora do grupo A,grupo_a,art. 31
+CRLigBRr,Créditos cedidos por ligação de consumidor do grupo B em área rural (art. 31),CR,LigBRr,ligação de consumidor do grupo B em área rural,grupo_b_rural,art. 31
+CRLigBUb,Créd. Prazo Viol. por ligação de consumidor do grupo B em área urbana (art. 31),CR,LigBUb,ligação de consumidor do grupo B em área urbana,grupo_b_urbana,art. 31
+CRNvCmsn,Créd. Prazo Viol. de Novo comissionamento quando de reprovação. (art. 37),CR,NvCmsn,Novo comissionamento quando de reprovação.,nao_classificado,art. 37
+CRObGerais,Créd. Prazo Viol. de Conclusão de obra não abrang. nos inc. I e II do art. 34.,CR,ObGerais,Conclusão de obra não abrang. nos inc. I e II do art. 34.,nao_classificado,
+CRObra,Créd. Prazo Viol. por Início das Obras (art. 34),CR,Obra,Início das Obras,nao_classificado,art. 34
+CRObraPrim,Créd. Prazo Viol. de Conclusão das obras de até 1 km na rede prim. (art. 34),CR,ObraPrim,Conclusão das obras de até 1 km na rede prim.,nao_classificado,art. 34
+CRObraSec,Créd. Prazo Viol. de Conclusão das obras na rede tensão secundária. (art. 34),CR,ObraSec,Conclusão das obras na rede tensão secundária.,nao_classificado,art. 34
+CRPgtoRsc,"Créd. Prazo Viol. de ressarc. por meio do pgto, conserto ou subst. (art. 208)",CR,PgtoRsc,"ressarc. por meio do pgto, conserto ou subst.",nao_classificado,art. 208
+CRRclCobr,Créd. Prazo Viol. de reclamação de cobrança ou devol. de diferenças (art. 133),CR,RclCobr,reclamação de cobrança ou devol. de diferenças,nao_classificado,art. 133
+CRRclDano,Créd. Prazo Viol. de solução ref. à danos não elétricos reclamados (art. 197),CR,RclDano,solução ref. à danos não elétricos reclamados,nao_classificado,art. 197
+CRRclVisTc,Créd. Prazo Viol. de solução de reclamação com visita técnica (art. 197),CR,RclVisTc,solução de reclamação com visita técnica,nao_classificado,art. 197
+CRReanProj,Créd. Prazo Viol. de reanálise do projeto por falta de informação (art. 27-B),CR,ReanProj,reanálise do projeto por falta de informação,nao_classificado,art. 27-B
+CRRelNorRr,Créd. Prazo Viol. de religação em área rural (art. 176),CR,RelNorRr,religação em área rural,rural,art. 176
+CRRelNorUb,Créd. Prazo Viol. de religação em área urbana (art. 176),CR,RelNorUb,religação em área urbana,urbana,art. 176
+CRRelUrgRr,Créd. Prazo Viol. de religação de emergência em área rural (art. 176),CR,RelUrgRr,religação de emergência em área rural,rural,art. 176
+CRRelUrgUb,Créd. Prazo Viol. de religação de emergência em área urbana (art. 176),CR,RelUrgUb,religação de emergência em área urbana,urbana,art. 176
+CRReligIdv,Créd. Prazo Viol. de religação por suspensão indevida do fornec. (art. 176),CR,ReligIdv,religação por suspensão indevida do fornec.,nao_classificado,art. 176
+CRResulRsc,Créd. Prazo Viol. de resultado da solicitação de ressarcimento (art. 207),CR,ResulRsc,resultado da solicitação de ressarcimento,nao_classificado,art. 207
+CRSubstMed,Créditos cedidos por substituição do medidor com defeito (art. 115),CR,SubstMed,substituição do medidor com defeito,nao_classificado,art. 115
+CRVistRr,Créd. Prazo Viol. por vistoria de unidade consumidora de área rural (art. 30),CR,VistRr,vistoria de unidade consumidora de área rural,rural,art. 30
+CRVistUb,Créd. Prazo Viol. por vistoria de unidade consumidora de área urbana (art. 30),CR,VistUb,vistoria de unidade consumidora de área urbana,urbana,art. 30
+CRVrfResfr,Créd. Prazo Viol. de verif. de equip. de resfriamento por ressarc. (art. 206),CR,VrfResfr,verif. de equip. de resfriamento por ressarc.,nao_classificado,art. 206
+CRVrfRsc,Créd. Prazo Viol. de verif. de equip. por ressarc. de dano elétrico (art. 206),CR,VrfRsc,verif. de equip. por ressarc. de dano elétrico,nao_classificado,art. 206
+PMAfedMed,Prazo Médio de solicitações de aferição dos medidores (art. 137),PM,AfedMed,solicitações de aferição dos medidores,nao_classificado,art. 137
+PMAnProj,Prazo Médio de informação do resultado da análise do projeto (art. 27-B),PM,AnProj,informação do resultado da análise do projeto,nao_classificado,art. 27-B
+PMCmsnObra,Prazo médio de Comissionamento das obras. (art. 37),PM,CmsnObra,Comissionamento das obras.,nao_classificado,art. 37
+PMEstProj,"Prazo Médio de estudos, orçamentos e projetos por obras (art. 32)",PM,EstProj,"estudos, orçamentos e projetos por obras",nao_classificado,art. 32
+PMInform,Prazo Médio de informação da relação dos atendimentos (art. 199),PM,Inform,informação da relação dos atendimentos,nao_classificado,art. 199
+PMLigA,Prazo Médio de ligação de unidade consumidora do grupo A (art. 31),PM,LigA,ligação de unidade consumidora do grupo A,grupo_a,art. 31
+PMLigBRr,Prazo Médio de ligação de consumidor do grupo B em área rural (art. 31),PM,LigBRr,ligação de consumidor do grupo B em área rural,grupo_b_rural,art. 31
+PMLigBUb,Prazo Médio de ligação de consumidor do grupo B em área urbana (art. 31),PM,LigBUb,ligação de consumidor do grupo B em área urbana,grupo_b_urbana,art. 31
+PMNvCmsn,Prazo médio de Novo comissionamento quando de reprovação. (art. 37),PM,NvCmsn,Novo comissionamento quando de reprovação.,nao_classificado,art. 37
+PMObGerais,Prazo médio de Conclusão de obra não abrang. nos inc. I e II do art. 34.,PM,ObGerais,Conclusão de obra não abrang. nos inc. I e II do art. 34.,nao_classificado,
+PMObra,Prazo Médio de Início das Obras (art. 34),PM,Obra,Início das Obras,nao_classificado,art. 34
+PMObraPrim,Prazo médio de Conclusão das obras de até 1 km na rede  prim. (art. 34),PM,ObraPrim,Conclusão das obras de até 1 km na rede prim.,nao_classificado,art. 34
+PMObraSec,Prazo médio de Conclusão das obras na rede tensão sec. (art. 34),PM,ObraSec,Conclusão das obras na rede tensão sec.,nao_classificado,art. 34
+PMPgtoRsc,"Prazo Médio de ressarc. por meio do pgto, conserto ou subst. (art. 208)",PM,PgtoRsc,"ressarc. por meio do pgto, conserto ou subst.",nao_classificado,art. 208
+PMRclCobr,Prazo Médio de reclamação de cobrança ou devol. de diferenças (art. 133),PM,RclCobr,reclamação de cobrança ou devol. de diferenças,nao_classificado,art. 133
+PMRclDano,Prazo Médio de solução ref. à danos não elétricos reclamados (art. 197),PM,RclDano,solução ref. à danos não elétricos reclamados,nao_classificado,art. 197
+PMRclVisTc,Prazo Médio de solução de reclamação com visita técnica (art. 197),PM,RclVisTc,solução de reclamação com visita técnica,nao_classificado,art. 197
+PMReanProj,Prazo Médio de reanálise do projeto por falta de informação (art. 27-B),PM,ReanProj,reanálise do projeto por falta de informação,nao_classificado,art. 27-B
+PMRelNorRr,Prazo Médio de religação em área rural (art. 176),PM,RelNorRr,religação em área rural,rural,art. 176
+PMRelNorUb,Prazo Médio de religação em área urbana (art. 176),PM,RelNorUb,religação em área urbana,urbana,art. 176
+PMRelUrgRr,Prazo Médio de religação de emergência em área rural (art. 176),PM,RelUrgRr,religação de emergência em área rural,rural,art. 176
+PMRelUrgUb,Prazo Médio de religação de emergência em área urbana (art. 176),PM,RelUrgUb,religação de emergência em área urbana,urbana,art. 176
+PMReligIdv,Prazo Médio de religação por suspensão indevida do fornec. (art. 176),PM,ReligIdv,religação por suspensão indevida do fornec.,nao_classificado,art. 176
+PMResulRsc,Prazo Médio de resultado da solicitação de ressarcimento (art. 207),PM,ResulRsc,resultado da solicitação de ressarcimento,nao_classificado,art. 207
+PMSubstMed,Prazo Médio de substituição do medidor com defeito (art. 115),PM,SubstMed,substituição do medidor com defeito,nao_classificado,art. 115
+PMVistRr,Prazo Médio de vistoria de unidade consumidora de área rural (art. 30),PM,VistRr,vistoria de unidade consumidora de área rural,rural,art. 30
+PMVistUb,Prazo médio de vistoria de unidade consumidora de área urbana (art. 30),PM,VistUb,vistoria de unidade consumidora de área urbana,urbana,art. 30
+PMVrfResfr,Prazo Médio de verif. de equip. de resfriamento por ressarc. (art. 206),PM,VrfResfr,verif. de equip. de resfriamento por ressarc.,nao_classificado,art. 206
+PMVrfRsc,Prazo Médio de verif. de equip. por ressarc. de dano elétrico (art. 206),PM,VrfRsc,verif. de equip. por ressarc. de dano elétrico,nao_classificado,art. 206
+QSAfedMed,Quantidade de solicitações de aferição dos medidores (art. 137),QS,AfedMed,solicitações de aferição dos medidores,nao_classificado,art. 137
+QSAnProj,Quantidade de informação do resultado da análise do projeto (art. 27-B),QS,AnProj,informação do resultado da análise do projeto,nao_classificado,art. 27-B
+QSCmsnObra,Quantidade de Comissionamento das obras. (art. 37),QS,CmsnObra,Comissionamento das obras.,nao_classificado,art. 37
+QSEstProj,"Quantidade de estudos, orçamentos e projetos por obras (art. 32)",QS,EstProj,"estudos, orçamentos e projetos por obras",nao_classificado,art. 32
+QSInform,Quantidade de informação da relação dos atendimentos (art. 199),QS,Inform,informação da relação dos atendimentos,nao_classificado,art. 199
+QSLigA,Quantidade de ligação de unidade consumidora do grupo A (art. 31),QS,LigA,ligação de unidade consumidora do grupo A,grupo_a,art. 31
+QSLigBRr,Quantidade de ligação de consumidor do grupo B em área rural (art. 31),QS,LigBRr,ligação de consumidor do grupo B em área rural,grupo_b_rural,art. 31
+QSLigBUb,Quantidade de ligação de consumidor do grupo B em área urbana (art. 31),QS,LigBUb,ligação de consumidor do grupo B em área urbana,grupo_b_urbana,art. 31
+QSNvCmsn,Quantidade de Novo comissionamento quando de reprovação. (art. 37),QS,NvCmsn,Novo comissionamento quando de reprovação.,nao_classificado,art. 37
+QSObGerais,Quantidade de Conclusão de obra não abrang. nos inc. I e II do art. 34.,QS,ObGerais,Conclusão de obra não abrang. nos inc. I e II do art. 34.,nao_classificado,
+QSObra,Quantidade de Início das Obras (art. 34),QS,Obra,Início das Obras,nao_classificado,art. 34
+QSObraPrim,Quantidade de Conclusão das obras de até 1 km na rede prim. (art. 34),QS,ObraPrim,Conclusão das obras de até 1 km na rede prim.,nao_classificado,art. 34
+QSObraSec,Quantidade de Conclusão das obras na rede tensão sec. (art. 34),QS,ObraSec,Conclusão das obras na rede tensão sec.,nao_classificado,art. 34
+QSPgtoRsc,"Quantidade de ressarc. por meio do pgto, conserto ou subst. (art. 208)",QS,PgtoRsc,"ressarc. por meio do pgto, conserto ou subst.",nao_classificado,art. 208
+QSRclCobr,Quantidade de reclamação de cobrança ou devol. de diferenças (art. 133),QS,RclCobr,reclamação de cobrança ou devol. de diferenças,nao_classificado,art. 133
+QSRclDano,Quantidade de solução ref. à danos não elétricos reclamados (art. 197),QS,RclDano,solução ref. à danos não elétricos reclamados,nao_classificado,art. 197
+QSRclVisTc,Quantidade de solução de reclamação com visita técnica (art. 197),QS,RclVisTc,solução de reclamação com visita técnica,nao_classificado,art. 197
+QSReanProj,Quantidade de reanálise do projeto por falta de informação (art. 27-B),QS,ReanProj,reanálise do projeto por falta de informação,nao_classificado,art. 27-B
+QSRelNorRr,Quantidade de religação em área rural (art. 176),QS,RelNorRr,religação em área rural,rural,art. 176
+QSRelNorUb,Quantidade de religação em área urbana (art. 176),QS,RelNorUb,religação em área urbana,urbana,art. 176
+QSRelUrgRr,Quantidade de religação de emergência em área rural (art. 176),QS,RelUrgRr,religação de emergência em área rural,rural,art. 176
+QSRelUrgUb,Quantidade de religação de emergência em área urbana (art. 176),QS,RelUrgUb,religação de emergência em área urbana,urbana,art. 176
+QSReligIdv,Quantidade de religação por suspensão indevida do fornec. (art. 176),QS,ReligIdv,religação por suspensão indevida do fornec.,nao_classificado,art. 176
+QSResulRsc,Quantidade de resultado da solicitação de ressarcimento (art. 207),QS,ResulRsc,resultado da solicitação de ressarcimento,nao_classificado,art. 207
+QSSubstMed,Quantidade de substituição do medidor com defeito (art. 115),QS,SubstMed,substituição do medidor com defeito,nao_classificado,art. 115
+QSVistRr,Quantidade de vistoria de unidade consumidora de área rural (art. 30),QS,VistRr,vistoria de unidade consumidora de área rural,rural,art. 30
+QSVistUb,Quantidade de vistoria de unidade consumidora de área urbana (art. 30),QS,VistUb,vistoria de unidade consumidora de área urbana,urbana,art. 30
+QSVrfResfr,Quantidade de verif. de equip. de resfriamento por ressarc. (art. 206),QS,VrfResfr,verif. de equip. de resfriamento por ressarc.,nao_classificado,art. 206
+QSVrfRsc,Quantidade de verif. de equip. por ressarc. de dano elétrico (art. 206),QS,VrfRsc,verif. de equip. por ressarc. de dano elétrico,nao_classificado,art. 206
+QVAfedMed,Quant. Prazos Viol. de solicitações de aferição dos medidores (art. 137),QV,AfedMed,solicitações de aferição dos medidores,nao_classificado,art. 137
+QVAnProj,Quant. Prazos Viol. de informação do resultado da análise do projeto (art. 27-B),QV,AnProj,informação do resultado da análise do projeto,nao_classificado,art. 27-B
+QVCmsnObra,Quant. Prazos Viol. de Comissionamento das obras. (art. 37),QV,CmsnObra,Comissionamento das obras.,nao_classificado,art. 37
+QVEstProj,"Quant. Prazos Viol. de estudos, orçamentos e projetos por obras (art. 32)",QV,EstProj,"estudos, orçamentos e projetos por obras",nao_classificado,art. 32
+QVInform,Quant. Prazos Viol. de informação da relação dos atendimentos (art. 199),QV,Inform,informação da relação dos atendimentos,nao_classificado,art. 199
+QVLigA,Quant. Prazos Viol. de ligação de unidade consumidora do grupo A (art. 31),QV,LigA,ligação de unidade consumidora do grupo A,grupo_a,art. 31
+QVLigBRr,Quant. Prazos Viol. de ligação de consumidor do grupo B em área rural (art. 31),QV,LigBRr,ligação de consumidor do grupo B em área rural,grupo_b_rural,art. 31
+QVLigBUb,Quant. Prazos Viol. de ligação de consumidor do grupo B em área urbana (art. 31),QV,LigBUb,ligação de consumidor do grupo B em área urbana,grupo_b_urbana,art. 31
+QVNvCmsn,Quant. Prazos Viol. de Novo comissionamento quando de reprovação. (art. 37),QV,NvCmsn,Novo comissionamento quando de reprovação.,nao_classificado,art. 37
+QVObGerais,Quant. Prazos Viol. de Conclusão de obra não abrang. nos inc. I e II do art. 34.,QV,ObGerais,Conclusão de obra não abrang. nos inc. I e II do art. 34.,nao_classificado,
+QVObra,Quant. Prazos Viol. de Início das Obras (art. 34),QV,Obra,Início das Obras,nao_classificado,art. 34
+QVObraPrim,Quant. Prazos Viol. de Conclusão das obras de até 1 km na rede prim. (art. 34),QV,ObraPrim,Conclusão das obras de até 1 km na rede prim.,nao_classificado,art. 34
+QVObraSec,Quant. Prazos Viol. de Conclusão das obras na rede tensão sec. (art. 34),QV,ObraSec,Conclusão das obras na rede tensão sec.,nao_classificado,art. 34
+QVPgtoRsc,"Quant. Prazos Viol. de ressarc. por meio do pgto, conserto ou subst. (art. 208)",QV,PgtoRsc,"ressarc. por meio do pgto, conserto ou subst.",nao_classificado,art. 208
+QVRclCobr,Quant. Prazos Viol. de reclamação de cobrança ou devol. de diferenças (art. 133),QV,RclCobr,reclamação de cobrança ou devol. de diferenças,nao_classificado,art. 133
+QVRclDano,Quant. Prazos Viol. de solução ref. à danos não elétricos reclamados (art. 197),QV,RclDano,solução ref. à danos não elétricos reclamados,nao_classificado,art. 197
+QVRclVisTc,Quant. Prazos Viol. de solução de reclamação com visita técnica (art. 197),QV,RclVisTc,solução de reclamação com visita técnica,nao_classificado,art. 197
+QVReanProj,Quant. Prazos Viol. de reanálise do projeto por falta de informação (art. 27-B),QV,ReanProj,reanálise do projeto por falta de informação,nao_classificado,art. 27-B
+QVRelNorRr,Quant. Prazos Viol. de religação em área rural (art. 176),QV,RelNorRr,religação em área rural,rural,art. 176
+QVRelNorUb,Quant. Prazos Viol. de religação em área urbana (art. 176),QV,RelNorUb,religação em área urbana,urbana,art. 176
+QVRelUrgRr,Quant. Prazos Viol. de religação de emergência em área rural (art. 176),QV,RelUrgRr,religação de emergência em área rural,rural,art. 176
+QVRelUrgUb,Quant. Prazos Viol. de religação de emergência em área urbana (art. 176),QV,RelUrgUb,religação de emergência em área urbana,urbana,art. 176
+QVReligIdv,Quant. Prazos Viol. de religação por suspensão indevida do fornec. (art. 176),QV,ReligIdv,religação por suspensão indevida do fornec.,nao_classificado,art. 176
+QVResulRsc,Quant. Prazos Viol. de resultado da solicitação de ressarcimento (art. 207),QV,ResulRsc,resultado da solicitação de ressarcimento,nao_classificado,art. 207
+QVSubstMed,Quant. Prazos Viol. de substituição do medidor com defeito (art. 115),QV,SubstMed,substituição do medidor com defeito,nao_classificado,art. 115
+QVVistRr,Quant. Prazos Viol. vistoria de unidade consumidora de área rural (art. 30),QV,VistRr,vistoria de unidade consumidora de área rural,rural,art. 30
+QVVistUb,Quant. Prazos Viol. de vistoria de unidade consumidora de área urbana (art. 30),QV,VistUb,vistoria de unidade consumidora de área urbana,urbana,art. 30
+QVVrfResfr,Quant. Prazos Viol. de verif. de equip. de resfriamento por ressarc. (art. 206),QV,VrfResfr,verif. de equip. de resfriamento por ressarc.,nao_classificado,art. 206
+QVVrfRsc,Quant. Prazos Viol. de verif. de equip. por ressarc. de dano elétrico (art. 206),QV,VrfRsc,verif. de equip. por ressarc. de dano elétrico,nao_classificado,art. 206
