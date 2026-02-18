@@ -43,14 +43,14 @@ dashboard/
 make serve
 ```
 
-Isso gera o JSON (se necessário) e inicia um servidor Python em `http://localhost:8080`.
+Isso gera o JSON (se necessário) e inicia um servidor Python em `http://localhost:8000`.
 
 ### Opção 2: Servidor HTTP manual
 
 ```bash
 cd dashboard
-python3 -m http.server 8080
-# Abra http://localhost:8080 no navegador
+python3 -m http.server 8000
+# Abra http://localhost:8000 no navegador
 ```
 
 ### Opção 3: Extensão Live Server (VS Code)

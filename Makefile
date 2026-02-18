@@ -59,8 +59,8 @@ dashboard:
 	@echo "   dashboard/relatorio.html  (relatório imprimível)"
 
 serve: dashboard
-	@echo "🌐 Abrindo http://localhost:8080"
-	cd dashboard && $(PYTHON) -m http.server 8080
+	@echo "🌐 Abrindo http://localhost:8000"
+	cd dashboard && $(PYTHON) -m http.server 8000
 
 pipeline: update-data analysis report dashboard
 
