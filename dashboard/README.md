@@ -86,10 +86,13 @@ O dashboard consome um único arquivo JSON gerado a partir dos CSVs analíticos:
 # Opção 1: apenas gerar o JSON
 make dashboard
 
-# Opção 2: pipeline completo (ETL → análise → dashboard)
+# Opção 2: benchmark Neoenergia (gera tabelas e relatório específicos)
+python3 -m src.analysis.neoenergia_diagnostico
+
+# Opção 3: pipeline completo (ETL → análise → diagnóstico Neoenergia → dashboard)
 make pipeline
 
-# Opção 3: direto pelo Python
+# Opção 4: direto pelo Python
 python3 -m src.analysis.build_dashboard_data
 ```
 
@@ -103,6 +106,8 @@ data/raw/*.csv
 data/processed/*.parquet
     ↓ transform_aneel.py + build_analysis_tables.py
 data/processed/analysis/*.csv
+    ↓ neoenergia_diagnostico.py (subconjunto neoenergia/* + relatório dedicado)
+data/processed/analysis/neoenergia/*.csv + reports/neoenergia_diagnostico.md
     ↓ build_dashboard_data.py
 dashboard/dashboard_data.json
     ↓ app.js (fetch)
@@ -195,6 +200,7 @@ Ctrl + P  →  Salvar como PDF
 
 - Layout claro em fundo branco com tipografia Inter
 - Botão "Imprimir / Salvar PDF" no canto superior
+- Botão de alternância de tema (sincronizado com o dashboard principal)
 - Quebras de página automáticas entre seções
 - Gráficos Chart.js renderizam no PDF
 

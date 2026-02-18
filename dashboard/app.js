@@ -3,6 +3,69 @@
  * Chart.js + Vanilla JS
  */
 
+/* ===================== THEME TOGGLE ===================== */
+const dashboardState = { data: null };
+
+function getPreferredTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+        return savedTheme;
+    }
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+function initTheme() {
+    applyTheme(getPreferredTheme());
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', newTheme);
+    applyTheme(newTheme, { rerender: true });
+}
+
+function updateThemeIcon(theme) {
+    const btn = document.getElementById('theme-toggle');
+    if (btn) {
+        const iconSpan = btn.querySelector('.icon') || btn;
+        iconSpan.textContent = theme === 'dark' ? '🌙' : '☀️';
+    }
+}
+
+function updateChartTheme(theme) {
+    if (theme === 'light') {
+        Chart.defaults.color = '#475569';
+        Chart.defaults.borderColor = 'rgba(0, 0, 0, 0.05)';
+        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+        Chart.defaults.plugins.tooltip.titleColor = '#0f172a';
+        Chart.defaults.plugins.tooltip.bodyColor = '#475569';
+        Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 0, 0, 0.1)';
+        return;
+    }
+
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = 'rgba(0, 164, 67, 0.08)';
+    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.95)';
+    Chart.defaults.plugins.tooltip.titleColor = '#fff';
+    Chart.defaults.plugins.tooltip.bodyColor = '#fff';
+    Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 164, 67, 0.3)';
+}
+
+function applyTheme(theme, { rerender = false } = {}) {
+    document.documentElement.setAttribute('data-theme', theme);
+    updateThemeIcon(theme);
+    updateChartTheme(theme);
+
+    if (rerender && dashboardState.data) {
+        destroyCharts();
+        renderAll(dashboardState.data);
+    }
+}
+
+// Expose for HTML button
+window.toggleTheme = toggleTheme;
+
 /* ===================== FORMATTERS (pt-BR) ===================== */
 const fmtNum = (v, d = 0) => {
     if (v == null || isNaN(v)) return '—';
@@ -28,35 +91,31 @@ const fmtMoneyFull = (v) => {
 
 /* ===================== CHART DEFAULTS ===================== */
 const COLORS = {
-    blue: '#6366f1',
-    blueLight: '#818cf8',
-    cyan: '#22d3ee',
+    blue: '#00A443',
+    blueLight: '#2fc66a',
+    cyan: '#00843D',
     green: '#34d399',
-    amber: '#fbbf24',
-    red: '#f87171',
-    purple: '#a78bfa',
+    amber: '#F4A100',
+    red: '#E63312',
+    purple: '#00402A',
     rose: '#fb7185',
     slate: '#64748b',
 };
 
 const NEO_COLORS = {
-    'Neoenergia Coelba': '#6366f1',
-    'Neoenergia Pernambuco': '#22d3ee',
+    'Neoenergia Coelba': '#00A443',
+    'Neoenergia Pernambuco': '#00843D',
     'Neoenergia Elektro': '#34d399',
-    'Neoenergia Cosern': '#fbbf24',
+    'Neoenergia Cosern': '#F4A100',
     'Neoenergia Brasilia': '#fb7185',
 };
 
 const CHART_FONT = { family: "'Inter', sans-serif", size: 12, weight: '500' };
 
-Chart.defaults.color = '#94a3b8';
-Chart.defaults.borderColor = 'rgba(99, 102, 241, 0.08)';
 Chart.defaults.font.family = CHART_FONT.family;
 Chart.defaults.font.size = CHART_FONT.size;
-Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.95)';
 Chart.defaults.plugins.tooltip.titleFont = { ...CHART_FONT, weight: '700', size: 13 };
 Chart.defaults.plugins.tooltip.bodyFont = CHART_FONT;
-Chart.defaults.plugins.tooltip.borderColor = 'rgba(99, 102, 241, 0.3)';
 Chart.defaults.plugins.tooltip.borderWidth = 1;
 Chart.defaults.plugins.tooltip.cornerRadius = 10;
 Chart.defaults.plugins.tooltip.padding = 12;
@@ -82,16 +141,18 @@ function createChart(canvasId, config) {
 
 /* ===================== NAVIGATION ===================== */
 function initNavigation() {
-    const tabs = document.querySelectorAll('.nav-tab');
+    const tabs = document.querySelectorAll('.nav-tab[data-tab]');
     const panels = document.querySelectorAll('.tab-panel');
 
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const target = tab.dataset.tab;
+            const panel = document.getElementById(target);
+            if (!panel) return;
             tabs.forEach(t => t.classList.remove('active'));
             panels.forEach(p => p.classList.remove('active'));
             tab.classList.add('active');
-            document.getElementById(target).classList.add('active');
+            panel.classList.add('active');
         });
     });
 }
@@ -129,7 +190,7 @@ function renderOverview(data) {
                 label: 'Taxa fora do prazo (%)',
                 data: taxas,
                 borderColor: COLORS.blue,
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                backgroundColor: 'rgba(0, 164, 67, 0.1)',
                 fill: true,
                 tension: 0.4,
                 pointRadius: 5,
@@ -179,7 +240,7 @@ function renderOverview(data) {
                 y: {
                     beginAtZero: true,
                     ticks: { callback: v => v.toFixed(1) + '%' },
-                    grid: { color: 'rgba(99,102,241,0.06)' }
+                    grid: { color: 'rgba(0,164,67,0.06)' }
                 }
             }
         }
@@ -216,7 +277,7 @@ function renderOverview(data) {
                 y: {
                     beginAtZero: true,
                     ticks: { callback: v => fmtMoney(v) },
-                    grid: { color: 'rgba(99,102,241,0.06)' }
+                    grid: { color: 'rgba(0,164,67,0.06)' }
                 }
             }
         }
@@ -267,7 +328,7 @@ function renderNeoenergia(data) {
                 y: {
                     beginAtZero: true,
                     title: { display: true, text: 'Fora prazo / 100k UC-mês', font: { size: 11 } },
-                    grid: { color: 'rgba(99,102,241,0.06)' }
+                    grid: { color: 'rgba(0,164,67,0.06)' }
                 }
             }
         }
@@ -306,7 +367,7 @@ function renderNeoenergia(data) {
                 y: {
                     beginAtZero: true,
                     title: { display: true, text: 'Compensação R$ / UC-mês', font: { size: 11 } },
-                    grid: { color: 'rgba(99,102,241,0.06)' }
+                    grid: { color: 'rgba(0,164,67,0.06)' }
                 }
             }
         }
@@ -345,8 +406,8 @@ function renderNeoenergia(data) {
                 scales: {
                     r: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(99,102,241,0.1)' },
-                        angleLines: { color: 'rgba(99,102,241,0.1)' },
+                        grid: { color: 'rgba(0,164,67,0.1)' },
+                        angleLines: { color: 'rgba(0,164,67,0.1)' },
                         pointLabels: { font: { size: 10 } },
                         ticks: { display: false },
                     }
@@ -433,7 +494,7 @@ function renderRegulatory(data) {
                 y: {
                     beginAtZero: true,
                     ticks: { callback: v => v.toFixed(2) + '%' },
-                    grid: { color: 'rgba(99,102,241,0.06)' }
+                    grid: { color: 'rgba(0,164,67,0.06)' }
                 }
             }
         }
@@ -491,7 +552,7 @@ function renderRegulatory(data) {
                     stacked: true,
                     beginAtZero: true,
                     ticks: { callback: v => fmtMoney(v) },
-                    grid: { color: 'rgba(99,102,241,0.06)' }
+                    grid: { color: 'rgba(0,164,67,0.06)' }
                 }
             }
         }
@@ -595,12 +656,19 @@ function renderDiagnostico(data) {
                     y: {
                         beginAtZero: true,
                         ticks: { callback: v => v.toFixed(1) + '%' },
-                        grid: { color: 'rgba(99,102,241,0.06)' }
+                        grid: { color: 'rgba(0,164,67,0.06)' }
                     }
                 }
             }
         });
     }
+}
+
+function renderAll(data) {
+    renderOverview(data);
+    renderNeoenergia(data);
+    renderRegulatory(data);
+    renderDiagnostico(data);
 }
 
 /* ===================== MAIN ===================== */
@@ -638,9 +706,11 @@ async function loadData() {
 
 async function init() {
     initNavigation();
+    initTheme();
 
     try {
         const data = await loadData();
+        dashboardState.data = data;
 
         document.getElementById('loading').style.display = 'none';
         document.getElementById('dashboard-content').style.display = 'block';
@@ -652,23 +722,21 @@ async function init() {
             document.getElementById('gen-time').textContent = d.toLocaleString('pt-BR');
         }
 
-        renderOverview(data);
-        renderNeoenergia(data);
-        renderRegulatory(data);
-        renderDiagnostico(data);
+        destroyCharts();
+        renderAll(data);
 
     } catch (err) {
         console.error('Erro ao carregar dados:', err);
         document.getElementById('loading').innerHTML = `
-      <div style="color: var(--accent-red); text-align: center;">
+      <div class="loading-error">
         <h3>⚡ Erro ao carregar dados</h3>
-        <p style="margin-top: 8px; color: var(--text-muted);">${err.message}</p>
-        <p style="margin-top: 12px; font-size: 0.82rem; color: var(--text-muted);">
+        <p class="loading-error-message">${err.message}</p>
+        <p class="loading-error-hint">
           O navegador bloqueia <code>fetch()</code> em <code>file://</code>.
           <br>Use o servidor local:
         </p>
-        <pre style="margin-top: 8px; padding: 12px; background: rgba(99,102,241,0.1); border-radius: 8px; font-size: 0.85rem; color: #c084fc;">make serve</pre>
-        <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 8px;">
+        <pre class="loading-error-command">make serve</pre>
+        <p class="loading-error-alt">
           ou: <code>cd dashboard && python3 -m http.server 8080</code>
         </p>
       </div>`;
@@ -676,4 +744,3 @@ async function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
-
