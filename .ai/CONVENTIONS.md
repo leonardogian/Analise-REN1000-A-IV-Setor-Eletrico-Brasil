@@ -1,0 +1,75 @@
+# 📐 Convenções — Guia para IA
+
+## Commits
+
+Usar **Conventional Commits** em português:
+
+```
+feat: dashboard interativo com 4 abas
+fix: porta do make serve para 8050
+docs: README com showcase do dashboard
+refactor: separação das tabelas analíticas
+```
+
+Prefixos: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`
+
+## Estrutura de Scripts Python
+
+- Todos em `src/etl/` e `src/analysis/`
+- Executados como módulo: `python3 -m src.analysis.build_report`
+- Cada script tem `if __name__ == "__main__": main()`
+- O Makefile usa `.venv/bin/python` quando disponível (fallback: `python3`)
+
+## Nomes de Arquivos
+
+- Scripts: `snake_case.py`
+- CSVs analíticos: `snake_case.csv` (convenção do pipeline)
+- HTML/CSS/JS: `snake_case` ou descritivo (`index.html`, `app.js`, `styles.css`)
+- Docs: `UPPER_CASE.md` para guias, `snake_case.md` para relatórios
+
+## Dados
+
+- **NÃO versionar** dados brutos/processados (`.gitignore`)
+- **SIM versionar** tabelas analíticas em `data/processed/analysis/`
+- **NÃO versionar** `dashboard/dashboard_data.json` (gerado)
+- Formato preferido para leitura: `.parquet` (mais rápido, menor)
+- Formato para humanos/debug: `.csv`
+
+## Dashboard (Frontend)
+
+- **Zero frameworks JS**: Vanilla JS puro
+- **Chart.js via CDN**: Não instalar localmente
+- **CSS puro**: Sem Tailwind, sem Bootstrap
+- **Dark mode**: Cores definidas em variáveis CSS (`:root`)
+- **Glassmorphism**: `backdrop-filter: blur()` + bordas translúcidas
+
+## Branch
+
+- Branch principal: `main`
+- Não existem branches de feature ativas
+
+## Ambiente
+
+- OS: Linux (Ubuntu)
+- Python: Usar `python3` (não `python`)
+- Venv: `.venv/` no root do projeto
+- IDE: VS Code (configuração em `.vscode/`, ignorada no Git)
+
+## Testes
+
+Não há framework de teste formal (pytest). Os testes existentes são:
+
+- `make test-fast`: Compila scripts + verifica imports + checa artefatos
+- `make test-smoke`: Roda análise + relatório + valida saídas
+- `scripts/check_artifacts.py`: Verifica se CSVs esperados existem
+- `scripts/smoke_imports.py`: Testa se imports dos módulos funcionam
+
+## Coisas para NÃO Fazer
+
+1. **NÃO alterar a porta 8050** sem verificar portas livres
+2. **NÃO usar `python`** — usar `python3` ou `make` (que trata automaticamente)
+3. **NÃO commitar dados brutos** (`data/raw/`) — são muito grandes
+4. **NÃO commitar `dashboard_data.json`** — é gerado
+5. **NÃO abrir o dashboard via `file://`** — não funciona (CORS)
+6. **NÃO instalar Chart.js localmente** — usa CDN
+7. **NÃO usar frameworks CSS/JS** — o dashboard é vanilla puro
