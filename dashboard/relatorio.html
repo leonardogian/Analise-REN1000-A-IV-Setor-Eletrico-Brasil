@@ -444,26 +444,27 @@
         <canvas id="r-chart-comp"></canvas>
     </div>
 
-    <!-- 2. Neoenergia -->
-    <h2 class="page-break">2. Benchmark da Classe Regulatória <span id="r-group-title-main">Classe</span> — <span id="r-group-count">0</span> Distribuidoras</h2>
-    <p>Comparação normalizada por unidades consumidoras (UC) para ajuste por porte das distribuidoras na classe regulatória selecionada.</p>
+    <!-- 2. Grandes Grupos -->
+    <h2 class="page-break">2. Benchmark de Grandes Grupos Econômicos</h2>
+    <p>Comparação normalizada por unidades consumidoras (UC) entre os principais grupos econômicos (Top 6 por UC ativa, com inclusão de Equatorial, CPFL e Neoenergia).</p>
 
     <div class="chart-section">
         <div class="chart-label">Transgressões por 100k UC-mês (2023–2025)</div>
-        <canvas id="r-chart-neo-fora"></canvas>
+        <canvas id="r-chart-featured-groups"></canvas>
     </div>
 
-    <h3>Tendência 2023 → 2025</h3>
+    <h3>Ranking do Último Ano por Grupo</h3>
     <table>
         <thead>
             <tr>
-                <th>Distribuidora</th>
-                <th>Fora/100k UC 2023</th>
-                <th>Fora/100k UC 2025</th>
-                <th>Variação</th>
+                <th>Grupo</th>
+                <th>Fora/100k UC</th>
+                <th>R$ / UC</th>
+                <th>Rank Fora</th>
+                <th>Rank Comp</th>
             </tr>
         </thead>
-        <tbody id="r-trend-body"></tbody>
+        <tbody id="r-featured-body"></tbody>
     </table>
 
     <!-- 3. Série Mensal -->
@@ -748,31 +749,51 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => fmtMoney(v) } } } },
             });
 
-            const anos = [...new Set(anual.map(r => r.ano))].sort();
-            const anualMap = new Map(anual.map(r => [`${r.distributor_id || r.distributor_label}|${r.ano}`, r]));
-            createReportChart('r-chart-neo-fora', {
-                type: 'bar',
-                data: {
-                    labels: anos,
-                    datasets: distributors.map(d => ({
-                        label: d.label,
-                        data: anos.map(ano => {
-                            const row = anualMap.get(`${d.key}|${ano}`);
-                            return row ? row.fora_prazo_por_100k_uc_mes : 0;
-                        }),
-                        backgroundColor: colors[d.key] + 'cc',
-                        borderColor: colors[d.key],
-                        borderWidth: 1.5,
-                        borderRadius: 3,
-                    })),
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } },
-            });
+            const featuredAnual = Array.isArray(data.featured_group_compare_anual) ? data.featured_group_compare_anual : [];
+            const featuredLatest = Array.isArray(data.featured_group_compare_latest) ? data.featured_group_compare_latest : [];
+            if (featuredAnual.length) {
+                const featuredYears = [...new Set(featuredAnual.map(r => r.ano))].sort();
+                const featuredIds = Array.isArray(data.featured_group_ids) && data.featured_group_ids.length
+                    ? data.featured_group_ids
+                    : [...new Set(featuredAnual.map(r => r.group_id))];
+                const featuredMap = new Map(featuredAnual.map(r => [`${r.group_id}|${r.ano}`, r]));
+                const featuredLabelById = new Map(featuredAnual.map(r => [r.group_id, r.group_label || r.group_id]));
+                createReportChart('r-chart-featured-groups', {
+                    type: 'line',
+                    data: {
+                        labels: featuredYears,
+                        datasets: featuredIds.map((gid, idx) => ({
+                            label: featuredLabelById.get(gid) || gid,
+                            data: featuredYears.map(ano => {
+                                const row = featuredMap.get(`${gid}|${ano}`);
+                                return row ? row.fora_prazo_por_100k_uc_mes : null;
+                            }),
+                            borderColor: PALETTE[idx % PALETTE.length],
+                            backgroundColor: PALETTE[idx % PALETTE.length] + '20',
+                            borderWidth: 2,
+                            tension: .3,
+                            pointRadius: 3,
+                            spanGaps: true,
+                            fill: false,
+                        })),
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top' } },
+                        scales: { x: { grid: { display: false } }, y: { beginAtZero: true } },
+                    },
+                });
+            }
 
-            document.getElementById('r-trend-body').innerHTML = trend.map(t => {
-                const dp = t.delta_fora_prazo_por_100k_uc_mes_pct;
-                const deltaClass = dp <= 0 ? 'good' : 'bad';
-                return `<tr><td>${t.distributor_label}</td><td class="num">${fmtNum(t.fora_prazo_por_100k_uc_mes_2023, 2)}</td><td class="num">${fmtNum(t.fora_prazo_por_100k_uc_mes_2025, 2)}</td><td class="num trend-delta ${deltaClass}">${fmtPct(dp)}</td></tr>`;
+            document.getElementById('r-featured-body').innerHTML = featuredLatest.map(row => {
+                return `<tr>
+                    <td>${row.group_label || row.group_id}</td>
+                    <td class="num">${fmtNum(row.fora_prazo_por_100k_uc_mes, 2)}</td>
+                    <td class="num">${fmtNum(row.compensacao_rs_por_uc_mes, 4)}</td>
+                    <td class="num">${fmtNum(row.rank_fora_100k, 0)}</td>
+                    <td class="num">${fmtNum(row.rank_comp_uc, 0)}</td>
+                </tr>`;
             }).join('');
 
             const mos = [...new Set(mensal.map(r => `${r.ano}-${String(r.mes).padStart(2, '0')}`))].sort();

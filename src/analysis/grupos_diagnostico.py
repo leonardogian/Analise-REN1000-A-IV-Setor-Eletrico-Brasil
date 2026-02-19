@@ -539,7 +539,26 @@ def run_all_groups() -> dict[str, pd.DataFrame]:
     monthly_dist = load_table("fato_transgressao_mensal_distribuidora")
     monthly_porte = load_table("fato_transgressao_mensal_porte")
     indicadores = load_table("fato_indicadores_anuais")
-    servicos = load_table("fato_servicos_municipio_mes")
+    servicos = load_table(
+        "fato_servicos_municipio_mes",
+        columns=[
+            "ano",
+            "mes",
+            "group_id",
+            "distributor_id",
+            "sigagente",
+            "nomagente",
+            "distributor_name_sig",
+            "distributor_name_legal",
+            "distributor_label",
+            "codtiposervico",
+            "qtd_serv_realizado",
+            "qtd_fora_prazo",
+            "compensacao_rs",
+        ],
+    )
+    if "ano" in servicos.columns:
+        servicos = servicos[servicos["ano"].between(2023, 2025, inclusive="both")].copy()
 
     monthly_dist = add_labels(
         ensure_group_columns(monthly_dist, distributor_to_group, group_labels, distributor_name_overrides),

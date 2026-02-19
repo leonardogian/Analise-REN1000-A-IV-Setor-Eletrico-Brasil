@@ -47,6 +47,8 @@ REGULATORY_LABELS = {
     "urbana": "Urbana",
     "nao_classificado": "Não classificado",
 }
+FEATURED_TOP_N = 6
+FEATURED_REQUIRED_GROUPS = ("equatorial", "cpfl", "neoenergia")
 
 
 def _safe(v):
@@ -292,6 +294,113 @@ def choose_default_group_id(
     if "neoenergia" in group_ids:
         return "neoenergia"
     return sorted(group_ids)[0]
+
+
+def select_featured_group_ids(
+    distributor_groups: list[dict],
+    benchmark: pd.DataFrame,
+    *,
+    top_n: int = FEATURED_TOP_N,
+    required_groups: tuple[str, ...] = FEATURED_REQUIRED_GROUPS,
+) -> list[str]:
+    available = {str(item.get("group_id")) for item in distributor_groups}
+    selected: list[str] = []
+
+    if not benchmark.empty and "uc_ativa_media_ano" in benchmark.columns:
+        by_uc = (
+            benchmark.groupby("group_id", as_index=False)["uc_ativa_media_ano"]
+            .sum()
+            .sort_values("uc_ativa_media_ano", ascending=False)
+        )
+        selected.extend(
+            str(gid)
+            for gid in by_uc["group_id"].head(top_n).tolist()
+            if str(gid) in available
+        )
+
+    if not selected:
+        selected.extend(
+            str(item["group_id"])
+            for item in sorted(distributor_groups, key=lambda row: row.get("distributor_count", 0), reverse=True)[:top_n]
+        )
+
+    for gid in required_groups:
+        if gid in available and gid not in selected:
+            selected.append(gid)
+
+    deduped: list[str] = []
+    for gid in selected:
+        if gid in available and gid not in deduped:
+            deduped.append(gid)
+    return deduped
+
+
+def build_featured_groups(distributor_groups: list[dict], featured_ids: list[str]) -> list[dict]:
+    lookup = {str(item.get("group_id")): item for item in distributor_groups}
+    return [lookup[gid] for gid in featured_ids if gid in lookup]
+
+
+def build_featured_group_compare_anual(
+    annual: pd.DataFrame,
+    featured_ids: list[str],
+    distributor_groups: list[dict],
+) -> list[dict]:
+    if annual.empty or not featured_ids:
+        return []
+
+    frame = annual[annual["group_id"].astype(str).isin(featured_ids)].copy()
+    if frame.empty:
+        return []
+
+    grouped = (
+        frame.groupby(["group_id", "ano"], as_index=False)
+        .agg(
+            distributor_count=("distributor_id", "nunique"),
+            qtd_serv_realizado=("qtd_serv_realizado", "sum"),
+            qtd_fora_prazo=("qtd_fora_prazo", "sum"),
+            compensacao_rs=("compensacao_rs", "sum"),
+            exposicao_uc_mes=("exposicao_uc_mes", "sum"),
+            uc_ativa_media_ano=("uc_ativa_media_ano", "sum"),
+        )
+    )
+    grouped["taxa_fora_prazo"] = np.where(
+        grouped["qtd_serv_realizado"] > 0,
+        grouped["qtd_fora_prazo"] / grouped["qtd_serv_realizado"],
+        np.nan,
+    )
+    grouped["fora_prazo_por_100k_uc_mes"] = np.where(
+        grouped["exposicao_uc_mes"] > 0,
+        grouped["qtd_fora_prazo"] / grouped["exposicao_uc_mes"] * 100000.0,
+        np.nan,
+    )
+    grouped["compensacao_rs_por_uc_mes"] = np.where(
+        grouped["exposicao_uc_mes"] > 0,
+        grouped["compensacao_rs"] / grouped["exposicao_uc_mes"],
+        np.nan,
+    )
+
+    label_lookup = {str(item.get("group_id")): str(item.get("group_label", item.get("group_id"))) for item in distributor_groups}
+    grouped["group_label"] = grouped["group_id"].map(lambda gid: label_lookup.get(str(gid), str(gid)))
+    grouped["group_id"] = grouped["group_id"].astype(str)
+    grouped["group_order"] = grouped["group_id"].map(lambda gid: featured_ids.index(gid) if gid in featured_ids else 999)
+    grouped = grouped.sort_values(["group_order", "ano"]).drop(columns=["group_order"])
+    return _df_to_records(grouped)
+
+
+def build_featured_group_compare_latest(featured_anual: list[dict]) -> list[dict]:
+    if not featured_anual:
+        return []
+    frame = pd.DataFrame(featured_anual)
+    if frame.empty or "ano" not in frame.columns:
+        return []
+    latest_year = int(pd.to_numeric(frame["ano"], errors="coerce").dropna().max())
+    latest = frame[pd.to_numeric(frame["ano"], errors="coerce") == latest_year].copy()
+    if latest.empty:
+        return []
+    latest["rank_fora_100k"] = latest["fora_prazo_por_100k_uc_mes"].rank(method="min", ascending=True)
+    latest["rank_comp_uc"] = latest["compensacao_rs_por_uc_mes"].rank(method="min", ascending=True)
+    latest = latest.sort_values("fora_prazo_por_100k_uc_mes", ascending=True)
+    return _df_to_records(latest)
 
 
 def build_legacy_neo_alias(group_views: dict[str, dict]) -> dict[str, list[dict]]:
@@ -765,6 +874,14 @@ def main() -> None:
         mensal=grupos_mensal,
     )
     default_group_id = choose_default_group_id(distributor_groups, grupos_benchmark)
+    featured_group_ids = select_featured_group_ids(distributor_groups, grupos_benchmark)
+    featured_groups = build_featured_groups(distributor_groups, featured_group_ids)
+    featured_group_compare_anual = build_featured_group_compare_anual(
+        annual=grupos_anual,
+        featured_ids=featured_group_ids,
+        distributor_groups=distributor_groups,
+    )
+    featured_group_compare_latest = build_featured_group_compare_latest(featured_group_compare_anual)
 
     regulatory_groups, regulatory_views, default_regulatory_id = build_regulatory_views(
         monthly_porte=fato_mensal_porte,
@@ -782,6 +899,10 @@ def main() -> None:
         "distributor_groups": distributor_groups,
         "group_views": group_views,
         "default_group_id": default_group_id,
+        "featured_group_ids": featured_group_ids,
+        "featured_groups": featured_groups,
+        "featured_group_compare_anual": featured_group_compare_anual,
+        "featured_group_compare_latest": featured_group_compare_latest,
         "regulatory_groups": regulatory_groups,
         "regulatory_views": regulatory_views,
         "default_regulatory_id": default_regulatory_id,

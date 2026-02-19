@@ -1,3 +1,45 @@
 {
-  "distributor_name_overrides": {}
+  "distributor_name_overrides": {
+    "neoenergia_pernambuco": {
+      "sigagente": "Neoenergia Pernambuco",
+      "nomagente": "COMPANHIA ENERGÉTICA DE PERNAMBUCO"
+    },
+    "neoenergia_brasilia": {
+      "sigagente": "Neoenergia Brasília",
+      "nomagente": "NEOENERGIA DISTRIBUIÇÃO BRASÍLIA S.A."
+    },
+    "neoenergia_coelba": {
+      "sigagente": "Neoenergia Coelba",
+      "nomagente": "COMPANHIA DE ELETRICIDADE DO ESTADO DA BAHIA"
+    },
+    "neoenergia_cosern": {
+      "sigagente": "Neoenergia Cosern",
+      "nomagente": "COMPANHIA ENERGÉTICA DO RIO GRANDE DO NORTE"
+    },
+    "neoenergia_elektro": {
+      "sigagente": "Neoenergia Elektro",
+      "nomagente": "ELEKTRO REDES S.A."
+    },
+    "cpfl_paulista": {
+      "sigagente": "CPFL Paulista",
+      "nomagente": "COMPANHIA PAULISTA DE FORÇA E LUZ"
+    },
+    "cpfl_piratininga": {
+      "sigagente": "CPFL Piratininga",
+      "nomagente": "COMPANHIA PIRATININGA DE FORÇA E LUZ"
+    },
+    "cpfl_santa_cruz": {
+      "sigagente": "CPFL Santa Cruz",
+      "nomagente": "COMPANHIA JAGUARI DE ENERGIA - CPFL SANTA CRUZ"
+    }
+  },
+  "distributor_aliases": {
+    "neoenergia_pe": "neoenergia_pernambuco",
+    "neoenergia_pernambuco": "neoenergia_pernambuco",
+    "cpfl_piratining": "cpfl_piratininga",
+    "cpfl_jaguari": "cpfl_santa_cruz",
+    "cpfl_mococa": "cpfl_santa_cruz",
+    "cpfl_leste_pauli": "cpfl_paulista",
+    "cpfl_sul_paulist": "cpfl_paulista"
+  }
 }

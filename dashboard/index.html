@@ -166,7 +166,7 @@
         </div>
       </section>
 
-      <!-- ============ TAB 2: NEOENERGIA ============ -->
+      <!-- ============ TAB 2: GRANDES GRUPOS ============ -->
       <section id="tab-neoenergia" class="tab-panel">
 
         <div class="group-selector-row">
@@ -176,13 +176,67 @@
 
         <h2 class="section-title">
           <span class="icon">🏢</span>
-          Benchmark <span id="group-title-main">Grupo</span> —
+          Grandes Grupos Econômicos e Benchmark de <span id="group-title-main">Grupo</span> —
           <span id="group-count-main">0</span> Distribuidoras
         </h2>
         <p class="section-description">
-          Análise comparativa do <span id="group-label-desc">grupo selecionado</span>.
-          Métricas normalizadas por unidades consumidoras (UC) para comparação justa por porte das distribuidoras.
+          Comparação entre os maiores grupos econômicos e análise detalhada do <span id="group-label-desc">grupo selecionado</span>.
+          Métricas normalizadas por unidades consumidoras (UC) garantem comparabilidade por porte.
         </p>
+
+        <div class="chart-grid two-col">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Comparação entre Grandes Grupos</div>
+                <div class="chart-subtitle">Fora do prazo por 100k UC-mês (Top 6 por UC ativa)</div>
+              </div>
+              <span class="chart-tag">2023–2025</span>
+            </div>
+            <div class="chart-canvas-wrapper">
+              <canvas id="chart-featured-groups"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Ranking do Último Ano por Grupo</div>
+                <div class="chart-subtitle">Pressão normalizada e compensação normalizada</div>
+              </div>
+              <span class="chart-tag" id="featured-latest-year">—</span>
+            </div>
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Grupo</th>
+                    <th>Fora/100k UC</th>
+                    <th>R$ / UC</th>
+                    <th>Rank Fora</th>
+                    <th>Rank Comp</th>
+                  </tr>
+                </thead>
+                <tbody id="featured-groups-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight-grid section-spacing-top-sm">
+          <div class="insight-card">
+            <span class="insight-icon">🏆</span>
+            <div class="insight-text" id="group-insight-best">—</div>
+          </div>
+          <div class="insight-card">
+            <span class="insight-icon">⚠️</span>
+            <div class="insight-text" id="group-insight-worst">—</div>
+          </div>
+          <div class="insight-card">
+            <span class="insight-icon">📉</span>
+            <div class="insight-text" id="group-insight-trend">—</div>
+          </div>
+        </div>
 
         <div class="chart-grid two-col">
           <div class="chart-card">

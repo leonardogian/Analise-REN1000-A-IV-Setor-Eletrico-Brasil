@@ -213,6 +213,11 @@ function normalizeDashboardPayload(data) {
 }
 
 function getGroupDefs(data) {
+    const featured = Array.isArray(data.featured_groups) ? data.featured_groups : [];
+    const featuredEnabled = featured.filter(g => g.selector_enabled);
+    if (featuredEnabled.length) return featuredEnabled;
+    if (featured.length) return featured;
+
     const groups = Array.isArray(data.distributor_groups) ? data.distributor_groups : [];
     const enabled = groups.filter(g => g.selector_enabled);
     return enabled.length ? enabled : groups;
@@ -666,6 +671,116 @@ function renderBenchmark(view, distributors, colors) {
     }
 }
 
+function renderFeaturedGroupComparison(data) {
+    const annual = Array.isArray(data.featured_group_compare_anual) ? data.featured_group_compare_anual : [];
+    const latest = Array.isArray(data.featured_group_compare_latest) ? data.featured_group_compare_latest : [];
+    if (!annual.length) return;
+
+    const years = [...new Set(annual.map(r => r.ano))].sort();
+    const groupIds = Array.isArray(data.featured_group_ids) && data.featured_group_ids.length
+        ? data.featured_group_ids
+        : [...new Set(annual.map(r => r.group_id))];
+    const labelsByGroup = new Map(
+        annual.map(r => [r.group_id, r.group_label || r.group_id])
+    );
+    const rowMap = new Map(annual.map(r => [`${r.group_id}|${r.ano}`, r]));
+    const groupColors = {};
+    groupIds.forEach((gid, idx) => {
+        groupColors[gid] = DISTRIBUTOR_PALETTE[idx % DISTRIBUTOR_PALETTE.length];
+    });
+
+    createChart('chart-featured-groups', {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: groupIds.map(gid => ({
+                label: labelsByGroup.get(gid) || gid,
+                data: years.map(y => {
+                    const row = rowMap.get(`${gid}|${y}`);
+                    return row ? row.fora_prazo_por_100k_uc_mes : null;
+                }),
+                borderColor: groupColors[gid],
+                backgroundColor: groupColors[gid] + '1a',
+                borderWidth: 2.5,
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                fill: false,
+                tension: 0.25,
+                spanGaps: true,
+            })),
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y, 2)} por 100k UC`,
+                    },
+                },
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Fora prazo / 100k UC-mês', font: { size: 11 } },
+                    grid: { color: 'rgba(0,164,67,0.06)' },
+                },
+            },
+        },
+    });
+
+    const yearTag = document.getElementById('featured-latest-year');
+    if (yearTag && latest.length) {
+        const yearsLatest = latest.map(r => r.ano).filter(v => v != null);
+        if (yearsLatest.length) yearTag.textContent = String(Math.max(...yearsLatest));
+    }
+    const tbody = document.getElementById('featured-groups-table-body');
+    if (tbody) {
+        tbody.innerHTML = latest.map(row => {
+            return `<tr>
+                <td>${row.group_label || row.group_id}</td>
+                <td class="num">${fmtNum(row.fora_prazo_por_100k_uc_mes, 2)}</td>
+                <td class="num">${fmtNum(row.compensacao_rs_por_uc_mes, 4)}</td>
+                <td class="num">${fmtNum(row.rank_fora_100k, 0)}</td>
+                <td class="num">${fmtNum(row.rank_comp_uc, 0)}</td>
+            </tr>`;
+        }).join('');
+    }
+}
+
+function renderGroupInsights(view) {
+    const benchmark = view.benchmark || [];
+    const trend = view.tendencia || [];
+    const insightBest = document.getElementById('group-insight-best');
+    const insightWorst = document.getElementById('group-insight-worst');
+    const insightTrend = document.getElementById('group-insight-trend');
+
+    if (insightBest && insightWorst) {
+        if (benchmark.length) {
+            const best = [...benchmark].sort((a, b) => (a.fora_prazo_por_100k_uc_mes || 0) - (b.fora_prazo_por_100k_uc_mes || 0))[0];
+            const worst = [...benchmark].sort((a, b) => (b.fora_prazo_por_100k_uc_mes || 0) - (a.fora_prazo_por_100k_uc_mes || 0))[0];
+            insightBest.innerHTML = `<strong>${best.distributor_label}</strong> tem a menor pressão normalizada: ${fmtNum(best.fora_prazo_por_100k_uc_mes, 2)} por 100k UC-mês.`;
+            insightWorst.innerHTML = `<strong>${worst.distributor_label}</strong> concentra a maior pressão normalizada: ${fmtNum(worst.fora_prazo_por_100k_uc_mes, 2)} por 100k UC-mês.`;
+        } else {
+            insightBest.textContent = 'Sem dados suficientes para identificar a melhor distribuidora do grupo.';
+            insightWorst.textContent = 'Sem dados suficientes para identificar a pior distribuidora do grupo.';
+        }
+    }
+
+    if (insightTrend) {
+        if (trend.length) {
+            const comparable = trend.filter(t => t.delta_fora_prazo_por_100k_uc_mes_pct != null && !isNaN(t.delta_fora_prazo_por_100k_uc_mes_pct));
+            const improved = comparable.filter(t => t.delta_fora_prazo_por_100k_uc_mes_pct <= 0);
+            insightTrend.innerHTML = `<strong>${improved.length} de ${comparable.length}</strong> distribuidoras reduziram a taxa normalizada entre 2023 e 2025.`;
+        } else {
+            insightTrend.textContent = 'Sem dados de tendência suficientes para o grupo selecionado.';
+        }
+    }
+}
+
 function renderRegulatory(view, distributors, colors) {
     const mensal = view.mensal || [];
     if (!mensal.length) return;
@@ -948,12 +1063,14 @@ function renderDataAvailability(data) {
 
 function renderAll(data) {
     renderOverview(data);
+    renderFeaturedGroupComparison(data);
 
     const { group, view: groupView } = getActiveGroupContext(data);
     updateGroupTexts(group, groupView);
     const economicDistributors = getDistributorMeta(groupView);
     const economicColors = makeColorMap(economicDistributors);
     renderBenchmark(groupView, economicDistributors, economicColors);
+    renderGroupInsights(groupView);
 
     const { regulatory, view: regulatoryView } = getActiveRegulatoryContext(data);
     updateRegulatoryTexts(regulatory, regulatoryView);

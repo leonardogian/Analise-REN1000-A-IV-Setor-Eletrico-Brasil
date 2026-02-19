@@ -55,11 +55,11 @@ def infer_group_id(distributor_name: object) -> str:
         return "neoenergia"
     if "EQUATORIAL" in name:
         return "equatorial"
-    if name.startswith("CPFL "):
+    if re.match(r"^CPFL(\s|-|$)", name):
         return "cpfl"
-    if name.startswith("ENEL "):
+    if re.match(r"^ENEL(\s|-|$)", name):
         return "enel"
-    if name.startswith("ENERGISA "):
+    if re.match(r"^ENERGISA(\s|-|$)", name):
         return "energisa"
 
     tokens = name.split()
@@ -108,7 +108,7 @@ def load_group_overrides(
 def load_distributor_name_overrides(
     path: Path = DEFAULT_NAMES_OVERRIDES_PATH,
 ) -> dict[str, dict[str, str]]:
-    """Load manual name normalization by distributor_id."""
+    """Load manual name normalization and aliases by distributor_id."""
     if not path.exists():
         return {}
 
@@ -117,10 +117,14 @@ def load_distributor_name_overrides(
         raise ValueError(f"Invalid names overrides payload: {path}")
 
     raw_map = payload.get("distributor_name_overrides", {})
+    raw_aliases = payload.get("distributor_aliases", {})
     if not isinstance(raw_map, dict):
         raise ValueError("distributor_names_overrides.json must contain object 'distributor_name_overrides'.")
+    if not isinstance(raw_aliases, dict):
+        raise ValueError("distributor_names_overrides.json must contain object 'distributor_aliases'.")
 
     normalized: dict[str, dict[str, str]] = {}
+    canonical_map: dict[str, str] = {}
     for distributor_id, item in raw_map.items():
         if not str(distributor_id).strip() or not isinstance(item, dict):
             continue
@@ -132,6 +136,23 @@ def load_distributor_name_overrides(
         normalized[dist_id] = {
             "sigagente": sig_name,
             "nomagente": legal_name,
+            "canonical_id": dist_id,
+        }
+        canonical_map[dist_id] = dist_id
+
+    for alias_id, canonical_id in raw_aliases.items():
+        if not str(alias_id).strip() or not str(canonical_id).strip():
+            continue
+        alias_slug = slugify(alias_id)
+        canonical_slug = slugify(canonical_id)
+        canonical_map[alias_slug] = canonical_slug
+
+    for alias_id, canonical_id in canonical_map.items():
+        target = normalized.get(canonical_id, {})
+        normalized[alias_id] = {
+            "sigagente": str(target.get("sigagente", "")).strip(),
+            "nomagente": str(target.get("nomagente", "")).strip(),
+            "canonical_id": canonical_id,
         }
     return normalized
 
@@ -145,6 +166,16 @@ def resolve_group_id(
     overrides = distributor_to_group or {}
     if distributor_id in overrides:
         return overrides[distributor_id]
+    if distributor_id.startswith("neoenergia_"):
+        return "neoenergia"
+    if distributor_id.startswith("cpfl_"):
+        return "cpfl"
+    if distributor_id.startswith("equatorial_"):
+        return "equatorial"
+    if distributor_id.startswith("enel_"):
+        return "enel"
+    if distributor_id.startswith("energisa_"):
+        return "energisa"
     return infer_group_id(distributor_name)
 
 
@@ -173,7 +204,7 @@ def annotate_distributor_group(
     out[sig_col] = sig_series
     out[name_col] = name_series if name_col in out.columns else name_series
 
-    out["distributor_id"] = [
+    raw_distributor_ids = [
         build_distributor_id(sig, name)
         for sig, name in zip(sig_series.tolist(), name_series.tolist())
     ]
@@ -187,14 +218,19 @@ def annotate_distributor_group(
             return ""
         return str(value).strip()
 
-    for sig, legal, dist_id in zip(sig_series.tolist(), name_series.tolist(), out["distributor_id"].tolist()):
+    canonical_ids: list[str] = []
+    for sig, legal, dist_id in zip(sig_series.tolist(), name_series.tolist(), raw_distributor_ids):
         mapped = name_overrides.get(dist_id, {})
+        canonical_id = slugify(mapped.get("canonical_id", dist_id), fallback=dist_id)
+        canonical_ids.append(canonical_id)
         sig_name = str(mapped.get("sigagente", "")).strip() or _text(sig)
         legal_name = str(mapped.get("nomagente", "")).strip() or _text(legal)
         if not legal_name:
             legal_name = sig_name
         name_sig_values.append(sig_name)
         name_legal_values.append(legal_name)
+
+    out["distributor_id"] = pd.Series(canonical_ids, index=out.index, dtype="string")
 
     out["distributor_name_sig"] = pd.Series(name_sig_values, index=out.index, dtype="string")
     out["distributor_name_legal"] = pd.Series(name_legal_values, index=out.index, dtype="string")

@@ -1,1 +1,4 @@
 neo_distribuidora,ano,qtd_serv_realizado,delta_serv_pct,share_serv_focus,delta_share_focus_abs,alerta_quebra_volume,alerta_quebra_mix
+Neoenergia Cosern — COMPANHIA ENERGÉTICA DO RIO GRANDE DO NORTE,2025,5513087,-0.6879421162986794,0.8837014543757427,-0.090976124389894,True,False
+Neoenergia Elektro — ELEKTRO REDES S.A.,2024,50085158,-0.5098955384557244,0.9758004956278664,-0.0146759489897408,True,False
+Neoenergia Pernambuco — COMPANHIA ENERGÉTICA DE PERNAMBUCO,2025,1481135,-0.9544974271884644,0.0110077744432479,-0.948073718950863,True,True
