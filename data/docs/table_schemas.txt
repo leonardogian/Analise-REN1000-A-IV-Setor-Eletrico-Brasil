@@ -1,0 +1,299 @@
+=== TABELAS DE ANÁLISE (data/processed/analysis) ===
+
+--- Tabela: fato_transgressao_mensal_distribuidora.parquet ---
+
+Colunas e tipos:
+  - ano: int32
+  - mes: int32
+  - group_id: str
+  - distributor_id: string
+  - sigagente: string
+  - nomagente: string
+  - distributor_name_sig: string
+  - distributor_name_legal: string
+  - distributor_label: str
+  - uc_ativa_mes: int64
+  - bucket_porte: string
+  - rank_porte_ano: Int64
+  - uc_ativa_media_mensal: float64
+  - qtd_serv_realizado: int64
+  - qtd_fora_prazo: int64
+  - compensacao_rs: Float64
+  - taxa_fora_prazo: float64
+  - fora_prazo_por_100k_uc_mes: float64
+  - compensacao_rs_por_uc_mes: float64
+  - compensacao_media_por_transgressao_rs: float64
+  - periodo_regulatorio: str
+  - ano_comparavel_principal: bool
+
+--- Tabela: dim_indicador_servico.parquet ---
+
+Colunas e tipos:
+  - sigindicador: string
+  - dscindicador: string
+  - familia_indicador: str
+  - codigo_base: str
+  - servico_nome: str
+  - classe_local: str
+  - artigo_ren: str
+
+--- Tabela: fato_uc_ativa_mensal_distribuidora.parquet ---
+
+Colunas e tipos:
+  - ano: int32
+  - mes: int32
+  - group_id: str
+  - distributor_id: string
+  - sigagente: string
+  - nomagente: string
+  - distributor_name_sig: string
+  - distributor_name_legal: string
+  - distributor_label: str
+  - uc_ativa_mes: int64
+
+--- Tabela: fato_grupos_algoritmicos.parquet ---
+
+Colunas e tipos:
+  - dimension_id: str
+  - dimension_label: str
+  - id: string
+  - label: string
+  - periodo_regulatorio: str
+  - meses_com_dados: int64
+  - qtd_serv_realizado: int64
+  - qtd_fora_prazo: int64
+  - compensacao_rs: Float64
+  - exposicao_uc_mes: float64
+  - taxa_fora_prazo: float64
+  - fora_prazo_por_100k_uc_mes: float64
+  - compensacao_rs_por_uc_mes: float64
+  - share_serv_periodo: float64
+  - suppressed_low_volume: bool
+  - selector_enabled: bool
+
+--- Tabela: kpi_regulatorio_anual.parquet ---
+
+Colunas e tipos:
+  - ano: Int64
+  - periodo_regulatorio: str
+  - qtd_serv: Float64
+  - qtd_fora_prazo: Float64
+  - compensacao_rs: Float64
+  - taxa_fora_prazo: float64
+
+--- Tabela: fato_indicadores_anuais.parquet ---
+
+Colunas e tipos:
+  - ano: Int64
+  - group_id: str
+  - distributor_id: string
+  - sigagente: string
+  - codigo_base: str
+  - classe_local: str
+  - qtd_serv: Float64
+  - qtd_fora_prazo: Float64
+  - prazo_medio: Float64
+  - compensacao_rs: Float64
+  - has_qs: bool
+  - has_qv: bool
+  - has_pm: bool
+  - has_cr: bool
+  - taxa_fora_prazo: float64
+  - periodo_regulatorio: str
+  - ano_comparavel_principal: boolean
+  - uc_ativa_media_mensal: float64
+  - bucket_porte: string
+  - rank_porte_ano: Int64
+  - nomagente: string
+  - distributor_name_sig: string
+  - distributor_name_legal: string
+  - distributor_label: str
+  - fora_prazo_por_100k_uc: float64
+  - compensacao_rs_por_uc: float64
+
+--- Tabela: dim_distribuidora_porte.parquet ---
+
+Colunas e tipos:
+  - ano: int32
+  - group_id: str
+  - distributor_id: string
+  - sigagente: string
+  - nomagente: string
+  - distributor_name_sig: string
+  - distributor_name_legal: string
+  - distributor_label: str
+  - uc_ativa_media_mensal: float64
+  - rank_porte_ano: Int64
+  - bucket_porte: string
+  - share_uc_ano: float64
+
+--- Tabela: fato_transgressao_mensal_porte.parquet ---
+
+Colunas e tipos:
+  - ano: int32
+  - mes: int32
+  - group_id: str
+  - distributor_id: string
+  - sigagente: string
+  - nomagente: string
+  - distributor_name_sig: string
+  - distributor_name_legal: string
+  - distributor_label: str
+  - classe_local_servico: str
+  - qtd_serv_realizado: int64
+  - qtd_fora_prazo: int64
+  - compensacao_rs: Float64
+  - uc_ativa_mes: int64
+  - bucket_porte: string
+  - rank_porte_ano: Int64
+  - uc_ativa_media_mensal: float64
+  - taxa_fora_prazo: float64
+  - fora_prazo_por_100k_uc_mes: float64
+  - compensacao_rs_por_uc_mes: float64
+  - compensacao_media_por_transgressao_rs: float64
+  - periodo_regulatorio: str
+  - ano_comparavel_principal: bool
+
+--- Tabela: fato_servicos_municipio_mes.parquet ---
+
+Colunas e tipos:
+  - ano: int32
+  - mes: int32
+  - group_id: str
+  - distributor_id: string
+  - sigagente: string
+  - nomagente: string
+  - distributor_name_sig: string
+  - distributor_name_legal: string
+  - distributor_label: str
+  - codmunicipioibge: string
+  - codtiposervico: string
+  - dsctiposervico: string
+  - dscprazo: string
+  - classe_local_servico: str
+  - qtd_serv_realizado: int64
+  - qtd_fora_prazo: int64
+  - compensacao_rs: Float64
+  - taxa_fora_prazo: float64
+  - periodo_regulatorio: str
+  - ano_comparavel_principal: bool
+
+--- Tabela: dim_distributor_group.parquet ---
+
+Colunas e tipos:
+  - group_id: str
+  - group_label: str
+  - distributor_id: string
+  - sigagente: string
+  - nomagente: string
+  - distributor_name_sig: string
+  - distributor_name_legal: string
+  - distributor_label: str
+  - distributor_count: int64
+  - selector_enabled: bool
+
+=== TABELAS PROCESSADAS BASE (data/processed) ===
+
+--- Tabela: qualidade_comercial.parquet ---
+
+Colunas e tipos:
+  - datgeracaoconjuntodados: str
+  - sigagente: str
+  - numcnpj: float64
+  - sigindicador: str
+  - anoindice: int64
+  - numperiodoindice: int64
+  - vlrindiceenviado: str
+
+--- Tabela: indger_servicos_comerciais.parquet ---
+
+Colunas e tipos:
+  - datgeracaoconjuntodados: str
+  - numcnpj: int64
+  - sigagente: str
+  - nomagente: str
+  - nomtipooutorga: str
+  - datreferenciainformada: str
+  - codmunicipioibge: float64
+  - codtiposervico: int64
+  - dscdispositivo: str
+  - dscprazo: str
+  - dsctiposervico: str
+  - qtdservrealizado: int64
+  - mdatempomedservrealizado: str
+  - qtdservrealizdescprazo: int64
+  - mdatempomedaservrealzdescprazo: str
+  - qtdservsolicitado: int64
+  - qtdservaindanaorealiz: float64
+  - qtdservsuspenso: float64
+  - qtdservpendatddescprazo: float64
+  - mdaatrazoservpendatddescprazo: str
+  - vlrpagocompensacao: str
+  - dthcarga: str
+
+--- Tabela: indger_dados_comerciais.parquet ---
+
+Colunas e tipos:
+  - datgeracaoconjuntodados: str
+  - numcnpj: int64
+  - sigagente: str
+  - nomagente: str
+  - nomtipooutorga: str
+  - datreferenciainformada: str
+  - codmunicipioibge: int64
+  - qtducativa: int64
+  - qtducativafat: int64
+  - qtdfatura: int64
+  - qtdfaturasemleitura: int64
+  - qtdfaturasemleituraimpacesso: int64
+  - qtdfaturasemleituraemergencia: int64
+  - qtdfaturasemleituraplurimensa: int64
+  - qtdfaturasemleiturafatestimad: int64
+  - qtdfaturasemleiturafimcontrat: int64
+  - qtdfaturasemleituraausenciatm: int64
+  - qtdrefaturamento: int64
+  - qtdfaturaacerto: int64
+  - qtdfaturaacertofatincorreto: int64
+  - qtdfaturaacertofatincordevdob: int64
+  - qtdfaturaacertofatincordevsec: int64
+  - qtdfaturaacertofatincordevset: int64
+  - qtdfaturaacertofatimpacesso: int64
+  - qtdfaturaacertofatemergencia: int64
+  - qtdfaturasemleiturafatmedia: int64
+  - qtdfaturasemleiturafatcustodi: int64
+  - qtdfaturacomleitura: int64
+  - qtdfaturacomautoleitura: int64
+  - qtdconscomleituraplurimensal: int64
+  - qtdconscomautoleitura: int64
+  - qtdrestantedist: int64
+  - qtdrestatrasadodist: int64
+  - qtdrestpendentedist: int64
+  - qtdrestpendenteatrasado: int64
+  - vlrrestante: str
+  - vlrrestatrasado: str
+  - vlrrestpendente: str
+  - vlrrestpendenteatrasado: str
+  - qtdsolicressarcimentodano: int64
+  - qtdressarcindeferido: int64
+  - vlrpendentepgtressarcdanodefe: str
+  - vlrpagoressarcdano: str
+  - qtducsubstmedidor: int64
+  - qtdpostoatendimento: int64
+  - qtddiasnormal: int64
+  - qtddiascasofortforcmaior: int64
+  - qtdatendrealizposto: int64
+  - qtdatendrealizpostodiacasofor: float64
+  - mdatempomedatendimentoposto: str
+  - mdatempomedatendpostodiafort: str
+  - qtdatendrealizmais30mindianor: float64
+  - qtdatendrealizmais30mindiafor: int64
+  - qtdinspecverifprocirregular: float64
+  - qtdtermosocorrinspecao: float64
+  - qtdtermosocorrinspecaocobr: float64
+  - qtdtermosocorrinspecaoencerr: float64
+  - qtdprocecobrdefmedidor: float64
+  - qtdreligcobr: float64
+  - qtducsuspinadimplemento: float64
+  - qtdsuspindev: float64
+  - vlrtotcompsuspindevida: str
+  - dthcarga: str

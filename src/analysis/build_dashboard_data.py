@@ -11,7 +11,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parent.parent.parent
 DIR_ANALYSIS = ROOT / "data" / "processed" / "analysis"
 DIR_GROUPS = DIR_ANALYSIS / "grupos"
-DASHBOARD_DIR = ROOT / "dashboard"
+DASHBOARD_DIR = ROOT / "app" / "frontend"
 OUTPUT_PATH = DASHBOARD_DIR / "dashboard_data.json"
 
 REQUIRED_INPUT_FILES = [
@@ -27,6 +27,7 @@ REQUIRED_INPUT_FILES = [
     DIR_GROUPS / "grupos_classe_local_2023_2025.csv",
     DIR_GROUPS / "grupos_longa_resumo_2011_2023.csv",
     DIR_GROUPS / "grupos_mensal_2023_2025.csv",
+    DIR_ANALYSIS / "fato_grupos_algoritmicos.csv",
 ]
 
 REQUIRED_NON_EMPTY_SECTIONS = [
@@ -37,6 +38,8 @@ REQUIRED_NON_EMPTY_SECTIONS = [
     "regulatory_groups",
     "regulatory_views",
     "top20_distributors",
+    "group_dimensions",
+    "cross_group_insights",
 ]
 
 REGULATORY_ORDER = ["grupo_a", "grupo_b", "rural", "urbana", "nao_classificado"]
@@ -49,6 +52,12 @@ REGULATORY_LABELS = {
 }
 FEATURED_TOP_N = 6
 FEATURED_REQUIRED_GROUPS = ("equatorial", "cpfl", "neoenergia")
+DIMENSION_ORDER = ["economico", "porte", "geografico"]
+DIMENSION_LABELS = {
+    "economico": "Grupo Econômico",
+    "porte": "Porte",
+    "geografico": "Geográfico (IBGE)",
+}
 
 
 def _safe(v):
@@ -846,6 +855,143 @@ def build_data_availability() -> dict[str, dict[str, object]]:
     }
 
 
+def _metrics_from_period(frame: pd.DataFrame, period: str) -> dict:
+    row = frame[frame["periodo_regulatorio"] == period]
+    if row.empty:
+        return {
+            "qtd_serv_realizado": None,
+            "qtd_fora_prazo": None,
+            "compensacao_rs": None,
+            "taxa_fora_prazo": None,
+            "fora_prazo_por_100k_uc_mes": None,
+            "compensacao_rs_por_uc_mes": None,
+        }
+    rec = row.iloc[0]
+    return {
+        "qtd_serv_realizado": _safe(rec.get("qtd_serv_realizado")),
+        "qtd_fora_prazo": _safe(rec.get("qtd_fora_prazo")),
+        "compensacao_rs": _safe(rec.get("compensacao_rs")),
+        "taxa_fora_prazo": _safe(rec.get("taxa_fora_prazo")),
+        "fora_prazo_por_100k_uc_mes": _safe(rec.get("fora_prazo_por_100k_uc_mes")),
+        "compensacao_rs_por_uc_mes": _safe(rec.get("compensacao_rs_por_uc_mes")),
+    }
+
+
+def build_group_dimensions(snapshot: pd.DataFrame) -> tuple[list[dict], str | None]:
+    if snapshot.empty:
+        return [], None
+
+    frame = snapshot.copy()
+    frame["dimension_id"] = frame["dimension_id"].astype("string")
+    frame["id"] = frame["id"].astype("string")
+    frame["label"] = frame["label"].astype("string")
+
+    dimensions: list[dict] = []
+    for dimension_id in DIMENSION_ORDER:
+        sub = frame[frame["dimension_id"] == dimension_id].copy()
+        if sub.empty:
+            continue
+
+        groups: list[dict] = []
+        for (gid, label), grp in sub.groupby(["id", "label"], dropna=False):
+            op_metrics = _metrics_from_period(grp, "operacional_2023_plus")
+            pre_metrics = _metrics_from_period(grp, "pre_2022")
+            pos_metrics = _metrics_from_period(grp, "pos_2022")
+            delta_taxa = None
+            delta_comp_uc = None
+            if pre_metrics["taxa_fora_prazo"] is not None and pos_metrics["taxa_fora_prazo"] is not None:
+                delta_taxa = _safe(pos_metrics["taxa_fora_prazo"] - pre_metrics["taxa_fora_prazo"])
+            if pre_metrics["compensacao_rs_por_uc_mes"] is not None and pos_metrics["compensacao_rs_por_uc_mes"] is not None:
+                delta_comp_uc = _safe(pos_metrics["compensacao_rs_por_uc_mes"] - pre_metrics["compensacao_rs_por_uc_mes"])
+
+            selector_enabled = bool(grp["selector_enabled"].fillna(False).iloc[0])
+            suppressed = bool(grp["suppressed_low_volume"].fillna(False).iloc[0])
+            groups.append(
+                {
+                    "id": str(gid),
+                    "label": str(label),
+                    "selector_enabled": selector_enabled,
+                    "suppressed_low_volume": suppressed,
+                    "metrics": op_metrics,
+                    "period_compare": {
+                        "pre_2022": {
+                            "taxa_fora_prazo": pre_metrics["taxa_fora_prazo"],
+                            "compensacao_rs_por_uc_mes": pre_metrics["compensacao_rs_por_uc_mes"],
+                        },
+                        "pos_2022": {
+                            "taxa_fora_prazo": pos_metrics["taxa_fora_prazo"],
+                            "compensacao_rs_por_uc_mes": pos_metrics["compensacao_rs_por_uc_mes"],
+                        },
+                        "delta": {
+                            "taxa_fora_prazo": delta_taxa,
+                            "compensacao_rs_por_uc_mes": delta_comp_uc,
+                        },
+                    },
+                }
+            )
+
+        groups = sorted(groups, key=lambda item: (-(item["metrics"]["qtd_serv_realizado"] or 0), item["label"]))
+        default_selected = next((g["id"] for g in groups if g["selector_enabled"]), groups[0]["id"] if groups else None)
+        dimensions.append(
+            {
+                "dimension_id": dimension_id,
+                "dimension_label": DIMENSION_LABELS.get(dimension_id, dimension_id),
+                "default_selected": default_selected,
+                "groups": groups,
+            }
+        )
+
+    default_dimension_id = None
+    for preferred in DIMENSION_ORDER:
+        if any(item["dimension_id"] == preferred and item["groups"] for item in dimensions):
+            default_dimension_id = preferred
+            break
+    if default_dimension_id is None and dimensions:
+        default_dimension_id = dimensions[0]["dimension_id"]
+    return dimensions, default_dimension_id
+
+
+def build_cross_group_insights(group_dimensions: list[dict], top_n: int = 5) -> dict[str, dict]:
+    insights: dict[str, dict] = {}
+    for dim in group_dimensions:
+        dim_id = str(dim.get("dimension_id"))
+        groups = [g for g in dim.get("groups", []) if g.get("selector_enabled")]
+        if not groups:
+            insights[dim_id] = {
+                "dimension_id": dim_id,
+                "top_melhora": [],
+                "top_piora": [],
+                "mediana_dimensao": {"taxa_fora_prazo": None, "compensacao_rs_por_uc_mes": None},
+            }
+            continue
+
+        frame = pd.DataFrame(
+            [
+                {
+                    "id": g.get("id"),
+                    "label": g.get("label"),
+                    "delta_taxa": ((g.get("period_compare") or {}).get("delta") or {}).get("taxa_fora_prazo"),
+                    "taxa_op": ((g.get("metrics") or {}).get("taxa_fora_prazo")),
+                    "comp_uc_op": ((g.get("metrics") or {}).get("compensacao_rs_por_uc_mes")),
+                }
+                for g in groups
+            ]
+        )
+        comparable = frame.dropna(subset=["delta_taxa"]).copy()
+        top_melhora = comparable.sort_values("delta_taxa", ascending=True).head(top_n)
+        top_piora = comparable.sort_values("delta_taxa", ascending=False).head(top_n)
+        insights[dim_id] = {
+            "dimension_id": dim_id,
+            "top_melhora": _df_to_records(top_melhora[["id", "label", "delta_taxa"]]),
+            "top_piora": _df_to_records(top_piora[["id", "label", "delta_taxa"]]),
+            "mediana_dimensao": {
+                "taxa_fora_prazo": _safe(pd.to_numeric(frame["taxa_op"], errors="coerce").median()),
+                "compensacao_rs_por_uc_mes": _safe(pd.to_numeric(frame["comp_uc_op"], errors="coerce").median()),
+            },
+        }
+    return insights
+
+
 def main() -> None:
     print("🔧 Gerando dados para o dashboard...")
     DASHBOARD_DIR.mkdir(parents=True, exist_ok=True)
@@ -863,6 +1009,7 @@ def main() -> None:
     grupos_classe = _read("grupos_classe_local_2023_2025", "grupos")
     grupos_longa = _read("grupos_longa_resumo_2011_2023", "grupos")
     grupos_mensal = _read("grupos_mensal_2023_2025", "grupos")
+    grupos_algoritmicos = _read("fato_grupos_algoritmicos")
 
     distributor_groups = build_distributor_groups(dim_group, grupos_anual)
     group_views = build_group_views(
@@ -887,6 +1034,8 @@ def main() -> None:
         monthly_porte=fato_mensal_porte,
         indicadores=fato_indicadores,
     )
+    group_dimensions, default_dimension_id = build_group_dimensions(grupos_algoritmicos)
+    cross_group_insights = build_cross_group_insights(group_dimensions)
 
     data = {
         "meta": {
@@ -906,6 +1055,9 @@ def main() -> None:
         "regulatory_groups": regulatory_groups,
         "regulatory_views": regulatory_views,
         "default_regulatory_id": default_regulatory_id,
+        "group_dimensions": group_dimensions,
+        "default_dimension_id": default_dimension_id,
+        "cross_group_insights": cross_group_insights,
         "top20_distributors": build_top20_distributors(dim_porte),
         "data_availability": build_data_availability(),
     }

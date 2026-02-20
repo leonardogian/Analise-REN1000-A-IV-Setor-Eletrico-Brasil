@@ -709,6 +709,251 @@ def build_kpi_overview(fato_indicadores: pd.DataFrame) -> pd.DataFrame:
     return yearly.sort_values("ano").reset_index(drop=True)
 
 
+def build_geographic_monthly_base(
+    fato_servicos_municipio_mes: pd.DataFrame,
+    uc_ativa_mensal_distribuidora: pd.DataFrame,
+) -> pd.DataFrame:
+    """Approximate municipal UC exposure by proportional allocation per distributor-month."""
+    if fato_servicos_municipio_mes.empty:
+        return pd.DataFrame()
+
+    base = fato_servicos_municipio_mes.copy()
+    service_totals = (
+        base.groupby(["ano", "mes", "group_id", "distributor_id"], as_index=False)["qtd_serv_realizado"]
+        .sum()
+        .rename(columns={"qtd_serv_realizado": "qtd_serv_total_dist_mes"})
+    )
+    base = base.merge(
+        service_totals,
+        on=["ano", "mes", "group_id", "distributor_id"],
+        how="left",
+    )
+    base = base.merge(
+        uc_ativa_mensal_distribuidora[["ano", "mes", "group_id", "distributor_id", "uc_ativa_mes"]],
+        on=["ano", "mes", "group_id", "distributor_id"],
+        how="left",
+    )
+    base["qtd_serv_total_dist_mes"] = base["qtd_serv_total_dist_mes"].fillna(0.0)
+    base["uc_ativa_mes"] = base["uc_ativa_mes"].fillna(0.0)
+    base["share_serv_dist_mes"] = np.where(
+        base["qtd_serv_total_dist_mes"] > 0,
+        base["qtd_serv_realizado"] / base["qtd_serv_total_dist_mes"],
+        0.0,
+    )
+    base["exposicao_uc_mes"] = base["uc_ativa_mes"] * base["share_serv_dist_mes"]
+
+    municipal = (
+        base.groupby(["ano", "mes", "codmunicipioibge"], as_index=False)
+        .agg(
+            qtd_serv_realizado=("qtd_serv_realizado", "sum"),
+            qtd_fora_prazo=("qtd_fora_prazo", "sum"),
+            compensacao_rs=("compensacao_rs", "sum"),
+            exposicao_uc_mes=("exposicao_uc_mes", "sum"),
+        )
+    )
+    municipal["periodo_regulatorio"] = np.where(municipal["ano"] <= 2021, "pre_2022", "pos_2022")
+    return municipal
+
+
+def build_dimension_snapshot(
+    frame: pd.DataFrame,
+    *,
+    dimension_id: str,
+    dimension_label: str,
+    id_col: str,
+    label_col: str,
+    low_share_threshold: float = 0.01,
+    low_months_threshold: int = 6,
+) -> pd.DataFrame:
+    if frame.empty:
+        return pd.DataFrame()
+
+    base = frame.copy()
+    key_cols = [id_col] if id_col == label_col else [id_col, label_col]
+    base[id_col] = base[id_col].astype("string").str.strip()
+    if label_col in base.columns:
+        base[label_col] = base[label_col].astype("string").str.strip()
+    else:
+        base[label_col] = base[id_col]
+    base = base[(base[id_col].notna()) & (base[id_col] != "")]
+    if base.empty:
+        return pd.DataFrame()
+
+    base["ano_mes"] = base["ano"].astype("Int64").astype("string") + "-" + base["mes"].astype("Int64").astype("string")
+    period_agg = (
+        base.groupby(key_cols + ["periodo_regulatorio"], as_index=False)
+        .agg(
+            meses_com_dados=("ano_mes", "nunique"),
+            qtd_serv_realizado=("qtd_serv_realizado", "sum"),
+            qtd_fora_prazo=("qtd_fora_prazo", "sum"),
+            compensacao_rs=("compensacao_rs", "sum"),
+            exposicao_uc_mes=("exposicao_uc_mes", "sum"),
+        )
+    )
+    period_totals = period_agg.groupby("periodo_regulatorio", as_index=False)["qtd_serv_realizado"].sum()
+    period_totals = period_totals.rename(columns={"qtd_serv_realizado": "qtd_serv_total_periodo"})
+    period_agg = period_agg.merge(period_totals, on="periodo_regulatorio", how="left")
+    period_agg["share_serv_periodo"] = np.where(
+        period_agg["qtd_serv_total_periodo"] > 0,
+        period_agg["qtd_serv_realizado"] / period_agg["qtd_serv_total_periodo"],
+        0.0,
+    )
+
+    operational = (
+        base[base["ano"] >= 2023]
+        .groupby(key_cols, as_index=False)
+        .agg(
+            meses_com_dados=("ano_mes", "nunique"),
+            qtd_serv_realizado=("qtd_serv_realizado", "sum"),
+            qtd_fora_prazo=("qtd_fora_prazo", "sum"),
+            compensacao_rs=("compensacao_rs", "sum"),
+            exposicao_uc_mes=("exposicao_uc_mes", "sum"),
+        )
+    )
+    operational["periodo_regulatorio"] = "operacional_2023_plus"
+    total_operational = float(operational["qtd_serv_realizado"].sum()) if not operational.empty else 0.0
+    operational["qtd_serv_total_periodo"] = total_operational
+    operational["share_serv_periodo"] = np.where(
+        total_operational > 0,
+        operational["qtd_serv_realizado"] / total_operational,
+        0.0,
+    )
+
+    period_comp = period_agg.pivot_table(
+        index=key_cols,
+        columns="periodo_regulatorio",
+        values=["meses_com_dados", "share_serv_periodo"],
+        aggfunc="first",
+    )
+    period_comp.columns = [f"{metric}_{period}" for metric, period in period_comp.columns]
+    period_comp = period_comp.reset_index()
+
+    for col in [
+        "meses_com_dados_pre_2022",
+        "meses_com_dados_pos_2022",
+        "share_serv_periodo_pre_2022",
+        "share_serv_periodo_pos_2022",
+    ]:
+        if col not in period_comp.columns:
+            period_comp[col] = 0.0
+
+    period_comp["suppressed_low_volume"] = (
+        (period_comp["meses_com_dados_pre_2022"] < low_months_threshold)
+        & (period_comp["meses_com_dados_pos_2022"] < low_months_threshold)
+        & (period_comp["share_serv_periodo_pre_2022"] < low_share_threshold)
+        & (period_comp["share_serv_periodo_pos_2022"] < low_share_threshold)
+    )
+
+    operational_selector = operational[key_cols].copy()
+    operational_selector["has_operational_volume"] = operational["qtd_serv_realizado"] > 0
+    period_comp = period_comp.merge(
+        operational_selector,
+        on=key_cols,
+        how="left",
+    )
+    period_comp["has_operational_volume"] = period_comp["has_operational_volume"].fillna(False)
+    period_comp["selector_enabled"] = (~period_comp["suppressed_low_volume"]) & period_comp["has_operational_volume"]
+
+    combined = pd.concat([period_agg, operational], ignore_index=True, sort=False)
+    combined = combined.merge(
+        period_comp[key_cols + ["suppressed_low_volume", "selector_enabled"]],
+        on=key_cols,
+        how="left",
+    )
+    combined["taxa_fora_prazo"] = np.where(
+        combined["qtd_serv_realizado"] > 0,
+        combined["qtd_fora_prazo"] / combined["qtd_serv_realizado"],
+        np.nan,
+    )
+    combined["fora_prazo_por_100k_uc_mes"] = np.where(
+        combined["exposicao_uc_mes"] > 0,
+        combined["qtd_fora_prazo"] / combined["exposicao_uc_mes"] * 100000.0,
+        np.nan,
+    )
+    combined["compensacao_rs_por_uc_mes"] = np.where(
+        combined["exposicao_uc_mes"] > 0,
+        combined["compensacao_rs"] / combined["exposicao_uc_mes"],
+        np.nan,
+    )
+    combined["dimension_id"] = dimension_id
+    combined["dimension_label"] = dimension_label
+    combined["id"] = combined[id_col].astype("string")
+    combined["label"] = combined[label_col].astype("string")
+    keep_cols = [
+        "dimension_id",
+        "dimension_label",
+        "id",
+        "label",
+        "periodo_regulatorio",
+        "meses_com_dados",
+        "qtd_serv_realizado",
+        "qtd_fora_prazo",
+        "compensacao_rs",
+        "exposicao_uc_mes",
+        "taxa_fora_prazo",
+        "fora_prazo_por_100k_uc_mes",
+        "compensacao_rs_por_uc_mes",
+        "share_serv_periodo",
+        "suppressed_low_volume",
+        "selector_enabled",
+    ]
+    return combined[keep_cols].sort_values(["dimension_id", "label", "periodo_regulatorio"]).reset_index(drop=True)
+
+
+def build_algorithmic_group_snapshot(
+    *,
+    fato_transgressao_mensal_distribuidora: pd.DataFrame,
+    fato_servicos_municipio_mes: pd.DataFrame,
+    uc_ativa_mensal_distribuidora: pd.DataFrame,
+    dim_distributor_group: pd.DataFrame,
+) -> pd.DataFrame:
+    monthly_dist = fato_transgressao_mensal_distribuidora.copy()
+    monthly_dist["exposicao_uc_mes"] = monthly_dist["uc_ativa_mes"]
+
+    group_lookup = (
+        dim_distributor_group[["group_id", "group_label"]]
+        .dropna(subset=["group_id"])
+        .drop_duplicates(subset=["group_id"])
+        .assign(group_id=lambda df: df["group_id"].astype("string"))
+    )
+    monthly_economic = monthly_dist.merge(group_lookup, on="group_id", how="left")
+    monthly_economic["group_label"] = monthly_economic["group_label"].fillna(monthly_economic["group_id"])
+
+    economic = build_dimension_snapshot(
+        monthly_economic,
+        dimension_id="economico",
+        dimension_label="Grupo Econômico",
+        id_col="group_id",
+        label_col="group_label",
+    )
+
+    porte_base = monthly_dist.dropna(subset=["bucket_porte"]).copy()
+    porte_base["bucket_porte"] = porte_base["bucket_porte"].astype("string")
+    porte = build_dimension_snapshot(
+        porte_base,
+        dimension_id="porte",
+        dimension_label="Porte",
+        id_col="bucket_porte",
+        label_col="bucket_porte",
+    )
+
+    geographic_base = build_geographic_monthly_base(
+        fato_servicos_municipio_mes=fato_servicos_municipio_mes,
+        uc_ativa_mensal_distribuidora=uc_ativa_mensal_distribuidora,
+    )
+    geographic_base["codmunicipioibge"] = geographic_base["codmunicipioibge"].astype("string").str.strip()
+    geographic = build_dimension_snapshot(
+        geographic_base,
+        dimension_id="geografico",
+        dimension_label="Geográfico (IBGE)",
+        id_col="codmunicipioibge",
+        label_col="codmunicipioibge",
+    )
+
+    out = pd.concat([economic, porte, geographic], ignore_index=True, sort=False)
+    return out.sort_values(["dimension_id", "label", "periodo_regulatorio"]).reset_index(drop=True)
+
+
 def run_all() -> dict[str, pd.DataFrame]:
     distributor_to_group, group_labels = load_group_overrides()
     distributor_name_overrides = load_distributor_name_overrides()
@@ -740,6 +985,12 @@ def run_all() -> dict[str, pd.DataFrame]:
     fato_transgressao_mensal_distribuidora = ensure_name_columns(fato_transgressao_mensal_distribuidora)
     kpi_overview = build_kpi_overview(fato_indicadores)
     dim_group = build_group_dimension(dim_porte)
+    algorithmic_group_snapshot = build_algorithmic_group_snapshot(
+        fato_transgressao_mensal_distribuidora=fato_transgressao_mensal_distribuidora,
+        fato_servicos_municipio_mes=fato_servicos,
+        uc_ativa_mensal_distribuidora=uc_ativa_mensal,
+        dim_distributor_group=dim_group,
+    )
 
     fact_tables = {
         "dim_distribuidora_porte": dim_porte,
@@ -764,6 +1015,7 @@ def run_all() -> dict[str, pd.DataFrame]:
     save_table(fato_transgressao_mensal_porte, "fato_transgressao_mensal_porte")
     save_table(fato_transgressao_mensal_distribuidora, "fato_transgressao_mensal_distribuidora")
     save_table(kpi_overview, "kpi_regulatorio_anual")
+    save_table(algorithmic_group_snapshot, "fato_grupos_algoritmicos")
 
     return {
         "dim_indicador_servico": dim_indicador,
@@ -775,6 +1027,7 @@ def run_all() -> dict[str, pd.DataFrame]:
         "fato_transgressao_mensal_porte": fato_transgressao_mensal_porte,
         "fato_transgressao_mensal_distribuidora": fato_transgressao_mensal_distribuidora,
         "kpi_regulatorio_anual": kpi_overview,
+        "fato_grupos_algoritmicos": algorithmic_group_snapshot,
     }
 
 

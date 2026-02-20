@@ -12,11 +12,11 @@ MODULES = [
     "src.analysis.build_report",
     "src.analysis.neoenergia_diagnostico",
     "src.analysis.build_dashboard_data",
-    "src.backend.main",
+    "app.backend.main",
 ]
 
 OPTIONAL_DEPENDENCIES = {
-    "src.backend.main": {"fastapi", "starlette"},
+    "app.backend.main": {"fastapi", "starlette"},
 }
 
 

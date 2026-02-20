@@ -151,19 +151,34 @@ python3 -m src.analysis.build_report
 python3 -m src.analysis.build_dashboard_data
 ```
 
+### Comandos Auxiliares e Testes
+
+Opcionalmente, o repositório conta com scripts de ferramentas e extração de dados geográficos complementares:
+
+```bash
+# Para extrair e processar os dados de municípios do IBGE:
+make extract-ibge
+
+# Para inspecionar e listar as tabelas e schemas disponíveis na camada 'processed':
+make inspect-tables
+```
+
 ---
 
 ## 🐘 Execução SQL via DBeaver (PostgreSQL)
 
 Para tirar carga do `src/analysis/grupos_diagnostico.py`, existe um script SQL específico para **PostgreSQL**:
+
 - `sql/grupos_diagnostico_dbeaver.sql`
 
 Pré-requisitos:
+
 - conexão PostgreSQL no DBeaver;
 - tabelas base: `fato_servicos_municipio_mes`, `fato_transgressao_mensal_distribuidora`, `dim_distributor_group`;
 - permissões `CREATE TABLE` e `CREATE INDEX`.
 
 Ordem de execução:
+
 1. Executar `sql/grupos_diagnostico_dbeaver.sql` no DBeaver.
 2. Exportar para CSV as saídas:
    - `grupos_share_codigos_69_93.csv`
@@ -172,6 +187,7 @@ Ordem de execução:
 3. Copiar os CSVs para `data/processed/analysis/grupos/`.
 
 Limitações conhecidas:
+
 - escopo de anos 2023–2025;
 - dependência do schema/colunas atuais do Postgres;
 - execução e criação de índices podem ser custosas em base muito grande.
@@ -186,6 +202,8 @@ Guia operacional detalhado: `docs/DBEAVER_SQL_MIGRATION.md`.
 make help                       # lista todos os targets
 make venv-recreate             # recria .venv do zero
 make update-data                # extract + transform
+make extract-ibge               # baixa/processa dados geográficos complementares do IBGE
+make inspect-tables             # imprime colunas e schemas das bases .parquet geradas
 make analysis                   # gera tabelas analíticas
 make report                     # gera relatório markdown
 make neoenergia-diagnostico     # benchmark detalhado das 5 Neoenergias

@@ -35,7 +35,7 @@ FULL_REQUIRED = CORE_REQUIRED + [
     "data/processed/analysis/grupos/grupos_cobertura_mensal.csv",
     "data/processed/analysis/grupos/grupos_outliers_taxa.csv",
     "reports/neoenergia_diagnostico.md",
-    "dashboard/dashboard_data.json",
+    "app/frontend/dashboard_data.json",
 ]
 
 REQUIRED_DASHBOARD_KEYS = {
@@ -57,7 +57,7 @@ REQUIRED_DASHBOARD_KEYS = {
 def check_dashboard_json() -> list[str]:
     """Validate dashboard JSON has expected top-level keys."""
     errors: list[str] = []
-    path = Path("dashboard/dashboard_data.json")
+    path = Path("app/frontend/dashboard_data.json")
     if not path.exists():
         return [f"missing dashboard JSON: {path}"]
 

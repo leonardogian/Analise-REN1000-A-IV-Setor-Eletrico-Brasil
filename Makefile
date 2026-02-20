@@ -11,7 +11,7 @@ ANALYSIS_DIR := data/processed/analysis
 .PHONY: help venv install extract transform update-data analysis report grupos-diagnostico neoenergia-diagnostico \
 	dashboard dashboard-full serve backend dev-serve preflight-backend pipeline \
 	check-artifacts check-artifacts-full validate-contracts validate-contracts-processed \
-	test-fast test-smoke test clean-analysis venv-recreate doctor
+	test-fast test-smoke test clean-analysis venv-recreate doctor extract-ibge inspect-tables
 
 help:
 	@echo "Targets disponíveis:"
@@ -21,6 +21,7 @@ help:
 	@echo "  make doctor          - verifica saúde da .venv e imports críticos"
 	@echo "  make extract         - baixa dados da ANEEL"
 	@echo "  make transform       - transforma dados brutos"
+	@echo "  make extract-ibge    - baixa/processa dados geográficos do IBGE"
 	@echo "  make update-data     - extract + transform"
 	@echo "  make analysis        - gera tabelas analíticas"
 	@echo "  make report          - gera relatório markdown"
@@ -32,6 +33,7 @@ help:
 	@echo "  make backend         - sobe backend FastAPI local em http://localhost:\$${PORT}"
 	@echo "  make dev-serve       - dashboard-full + preflight + backend em modo reload (PORT=8050)"
 	@echo "  make pipeline        - update-data + analysis + report + grupos + dashboard"
+	@echo "  make inspect-tables  - imprime relatório sobre as tabelas parquet existentes"
 	@echo "  make validate-contracts - valida contratos de schema (raw + processed)"
 	@echo "  make check-artifacts - valida artefatos core"
 	@echo "  make check-artifacts-full - valida artefatos completos + dashboard JSON"
@@ -60,6 +62,12 @@ extract:
 transform:
 	$(PYTHON) -m src.etl.transform_aneel
 
+extract-ibge:
+	$(PYTHON) scripts/extract_ibge_dtb.py
+
+inspect-tables:
+	$(PYTHON) scripts/inspect_tables.py
+
 update-data: extract transform
 
 analysis:
@@ -78,14 +86,14 @@ dashboard:
 	$(PYTHON) -m src.analysis.build_dashboard_data
 	@echo ""
 	@echo "✅ Dashboard pronto! Abra no navegador:"
-	@echo "   dashboard/index.html      (interativo)"
-	@echo "   dashboard/relatorio.html  (relatório imprimível)"
+	@echo "   app/frontend/index.html      (interativo)"
+	@echo "   app/frontend/relatorio.html  (relatório imprimível)"
 
 dashboard-full: analysis grupos-diagnostico neoenergia-diagnostico dashboard
 
 serve: dashboard
 	@echo "🌐 Abrindo http://localhost:$(PORT)"
-	cd dashboard && $(PYTHON) -m http.server $(PORT)
+	cd app/frontend && $(PYTHON) -m http.server $(PORT)
 
 preflight-backend:
 	@$(MAKE) validate-contracts-processed
@@ -93,11 +101,11 @@ preflight-backend:
 
 backend: preflight-backend
 	@echo "🚀 Backend FastAPI em http://localhost:$(PORT)"
-	$(PYTHON) -m uvicorn src.backend.main:app --host 0.0.0.0 --port $(PORT)
+	$(PYTHON) -m uvicorn app.backend.main:app --host 0.0.0.0 --port $(PORT)
 
 dev-serve: dashboard-full preflight-backend
 	@echo "🚀 Backend FastAPI (reload) em http://localhost:$(PORT)"
-	$(PYTHON) -m uvicorn src.backend.main:app --host 0.0.0.0 --port $(PORT) --reload
+	$(PYTHON) -m uvicorn app.backend.main:app --host 0.0.0.0 --port $(PORT) --reload
 
 pipeline: update-data analysis report grupos-diagnostico neoenergia-diagnostico dashboard
 
@@ -114,7 +122,7 @@ validate-contracts-processed:
 	$(PYTHON) scripts/validate_schema_contracts.py --processed-only
 
 test-fast:
-	$(PYTHON) -m py_compile src/etl/extract_aneel.py src/etl/transform_aneel.py src/etl/schema_contracts.py src/analysis/build_analysis_tables.py src/analysis/build_report.py src/analysis/distributor_groups.py src/analysis/grupos_diagnostico.py src/analysis/neoenergia_diagnostico.py src/analysis/build_dashboard_data.py src/backend/main.py
+	$(PYTHON) -m py_compile src/etl/extract_aneel.py src/etl/transform_aneel.py src/etl/schema_contracts.py src/analysis/build_analysis_tables.py src/analysis/build_report.py src/analysis/distributor_groups.py src/analysis/grupos_diagnostico.py src/analysis/neoenergia_diagnostico.py src/analysis/build_dashboard_data.py app/backend/main.py
 	$(PYTHON) scripts/smoke_imports.py
 	@$(MAKE) validate-contracts-processed
 	@$(MAKE) check-artifacts

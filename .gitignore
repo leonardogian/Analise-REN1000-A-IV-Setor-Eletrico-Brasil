@@ -44,3 +44,21 @@ dashboard/dashboard_data.json
 # ==========================
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+
+# Local secrets
+.env
+.env.*
+
+# IDE & Tools
+.cursor/
+.playwright/
+.playwright-cli/
+playwright-cli.json
+
+# Output and logs
+output/
+
+# Processed data subdirectories
+data/processed/**/*.csv
+data/processed/**/*.parquet
+data/processed/**/*.xlsx
