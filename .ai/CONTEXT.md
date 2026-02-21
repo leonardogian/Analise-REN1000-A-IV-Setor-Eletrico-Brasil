@@ -66,7 +66,8 @@ TCC_leo_main/
 ├── reports/                  ← Relatórios gerados (markdown)
 ├── notebooks/                ← Jupyter (exploratórios)
 ├── docs/                     ← Documentação auxiliar + imagens
-├── scripts/                  ← Utilitários (check_artifacts, smoke_imports, validate_schema_contracts)
+├── docker/                   ← Infraestrutura local em contêineres (ex: Kestra)
+├── scripts/                  ← Utilitários (cargas PostgreSQL, check_artifacts, validações)
 ├── Makefile                  ← Orquestração: make pipeline, make serve, etc.
 ├── requirements.txt          ← Dependências Python
 └── README.md                 ← Documentação principal para humanos
@@ -115,8 +116,8 @@ make clean-analysis  # remove data/processed/analysis/
 | 6379  | Redis (AgentCycle)         | ⚠️ Ocupada |
 | 8000  | AgentCycle Backend         | ⚠️ Ocupada |
 | 8050  | **TCC Dashboard (make serve)** | ✅ Livre |
-| 8080  | Airflow Webserver          | ⚠️ Ocupada |
-| 8090  | Kestra                     | ⚠️ Ocupada |
+| 8080  | Airflow Webserver / Kestra | ⚠️ Ocupada |
+| 8090  | Kestra (Alternativa)       | ⚠️ Ocupada |
 
 > **NÃO mude a porta 8050** sem antes verificar com `ss -tlnp | grep :PORTA`
 

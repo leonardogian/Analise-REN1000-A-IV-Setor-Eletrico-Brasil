@@ -109,6 +109,13 @@ Gerados por `make neoenergia-diagnostico` (`src/analysis/neoenergia_diagnostico.
 - Lê: CSVs analíticos
 - Gera: `reports/relatorio_aneel.md`
 
+## Etapa 6: Carga para Relacional (Opcional)
+
+**Scripts**: `scripts/load_to_postgres.py`, `scripts/load_chunked.py`
+
+- Objetivo: Ingestão de `data/processed` para o PostgreSQL.
+- Uso: Facilitar SQL avançado (`04_exploracao_sql_avancada.ipynb`).
+
 ## Dependências entre Etapas
 
 ```

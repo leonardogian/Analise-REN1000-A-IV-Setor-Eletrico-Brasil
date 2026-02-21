@@ -1,12 +1,11 @@
 import pandas as pd
 from sqlalchemy import create_engine
 import os
-import glob
-from pathlib import Path
-import pyarrow.parquet as pq
 
 def load_in_chunks(file_path, engine, table_name, chunksize=50000):
     print(f"Lendo parquet {file_path}...")
+    import pyarrow.parquet as pq
+    
     parquet_file = pq.ParquetFile(file_path)
     
     # Check if table exists, if so drop it first so we can append chunks
@@ -15,7 +14,7 @@ def load_in_chunks(file_path, engine, table_name, chunksize=50000):
         
     for i, batch in enumerate(parquet_file.iter_batches(batch_size=chunksize)):
         df_chunk = batch.to_pandas()
-        print(f"  Inserindo lote {i+1} da tabela {table_name} no banco de dados...")
+        print(f"  Inserindo lote {i+1} no banco de dados...")
         df_chunk.to_sql(table_name, engine, if_exists='append', index=False)
         
     print(f"Sucesso: {table_name} carregado com sucesso em lotes!")
@@ -23,27 +22,17 @@ def load_in_chunks(file_path, engine, table_name, chunksize=50000):
 def main():
     engine = create_engine('postgresql+psycopg2://admin:adminpassword@localhost:5432/tcc_db')
     
-    # Processed and Analysis folders
-    base_dir = Path(__file__).resolve().parent.parent
-    data_dirs = [
-        base_dir / 'data' / 'processed',
-        base_dir / 'data' / 'processed' / 'analysis'
+    files_to_load = [
+        "/home/gianmarinolc/Documents/Estudos/TCC_leo_main/data/processed/analysis/fato_servicos_municipio_mes.parquet",
+        "/home/gianmarinolc/Documents/Estudos/TCC_leo_main/data/processed/dim_municipio.parquet"
     ]
     
-    # The files specifically needed for the SQL view
-    # Or just load all parquet files we can find
-    parquet_files = []
-    for d in data_dirs:
-        if d.exists():
-            parquets = glob.glob(str(d / '*.parquet'))
-            parquet_files.extend(parquets)
+    for p_file in files_to_load:
+        if not os.path.exists(p_file):
+            print(f"Arquivo nao encontrado: {p_file}")
+            continue
             
-    if not parquet_files:
-        print("Nenhum arquivo parquet encontrado.")
-        return
-        
-    for p_file in parquet_files:
-        table_name = Path(p_file).stem
+        table_name = os.path.basename(p_file).replace('.parquet', '')
         print(f"\nIniciando carga de {table_name} ...")
         
         try:

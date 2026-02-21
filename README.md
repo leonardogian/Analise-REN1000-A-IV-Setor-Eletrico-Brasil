@@ -115,7 +115,9 @@ make backend
 make serve
 ```
 
-### 🐳 Docker (1 container: FastAPI + estaticos)
+### 🐳 Docker (Dashboard e Orquestração)
+
+**Dashboard (API + Estáticos)**:
 
 ```bash
 # Porta padrao 8050
@@ -125,8 +127,16 @@ docker compose up --build
 HOST_PORT=8060 docker compose up --build
 ```
 
-- Internamente o app roda em `8050` no container.
-- A porta publica e controlada por `HOST_PORT` (default `8050`).
+- A porta pública do dashboard é controlada por `HOST_PORT` (default `8050`).
+
+**Apache Kestra (Orquestração de Dados + Gemini)**:
+O repositório inclui a infraestrutura local em contêiner para orquestração analítica avançada:
+
+```bash
+docker compose -f docker/docker-compose.kestra.yml up -d
+```
+
+> **Nota**: Para que os fluxos com IA funcionem, inclua `GEMINI_API_KEY` em seu arquivo `.env`, o qual é lido pelo Kestra via `.env` map no compose e injetado nos containers de plugin do Kestra.
 
 ---
 
@@ -165,34 +175,24 @@ make inspect-tables
 
 ---
 
-## 🐘 Execução SQL via DBeaver (PostgreSQL)
+## 🐘 Integração Relacional (PostgreSQL)
 
-Para tirar carga do `src/analysis/grupos_diagnostico.py`, existe um script SQL específico para **PostgreSQL**:
+Para tirar carga de processamento na memória e dar suporte a análises avançadas (Window Functions, CTEs complexas), o projeto possui integração direta com PostgreSQL.
+
+### Scripts Automáticos de Carga
+
+Disponíveis na pasta `scripts/`:
+
+- `load_to_postgres.py`: Carga relacional do pipeline completo.
+- `load_chunked.py`: Carga em lote (chunks) com otimização de memória, ideal para grandes tabelas como `indger_servicos_comerciais`.
+- `load_focused_tables.py`: Carga direcionada somente às tabelas necessárias para o benchmark Neoenergia.
+
+### DBeaver & SQL Legado
+
+Para as queries de diagnóstico e migração manual:
 
 - `sql/grupos_diagnostico_dbeaver.sql`
-
-Pré-requisitos:
-
-- conexão PostgreSQL no DBeaver;
-- tabelas base: `fato_servicos_municipio_mes`, `fato_transgressao_mensal_distribuidora`, `dim_distributor_group`;
-- permissões `CREATE TABLE` e `CREATE INDEX`.
-
-Ordem de execução:
-
-1. Executar `sql/grupos_diagnostico_dbeaver.sql` no DBeaver.
-2. Exportar para CSV as saídas:
-   - `grupos_share_codigos_69_93.csv`
-   - `grupos_anual_sem_cod_69_93.csv`
-   - `grupos_alertas_comparabilidade.csv`
-3. Copiar os CSVs para `data/processed/analysis/grupos/`.
-
-Limitações conhecidas:
-
-- escopo de anos 2023–2025;
-- dependência do schema/colunas atuais do Postgres;
-- execução e criação de índices podem ser custosas em base muito grande.
-
-Guia operacional detalhado: `docs/DBEAVER_SQL_MIGRATION.md`.
+- Ordem de execução, exportação CSV e limitações: veja o guia `docs/DBEAVER_SQL_MIGRATION.md`.
 
 ---
 
@@ -262,6 +262,7 @@ Após rodar o pipeline, o projeto gera:
 - `notebooks/01_mapa_dados_e_qualidade.ipynb`
 - `notebooks/02_tendencia_regulatoria_414_vs_1000.ipynb`
 - `notebooks/03_porte_e_benchmark_distribuidoras.ipynb`
+- `notebooks/04_exploracao_sql_avancada.ipynb`
 
 ---
 
