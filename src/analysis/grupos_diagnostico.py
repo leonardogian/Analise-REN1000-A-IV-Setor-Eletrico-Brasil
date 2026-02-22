@@ -15,6 +15,59 @@ from src.analysis.distributor_groups import (
     load_group_overrides,
 )
 
+def append_media_brasil_annual(annual: pd.DataFrame) -> pd.DataFrame:
+    if annual.empty:
+        return annual
+    mb = (
+        annual.groupby("ano", as_index=False)
+        .agg(
+            meses_com_dados=("meses_com_dados", "max"),
+            qtd_serv_realizado=("qtd_serv_realizado", "sum"),
+            qtd_fora_prazo=("qtd_fora_prazo", "sum"),
+            compensacao_rs=("compensacao_rs", "sum"),
+            exposicao_uc_mes=("exposicao_uc_mes", "sum"),
+        )
+    )
+    mb["uc_ativa_media_ano"] = np.where(
+        mb["meses_com_dados"] > 0,
+        mb["exposicao_uc_mes"] / mb["meses_com_dados"],
+        np.nan,
+    )
+    mb["group_id"] = "media_brasil"
+    mb["group_label"] = "Média Brasil"
+    mb["distributor_id"] = "media_brasil"
+    mb["distributor_label"] = "Média Brasil"
+    mb["taxa_fora_prazo"] = np.where(
+        mb["qtd_serv_realizado"] > 0, mb["qtd_fora_prazo"] / mb["qtd_serv_realizado"], np.nan
+    )
+    mb["fora_prazo_por_100k_uc_mes"] = np.where(
+        mb["exposicao_uc_mes"] > 0, mb["qtd_fora_prazo"] / mb["exposicao_uc_mes"] * 100000.0, np.nan
+    )
+    mb["compensacao_rs_por_uc_mes"] = np.where(
+        mb["exposicao_uc_mes"] > 0, mb["compensacao_rs"] / mb["exposicao_uc_mes"], np.nan
+    )
+    mb["compensacao_media_por_transgressao_rs"] = np.where(
+        mb["qtd_fora_prazo"] > 0, mb["compensacao_rs"] / mb["qtd_fora_prazo"], np.nan
+    )
+    return pd.concat([annual, mb], ignore_index=True)
+
+def append_media_brasil_indicadores(indicadores: pd.DataFrame) -> pd.DataFrame:
+    if indicadores.empty:
+        return indicadores
+    mb = (
+        indicadores.groupby("ano", as_index=False)
+        .agg(
+            qtd_serv=("qtd_serv", "sum"),
+            qtd_fora_prazo=("qtd_fora_prazo", "sum"),
+            compensacao_rs=("compensacao_rs", "sum"),
+        )
+    )
+    mb["group_id"] = "media_brasil"
+    mb["group_label"] = "Média Brasil"
+    mb["distributor_id"] = "media_brasil"
+    mb["distributor_label"] = "Média Brasil"
+    return pd.concat([indicadores, mb], ignore_index=True)
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 DIR_ANALYSIS = ROOT / "data" / "processed" / "analysis"
 DIR_OUT = DIR_ANALYSIS / "grupos"
@@ -580,6 +633,10 @@ def run_all_groups() -> dict[str, pd.DataFrame]:
     monthly = build_monthly_view(monthly_dist)
     coverage, checks = validate_monthly(monthly)
     annual = build_annual_monthly_view(monthly)
+    
+    annual = append_media_brasil_annual(annual)
+    indicadores = append_media_brasil_indicadores(indicadores)
+    
     annual_excl_codes = build_annual_excluding_codes(servicos, monthly)
     trend = build_trend_table(annual)
     class_view = build_class_view(monthly_porte)

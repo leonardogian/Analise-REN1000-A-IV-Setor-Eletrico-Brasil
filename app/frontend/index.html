@@ -17,6 +17,9 @@
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js"></script>
 
   <!-- Stylesheet -->
   <link rel="stylesheet" href="styles.css" />
@@ -57,18 +60,6 @@
         <button class="nav-tab" data-tab="tab-overview">
           <span class="tab-icon">📊</span> Visão Geral
         </button>
-        <button class="nav-tab" data-tab="tab-neoenergia">
-          <span class="tab-icon">🏢</span> Grupos Econômicos
-        </button>
-        <button class="nav-tab active" data-tab="tab-regulatory">
-          <span class="tab-icon">📈</span> Classes Regulatórias
-        </button>
-        <button class="nav-tab" data-tab="tab-diagnostico">
-          <span class="tab-icon">🔍</span> Diagnóstico Detalhado
-        </button>
-        <a href="relatorio.html" class="nav-tab nav-tab-link">
-          <span class="tab-icon">📄</span> Relatório
-        </a>
         <button class="theme-toggle-btn" id="theme-toggle" onclick="toggleTheme()" title="Alternar Tema">
           <span class="icon">🌙</span>
         </button>
@@ -166,307 +157,62 @@
         </div>
       </section>
 
-      <!-- ============ TAB 2: GRANDES GRUPOS ============ -->
-      <section id="tab-neoenergia" class="tab-panel">
-
-        <div class="group-selector-row">
-          <label class="group-selector-label" for="dimension-selector">Dimensão:</label>
-          <select id="dimension-selector" class="group-selector"></select>
-          <label class="group-selector-label" for="group-selector">Grupo:</label>
-          <select id="group-selector" class="group-selector"></select>
-          <label class="group-toggle-label" for="show-suppressed-toggle">
-            <input type="checkbox" id="show-suppressed-toggle" />
-            mostrar suprimidos
-          </label>
-        </div>
-
-        <h2 class="section-title">
-          <span class="icon">🏢</span>
-          Grandes Grupos Econômicos e Benchmark de <span id="group-title-main">Grupo</span> —
-          <span id="group-count-main">0</span> Distribuidoras
-        </h2>
+      <!-- ============ TAB 2: ANÁLISES AVANÇADAS ============ -->
+      <section id="tab-advanced" class="tab-panel">
+        <h2 class="section-title"><span class="icon">🧪</span> Análises Avançadas (REN 1000)</h2>
         <p class="section-description">
-          Comparação entre os maiores grupos econômicos e análise detalhada do <span id="group-label-desc">grupo selecionado</span>.
-          Métricas normalizadas por unidades consumidoras (UC) garantem comparabilidade por porte.
+          Visões analíticas avançadas explorando padrões estruturais do Setor Elétrico.
         </p>
-
-        <div class="kpi-grid section-spacing-top-sm">
-          <div class="kpi-card blue">
-            <div class="kpi-label">Pré-2022</div>
-            <div class="kpi-value blue" id="group-compare-pre">—</div>
-            <div class="kpi-label kpi-note">Taxa fora do prazo</div>
-          </div>
-          <div class="kpi-card cyan">
-            <div class="kpi-label">Pós-2022</div>
-            <div class="kpi-value cyan" id="group-compare-pos">—</div>
-            <div class="kpi-label kpi-note">Taxa fora do prazo</div>
-          </div>
-          <div class="kpi-card amber">
-            <div class="kpi-label">Delta</div>
-            <div class="kpi-value amber" id="group-compare-delta">—</div>
-            <div class="kpi-label kpi-note">Pós - Pré</div>
-          </div>
-        </div>
 
         <div class="chart-grid two-col">
           <div class="chart-card">
             <div class="chart-header">
               <div>
-                <div class="chart-title">Comparação entre Grandes Grupos</div>
-                <div class="chart-subtitle">Fora do prazo por 100k UC-mês (Top 6 por UC ativa)</div>
+                <div class="chart-title">1. Intensidade de Transgressões (Top 5)</div>
+                <div class="chart-subtitle">Heatmap: Grupo Econômico vs Classe/Local (Fora/100k UC)</div>
               </div>
-              <span class="chart-tag">2023–2025</span>
-            </div>
-            <div class="chart-canvas-wrapper">
-              <canvas id="chart-featured-groups"></canvas>
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">Ranking do Último Ano por Grupo</div>
-                <div class="chart-subtitle">Pressão normalizada e compensação normalizada</div>
-              </div>
-              <span class="chart-tag" id="featured-latest-year">—</span>
-            </div>
-            <div class="data-table-wrapper">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Grupo</th>
-                    <th>Fora/100k UC</th>
-                    <th>R$ / UC</th>
-                    <th>Rank Fora</th>
-                    <th>Delta Taxa</th>
-                  </tr>
-                </thead>
-                <tbody id="featured-groups-table-body"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <div class="insight-grid section-spacing-top-sm">
-          <div class="insight-card">
-            <span class="insight-icon">🏆</span>
-            <div class="insight-text" id="group-insight-best">—</div>
-          </div>
-          <div class="insight-card">
-            <span class="insight-icon">⚠️</span>
-            <div class="insight-text" id="group-insight-worst">—</div>
-          </div>
-          <div class="insight-card">
-            <span class="insight-icon">📉</span>
-            <div class="insight-text" id="group-insight-trend">—</div>
-          </div>
-        </div>
-
-        <div class="chart-grid two-col">
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">Transgressões por 100k UC-mês</div>
-                <div class="chart-subtitle">Normalizado pelo porte da distribuidora</div>
-              </div>
-              <span class="chart-tag" id="group-period-tag">2023–2025</span>
-            </div>
-            <div class="chart-canvas-wrapper">
-              <canvas id="chart-neo-fora"></canvas>
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">Compensação R$ por UC-mês</div>
-                <div class="chart-subtitle">Impacto financeiro normalizado</div>
-              </div>
-              <span class="chart-tag">R$ / UC</span>
-            </div>
-            <div class="chart-canvas-wrapper">
-              <canvas id="chart-neo-comp"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-grid two-col">
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">Radar de Benchmark — Último Ano</div>
-                <div class="chart-subtitle">Comparação multidimensional — valores em escala relativa</div>
-              </div>
-              <span class="chart-tag">2025</span>
             </div>
             <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
-              <canvas id="chart-neo-radar"></canvas>
+              <canvas id="chart-advanced-heatmap"></canvas>
             </div>
           </div>
 
           <div class="chart-card">
             <div class="chart-header">
               <div>
-                <div class="chart-title">Tendência 2023 → 2025</div>
-                <div class="chart-subtitle">Variação percentual entre os períodos</div>
+                <div class="chart-title">2. Eficiência: Absoluto vs Normalizado</div>
+                <div class="chart-subtitle">Volume de Falhas Absoluto (X) vs Compensação R$/UC (Y)</div>
               </div>
-            </div>
-            <div class="data-table-wrapper">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Distribuidora</th>
-                    <th>Taxa Pré-2022</th>
-                    <th>Taxa Pós-2022</th>
-                    <th>Variação</th>
-                    <th>Fora/100k UC</th>
-                    <th>R$ / UC</th>
-                  </tr>
-                </thead>
-                <tbody id="trend-table-body"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============ TAB 3: ANÁLISE REGULATÓRIA ============ -->
-      <section id="tab-regulatory" class="tab-panel active">
-        <div class="group-selector-row">
-          <label class="group-selector-label" for="regulatory-selector">Classe regulatória:</label>
-          <select id="regulatory-selector" class="group-selector"></select>
-        </div>
-
-        <h2 class="section-title">
-          <span class="icon">📈</span>
-          Análise Regulatória Mensal — <span id="reg-title-main">Classe</span>
-        </h2>
-        <p class="section-description">
-          Série temporal mensal das distribuidoras da <span id="reg-label-desc">classe selecionada</span>,
-          com taxa de transgressão e compensação financeira.
-          Permite identificar sazonalidade e tendências de curto prazo.
-        </p>
-
-        <div id="regulatory-empty-state" class="insight-card section-spacing-top-sm" style="display:none;">
-          <span class="insight-icon">ℹ️</span>
-          <div class="insight-text" id="regulatory-empty-message">Sem dados mensais disponíveis para a classe selecionada.</div>
-        </div>
-
-        <div id="regulatory-content" class="chart-grid">
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">Taxa Fora do Prazo — Mensal</div>
-                <div class="chart-subtitle">Evolução mensal por distribuidora (2023–2025)</div>
-              </div>
-              <span class="chart-tag">Mensal</span>
             </div>
             <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
-              <canvas id="chart-reg-mensal"></canvas>
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">Compensação Financeira — Mensal (Empilhado)</div>
-                <div class="chart-subtitle">Volume financeiro por distribuidora ao longo do tempo</div>
-              </div>
-              <span class="chart-tag">R$ / mês</span>
-            </div>
-            <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
-              <canvas id="chart-reg-comp-mensal"></canvas>
+              <canvas id="chart-advanced-scatter"></canvas>
             </div>
           </div>
         </div>
 
-        <h3 class="subsection-title">🏢 Top 20 Distribuidoras por UC Ativa (ano mais recente)</h3>
-        <div class="data-table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Distribuidora</th>
-                <th>UC Ativa Média Mensal</th>
-                <th>Porte</th>
-              </tr>
-            </thead>
-            <tbody id="top20-table-body"></tbody>
-          </table>
-        </div>
-
-        <h3 class="subsection-title">📌 Disponibilidade de Dados</h3>
-        <div id="availability-notes" class="insight-grid section-spacing-top-sm"></div>
-      </section>
-
-      <!-- ============ TAB 4: DIAGNÓSTICO DETALHADO ============ -->
-      <section id="tab-diagnostico" class="tab-panel">
-
-        <h2 class="section-title"><span class="icon">🔍</span> Diagnóstico Detalhado</h2>
-        <p class="section-description">
-          Análise por classe de consumo (urbana, rural, grupo A) e série longa 2011–2023
-          para cada distribuidora da <span id="reg-label-diag">classe regulatória selecionada</span>.
-        </p>
-
-        <!-- Donuts -->
-        <h3 class="subsection-title">
-          📊 Distribuição das Transgressões por Classe/Localização (2023–2025)
-        </h3>
-        <div id="diagnostico-donuts" class="chart-grid chart-grid-compact"></div>
-
-        <!-- Serie longa -->
         <div class="chart-grid two-col section-spacing-top">
           <div class="chart-card">
             <div class="chart-header">
               <div>
-                <div class="chart-title">Série Longa 2011 → 2023</div>
-                <div class="chart-subtitle">Evolução da taxa fora do prazo por distribuidora</div>
+                <div class="chart-title">3. SLA Comercial Top 5 (Radar)</div>
+                <div class="chart-subtitle">Perfil multivariado de transgressões por serviço INDGER</div>
               </div>
-              <span class="chart-tag">12 anos</span>
             </div>
-            <div class="chart-canvas-wrapper">
-              <canvas id="chart-longa-bar"></canvas>
+            <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
+              <canvas id="chart-advanced-radar"></canvas>
             </div>
           </div>
 
           <div class="chart-card">
             <div class="chart-header">
               <div>
-                <div class="chart-title">Resumo da Série Longa</div>
-                <div class="chart-subtitle">Variação da taxa fora do prazo entre 2011 e 2023</div>
+                <div class="chart-title">4. Impacto Regulatório (REN 414 vs 1000)</div>
+                <div class="chart-subtitle">Evolução de infrações com marco de implantação</div>
               </div>
             </div>
-            <div class="data-table-wrapper">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Distribuidora</th>
-                    <th>Ano Início</th>
-                    <th>Ano Fim</th>
-                    <th>Taxa Início</th>
-                    <th>Taxa Fim</th>
-                    <th>Variação</th>
-                  </tr>
-                </thead>
-                <tbody id="longa-table-body"></tbody>
-              </table>
+            <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
+              <canvas id="chart-advanced-timeseries"></canvas>
             </div>
-          </div>
-        </div>
-
-        <!-- Insights -->
-        <div class="insight-grid section-spacing-top-sm">
-          <div class="insight-card">
-            <span class="insight-icon">🏆</span>
-            <div class="insight-text" id="diag-insight-best">—</div>
-          </div>
-          <div class="insight-card">
-            <span class="insight-icon">⚠️</span>
-            <div class="insight-text" id="diag-insight-worst">—</div>
-          </div>
-          <div class="insight-card">
-            <span class="insight-icon">📉</span>
-            <div class="insight-text" id="diag-insight-trend">—</div>
           </div>
         </div>
       </section>

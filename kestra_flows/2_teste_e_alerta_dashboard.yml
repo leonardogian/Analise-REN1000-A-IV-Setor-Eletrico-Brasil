@@ -1,0 +1,34 @@
+id: dashboard_checker
+namespace: tcc.energia
+description: "Pinga o seu app Plotly Dash, avisa se ele caiu, e reinicia via Docker se necessário!"
+
+# Aqui mostro o gatilho Data-Driven (Schedule) de forma profissional
+triggers:
+  - id: checagem_hora_em_hora
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 * * * *"
+
+tasks:
+  - id: verificar_dashboard_online
+    type: io.kestra.plugin.core.http.Request
+    uri: "http://localhost:8050/health" # Ele bateu naquela rota /health do seu app 
+    method: GET
+    # Se o dashboard estiver fora, o Request vai dar erro (código 500)
+    
+  - id: print_sucesso
+    type: io.kestra.plugin.core.log.Log
+    message: "🥳 O Dashboard está ONLINE e operando perfeitamente."
+
+# O bloco Errors vai "salvar a pátria" se a aba de cima quebrar
+errors:
+  - id: erro_detectado_no_dash
+    type: io.kestra.plugin.core.log.Log
+    message: "😱 O DASHBOARD CAIU! Iniciando rotina de emergência..."
+    
+  - id: reiniciar_container_dashboard
+    type: io.kestra.plugin.scripts.shell.Commands
+    # Como o Kestra tem o /var/run/docker.sock montado, ele PODE comandar o Docker do seu PC!
+    commands:
+      # Esse comando não roda num sistema fresh, ele reinicia o SEU container tcc-ren1000-app
+      - docker restart tcc-ren1000-app
+      - echo "♻️ O App foi reiniciado automaticamente."

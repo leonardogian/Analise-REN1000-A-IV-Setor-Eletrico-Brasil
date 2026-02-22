@@ -1,3 +1,15 @@
+# Diretrizes Principais para IA (Contexto e Escopo Atual)
+
+> **⚠️ ATENÇÃO IAs:** Antes de atuar, leiam sempre todos os arquivos na pasta `.ai/` (especialmente `CONTEXT.md` e `CONVENTIONS.md`).
+
+## 🎯 Momento Atual do Projeto
+
+- **Dados consolidados:** A etapa de limpeza (ETL), extração e validação básica dos dados está concluída e sua estrutura é confiável.
+- **Foco de atuação:** O desenvolvimento técnico centrará as forças no **Front-End** (Dashboard web com Vanilla JS/HTML/CSS e Chart.js) suportado pelas APIs no **Back-End** (FastAPI).
+- **Mindset:** Priorize implementar soluções lógicas para o backend servir os dados prontos ao frontend interativo. Pense em JSON, REST APIs e renderização de dados na tela do cliente.
+
+---
+
 # Regras de Espera e Monitoramento de Tempo
 
 Estas regras valem para qualquer execucao bloqueante (comando/app) quando nao for possivel avancar em outra tarefa no mesmo momento.

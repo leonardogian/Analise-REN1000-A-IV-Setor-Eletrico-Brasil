@@ -10,6 +10,8 @@ Normativa nº 1.000/2021 da ANEEL** na qualidade dos serviços comerciais das
 distribuidoras de energia elétrica do Brasil. Foco especial nas **5 distribuidoras
 do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 
+> **🎯 Fase Atual do Projeto:** Toda a infraestrutura de dados (ETL, bases Parquet, Tabelas Analíticas) está montada e seus valores foram validados como **corretos**. A partir de agora o foco principal para agentes de IA que atuarem aqui é **desenvolver a aplicação analítica**: Back-End (FastAPI) fornecendo endpoints e Front-End interativo (Vanilla JS + Chart.js).
+
 ## Linguagens e Tecnologias
 
 | Camada        | Stack                                          |

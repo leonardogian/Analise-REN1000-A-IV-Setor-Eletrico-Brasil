@@ -1,0 +1,60 @@
+id: pipeline_etl_agrupamento
+namespace: tcc.energia
+description: "Pipeline completo: roda vários scripts Pythons na ordem certa, um dependendo do outro!"
+
+tasks:
+  - id: instalando_dependencias
+    type: io.kestra.plugin.scripts.shell.Commands
+    description: "Baixa bibliotecas Pandas, SQLAlchemy e etc"
+    runner: DOCKER
+    docker:
+      image: python:3.11-slim
+      volumes:
+        - "/home/gianmarinolc/Documents/Estudos/TCC_leo_main:/app"
+    commands:
+      - cd /app
+      - pip install -r requirements.txt --quiet
+      - echo "✅ Dependências Python instaladas com sucesso."
+
+  - id: agrupar_distribuidoras
+    type: io.kestra.plugin.scripts.shell.Commands
+    description: "Script 1: Prepara o agrupamento dos dados em Parquet"
+    runner: DOCKER
+    docker:
+      image: python:3.11-slim
+      volumes:
+        - "/home/gianmarinolc/Documents/Estudos/TCC_leo_main:/app"
+    commands:
+      - cd /app
+      - export PYTHONPATH=/app
+      - python scripts/exemplo_agrupamento.py
+    # dependsOn diz ao Kestra: Só comece isso quando a tarefa acima der certo!
+    dependsOn:
+      - instalando_dependencias
+
+  - id: carregar_postgres
+    type: io.kestra.plugin.scripts.shell.Commands
+    description: "Script 2: Injeta os dados limpos no PostgreSQL"
+    runner: DOCKER
+    docker:
+      image: python:3.11-slim
+      # O networkMode: host permite o contêiner enxergar o localhost:5432 do seu dbeaver-postgres
+      networkMode: host 
+      volumes:
+        - "/home/gianmarinolc/Documents/Estudos/TCC_leo_main:/app"
+    commands:
+      - cd /app
+      - export PYTHONPATH=/app
+      - python scripts/load_to_postgres.py
+    dependsOn:
+      - agrupar_distribuidoras
+
+  - id: aviso_sucesso
+    type: io.kestra.plugin.core.log.Log
+    message: "🚀 Sucesso Absoluto! Todos os dados agrupadados foram engolidos pelo Postgres! 🎉"
+
+errors:
+  - id: envia_alerta_erro
+    type: io.kestra.plugin.core.log.Log
+    # Se qualquer das 3 tarefas Python acima falhar, ele pula tudo e cai aqui avisando você!
+    message: "❌ ALERTA DE ERRO! O script falhou na tarefa {{ execution.failedList }}"

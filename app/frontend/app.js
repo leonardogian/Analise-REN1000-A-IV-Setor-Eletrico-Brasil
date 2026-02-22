@@ -471,54 +471,7 @@ function initRegulatorySelector(data) {
     });
 }
 
-function updateGroupTexts(dimension, selectedGroup, groupsVisible) {
-    if (!selectedGroup || !dimension) return;
-    const period = '2023+ e pré/pós 2022';
 
-    const setters = [
-        ['group-title-main', selectedGroup.label],
-        ['group-count-main', String((groupsVisible || []).length || 0)],
-        ['group-label-desc', `${selectedGroup.label.toLowerCase()} (${dimension.dimension_label.toLowerCase()})`],
-        ['group-title-reg', selectedGroup.label],
-        ['group-label-reg', selectedGroup.label.toLowerCase()],
-        ['group-label-diag', selectedGroup.label.toLowerCase()],
-        ['group-period-tag', period],
-    ];
-    setters.forEach(([id, value]) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value;
-    });
-}
-
-function updateRegulatoryTexts(regulatory, view) {
-    if (!regulatory) return;
-    const label = regulatory.class_label || 'classe regulatória selecionada';
-    const setters = [
-        ['reg-title-main', label],
-        ['reg-label-desc', label.toLowerCase()],
-        ['reg-label-diag', label.toLowerCase()],
-    ];
-    setters.forEach(([id, value]) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value;
-    });
-
-    const emptyBox = document.getElementById('regulatory-empty-state');
-    const emptyMsg = document.getElementById('regulatory-empty-message');
-    const content = document.getElementById('regulatory-content');
-    const hasMonthly = Array.isArray(view.mensal) && view.mensal.length > 0;
-    if (emptyBox && emptyMsg) {
-        if (hasMonthly) {
-            emptyBox.style.display = 'none';
-        } else {
-            emptyBox.style.display = 'flex';
-            emptyMsg.textContent = `Sem cobertura mensal nesta base para a classe ${label}.`;
-        }
-    }
-    if (content) {
-        content.style.display = hasMonthly ? 'grid' : 'none';
-    }
-}
 
 /* ===================== TAB 1: VISÃO GERAL ===================== */
 function renderOverview(data) {
@@ -1092,192 +1045,178 @@ function renderRegulatory(view, distributors, colors) {
     });
 }
 
-function renderDiagnostico(view, distributors, colors) {
-    const classe = view.classe_local || [];
-    const longa = view.longa_resumo || [];
-    const trend = view.tendencia || [];
-    const benchmark = view.benchmark || [];
 
-    const donutContainer = document.getElementById('diagnostico-donuts');
-    if (donutContainer) {
-        donutContainer.innerHTML = '';
-        distributors.forEach((dist, idx) => {
-            const rows = classe.filter(r => (r.distributor_id || r.distributor_label) === dist.key);
-            const card = document.createElement('div');
-            card.className = 'chart-card chart-card-compact';
-            card.innerHTML = `
-                <div class="chart-title chart-title-compact">${dist.label}</div>
-                <div class="chart-canvas-wrapper chart-canvas-wrapper-small">
-                    <canvas id="chart-donut-${idx}"></canvas>
-                </div>
-            `;
-            donutContainer.appendChild(card);
-            if (!rows.length) return;
-            createChart(`chart-donut-${idx}`, {
-                type: 'doughnut',
+async function renderAdvancedAnalytics() {
+    try {
+        const [heatmapRes, scatterRes, radarRes, tsRes] = await Promise.all([
+            fetch('/api/v1/heatmap-transgressoes').then(r => r.ok ? r.json() : { data: [] }),
+            fetch('/api/v1/scatter-eficiencia').then(r => r.ok ? r.json() : { data: [] }),
+            fetch('/api/v1/radar-slas').then(r => r.ok ? r.json() : { data: [] }),
+            fetch('/api/v1/timeseries-tendencia').then(r => r.ok ? r.json() : { data: [] })
+        ]);
+
+        if (heatmapRes.data && heatmapRes.data.length > 0) {
+            const data = heatmapRes.data;
+            const xLabels = [...new Set(data.map(d => d.x))];
+            const yLabels = [...new Set(data.map(d => d.y))];
+            createChart('chart-advanced-heatmap', {
+                type: 'matrix',
                 data: {
-                    labels: rows.map(r => r.classe_local_servico),
                     datasets: [{
-                        data: rows.map(r => (r.share_fora_prazo || 0) * 100),
-                        backgroundColor: [COLORS.blue, COLORS.cyan, COLORS.amber, COLORS.green, COLORS.rose, COLORS.purple],
-                        borderColor: '#0a0e1a',
-                        borderWidth: 3,
-                        hoverOffset: 8,
-                    }],
+                        label: 'Transgressões/100k UC',
+                        data: data,
+                        backgroundColor(context) {
+                            const value = context.dataset.data[context.dataIndex]?.v || 0;
+                            const maxVal = Math.max(...context.dataset.data.map(d => d.v));
+                            const alpha = maxVal > 0 ? Math.min(Math.max((value / maxVal), 0.15), 1) : 0.15;
+                            return `rgba(244, 161, 0, ${alpha})`;
+                        },
+                        borderColor: 'transparent',
+                        borderWidth: 1,
+                        width: ({ chart }) => (chart.chartArea || {}).width / xLabels.length - 1,
+                        height: ({ chart }) => (chart.chartArea || {}).height / yLabels.length - 1
+                    }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '65%',
+                    responsive: true, maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: true, position: 'bottom', labels: { font: { size: 10 }, padding: 8 } },
-                        tooltip: { callbacks: { label: ctx => `${ctx.label}: ${fmtNum(ctx.parsed, 1)}% das transgressões` } },
+                        legend: { display: false },
+                        tooltip: { callbacks: { title: ctx => `${ctx[0].raw.x} - ${ctx[0].raw.y}`, label: ctx => `Transgressões: ${ctx.raw.v} / 100k UC` } }
                     },
-                },
+                    scales: {
+                        x: { type: 'category', labels: xLabels, grid: { display: false }, ticks: { autoSkip: false } },
+                        y: { type: 'category', labels: yLabels, grid: { display: false } }
+                    }
+                }
             });
-        });
-    }
-
-    const longaTable = document.getElementById('longa-table-body');
-    if (longaTable) {
-        longaTable.innerHTML = longa.map(r => {
-            const deltaClass = r.delta_taxa_pct <= 0 ? 'positive' : 'negative';
-            return `<tr>
-                <td>${r.distributor_label}</td>
-                <td class="num">${r.ano_inicio}</td>
-                <td class="num">${r.ano_fim}</td>
-                <td class="num">${fmtPct(r.taxa_inicio)}</td>
-                <td class="num">${fmtPct(r.taxa_fim)}</td>
-                <td class="num"><span class="kpi-delta ${deltaClass}">${fmtPct(r.delta_taxa_pct)}</span></td>
-            </tr>`;
-        }).join('');
-    }
-
-    if (longa.length) {
-        createChart('chart-longa-bar', {
-            type: 'bar',
-            data: {
-                labels: longa.map(r => r.distributor_label),
-                datasets: [
-                    {
-                        label: 'Taxa 2011',
-                        data: longa.map(r => (r.taxa_inicio || 0) * 100),
-                        backgroundColor: COLORS.blue + 'cc',
-                        borderColor: COLORS.blue,
-                        borderWidth: 1.5,
-                        borderRadius: 4,
-                    },
-                    {
-                        label: 'Taxa 2023',
-                        data: longa.map(r => (r.taxa_fim || 0) * 100),
-                        backgroundColor: COLORS.cyan + 'cc',
-                        borderColor: COLORS.cyan,
-                        borderWidth: 1.5,
-                        borderRadius: 4,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top' },
-                    tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y, 2)}%` } },
-                },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: {
-                        beginAtZero: true,
-                        ticks: { callback: v => `${v.toFixed(1)}%` },
-                        grid: { color: 'rgba(0,164,67,0.06)' },
-                    },
-                },
-            },
-        });
-    }
-
-    const insightBest = document.getElementById('diag-insight-best');
-    const insightWorst = document.getElementById('diag-insight-worst');
-    const insightTrend = document.getElementById('diag-insight-trend');
-
-    if (insightBest && insightWorst) {
-        if (benchmark.length) {
-            const best = [...benchmark].sort((a, b) => (a.fora_prazo_por_100k_uc_mes || 0) - (b.fora_prazo_por_100k_uc_mes || 0))[0];
-            const worst = [...benchmark].sort((a, b) => (b.fora_prazo_por_100k_uc_mes || 0) - (a.fora_prazo_por_100k_uc_mes || 0))[0];
-            insightBest.innerHTML = `<strong>${best.distributor_label}</strong> apresenta a menor pressão normalizada: ${fmtNum(best.fora_prazo_por_100k_uc_mes, 2)} transgressões por 100k UC-mês.`;
-            insightWorst.innerHTML = `<strong>${worst.distributor_label}</strong> concentra a maior pressão normalizada: ${fmtNum(worst.fora_prazo_por_100k_uc_mes, 2)} transgressões por 100k UC-mês.`;
-        } else {
-            insightBest.textContent = 'Sem dados suficientes para calcular a melhor distribuidora no período.';
-            insightWorst.textContent = 'Sem dados suficientes para calcular a maior pressão normalizada.';
         }
-    }
 
-    if (insightTrend) {
-        if (trend.length) {
-            const comparable = trend.filter(t => t.delta_fora_prazo_por_100k_uc_mes_pct != null && !isNaN(t.delta_fora_prazo_por_100k_uc_mes_pct));
-            const improved = comparable.filter(t => t.delta_fora_prazo_por_100k_uc_mes_pct <= 0);
-            insightTrend.innerHTML = `<strong>${improved.length} de ${comparable.length}</strong> distribuidoras reduziram a taxa normalizada de transgressões entre 2023 e 2025.`;
-        } else {
-            insightTrend.textContent = 'Sem dados de tendência suficientes para a classe regulatória selecionada.';
+        if (scatterRes.data && scatterRes.data.length > 0) {
+            const data = scatterRes.data;
+            createChart('chart-advanced-scatter', {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        { label: 'REN 414', data: data.filter(d => d.regra === 'REN 414'), backgroundColor: 'rgba(0, 164, 67, 0.6)', borderColor: '#00A443', pointRadius: 6, pointHoverRadius: 8 },
+                        { label: 'REN 1000', data: data.filter(d => d.regra === 'REN 1000'), backgroundColor: 'rgba(230, 51, 18, 0.6)', borderColor: '#E63312', pointRadius: 6, pointHoverRadius: 8 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { tooltip: { callbacks: { label: ctx => `${ctx.raw.label} (${ctx.dataset.label}): Abs=${ctx.raw.x}, R$${ctx.raw.y.toFixed(2)}/UC` } } },
+                    scales: {
+                        x: { title: { display: true, text: 'Transgressões Absolutas' }, type: 'logarithmic' },
+                        y: { title: { display: true, text: 'Compensação R$/UC' } }
+                    }
+                }
+            });
         }
-    }
-}
 
-function renderTop20(data) {
-    const rows = Array.isArray(data.top20_distributors) ? data.top20_distributors : [];
-    const tbody = document.getElementById('top20-table-body');
-    if (!tbody) return;
-    tbody.innerHTML = rows.map(row => {
-        return `<tr>
-            <td class="num">${fmtNum(row.rank_top20)}</td>
-            <td>${row.distributor_label || row.distributor_name_sig || '—'}</td>
-            <td class="num">${fmtNum(row.uc_ativa_media_mensal, 0)}</td>
-            <td>${row.bucket_porte || '—'}</td>
-        </tr>`;
-    }).join('');
-}
+        if (radarRes.data && radarRes.data.length > 0) {
+            const services = radarRes.services;
 
-function renderDataAvailability(data) {
-    const container = document.getElementById('availability-notes');
-    if (!container) return;
-    const availability = data.data_availability || {};
-    const entries = Object.entries(availability);
-    if (!entries.length) {
-        container.innerHTML = '';
-        return;
+            const serviceMap = {
+                'LigBUb': 'Ligação (Urb)',
+                'LigBRb': 'Ligação (Rur)',
+                'ReligUb': 'Religação (Urb)',
+                'ReligRb': 'Religação (Rur)',
+                'VistBUb': 'Vistoria (Urb)',
+                'VistBRb': 'Vistoria (Rur)',
+                'Reclama': 'Reclamação',
+                'AteCo': 'Atendimento'
+            };
+
+            createChart('chart-advanced-radar', {
+                type: 'radar',
+                data: {
+                    labels: services.map(s => serviceMap[s] || s),
+                    datasets: radarRes.data.map((d, i) => ({
+                        label: d.distributor_label,
+                        data: services.map(s => d.metrics[s] || 0),
+                        backgroundColor: DISTRIBUTOR_PALETTE[i % DISTRIBUTOR_PALETTE.length] + '33',
+                        borderColor: DISTRIBUTOR_PALETTE[i % DISTRIBUTOR_PALETTE.length],
+                        pointRadius: 3
+                    }))
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { r: { ticks: { display: false } } } }
+            });
+        }
+
+        if (tsRes.data && tsRes.data.length > 0) {
+            const gruposData = {};
+            const labelsSet = new Set();
+            tsRes.data.forEach(d => {
+                if (!gruposData[d.grupo]) gruposData[d.grupo] = {};
+                gruposData[d.grupo][d.date] = d.fora_prazo_por_100k_uc_mes;
+                labelsSet.add(d.date);
+            });
+            const labels = Array.from(labelsSet).sort();
+            
+            const groupColors = {
+                'Média Nacional': '#F4A100', // yellow
+                'Neoenergia': '#00A859', // light green
+                'CPFL': '#005F27', // dark green
+                'Energisa': '#E63312', // red
+                'Equatorial': '#0A0E1A', // black
+                'Enel': '#00843D' // default green
+            };
+            
+            const datasets = Object.keys(gruposData).map((grupo, idx) => {
+                const dataPoints = labels.map(l => gruposData[grupo][l] ?? null);
+                let color = groupColors[grupo] || DISTRIBUTOR_PALETTE[idx % DISTRIBUTOR_PALETTE.length];
+                let isNacional = grupo === 'Média Nacional';
+                return {
+                    label: grupo,
+                    data: dataPoints,
+                    borderColor: color,
+                    borderWidth: isNacional ? 4 : 2,
+                    borderDash: isNacional ? [] : [4, 4],
+                    backgroundColor: 'transparent',
+                    tension: 0.3,
+                    yAxisID: 'y',
+                    pointRadius: isNacional ? 3 : 0,
+                    pointHoverRadius: 6
+                };
+            });
+
+            createChart('chart-advanced-timeseries', {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    scaleID: 'x', value: '2022-04-01',
+                                    borderColor: 'rgba(230, 51, 18, 0.8)', borderDash: [6, 6], borderWidth: 2,
+                                    label: { content: 'Fronteira REN 1000', display: true, position: 'start', color: '#E63312', backgroundColor: 'rgba(255,255,255,0.8)' }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { maxTicksLimit: 12 }
+                        },
+                        y: { type: 'linear', position: 'left', title: { display: true, text: 'Fora / 100k UC' } },
+                        y1: { type: 'linear', position: 'right', title: { display: true, text: 'R$ / UC' }, grid: { drawOnChartArea: false } }
+                    }
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Advanced analytics load failed", e);
     }
-    container.innerHTML = entries.map(([key, info]) => {
-        const title = key === 'tensao_nivel'
-            ? 'Nível de tensão'
-            : key === 'beneficio_social_bolsa'
-                ? 'Tarifa social / bolsa'
-                : key;
-        const status = info && info.available ? 'Disponível' : 'Indisponível';
-        const reason = info && info.reason ? info.reason : '';
-        return `<div class="insight-card">
-            <span class="insight-icon">${info && info.available ? '✅' : '⚠️'}</span>
-            <div class="insight-text"><strong>${title}:</strong> ${status}. ${reason}</div>
-        </div>`;
-    }).join('');
 }
 
 function renderAll(data) {
     renderOverview(data);
-    const dimensionContext = getActiveDimensionContext(data);
-    updateGroupTexts(dimensionContext.dimension, dimensionContext.selectedGroup, dimensionContext.groupsVisible);
-    renderFeaturedGroupComparison(dimensionContext);
-    renderDimensionBenchmark(dimensionContext);
-    renderGroupInsights(dimensionContext);
-
-    const { regulatory, view: regulatoryView } = getActiveRegulatoryContext(data);
-    updateRegulatoryTexts(regulatory, regulatoryView);
-    const regulatoryDistributors = getDistributorMeta(regulatoryView);
-    const regulatoryColors = makeColorMap(regulatoryDistributors);
-    renderRegulatory(regulatoryView, regulatoryDistributors, regulatoryColors);
-    renderDiagnostico(regulatoryView, regulatoryDistributors, regulatoryColors);
-
-    renderTop20(data);
-    renderDataAvailability(data);
+    renderAdvancedAnalytics();
 }
 
 /* ===================== MAIN ===================== */

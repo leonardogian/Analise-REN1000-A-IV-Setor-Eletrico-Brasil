@@ -91,6 +91,8 @@ Distribuição por classe/localização (donut charts) e evolução da série lo
 
 ## ✅ Estado Atual dos Dados
 
+> **Os dados já passaram por etapas rigorosas de ETL, aderência de tipos e validação de qualidade.** Eles estão limpos, corretos, consolidados em Parquet/CSV na pasta `data/processed/analysis/` e prontos para consumo da aplicação.
+
 - **Qualidade Comercial:** 2011–2025 (com 2024/2025 ainda incompletos para inferência de tendência).
 - **INDGER Serviços Comerciais:** 2023–2025 (nível detalhado mensal/municipal).
 - **INDGER Dados Comerciais:** 2023–2025 (usado para porte por UC ativa).
@@ -263,6 +265,7 @@ Após rodar o pipeline, o projeto gera:
 - `notebooks/02_tendencia_regulatoria_414_vs_1000.ipynb`
 - `notebooks/03_porte_e_benchmark_distribuidoras.ipynb`
 - `notebooks/04_exploracao_sql_avancada.ipynb`
+- `notebooks/05_analise_5_maiores_grupos.ipynb`
 
 ---
 
@@ -305,13 +308,12 @@ python3 -m src.analysis.build_dashboard_data
 
 ---
 
-## 🎯 Próximos Passos
+## 🎯 Próximos Passos (Desenvolvimento)
 
-1. Congelar uma janela comparável para inferência (ex.: 2011–2023).
-2. Rodar análise de sensibilidade (absoluto vs normalizado por UC ativa).
-3. Fechar capítulo metodológico com definição explícita das métricas.
-4. Exportar tabelas finais do TCC a partir de `data/processed/analysis`.
-5. Criar versão final dos gráficos para o texto da monografia.
+1. **Back-End (FastAPI):** Desenvolver e integrar endpoints para servir dados dinâmicos aos painéis, transferindo a lógica para a API.
+2. **Front-End (Dashboard):** Implementar novas análises e relatórios interativos (Vanilla JS + Chart.js) para os cruzamentos de dados recentes.
+3. Fechar o capítulo metodológico da monografia com definição explícita das métricas.
+4. Exportar análises finais e capturar os gráficos para o texto da dissertação.
 
 ---
 

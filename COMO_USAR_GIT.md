@@ -1,7 +1,5 @@
 # 🎓 Guia Rápido de Git
 
-Repositório: `https://github.com/Costenar0/TCC_leo.git`
-
 ## Fluxo de Trabalho Diário
 
 ```bash

@@ -41,13 +41,13 @@ cejama,Grupo Cejama,linhas_taxa_fora_prazo_maior_1,0
 cejama,Grupo Cejama,linhas_total,36
 cejama,Grupo Cejama,linhas_uc_ativa_zero_ou_negativa,0
 cejama,Grupo Cejama,linhas_valor_negativo,0
-celesc_dis,Grupo Celesc DIS,duplicidades_chave_ano_mes_distribuidora,0
-celesc_dis,Grupo Celesc DIS,fora_prazo_maior_que_servico,0
-celesc_dis,Grupo Celesc DIS,linhas_compensacao_positiva_sem_fora,0
-celesc_dis,Grupo Celesc DIS,linhas_taxa_fora_prazo_maior_1,0
-celesc_dis,Grupo Celesc DIS,linhas_total,36
-celesc_dis,Grupo Celesc DIS,linhas_uc_ativa_zero_ou_negativa,0
-celesc_dis,Grupo Celesc DIS,linhas_valor_negativo,0
+celesc,Grupo Celesc,duplicidades_chave_ano_mes_distribuidora,0
+celesc,Grupo Celesc,fora_prazo_maior_que_servico,0
+celesc,Grupo Celesc,linhas_compensacao_positiva_sem_fora,0
+celesc,Grupo Celesc,linhas_taxa_fora_prazo_maior_1,0
+celesc,Grupo Celesc,linhas_total,36
+celesc,Grupo Celesc,linhas_uc_ativa_zero_ou_negativa,0
+celesc,Grupo Celesc,linhas_valor_negativo,0
 celetro,Grupo Celetro,duplicidades_chave_ano_mes_distribuidora,0
 celetro,Grupo Celetro,fora_prazo_maior_que_servico,0
 celetro,Grupo Celetro,linhas_compensacao_positiva_sem_fora,5
@@ -55,13 +55,13 @@ celetro,Grupo Celetro,linhas_taxa_fora_prazo_maior_1,0
 celetro,Grupo Celetro,linhas_total,36
 celetro,Grupo Celetro,linhas_uc_ativa_zero_ou_negativa,0
 celetro,Grupo Celetro,linhas_valor_negativo,0
-cemig_d,Grupo Cemig D,duplicidades_chave_ano_mes_distribuidora,0
-cemig_d,Grupo Cemig D,fora_prazo_maior_que_servico,0
-cemig_d,Grupo Cemig D,linhas_compensacao_positiva_sem_fora,0
-cemig_d,Grupo Cemig D,linhas_taxa_fora_prazo_maior_1,0
-cemig_d,Grupo Cemig D,linhas_total,36
-cemig_d,Grupo Cemig D,linhas_uc_ativa_zero_ou_negativa,0
-cemig_d,Grupo Cemig D,linhas_valor_negativo,0
+cemig,Grupo Cemig,duplicidades_chave_ano_mes_distribuidora,0
+cemig,Grupo Cemig,fora_prazo_maior_que_servico,0
+cemig,Grupo Cemig,linhas_compensacao_positiva_sem_fora,0
+cemig,Grupo Cemig,linhas_taxa_fora_prazo_maior_1,0
+cemig,Grupo Cemig,linhas_total,36
+cemig,Grupo Cemig,linhas_uc_ativa_zero_ou_negativa,0
+cemig,Grupo Cemig,linhas_valor_negativo,0
 cemirim,Grupo Cemirim,duplicidades_chave_ano_mes_distribuidora,0
 cemirim,Grupo Cemirim,fora_prazo_maior_que_servico,0
 cemirim,Grupo Cemirim,linhas_compensacao_positiva_sem_fora,1
@@ -370,13 +370,13 @@ coorsel,Grupo Coorsel,linhas_taxa_fora_prazo_maior_1,0
 coorsel,Grupo Coorsel,linhas_total,36
 coorsel,Grupo Coorsel,linhas_uc_ativa_zero_ou_negativa,0
 coorsel,Grupo Coorsel,linhas_valor_negativo,0
-copel_dis,Grupo Copel DIS,duplicidades_chave_ano_mes_distribuidora,0
-copel_dis,Grupo Copel DIS,fora_prazo_maior_que_servico,0
-copel_dis,Grupo Copel DIS,linhas_compensacao_positiva_sem_fora,0
-copel_dis,Grupo Copel DIS,linhas_taxa_fora_prazo_maior_1,0
-copel_dis,Grupo Copel DIS,linhas_total,36
-copel_dis,Grupo Copel DIS,linhas_uc_ativa_zero_ou_negativa,0
-copel_dis,Grupo Copel DIS,linhas_valor_negativo,0
+copel,Grupo Copel,duplicidades_chave_ano_mes_distribuidora,0
+copel,Grupo Copel,fora_prazo_maior_que_servico,0
+copel,Grupo Copel,linhas_compensacao_positiva_sem_fora,0
+copel,Grupo Copel,linhas_taxa_fora_prazo_maior_1,0
+copel,Grupo Copel,linhas_total,36
+copel,Grupo Copel,linhas_uc_ativa_zero_ou_negativa,0
+copel,Grupo Copel,linhas_valor_negativo,0
 coprel,Grupo Coprel,duplicidades_chave_ano_mes_distribuidora,0
 coprel,Grupo Coprel,fora_prazo_maior_que_servico,0
 coprel,Grupo Coprel,linhas_compensacao_positiva_sem_fora,0

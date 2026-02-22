@@ -61,6 +61,16 @@ def infer_group_id(distributor_name: object) -> str:
         return "enel"
     if re.match(r"^ENERGISA(\s|-|$)", name):
         return "energisa"
+    if re.match(r"^EDP(\s|-|$)", name):
+        return "edp"
+    if "CEMIG" in name:
+        return "cemig"
+    if "COPEL" in name:
+        return "copel"
+    if "CELESC" in name:
+        return "celesc"
+    if "ELETROBRAS" in name or "CHESF" in name or "FURNAS" in name or "ELETRONORTE" in name or "CGT ELETROSUL" in name:
+        return "eletrobras"
 
     tokens = name.split()
     if not tokens:
@@ -176,6 +186,16 @@ def resolve_group_id(
         return "enel"
     if distributor_id.startswith("energisa_"):
         return "energisa"
+    if distributor_id.startswith("edp_"):
+        return "edp"
+    if distributor_id.startswith("cemig_"):
+        return "cemig"
+    if distributor_id.startswith("copel_"):
+        return "copel"
+    if distributor_id.startswith("celesc_"):
+        return "celesc"
+    if distributor_id.startswith("eletrobras_"):
+        return "eletrobras"
     return infer_group_id(distributor_name)
 
 
