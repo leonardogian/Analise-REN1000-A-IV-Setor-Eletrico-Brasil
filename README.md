@@ -52,6 +52,13 @@ Distribuição por classe/localização (donut charts) e evolução da série lo
 
 ![Diagnóstico — donuts e série longa](docs/images/dashboard_diagnostico.png)
 
+### Dashboard Transgressões & Grupos Econômicos
+
+Mapeamento completo das ocorrências de prazo estourado segmentado por Grupos Econômicos (Holding > Franquias) e flag para compensações rurais. Visão cruzada em bi-eixo mensal mostrando volume de R$ versus contagem das transgressões:
+
+![Visão Principal do Dashboard de Transgressões](docs/images/dashboard_transgressoes_main.png)
+![Visão de Multas Rurais Filtrada](docs/images/dashboard_transgressoes_filtrado.png)
+
 > 📖 Documentação técnica completa (como alterar gráficos, arquitetura, dependências):
 >
 > 👉 [`dashboard/README.md`](dashboard/README.md)
@@ -115,6 +122,10 @@ make preflight-backend
 make backend
 # ou:
 make serve
+
+# Para testar analitico cruzado de Transgressões e Grupos Econômicos:
+cd app/frontend && python3 -m http.server 8000
+# Acesse http://localhost:8000/transgressoes.html
 ```
 
 ### 🐳 Docker (Dashboard e Orquestração)
@@ -310,9 +321,9 @@ python3 -m src.analysis.build_dashboard_data
 
 ## 🎯 Próximos Passos (Desenvolvimento)
 
-1. **Back-End (FastAPI):** Desenvolver e integrar endpoints para servir dados dinâmicos aos painéis, transferindo a lógica para a API.
-2. **Front-End (Dashboard):** Implementar novas análises e relatórios interativos (Vanilla JS + Chart.js) para os cruzamentos de dados recentes.
-3. Fechar o capítulo metodológico da monografia com definição explícita das métricas.
+1. **Integração de Dashboards:** Unificar as visualizações recém criadas de Transgressões (`app/frontend/transgressoes.html`) com o SPA principal, organizando a navegação.
+2. **Back-End (FastAPI):** Migrar o fornecimento estático do `dashboard_transgressoes.json` para endpoints dinâmicos na API visando atualizar a data em tempo real por banco relacional.
+3. Fechar o capítulo metodológico da monografia com definição explícita das métricas trabalhadas (R$/UC-mês, taxa de reincidência, etc).
 4. Exportar análises finais e capturar os gráficos para o texto da dissertação.
 
 ---

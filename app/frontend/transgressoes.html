@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard: Transgressões & Grupos Econômicos</title>
+
+    <!-- Fontes (Google Fonts) para tipografia Premium (Outfit / Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Estilos principais -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="theme-dark">
+
+    <div class="layout-container">
+        <!-- Header principal -->
+        <header class="top-nav glass-panel">
+            <div>
+                <h1 class="nav-title">Transgressões & Compensações (REN 414 vs REN 1000)</h1>
+                <p class="nav-subtitle">Análise avançada de eficiência comercial das distribuidoras de energia.</p>
+            </div>
+            <div class="nav-actions">
+                <!-- Badge dinâmico de Inflexão -->
+                <div id="inflection-badge" class="badge pop-orange hidden">
+                    <span class="badge-icon">⚡</span>
+                    Pico Inflexão: <span id="inflection-month">...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="dashboard-grid">
+
+            <!-- Painel Esquerdo: Controles & Insights -->
+            <aside class="sidebar-panel">
+                <section class="control-card glass-panel">
+                    <h2 class="card-title">Filtros Demográficos</h2>
+
+                    <div class="filter-group">
+                        <label for="holding-select">Holding (Grupo Econômico)</label>
+                        <select id="holding-select" class="custom-select" multiple>
+                            <!-- Preenchido via JS -->
+                        </select>
+                        <small>Selecione 1 ou mais holdings.</small>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="distributor-select">Franquias/Subsidiárias</label>
+                        <select id="distributor-select" class="custom-select" multiple>
+                            <!-- Preenchido via JS baseado nas Holdings -->
+                        </select>
+                    </div>
+
+                    <div class="filter-group toggle-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rural-only-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-label">Apenas Consumidores Rurais</span>
+                    </div>
+
+                </section>
+
+                <!-- Seção de Insights Automáticos -->
+                <section class="insight-card glass-panel highlight-border">
+                    <h2 class="card-title"><span class="icon">🔍</span> Insights de Mercado</h2>
+                    <div class="insight-content" id="insight-container">
+                        <!-- Renderizado dinamicamente -->
+                        <p>Carregando análises preditivas...</p>
+                    </div>
+                </section>
+            </aside>
+
+            <!-- Painel Principal (Gráfico Bi-Eixo) -->
+            <section class="main-panel glass-panel">
+                <div class="chart-header">
+                    <h2 class="card-title">Curva de Compensações (Bi-Eixo Mensal)</h2>
+                    <div class="legend-container" id="custom-legend"></div>
+                </div>
+
+                <div class="chart-wrapper">
+                    <canvas id="transgressionsChart"></canvas>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lógica da Aplicação -->
+    <script src="transgressoes.js"></script>
+</body>
+
+</html>
