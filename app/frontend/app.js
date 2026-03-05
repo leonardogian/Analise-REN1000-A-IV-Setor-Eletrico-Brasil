@@ -48,12 +48,12 @@ function updateChartTheme(theme) {
         Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 0, 0, 0.1)';
         return;
     }
-    Chart.defaults.color = '#94a3b8';
-    Chart.defaults.borderColor = 'rgba(0, 164, 67, 0.08)';
-    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.95)';
+    Chart.defaults.color = '#8a949e';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.03)';
+    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.85)';
     Chart.defaults.plugins.tooltip.titleColor = '#fff';
-    Chart.defaults.plugins.tooltip.bodyColor = '#fff';
-    Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 164, 67, 0.3)';
+    Chart.defaults.plugins.tooltip.bodyColor = '#cbd5e1';
+    Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 240, 255, 0.4)';
 }
 
 function applyTheme(theme, { rerender = false } = {}) {
@@ -93,28 +93,28 @@ const fmtMoneyFull = (v) => {
 
 /* ===================== COLORS ===================== */
 const COLORS = {
-    blue: '#00A443',
-    blueLight: '#2fc66a',
-    cyan: '#00843D',
-    green: '#34d399',
-    amber: '#F4A100',
-    red: '#E63312',
-    purple: '#00402A',
-    rose: '#fb7185',
+    blue: '#00f0ff',
+    blueLight: '#00e5ff',
+    cyan: '#00ffff',
+    green: '#00ff66',
+    amber: '#f59e0b',
+    red: '#ff0055',
+    purple: '#b026ff',
+    rose: '#ff3366',
     slate: '#64748b',
 };
 
 const DISTRIBUTOR_PALETTE = [
-    '#00A443',
-    '#00843D',
-    '#34d399',
-    '#F4A100',
-    '#fb7185',
-    '#0ea5e9',
-    '#8b5cf6',
-    '#f97316',
-    '#a3e635',
-    '#14b8a6',
+    '#00f0ff',
+    '#00ff66',
+    '#ff0055',
+    '#f59e0b',
+    '#b026ff',
+    '#00e5ff',
+    '#ff3366',
+    '#3b82f6',
+    '#10b981',
+    '#f43f5e',
 ];
 
 const CHART_FONT = { family: "'Inter', sans-serif", size: 12, weight: '500' };
@@ -554,7 +554,7 @@ function renderOverview(data) {
                 y: {
                     beginAtZero: true,
                     ticks: { callback: v => v.toFixed(1) + '%' },
-                    grid: { color: 'rgba(0,164,67,0.06)' },
+                    grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
                 },
             },
         },
@@ -1069,12 +1069,14 @@ async function renderAdvancedAnalytics() {
                             const value = context.dataset.data[context.dataIndex]?.v || 0;
                             const maxVal = Math.max(...context.dataset.data.map(d => d.v));
                             const alpha = maxVal > 0 ? Math.min(Math.max((value / maxVal), 0.15), 1) : 0.15;
-                            return `rgba(244, 161, 0, ${alpha})`;
+                            return `rgba(0, 164, 67, ${alpha})`;
                         },
-                        borderColor: 'transparent',
+                        hoverBackgroundColor: '#00A443',
+                        borderColor: 'rgba(255, 255, 255, 0.05)',
                         borderWidth: 1,
-                        width: ({ chart }) => (chart.chartArea || {}).width / xLabels.length - 1,
-                        height: ({ chart }) => (chart.chartArea || {}).height / yLabels.length - 1
+                        borderRadius: 4,
+                        width: ({ chart }) => (chart.chartArea || {}).width / xLabels.length - 2,
+                        height: ({ chart }) => (chart.chartArea || {}).height / yLabels.length - 2
                     }]
                 },
                 options: {
@@ -1097,8 +1099,8 @@ async function renderAdvancedAnalytics() {
                 type: 'scatter',
                 data: {
                     datasets: [
-                        { label: 'REN 414', data: data.filter(d => d.regra === 'REN 414'), backgroundColor: 'rgba(0, 164, 67, 0.6)', borderColor: '#00A443', pointRadius: 6, pointHoverRadius: 8 },
-                        { label: 'REN 1000', data: data.filter(d => d.regra === 'REN 1000'), backgroundColor: 'rgba(230, 51, 18, 0.6)', borderColor: '#E63312', pointRadius: 6, pointHoverRadius: 8 }
+                        { label: 'REN 414', data: data.filter(d => d.regra === 'REN 414'), backgroundColor: 'rgba(0, 164, 67, 0.4)', borderColor: '#00A443', borderWidth: 2, pointRadius: 7, pointHoverRadius: 10 },
+                        { label: 'REN 1000', data: data.filter(d => d.regra === 'REN 1000'), backgroundColor: 'rgba(230, 51, 18, 0.4)', borderColor: '#E63312', borderWidth: 2, pointRadius: 7, pointHoverRadius: 10 }
                     ]
                 },
                 options: {
@@ -1133,25 +1135,83 @@ async function renderAdvancedAnalytics() {
                     datasets: radarRes.data.map((d, i) => ({
                         label: d.distributor_label,
                         data: services.map(s => d.metrics[s] || 0),
-                        backgroundColor: DISTRIBUTOR_PALETTE[i % DISTRIBUTOR_PALETTE.length] + '33',
+                        backgroundColor: DISTRIBUTOR_PALETTE[i % DISTRIBUTOR_PALETTE.length] + '44',
                         borderColor: DISTRIBUTOR_PALETTE[i % DISTRIBUTOR_PALETTE.length],
-                        pointRadius: 3
+                        borderWidth: 2,
+                        pointBackgroundColor: DISTRIBUTOR_PALETTE[i % DISTRIBUTOR_PALETTE.length],
+                        pointBorderColor: '#fff',
+                        pointHoverRadius: 6,
+                        pointRadius: 3,
+                        fill: true
                     }))
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { r: { ticks: { display: false } } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } }
+                    },
+                    scales: {
+                        r: {
+                            ticks: { display: false },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: { color: '#94a3b8', font: { size: 11 } }
+                        }
+                    }
+                }
             });
         }
 
         if (tsRes.data && tsRes.data.length > 0) {
-            const gruposData = {};
+            const tsData = tsRes.data;
             const labelsSet = new Set();
-            tsRes.data.forEach(d => {
-                if (!gruposData[d.grupo]) gruposData[d.grupo] = {};
-                gruposData[d.grupo][d.date] = d.fora_prazo_por_100k_uc_mes;
+            const allGroups = new Map();
+
+            tsData.forEach(d => {
                 labelsSet.add(d.date);
+                if (d.tipo && d.grupo !== 'Média Nacional') {
+                    allGroups.set(d.grupo, d.tipo);
+                } else if (!d.tipo && d.grupo !== 'Média Nacional') {
+                    allGroups.set(d.grupo, ['Neoenergia', 'CPFL', 'Energisa', 'Equatorial', 'Enel'].includes(d.grupo) ? 'holding' : 'franquia');
+                }
             });
             const labels = Array.from(labelsSet).sort();
-            
+
+            const selectEl = document.getElementById('adv-timeseries-filter');
+            if (selectEl) {
+                selectEl.innerHTML = '';
+
+                const holdings = Array.from(allGroups.keys()).filter(k => allGroups.get(k) === 'holding').sort();
+                const franquias = Array.from(allGroups.keys()).filter(k => allGroups.get(k) === 'franquia').sort();
+
+                const optgHolding = document.createElement('optgroup');
+                optgHolding.label = 'Holdings Principais';
+                holdings.forEach(h => {
+                    const opt = document.createElement('option');
+                    opt.value = h;
+                    opt.textContent = h;
+                    opt.selected = true; // Select holdings by default
+                    optgHolding.appendChild(opt);
+                });
+                selectEl.appendChild(optgHolding);
+
+                const optgFranquias = document.createElement('optgroup');
+                optgFranquias.label = 'Franquias (Distribuidoras)';
+                franquias.forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f;
+                    opt.textContent = f;
+                    optgFranquias.appendChild(opt);
+                });
+                selectEl.appendChild(optgFranquias);
+
+                selectEl.addEventListener('change', () => {
+                    const selected = Array.from(selectEl.selectedOptions).map(o => o.value);
+                    renderTsChart(selected);
+                });
+            }
+
             const groupColors = {
                 'Média Nacional': '#F4A100', // yellow
                 'Neoenergia': '#00A859', // light green
@@ -1160,64 +1220,81 @@ async function renderAdvancedAnalytics() {
                 'Equatorial': '#0A0E1A', // black
                 'Enel': '#00843D' // default green
             };
-            
-            const datasets = Object.keys(gruposData).map((grupo, idx) => {
-                const dataPoints = labels.map(l => gruposData[grupo][l] ?? null);
-                let color = groupColors[grupo] || DISTRIBUTOR_PALETTE[idx % DISTRIBUTOR_PALETTE.length];
-                let isNacional = grupo === 'Média Nacional';
-                return {
-                    label: grupo,
-                    data: dataPoints,
-                    borderColor: color,
-                    borderWidth: isNacional ? 4 : 2,
-                    borderDash: isNacional ? [] : [4, 4],
-                    backgroundColor: 'transparent',
-                    tension: 0.3,
-                    yAxisID: 'y',
-                    pointRadius: isNacional ? 3 : 0,
-                    pointHoverRadius: 6
-                };
-            });
 
-            createChart('chart-advanced-timeseries', {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: datasets
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        annotation: {
-                            annotations: {
-                                line1: {
-                                    scaleID: 'x', value: '2022-04-01',
-                                    borderColor: 'rgba(230, 51, 18, 0.8)', borderDash: [6, 6], borderWidth: 2,
-                                    label: { content: 'Fronteira REN 1000', display: true, position: 'start', color: '#E63312', backgroundColor: 'rgba(255,255,255,0.8)' }
+            let currentChart = null;
+
+            function renderTsChart(selectedGroups) {
+                const gruposData = {};
+                tsData.forEach(d => {
+                    if (d.grupo === 'Média Nacional' || selectedGroups.includes(d.grupo)) {
+                        if (!gruposData[d.grupo]) gruposData[d.grupo] = {};
+                        gruposData[d.grupo][d.date] = d.fora_prazo_por_100k_uc_mes;
+                    }
+                });
+
+                const datasets = Object.keys(gruposData).map((grupo, idx) => {
+                    const dataPoints = labels.map(l => gruposData[grupo][l] ?? null);
+                    let color = groupColors[grupo] || DISTRIBUTOR_PALETTE[idx % DISTRIBUTOR_PALETTE.length];
+                    let isNacional = grupo === 'Média Nacional';
+                    return {
+                        label: grupo,
+                        data: dataPoints,
+                        borderColor: color,
+                        borderWidth: isNacional ? 4 : 2,
+                        borderDash: isNacional ? [] : [4, 4],
+                        backgroundColor: isNacional ? 'rgba(244, 161, 0, 0.05)' : 'transparent',
+                        fill: isNacional,
+                        tension: 0.4,
+                        yAxisID: 'y',
+                        pointRadius: isNacional ? 3 : 0,
+                        pointHoverRadius: 6
+                    };
+                });
+
+                if (currentChart && window.appCharts && window.appCharts['chart-advanced-timeseries']) {
+                    window.appCharts['chart-advanced-timeseries'].destroy();
+                }
+
+                currentChart = createChart('chart-advanced-timeseries', {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            annotation: {
+                                annotations: {
+                                    line1: {
+                                        scaleID: 'x', value: '2022-04-01',
+                                        borderColor: 'rgba(230, 51, 18, 0.8)', borderDash: [6, 6], borderWidth: 2,
+                                        label: { content: 'Fronteira REN 1000', display: true, position: 'start', color: '#E63312', backgroundColor: 'rgba(255,255,255,0.8)' }
+                                    }
                                 }
                             }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { maxTicksLimit: 12 }
                         },
-                        y: { type: 'linear', position: 'left', title: { display: true, text: 'Fora / 100k UC' } },
-                        y1: { type: 'linear', position: 'right', title: { display: true, text: 'R$ / UC' }, grid: { drawOnChartArea: false } }
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { maxTicksLimit: 12 }
+                            },
+                            y: { type: 'linear', position: 'left', title: { display: true, text: 'Fora / 100k UC' } },
+                            y1: { type: 'linear', position: 'right', title: { display: true, text: 'R$ / UC' }, grid: { drawOnChartArea: false } }
+                        }
                     }
-                }
-            });
+                });
+            }
+
+            const initialSelected = selectEl ? Array.from(selectEl.selectedOptions).map(o => o.value) : ['Neoenergia', 'CPFL', 'Energisa', 'Equatorial', 'Enel'];
+            renderTsChart(initialSelected);
         }
     } catch (e) {
         console.error("Advanced analytics load failed", e);
     }
 }
 
-function renderAll(data) {
-    renderOverview(data);
-    renderAdvancedAnalytics();
-}
+
 
 /* ===================== MAIN ===================== */
 async function loadData() {

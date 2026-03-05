@@ -17,16 +17,29 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="theme-dark">
+<body class="">
 
     <div class="layout-container">
         <!-- Header principal -->
-        <header class="top-nav glass-panel">
-            <div>
-                <h1 class="nav-title">Transgressões & Compensações (REN 414 vs REN 1000)</h1>
-                <p class="nav-subtitle">Análise avançada de eficiência comercial das distribuidoras de energia.</p>
+        <header class="global-header">
+            <div class="header-brand">
+                <span class="header-logo">⚡</span>
+                <div class="header-title-group">
+                    <h1 class="header-title">Transgressões & Compensações (REN 414 vs REN 1000)</h1>
+                    <span class="header-subtitle">Análise avançada de eficiência comercial das distribuidoras de
+                        energia.</span>
+                </div>
             </div>
-            <div class="nav-actions">
+            <nav class="main-nav-links">
+                <a href="index.html">Visão Geral</a>
+                <a href="transgressoes.html" class="active">Séries Temporais</a>
+                <a href="mapa.html">Mapa Interativo</a>
+                <a href="prompt.html">Chat IA</a>
+            </nav>
+            <div class="header-actions">
+                <button class="theme-toggle-btn" id="theme-toggle" title="Alternar Tema">
+                    <span class="icon">🌙</span>
+                </button>
                 <!-- Badge dinâmico de Inflexão -->
                 <div id="inflection-badge" class="badge pop-orange hidden">
                     <span class="badge-icon">⚡</span>
@@ -74,6 +87,24 @@
                     <div class="insight-content" id="insight-container">
                         <!-- Renderizado dinamicamente -->
                         <p>Carregando análises preditivas...</p>
+                    </div>
+                </section>
+
+                <!-- Nova Seção de Análise IA -->
+                <section class="ai-card glass-panel highlight-border"
+                    style="margin-top: 1.5rem; border-color: #ec4899;">
+                    <h2 class="card-title" style="color: #fce7f3;"><span class="icon">✨</span> Análise Guiada por IA
+                    </h2>
+                    <textarea id="ai-custom-prompt"
+                        placeholder="Ex: O que explica os picos recorrentes nas concessionárias nordestinas?"
+                        style="width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; font-family: 'Outfit', sans-serif; font-size: 0.9rem; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.75rem; resize: none; min-height: 60px; outline: none;"></textarea>
+                    <button id="btn-generate-ai"
+                        style="width: 100%; padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 8px; border: none; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 14px rgba(236, 72, 153, 0.3);"
+                        onmouseover="this.style.transform='translateY(-2px)';"
+                        onmouseout="this.style.transform='translateY(0)';">Gerar Análise IA</button>
+                    <div class="insight-content" id="ai-insight-container"
+                        style="display: none; font-size: 0.9rem; line-height: 1.5; color: #cbd5e1; background: rgba(15, 23, 42, 0.4); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                        <!-- Insight vai aqui -->
                     </div>
                 </section>
             </aside>

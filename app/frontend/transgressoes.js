@@ -12,18 +12,24 @@ document.addEventListener("DOMContentLoaded", async () => {
         ruralOnly: false
     };
 
-    // Cores CSS Variables
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+    }
+
+    // Cores CSS Variables Unificadas com app.js (Premium Theme)
     const colors = {
-        neoenergia: "#3b82f6", // Pop Blue
-        cpfl: "#10b981",       // Pop Green
-        equatorial: "#f59e0b", // Pop Yellow/Amber
-        enel: "#ef4444",       // Pop Red
-        energisa: "#8b5cf6",   // Pop Violet
-        cemig: "#f97316",      // Pop Orange
-        copel: "#06b6d4",      // Pop Cyan
-        edp: "#ec4899",        // Pop Pink
-        celesc: "#14b8a6",     // Pop Teal
-        outros: "#94a3b8"      // Pop Gray
+        neoenergia: "#00f0ff", // Neon Cyan
+        cpfl: "#00ff66",       // Neon Green
+        equatorial: "#ff0055", // Hot Pink
+        enel: "#f59e0b",       // Amber
+        energisa: "#b026ff",   // Neon Purple
+        cemig: "#00e5ff",      // Bright Cyan
+        copel: "#ff3366",      // Rose Neon
+        edp: "#3b82f6",        // Electric Blue
+        celesc: "#10b981",     // Lime
+        outros: "#64748b"      // Gray
     };
 
     const UI = {
@@ -33,6 +39,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         insightContainer: document.getElementById('insight-container'),
         inflectionBadge: document.getElementById('inflection-badge'),
         inflectionMonth: document.getElementById('inflection-month'),
+        btnGenerateAi: document.getElementById('btn-generate-ai'),
+        aiInsightContainer: document.getElementById('ai-insight-container')
     };
 
     // Inicialização
@@ -44,6 +52,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         initFilters();
         renderInsights();
         updateChart();
+        initAI();
+        initThemeToggle();
 
     } catch (error) {
         console.error("Erro ao inicializar dashboard:", error);
@@ -116,12 +126,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (inflection_point) {
             UI.inflectionBadge.classList.remove('hidden');
-            UI.inflectionMonth.textContent = inflection_point.mes;
+            let [ano, mes] = inflection_point.ano_mes.split('-');
+            const mesFormatado = new Date(ano, mes - 1).toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+            const mesFinal = mesFormatado.charAt(0).toUpperCase() + mesFormatado.slice(1) + '/' + ano.slice(-2);
+            UI.inflectionMonth.textContent = mesFinal;
 
             html += `
         <div class="insight-block">
           <h3>Ponto de Inflexão (Transição para REN 1000)</h3>
-          <p>O maior salto no volume de infrações ocorreu em <strong>${inflection_point.mes}</strong>, com um acréscimo de <strong>${inflection_point.salto_transgressoes.toLocaleString('pt-BR')}</strong> transgressões em relação ao mês anterior em nível nacional.</p>
+          <p>O maior salto no volume de infrações ocorreu em <strong>${mesFinal}</strong>, com um acréscimo de <strong>${inflection_point.salto_transgressoes.toLocaleString('pt-BR')}</strong> transgressões em relação ao mês anterior em nível nacional.</p>
         </div>
       `;
         }
@@ -215,11 +228,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                 data: lineData,
                 type: 'line',
                 borderColor: color,
-                backgroundColor: color,
+                backgroundColor: color, // Para a legenda
                 borderWidth: 3,
                 tension: 0.4,
                 yAxisID: 'y',
-                order: 1 // Desenhar por cima das barras
+                order: 1, // Desenhar por cima das barras
+                pointRadius: 2,
+                pointHoverRadius: 6,
+                pointHoverBorderWidth: 3,
+                pointHoverBackgroundColor: color,
+                pointHoverBorderColor: '#ffffff',
+                hitRadius: 10,
+                fill: false
             });
 
             // Adicionar Barra de Fundo (Qtd)
@@ -228,7 +248,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 data: barData,
                 type: 'bar',
                 backgroundColor: bgColor,
+                hoverBackgroundColor: color, // Fica mais sólida no hover
                 borderColor: 'transparent',
+                borderWidth: 0,
+                borderRadius: 4, // Bordas suavemente arredondadas
                 yAxisID: 'y1',
                 order: 2,
                 barPercentage: 0.8,
@@ -240,9 +263,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             chartInstance.destroy();
         }
 
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+
         // Configuração do Chart.js
         Chart.defaults.font.family = "'Inter', sans-serif";
-        Chart.defaults.color = "#94a3b8";
+        Chart.defaults.color = isLight ? "#475569" : "#8a949e";
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.03)';
+
+        const gridColor = isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.03)';
 
         chartInstance = new Chart(ctx, {
             data: {
@@ -261,15 +289,20 @@ document.addEventListener("DOMContentLoaded", async () => {
                         position: 'top',
                         labels: {
                             usePointStyle: true,
-                            padding: 20
+                            padding: 20,
+                            font: { family: "'Outfit', sans-serif", size: 13, weight: '500' }
                         }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        titleFont: { size: 14, family: "'Outfit', sans-serif" },
-                        bodyFont: { size: 13 },
-                        padding: 12,
-                        cornerRadius: 8,
+                        backgroundColor: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.85)',
+                        titleFont: { size: 14, family: "'Outfit', sans-serif", weight: '600' },
+                        bodyFont: { size: 13, family: "'Inter', sans-serif" },
+                        padding: 16,
+                        cornerRadius: 12,
+                        borderColor: isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 240, 255, 0.4)',
+                        borderWidth: 1,
+                        boxPadding: 4,
+                        usePointStyle: true,
                         callbacks: {
                             label: function (context) {
                                 let label = context.dataset.label || '';
@@ -287,11 +320,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 scales: {
                     x: {
                         grid: {
-                            color: 'rgba(51, 65, 85, 0.5)',
+                            color: gridColor,
                             drawBorder: false
                         },
                         ticks: {
-                            font: { size: 12 }
+                            font: { size: 12, family: "'Inter', sans-serif" }
                         }
                     },
                     y: {
@@ -301,11 +334,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                         title: {
                             display: true,
                             text: 'Compensações Pagas (R$)',
-                            color: '#cbd5e1',
+                            color: isLight ? '#1e293b' : '#cbd5e1',
                             font: { family: "'Outfit', sans-serif", size: 14 }
                         },
                         grid: {
-                            color: 'rgba(51, 65, 85, 0.5)',
+                            color: gridColor,
                             drawBorder: false
                         },
                         ticks: {
@@ -313,7 +346,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 if (value >= 1e6) return 'R$ ' + (value / 1e6).toFixed(1) + 'M';
                                 if (value >= 1e3) return 'R$ ' + (value / 1e3).toFixed(0) + 'k';
                                 return 'R$ ' + value;
-                            }
+                            },
+                            font: { family: "'Inter', sans-serif", size: 11 }
                         }
                     },
                     y1: {
@@ -323,7 +357,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         title: {
                             display: true,
                             text: 'Qtd. Transgressões',
-                            color: '#94a3b8',
+                            color: isLight ? '#475569' : '#94a3b8',
                             font: { family: "'Outfit', sans-serif", size: 14 }
                         },
                         grid: {
@@ -332,6 +366,128 @@ document.addEventListener("DOMContentLoaded", async () => {
                     },
                 }
             }
+        });
+    }
+
+    // --- Funções de IA ---
+    function initAI() {
+        if (!UI.btnGenerateAi) return;
+
+        UI.btnGenerateAi.addEventListener('click', async () => {
+            UI.btnGenerateAi.disabled = true;
+            UI.btnGenerateAi.textContent = "Gerando Análise... ⏳";
+            UI.aiInsightContainer.style.display = "block";
+            UI.aiInsightContainer.innerHTML = "<p>Pensando e estruturando a análise baseada no contexto atual...</p>";
+
+            const customPromptStr = document.getElementById('ai-custom-prompt') ? document.getElementById('ai-custom-prompt').value : "";
+
+            // Build Context
+            const filters = {
+                holdingsAtivas: state.selectedHoldings,
+                distribuidorasAtivas: state.selectedDistributors,
+                apenasRural: state.ruralOnly
+            };
+
+            let totalFinanceiro = 0;
+            let totalTransgressoes = 0;
+
+            const aggregateBy = state.selectedDistributors.length > 0 ? 'distribuidora' : 'holding';
+            const activeGroups = state.selectedDistributors.length > 0 ? state.selectedDistributors : state.selectedHoldings;
+
+            let groupMetrics = {};
+            activeGroups.forEach(groupId => {
+                groupMetrics[groupId] = { valor_pago: 0, qtd_transgressoes: 0 };
+            });
+
+            const filteredSeries = dashboardData.series.filter(s => {
+                if (state.ruralOnly && !s.is_rural) return false;
+                if (state.selectedHoldings.length > 0 && !state.selectedHoldings.includes(s.holding)) return false;
+                if (state.selectedDistributors.length > 0 && !state.selectedDistributors.includes(s.distribuidora)) return false;
+                return true;
+            });
+
+            filteredSeries.forEach(s => {
+                const id = s[aggregateBy];
+                if (groupMetrics[id]) {
+                    groupMetrics[id].valor_pago += s.valor_pago;
+                    groupMetrics[id].qtd_transgressoes += s.qtd_transgressoes;
+                    totalFinanceiro += s.valor_pago;
+                    totalTransgressoes += s.qtd_transgressoes;
+                }
+            });
+
+            // Format numbers slightly for better AI comprehension
+            const formatMoney = v => "R$ " + (v / 1e6).toFixed(2) + "M";
+
+            const metrics = {
+                totalGeralFinanceiro: formatMoney(totalFinanceiro),
+                totalGeralTransgressoes: totalTransgressoes,
+                detalhamentoFinanceiro: {}
+            };
+
+            activeGroups.forEach(id => {
+                metrics.detalhamentoFinanceiro[id] = formatMoney(groupMetrics[id].valor_pago) + " (" + groupMetrics[id].qtd_transgressoes + " transgressões)";
+            });
+
+            try {
+                // If the static html is opened locally, it might run on 5500 via live server
+                // But the FastAPI backend will run on 8000. Let's point to localhost:8000 for this demo.
+                const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? `http://127.0.0.1:8000/api/v1/ai-insights`
+                    : '/api/v1/ai-insights';
+
+                const response = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filters, metrics, prompt: customPromptStr })
+                });
+
+                if (!response.ok) {
+                    const errorObj = await response.json().catch(() => ({}));
+                    throw new Error(errorObj.detail || "Erro na solicitação. O backend FastAPI está rodando e a OPENROUTER_API_KEY no .env?");
+                }
+
+                const data = await response.json();
+
+                // Markdown visual parsing
+                let htmlContent = data.insight
+                    .replace(/\\*\\*(.*?)\\*\\*/g, '<strong style="color: white;">$1</strong>')
+                    .replace(/\\*(.*?)\\*/g, '<em>$1</em>')
+                    .replace(/^- (.*)$/gm, '<li style="margin-left: 1.5rem;">$1</li>')
+                    .replace(/\n/g, '<br/>');
+
+                UI.aiInsightContainer.innerHTML = htmlContent;
+
+            } catch (error) {
+                console.error("AI Insight Error:", error);
+                UI.aiInsightContainer.innerHTML = `<p style="color: #ef4444;">Erro ao gerar insight: ${error.message}</p>`;
+            } finally {
+                UI.btnGenerateAi.disabled = false;
+                UI.btnGenerateAi.textContent = "✨ Gerar Nova Análise IA";
+            }
+        });
+    }
+
+    // --- Tema ---
+    function initThemeToggle() {
+        const toggleBtn = document.getElementById('theme-toggle');
+        if (!toggleBtn) return;
+
+        const icon = toggleBtn.querySelector('.icon');
+        if (icon) {
+            icon.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '☀️' : '🌙';
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            if (icon) icon.textContent = newTheme === 'light' ? '☀️' : '🌙';
+
+            updateChart(); // Redraw chart with new colors
         });
     }
 

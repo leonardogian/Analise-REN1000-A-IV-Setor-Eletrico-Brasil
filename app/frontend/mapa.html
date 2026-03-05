@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard: Mapa de Transgressões</title>
+
+    <!-- Fontes (Google Fonts) para tipografia Premium (Outfit / Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Estilos principais -->
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* Specific Map Styles */
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.4);
+            /* Combina com o dark theme */
+        }
+
+        .leaflet-container {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: rgba(15, 23, 42, 0.95);
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            padding: 4px;
+        }
+
+        .leaflet-popup-tip {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-popup .popup-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #3b82f6;
+            /* Will be overwritten dynamically */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 4px;
+        }
+
+        .custom-popup .popup-meta {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            margin-bottom: 0.2rem;
+        }
+
+        .custom-popup .popup-val {
+            font-weight: 600;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body class="">
+
+    <div class="layout-container">
+        <!-- Header principal -->
+        <header class="global-header">
+            <div class="header-brand">
+                <span class="header-logo">⚡</span>
+                <div class="header-title-group">
+                    <h1 class="header-title">Mapa de Transgressões & Compensações (REN 1000)</h1>
+                    <span class="header-subtitle">Distribuição geográfica interativa das ocorrências por distribuidora e
+                        grupo econômico.</span>
+                </div>
+            </div>
+            <nav class="main-nav-links">
+                <a href="index.html">Visão Geral</a>
+                <a href="transgressoes.html">Séries Temporais</a>
+                <a href="mapa.html" class="active">Mapa Interativo</a>
+                <a href="prompt.html">Chat IA</a>
+            </nav>
+            <div class="header-actions">
+                <button class="theme-toggle-btn" id="theme-toggle" title="Alternar Tema">
+                    <span class="icon">🌙</span>
+                </button>
+                <!-- Badge Dinamico -->
+                <div id="metric-badge" class="badge pop-cyan">
+                    <span class="badge-icon">📍</span>
+                    Exibindo: <span id="current-metric-label">Valor (R$)</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="dashboard-grid">
+
+            <!-- Painel Esquerdo: Controles & Insights -->
+            <aside class="sidebar-panel">
+                <section class="control-card glass-panel">
+                    <h2 class="card-title">Opções do Mapa</h2>
+
+                    <div class="filter-group">
+                        <label for="metric-select">Métrica do Tamanho (Bolhas)</label>
+                        <select id="metric-select" class="custom-select" style="height: auto;">
+                            <option value="valor" selected>Valor Pago de Compensação (R$)</option>
+                            <option value="qtd">Quantidade de Transgressões</option>
+                            <option value="relacao">Relação (R$ / Qtd)</option>
+                        </select>
+                        <button id="invert-ratio-btn"
+                            style="display: none; width: 100%; margin-top: 0.75rem; padding: 0.5rem; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.15); color: #3b82f6; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease;">Inverter
+                            (Qtd / R$)</button>
+                        <small style="display: block; margin-top: 0.5rem;">Alterna o que o tamanho do círculo
+                            representa.</small>
+                    </div>
+
+                    <div class="filter-group" style="margin-top: 1rem;">
+                        <label for="holding-select">Holding (Grupo Econômico)</label>
+                        <select id="holding-select" class="custom-select" multiple>
+                            <!-- Preenchido via JS -->
+                        </select>
+                        <small>Selecione 1 ou mais holdings.</small>
+                    </div>
+                </section>
+
+                <section class="control-card glass-panel" style="margin-top: 1.5rem;">
+                    <h2 class="card-title">Evolução Temporal</h2>
+                    <div class="filter-group" style="padding-top: 0.5rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <button id="btn-play-timeline"
+                                style="padding: 6px 12px; border-radius: 6px; background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.5); cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s;">
+                                <span id="play-icon">▶️</span>
+                                <span id="play-text">Play</span>
+                            </button>
+                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                <label for="speed-select"
+                                    style="margin-bottom: 2px; font-size: 0.75rem;">Velocidade</label>
+                                <select id="speed-select" class="custom-select"
+                                    style="width: auto; height: auto; padding: 2px 6px; font-size: 0.8rem; border-color: rgba(255,255,255,0.1);">
+                                    <option value="2000">Lento (2s)</option>
+                                    <option value="1000">Normal (1s)</option>
+                                    <option value="300" selected>Rápido (0.3s)</option>
+                                    <option value="100">GIF Mode (0.1s)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <input type="range" id="timeline-slider" min="0" max="0" value="0"
+                            style="width: 100%; margin-bottom: 0.5rem; accent-color: #3b82f6;">
+                        <div id="timeline-label"
+                            style="text-align: center; color: #f8fafc; font-weight: 600; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                            Carregando...</div>
+
+                        <div
+                            style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; justify-content: center;">
+                            <input type="checkbox" id="accumulate-toggle" checked
+                                style="accent-color: #3b82f6; width: 16px; height: 16px; cursor: pointer;">
+                            <label for="accumulate-toggle"
+                                style="margin: 0; font-size: 0.85rem; cursor: pointer; color: #cbd5e1;">Exibir modo
+                                Acumulado (histórico)</label>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="insight-card glass-panel highlight-border" style="margin-top: 1.5rem;">
+                    <h2 class="card-title"><span class="icon">🧭</span> Guia do Mapa</h2>
+                    <div class="insight-content">
+                        <div class="insight-block">
+                            <h3>Sobre o Mapeamento</h3>
+                            <p>As bolhas são centralizadas nos estados de atuação das distribuidoras.</p>
+                            <ul class="insight-list">
+                                <li><strong>Tamanho:</strong> Proporcional à métrica selecionada.</li>
+                                <li><strong>Cores:</strong> Representam os grupos econômicos (Holdings).</li>
+                                <li><strong>Interação:</strong> Passe o mouse para ver os valores acumulados nos últimos
+                                    anos analisados (pós REN 1000).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Nova Seção de Análise IA -->
+                <section class="ai-card glass-panel highlight-border"
+                    style="margin-top: 1.5rem; border-color: #ec4899;">
+                    <h2 class="card-title" style="color: #fce7f3;"><span class="icon">✨</span> Análise Guiada por IA do
+                        Mapa</h2>
+                    <textarea id="ai-custom-prompt" placeholder="Ex: Descreva o comportamento no nordeste vs sudeste..."
+                        style="width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; font-family: 'Outfit', sans-serif; font-size: 0.9rem; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.75rem; resize: none; min-height: 60px; outline: none;"></textarea>
+                    <button id="btn-generate-ai"
+                        style="width: 100%; padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 8px; border: none; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 14px rgba(236, 72, 153, 0.3);"
+                        onmouseover="this.style.transform='translateY(-2px)';"
+                        onmouseout="this.style.transform='translateY(0)';">Gerar Análise IA</button>
+                    <div class="insight-content" id="ai-insight-container"
+                        style="display: none; font-size: 0.9rem; line-height: 1.5; color: #cbd5e1; background: rgba(15, 23, 42, 0.4); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                        <!-- Insight vai aqui -->
+                    </div>
+                </section>
+            </aside>
+
+            <!-- Painel Principal (Mapa Interativo) -->
+            <section class="main-panel glass-panel" style="padding: 1rem; position: relative;">
+                <div id="map"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Lógica de Dados e Componentes da Página -->
+    <script src="mapa.js"></script>
+</body>
+
+</html>

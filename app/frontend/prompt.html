@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Transgressões ANEEL (REN 1000) - Chat IA</title>
+    <!-- Incluir a fonte Outfit para um estilo mais moderno e limpo -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Removido Chart.js e Leaflet já que não são necessários diretamente no chat, mantendo foco na performance -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="">
+    <!-- Navbar Premium -->
+    <header class="global-header">
+        <div class="header-brand">
+            <span class="header-logo">⚡</span>
+            <div class="header-title-group">
+                <h1 class="header-title">REN 414 vs REN 1000</h1>
+                <span class="header-subtitle">Análise Regulatória Premium - Chat IA</span>
+            </div>
+        </div>
+        <nav class="main-nav-links">
+            <a href="index.html">Visão Geral</a>
+            <a href="transgressoes.html">Séries Temporais</a>
+            <a href="mapa.html">Mapa Interativo</a>
+            <a href="prompt.html" class="active">Chat IA</a>
+        </nav>
+        <div class="header-actions">
+            <button class="theme-toggle-btn" id="theme-toggle" title="Alternar Tema">
+                <span class="icon">🌙</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-container">
+        <div class="dashboard-layout" style="display: block; max-width: 1000px; margin: 0 auto;">
+            <!-- Painel Principal do Chat IA -->
+            <section class="board-panel active glass-panel highlight-border chat-container" id="panel-chat-ia">
+                <!-- Header do Chat -->
+                <div class="chat-header">
+                    <h2 class="section-title"><span class="icon" style="color: #ec4899;">✨</span> Assistente de IA
+                        Regulatória (LangChain Agents)</h2>
+                    <p class="chat-subtitle">Faça consultas livres sobre os dados de
+                        compensações, transgressões e distribuidoras. A IA utilizará ferramentas em tempo real para
+                        extrair a melhor resposta da base de dados.</p>
+                </div>
+
+                <!-- Histórico do Chat -->
+                <div id="chat-history" class="chat-history">
+                    <!-- Mensagem do Sistema -->
+                    <div class="message-wrapper system">
+                        <div class="chat-message system-message">
+                            <div class="system-message-title">Assistente IA</div>
+                            <div>Olá! Sou o Assistente Regulatório da ANEEL baseado nos dados extraídos e tratados do
+                                seu dashboard. Pode me perguntar sobre:
+                                <ul>
+                                    <li>Comparações financeiras entre a REN 414 e 1000</li>
+                                    <li>Visão detalhada de grupos ou distribuidoras</li>
+                                    <li>Insights regionais e impacto por áreas</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prompts Guiados (Sugestões) -->
+                <div class="chat-prompts-container">
+                    <button class="prompt-chip purple"
+                        onclick="document.getElementById('chat-textarea').value = this.innerText; document.getElementById('btn-send-chat').click();">
+                        Quais são as distribuidoras com maior compensação financeira?
+                    </button>
+                    <button class="prompt-chip green"
+                        onclick="document.getElementById('chat-textarea').value = this.innerText; document.getElementById('btn-send-chat').click();">
+                        Compare as multas da Neoenergia e CPFL.
+                    </button>
+                    <button class="prompt-chip pink"
+                        onclick="document.getElementById('chat-textarea').value = this.innerText; document.getElementById('btn-send-chat').click();">
+                        Quais insights você tira do DataFrame de KPI Anual?
+                    </button>
+                </div>
+
+                <!-- Barra de Digitação e Botão -->
+                <div class="chat-input-wrapper">
+                    <textarea id="chat-textarea" class="chat-input"
+                        placeholder="Ex: Qual foi o impacto da transição nas multas da Neoenergia?" rows="2"></textarea>
+
+                    <button id="btn-send-chat" class="chat-send-btn">
+                        <span>Enviar</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <style>
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.5);
+            border-radius: 4px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.8);
+        }
+
+        .chat-message.user-message p,
+        .chat-message.system-message p {
+            margin: 0 0 0.5rem 0;
+        }
+
+        .chat-message.user-message p:last-child,
+        .chat-message.system-message p:last-child {
+            margin: 0;
+        }
+
+        .chat-message a {
+            color: #fce7f3;
+            text-decoration: underline;
+        }
+    </style>
+
+    <!-- Script principal para lidar apenas com o tema (ou podemos reescrever uma vers]ao minificada) -->
+    <script>
+        // Lógica genérica de Tema
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                const icon = document.querySelector('#theme-toggle .icon');
+                if (icon) icon.textContent = '☀️';
+            }
+
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+
+                    const icon = themeToggle.querySelector('.icon');
+                    if (icon) icon.textContent = newTheme === 'light' ? '☀️' : '🌙';
+                });
+            }
+        });
+    </script>
+    <script src="prompt.js"></script>
+</body>
+
+</html>

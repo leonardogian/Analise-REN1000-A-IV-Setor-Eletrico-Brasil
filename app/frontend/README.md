@@ -70,12 +70,6 @@ make preflight-backend
 make backend
 ```
 
-Porta customizada (exemplo `8060`):
-
-```bash
-make backend PORT=8060
-```
-
 ### Opção 2: Servidor HTTP manual
 
 ```bash
@@ -89,9 +83,6 @@ python3 -m http.server 8050
 ```bash
 # Na raiz do projeto
 docker compose up --build
-
-# Porta externa alternativa (mantendo 8050 dentro do container)
-HOST_PORT=8060 docker compose up --build
 ```
 
 ### Opção 3: Extensão Live Server (VS Code)

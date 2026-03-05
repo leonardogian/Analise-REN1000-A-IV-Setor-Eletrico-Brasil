@@ -29,10 +29,11 @@ Thumbs.db
 *.swo
 
 # ==========================
-# IDE
+# IDE & Node
 # ==========================
 .vscode/
 .idea/
+node_modules/
 
 # ==========================
 # Dashboard (dados gerados)

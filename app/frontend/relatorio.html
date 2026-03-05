@@ -390,8 +390,10 @@
         <p class="subtitle">Eficácia regulatória na qualidade comercial das distribuidoras de energia elétrica</p>
         <p class="meta">Gerado automaticamente em <span id="report-date">—</span> · Dados: ANEEL Dados Abertos</p>
         <div style="margin-top: 12px;">
-            <label for="report-regulatory-selector" style="font-size: 0.85rem; color: var(--text-light); margin-right: 8px;">Classe regulatória:</label>
-            <select id="report-regulatory-selector" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);"></select>
+            <label for="report-regulatory-selector"
+                style="font-size: 0.85rem; color: var(--text-light); margin-right: 8px;">Classe regulatória:</label>
+            <select id="report-regulatory-selector"
+                style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);"></select>
         </div>
     </header>
 
@@ -408,7 +410,8 @@
             <li>Foram analisados <span id="s-total-serv">—</span> serviços comerciais entre 2011 e 2023.</li>
             <li id="s-trend-summary">—</li>
             <li id="s-best-worst-summary">—</li>
-            <li><strong>Nota metodológica:</strong> Tarifa social/bolsa e nível de tensão não estão disponíveis de forma estruturada nesta base.</li>
+            <li><strong>Nota metodológica:</strong> Tarifa social/bolsa e nível de tensão não estão disponíveis de forma
+                estruturada nesta base.</li>
         </ul>
     </div>
 
@@ -446,7 +449,8 @@
 
     <!-- 2. Grandes Grupos -->
     <h2 class="page-break">2. Benchmark de Grandes Grupos Econômicos</h2>
-    <p>Comparação normalizada por unidades consumidoras (UC) entre os principais grupos econômicos (Top 6 por UC ativa, com inclusão de Equatorial, CPFL e Neoenergia).</p>
+    <p>Comparação normalizada por unidades consumidoras (UC) entre os principais grupos econômicos (Top 6 por UC ativa,
+        com inclusão de Equatorial, CPFL e Neoenergia).</p>
 
     <div class="chart-section">
         <div class="chart-label">Transgressões por 100k UC-mês (2023–2025)</div>
@@ -469,7 +473,8 @@
 
     <!-- 3. Série Mensal -->
     <h2 class="page-break">3. Análise Regulatória Mensal — <span id="r-group-title-reg">Classe</span></h2>
-    <p>Série temporal mensal das distribuidoras na <span id="r-group-label-reg">classe regulatória selecionada</span>, com taxa de transgressão e compensação financeira.</p>
+    <p>Série temporal mensal das distribuidoras na <span id="r-group-label-reg">classe regulatória selecionada</span>,
+        com taxa de transgressão e compensação financeira.</p>
 
     <div class="chart-section">
         <div class="chart-label">Taxa Fora do Prazo — Evolução Mensal (2023–2025)</div>
@@ -536,9 +541,9 @@
                 Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 0, 0, 0.1)';
                 return;
             }
-            Chart.defaults.color = '#94a3b8';
-            Chart.defaults.borderColor = 'rgba(0, 164, 67, 0.1)';
-            Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.95)';
+            Chart.defaults.color = '#8a949e';
+            Chart.defaults.borderColor = 'rgba(0, 164, 67, 0.08)';
+            Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 15, 15, 0.85)';
             Chart.defaults.plugins.tooltip.titleColor = '#fff';
             Chart.defaults.plugins.tooltip.bodyColor = '#fff';
             Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 164, 67, 0.3)';
