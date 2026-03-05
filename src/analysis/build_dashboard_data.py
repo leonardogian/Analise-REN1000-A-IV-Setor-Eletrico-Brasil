@@ -40,6 +40,7 @@ REQUIRED_NON_EMPTY_SECTIONS = [
     "top20_distributors",
     "group_dimensions",
     "cross_group_insights",
+    "franquias_insights",
 ]
 
 REGULATORY_ORDER = ["grupo_a", "grupo_b", "rural", "urbana", "nao_classificado"]
@@ -992,6 +993,113 @@ def build_cross_group_insights(group_dimensions: list[dict], top_n: int = 5) -> 
     return insights
 
 
+def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.DataFrame, grupos_classe: pd.DataFrame) -> dict:
+    insights = {}
+    
+    # Heatmap Transgressões
+    if not grupos_classe.empty:
+        df = grupos_classe.copy()
+        top_groups = df.groupby("group_label")["exposicao_uc_mes"].sum().nlargest(5).index
+        df_top = df[df["group_label"].isin(top_groups)]
+        res_heat = df_top.groupby(["group_label", "classe_local_servico"], as_index=False)["fora_prazo_por_100k_uc_mes"].mean()
+        
+        heat_data = []
+        for _, row in res_heat.iterrows():
+            heat_data.append({
+                "x": row["group_label"],
+                "y": row["classe_local_servico"].capitalize() if isinstance(row["classe_local_servico"], str) else str(row["classe_local_servico"]),
+                "v": _safe(row["fora_prazo_por_100k_uc_mes"])
+            })
+        insights["heatmap_transgressoes"] = heat_data
+
+    # Scatter Eficiência
+    if not fato_mensal.empty:
+        df = fato_mensal.copy()
+        res_scatter = df.groupby(["distributor_label", "periodo_regulatorio"], as_index=False).agg({
+            "qtd_fora_prazo": "sum",
+            "compensacao_rs_por_uc_mes": "mean"
+        })
+        scat_data = []
+        for _, row in res_scatter.iterrows():
+            scat_data.append({
+                "x": int(row["qtd_fora_prazo"]),
+                "y": _safe(row["compensacao_rs_por_uc_mes"]),
+                "label": row["distributor_label"],
+                "regra": "REN 414" if row["periodo_regulatorio"] == "pre_2022" else "REN 1000"
+            })
+        insights["scatter_eficiencia"] = scat_data
+        
+        # Timeseries Tendência
+        df["date_str"] = df["ano"].astype(str) + "-" + df["mes"].astype(str).str.zfill(2)
+        def calc_mean(subset, label, group_type):
+            res = subset.groupby("date_str", as_index=False).agg({
+                "fora_prazo_por_100k_uc_mes": "mean",
+                "compensacao_rs_por_uc_mes": "mean"
+            }).sort_values("date_str")
+            res["grupo"] = label
+            res["tipo"] = group_type
+            return res
+            
+        dfs = [calc_mean(df, "Média Nacional", "nacional")]
+        grupos = ["Neoenergia", "CPFL", "Energisa", "Equatorial", "Enel"]
+        for g in grupos:
+            subset = df[df["distributor_label"].str.contains(g, case=False, na=False)]
+            if not subset.empty:
+                dfs.append(calc_mean(subset, g, "holding"))
+                
+        # Individual franchises
+        distributors = df["distributor_label"].dropna().unique()
+        for d in distributors:
+            subset = df[df["distributor_label"] == d]
+            if not subset.empty:
+                dfs.append(calc_mean(subset, d, "franquia"))
+                
+        final_df = pd.concat(dfs, ignore_index=True)
+        ts_data = []
+        for _, row in final_df.iterrows():
+            ts_data.append({
+                "grupo": row["grupo"],
+                "tipo": row["tipo"],
+                "date": row["date_str"],
+                "fora_prazo_por_100k_uc_mes": _safe(row.get("fora_prazo_por_100k_uc_mes")),
+                "compensacao_rs_por_uc_mes": _safe(row.get("compensacao_rs_por_uc_mes"))
+            })
+        insights["timeseries_tendencia"] = ts_data
+
+    # Radar SLAs
+    if not fato_indicadores.empty:
+        df = fato_indicadores.copy()
+        if "periodo_regulatorio" in df.columns:
+            df = df[df["periodo_regulatorio"] == "pos_2022"]
+        else:
+            df["periodo_regulatorio"] = "pos_2022" # fallback if not exist
+        
+        top_dist = df.groupby("distributor_label")["uc_ativa_media_mensal"].mean().nlargest(5).index
+        df_top = df[df["distributor_label"].isin(top_dist)]
+        
+        top_services = df_top.groupby("codigo_base")["qtd_fora_prazo"].sum().nlargest(6).index
+        df_top = df_top[df_top["codigo_base"].isin(top_services)]
+        
+        res_radar = df_top.groupby(["distributor_label", "codigo_base"], as_index=False)["taxa_fora_prazo"].mean()
+        
+        max_val = res_radar["taxa_fora_prazo"].max()
+        if max_val > 0:
+            res_radar["taxa_fora_prazo"] = res_radar["taxa_fora_prazo"] / max_val
+            
+        radar_data = []
+        for dist in top_dist:
+            dist_data = res_radar[res_radar["distributor_label"] == dist]
+            metrics = {row["codigo_base"]: _safe(row["taxa_fora_prazo"]) for _, row in dist_data.iterrows()}
+            radar_data.append({"distributor_label": dist, "metrics": metrics})
+            
+        insights["radar_slas"] = {
+            "services": list(top_services),
+            "data": radar_data
+        }
+
+    return insights
+
+
 def main() -> None:
     print("🔧 Gerando dados para o dashboard...")
     DASHBOARD_DIR.mkdir(parents=True, exist_ok=True)
@@ -1058,6 +1166,7 @@ def main() -> None:
         "group_dimensions": group_dimensions,
         "default_dimension_id": default_dimension_id,
         "cross_group_insights": cross_group_insights,
+        "franquias_insights": build_franquias_insights(fato_mensal, fato_indicadores, grupos_classe),
         "top20_distributors": build_top20_distributors(dim_porte),
         "data_availability": build_data_availability(),
     }
@@ -1069,6 +1178,29 @@ def main() -> None:
 
     size_mb = OUTPUT_PATH.stat().st_size / 1024 / 1024
     print(f"✅ Arquivo gerado: {OUTPUT_PATH} ({size_mb:.2f} MB)")
+
+    # Export individual JSONs for advanced charts to support static deployment
+    print("Exportando dados individuais para gráficos avançados (estáticos)...")
+    franquias_insights = data.get("franquias_insights", {})
+    
+    heatmap_path = DASHBOARD_DIR / "dashboard_heatmap.json"
+    scatter_path = DASHBOARD_DIR / "dashboard_scatter.json"
+    radar_path = DASHBOARD_DIR / "dashboard_radar.json"
+    timeseries_path = DASHBOARD_DIR / "dashboard_timeseries.json"
+    
+    with open(heatmap_path, "w", encoding="utf-8") as f:
+        json.dump({"data": franquias_insights.get("heatmap_transgressoes", [])}, f, ensure_ascii=False, indent=2)
+        
+    with open(scatter_path, "w", encoding="utf-8") as f:
+        json.dump({"data": franquias_insights.get("scatter_eficiencia", [])}, f, ensure_ascii=False, indent=2)
+        
+    with open(radar_path, "w", encoding="utf-8") as f:
+        json.dump(franquias_insights.get("radar_slas", {"services": [], "data": []}), f, ensure_ascii=False, indent=2)
+        
+    with open(timeseries_path, "w", encoding="utf-8") as f:
+        json.dump({"data": franquias_insights.get("timeseries_tendencia", [])}, f, ensure_ascii=False, indent=2)
+        
+    print("✅ JSONs individuais de franquias_insights exportados com sucesso.")
 
 
 if __name__ == "__main__":

@@ -1049,10 +1049,10 @@ function renderRegulatory(view, distributors, colors) {
 async function renderAdvancedAnalytics() {
     try {
         const [heatmapRes, scatterRes, radarRes, tsRes] = await Promise.all([
-            fetch('/api/v1/heatmap-transgressoes').then(r => r.ok ? r.json() : { data: [] }),
-            fetch('/api/v1/scatter-eficiencia').then(r => r.ok ? r.json() : { data: [] }),
-            fetch('/api/v1/radar-slas').then(r => r.ok ? r.json() : { data: [] }),
-            fetch('/api/v1/timeseries-tendencia').then(r => r.ok ? r.json() : { data: [] })
+            fetch('./dashboard_heatmap.json').then(r => r.ok ? r.json() : { data: [] }),
+            fetch('./dashboard_scatter.json').then(r => r.ok ? r.json() : { data: [] }),
+            fetch('./dashboard_radar.json').then(r => r.ok ? r.json() : { data: [] }),
+            fetch('./dashboard_timeseries.json').then(r => r.ok ? r.json() : { data: [] })
         ]);
 
         if (heatmapRes.data && heatmapRes.data.length > 0) {
