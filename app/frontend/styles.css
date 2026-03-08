@@ -645,3 +645,194 @@ input:checked+.slider:before {
   background: rgba(var(--pop-blue), 0.1);
   color: var(--pop-blue);
 }
+
+/* ============================================================
+   Heatmap Grid (evolucao.html)
+   ============================================================ */
+.heatmap-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.heatmap-grid {
+  display: grid;
+  gap: 2px;
+  width: max-content;
+  min-width: 100%;
+}
+
+.heatmap-cell {
+  border-radius: 3px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  min-width: 28px;
+  height: 32px;
+}
+
+.heatmap-cell:hover {
+  opacity: 0.75;
+  outline: 1px solid var(--pop-cyan);
+  transform: scale(1.05);
+  z-index: 1;
+  position: relative;
+}
+
+.heatmap-axis-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2px 0;
+  white-space: nowrap;
+}
+
+.heatmap-row-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  padding-right: 0.5rem;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+}
+
+.heatmap-legend-gradient {
+  height: 12px;
+  width: 120px;
+  border-radius: 6px;
+  background: linear-gradient(to right, hsl(180, 100%, 50%), hsl(0, 100%, 50%));
+}
+
+/* ============================================================
+   Summary Cards Grid (benchmark.html)
+   ============================================================ */
+.summary-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .summary-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.summary-card {
+  background: var(--gradient-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+}
+
+.summary-card-title {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.summary-card-value {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.summary-card-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* ============================================================
+   Ranking Table (ranking.html)
+   ============================================================ */
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.ranking-table th {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ranking-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.ranking-table tr:hover td {
+  background: var(--bg-panel-hover);
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+}
+
+.porte-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.porte-badge.P { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+.porte-badge.M { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+.porte-badge.G { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+.porte-badge.GG { background: rgba(176, 38, 255, 0.15); color: #b026ff; border: 1px solid rgba(176, 38, 255, 0.3); }
+
+/* ============================================================
+   Main panel split layout (ranking.html, benchmark.html)
+   ============================================================ */
+.main-panel-split {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.main-panel-split .chart-wrapper {
+  min-height: 340px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 300px;
+}

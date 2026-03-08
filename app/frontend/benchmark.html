@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard: Benchmark de Distribuidoras</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="layout-container">
+    <header class="global-header">
+        <div class="header-brand">
+            <span class="header-logo">⚡</span>
+            <div class="header-title-group">
+                <h1 class="header-title">Benchmark de Distribuidoras</h1>
+                <span class="header-subtitle">Volume × compensação por distribuidora, segmentado por porte</span>
+            </div>
+        </div>
+        <nav class="main-nav-links">
+            <a href="index.html">Visão Geral</a>
+            <a href="transgressoes.html">Séries Temporais</a>
+            <a href="mapa.html">Mapa Interativo</a>
+            <a href="ranking.html">Ranking</a>
+            <a href="evolucao.html">Evolução</a>
+            <a href="benchmark.html" class="active">Benchmark</a>
+            <a href="prompt.html">Chat IA</a>
+        </nav>
+        <div class="header-actions">
+            <button class="theme-toggle-btn" id="theme-toggle" title="Alternar Tema">
+                <span class="icon">🌙</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="dashboard-grid">
+        <aside class="sidebar-panel">
+            <section class="control-card glass-panel">
+                <h2 class="card-title">Filtros</h2>
+                <div class="filter-group">
+                    <label>Porte</label>
+                    <div id="porte-checkboxes" style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.25rem">
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-top:1rem">
+                    <label for="regra-select">Período Regulatório</label>
+                    <select id="regra-select" class="custom-select" style="height:auto">
+                        <option value="all">Todos</option>
+                        <option value="REN 1000" selected>REN 1000 (pós-2022)</option>
+                        <option value="REN 414">REN 414 (pré-2022)</option>
+                    </select>
+                </div>
+            </section>
+            <section class="insight-card glass-panel highlight-border">
+                <h2 class="card-title">Resumo por Porte</h2>
+                <div id="benchmark-summary"></div>
+            </section>
+        </aside>
+
+        <section class="main-panel-split glass-panel">
+            <div class="chart-header">
+                <h2 class="card-title">Bubble Chart: Volume × Compensação por Distribuidora</h2>
+                <p style="font-size:0.8rem; color:var(--text-muted)">Eixo X: Total de serviços fora do prazo · Eixo Y: Compensação média R$/UC-mês · Tamanho: volume relativo</p>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="benchmarkChart"></canvas>
+            </div>
+            <div class="summary-cards-grid" id="summary-cards"></div>
+        </section>
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="benchmark.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard: Evolução Mensal (Heatmap)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="layout-container">
+    <header class="global-header">
+        <div class="header-brand">
+            <span class="header-logo">⚡</span>
+            <div class="header-title-group">
+                <h1 class="header-title">Evolução Mensal — Heatmap de Sazonalidade</h1>
+                <span class="header-subtitle">Intensidade das transgressões por holding (Jan/2023 – Dez/2025)</span>
+            </div>
+        </div>
+        <nav class="main-nav-links">
+            <a href="index.html">Visão Geral</a>
+            <a href="transgressoes.html">Séries Temporais</a>
+            <a href="mapa.html">Mapa Interativo</a>
+            <a href="ranking.html">Ranking</a>
+            <a href="evolucao.html" class="active">Evolução</a>
+            <a href="benchmark.html">Benchmark</a>
+            <a href="prompt.html">Chat IA</a>
+        </nav>
+        <div class="header-actions">
+            <button class="theme-toggle-btn" id="theme-toggle" title="Alternar Tema">
+                <span class="icon">🌙</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="dashboard-grid">
+        <aside class="sidebar-panel">
+            <section class="control-card glass-panel">
+                <h2 class="card-title">Filtros</h2>
+                <div class="filter-group">
+                    <label>Métrica</label>
+                    <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.25rem">
+                        <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer">
+                            <input type="radio" name="metric-radio" value="fora_prazo_por_100k_uc_mes" checked> Falhas / 100k UCs
+                        </label>
+                        <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer">
+                            <input type="radio" name="metric-radio" value="compensacao_rs_por_uc_mes"> Compensação R$/UC
+                        </label>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-top:1rem">
+                    <label>Holdings</label>
+                    <select id="holding-select" class="custom-select" multiple>
+                    </select>
+                    <small>Ctrl+clique para multi-seleção</small>
+                </div>
+            </section>
+            <section class="insight-card glass-panel highlight-border">
+                <h2 class="card-title">Legenda de Cor</h2>
+                <div class="heatmap-legend">
+                    <span>Baixo</span>
+                    <div class="heatmap-legend-gradient"></div>
+                    <span>Alto</span>
+                </div>
+                <div id="evolucao-summary" style="margin-top:1rem; font-size:0.85rem; color:var(--text-secondary)"></div>
+            </section>
+        </aside>
+
+        <section class="main-panel glass-panel" style="display:flex; flex-direction:column;">
+            <div class="chart-header">
+                <h2 class="card-title" id="heatmap-title">Heatmap: Falhas / 100k UCs por Mês</h2>
+                <div id="heatmap-tooltip-info" style="font-size:0.8rem; color:var(--text-muted)">Passe o mouse sobre uma célula</div>
+            </div>
+            <div class="heatmap-wrapper" id="heatmap-container"></div>
+        </section>
+    </main>
+</div>
+<script src="evolucao.js"></script>
+</body>
+</html>

@@ -7,10 +7,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import os
 import pandas as pd
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
+
+load_dotenv()
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 APP_DIR = ROOT / "app"
@@ -171,114 +177,26 @@ def api_artifacts() -> dict[str, Any]:
 
 @app.get("/api/v1/heatmap-transgressoes")
 def api_heatmap_transgressoes() -> dict[str, Any]:
-    filepath = GROUPS_DIR / "grupos_classe_local_2023_2025.csv"
-    if not filepath.exists():
-        raise HTTPException(status_code=404, detail="Dataset not found")
-    
-    df = pd.read_csv(filepath)
-    top_groups = df.groupby("group_label")["exposicao_uc_mes"].sum().nlargest(5).index
-    df_top = df[df["group_label"].isin(top_groups)]
-    res = df_top.groupby(["group_label", "classe_local_servico"], as_index=False)["fora_prazo_por_100k_uc_mes"].mean()
-    
-    data = []
-    for _, row in res.iterrows():
-        data.append({
-            "x": row["group_label"],
-            "y": row["classe_local_servico"].capitalize(),
-            "v": round(row["fora_prazo_por_100k_uc_mes"], 2)
-        })
-    return {"data": data}
+    payload = _load_dashboard_payload()
+    return {"data": payload.get("franquias_insights", {}).get("heatmap_transgressoes", [])}
 
 @app.get("/api/v1/scatter-eficiencia")
 def api_scatter_eficiencia() -> dict[str, Any]:
-    filepath = ANALYSIS_DIR / "fato_transgressao_mensal_distribuidora.csv"
-    if not filepath.exists():
-        raise HTTPException(status_code=404, detail="Dataset not found")
-        
-    df = pd.read_csv(filepath)
-    res = df.groupby(["distributor_label", "periodo_regulatorio"], as_index=False).agg({
-        "qtd_fora_prazo": "sum",
-        "compensacao_rs_por_uc_mes": "mean"
-    })
-    
-    data = []
-    for _, row in res.iterrows():
-        data.append({
-            "x": int(row["qtd_fora_prazo"]),
-            "y": round(row["compensacao_rs_por_uc_mes"], 4),
-            "label": row["distributor_label"],
-            "regra": "REN 414" if row["periodo_regulatorio"] == "pre_2022" else "REN 1000"
-        })
-    return {"data": data}
+    payload = _load_dashboard_payload()
+    return {"data": payload.get("franquias_insights", {}).get("scatter_eficiencia", [])}
 
 @app.get("/api/v1/radar-slas")
 def api_radar_slas() -> dict[str, Any]:
-    filepath = ANALYSIS_DIR / "fato_indicadores_anuais.csv"
-    if not filepath.exists():
-        filepath = ANALYSIS_DIR / "fato_indicadores_anuais.parquet"
-        if not filepath.exists():
-            raise HTTPException(status_code=404, detail="Dataset not found")
-    
-    df = pd.read_parquet(filepath) if filepath.suffix == ".parquet" else pd.read_csv(filepath)
-    df = df[df["periodo_regulatorio"] == "pos_2022"]
-    
-    top_dist = df.groupby("distributor_label")["uc_ativa_media_mensal"].mean().nlargest(5).index
-    df_top = df[df["distributor_label"].isin(top_dist)]
-    
-    top_services = df_top.groupby("codigo_base")["qtd_fora_prazo"].sum().nlargest(6).index
-    df_top = df_top[df_top["codigo_base"].isin(top_services)]
-    
-    res = df_top.groupby(["distributor_label", "codigo_base"], as_index=False)["taxa_fora_prazo"].mean()
-    
-    # Normalize 0 to 1
-    max_val = res["taxa_fora_prazo"].max()
-    if max_val > 0:
-        res["taxa_fora_prazo"] = res["taxa_fora_prazo"] / max_val
-        
-    data = []
-    for dist in top_dist:
-        dist_data = res[res["distributor_label"] == dist]
-        metrics = {row["codigo_base"]: round(row["taxa_fora_prazo"], 3) for _, row in dist_data.iterrows()}
-        data.append({"distributor_label": dist, "metrics": metrics})
-        
-    return {"services": list(top_services), "data": data}
+    payload = _load_dashboard_payload()
+    return payload.get("franquias_insights", {}).get("radar_slas", {"services": [], "data": []})
 
 @app.get("/api/v1/timeseries-tendencia")
 def api_timeseries_tendencia() -> dict[str, Any]:
-    filepath = ANALYSIS_DIR / "fato_transgressao_mensal_distribuidora.csv"
-    if not filepath.exists():
-        raise HTTPException(status_code=404, detail="Dataset not found")
-        
-    df = pd.read_csv(filepath)
-    df["date_str"] = df["ano"].astype(str) + "-" + df["mes"].astype(str).str.zfill(2)
-    
-    def calc_mean(subset, label):
-        res = subset.groupby("date_str", as_index=False).agg({
-            "fora_prazo_por_100k_uc_mes": "mean",
-            "compensacao_rs_por_uc_mes": "mean"
-        }).sort_values("date_str")
-        res["grupo"] = label
-        return res
-        
-    dfs = [calc_mean(df, "Média Nacional")]
-    grupos = ["Neoenergia", "CPFL", "Energisa", "Equatorial", "Enel"]
-    
-    for g in grupos:
-        subset = df[df["distributor_label"].str.contains(g, case=False, na=False)]
-        if not subset.empty:
-            dfs.append(calc_mean(subset, g))
-            
-    final_df = pd.concat(dfs, ignore_index=True)
-    
-    data = []
-    for _, row in final_df.iterrows():
-        data.append({
-            "grupo": row["grupo"],
-            "date": row["date_str"],
-            "fora_prazo_por_100k_uc_mes": round(row["fora_prazo_por_100k_uc_mes"], 2) if pd.notnull(row["fora_prazo_por_100k_uc_mes"]) else None,
-            "compensacao_rs_por_uc_mes": round(row["compensacao_rs_por_uc_mes"], 4) if pd.notnull(row["compensacao_rs_por_uc_mes"]) else None,
-        })
-    return {"data": data}
+    payload = _load_dashboard_payload()
+    return {"data": payload.get("franquias_insights", {}).get("timeseries_tendencia", [])}
+
+
+
 
 
 app.mount("/", StaticFiles(directory=str(DASHBOARD_DIR), html=True), name="dashboard")
