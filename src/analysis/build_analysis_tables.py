@@ -29,19 +29,46 @@ FAMILIAS_VALIDAS = {"QS", "QV", "PM", "CR"}
 
 
 def parse_br_number(series: pd.Series) -> pd.Series:
-    """Parse Brazilian formatted numbers into float."""
+    """Parse Brazilian formatted numbers into float safely, avoiding US format corruption."""
     if pd.api.types.is_numeric_dtype(series):
         return pd.to_numeric(series, errors="coerce")
 
-    normalized = (
-        series.astype("string")
-        .str.strip()
-        .str.replace(".", "", regex=False)
-        .str.replace(",", ".", regex=False)
-        .str.replace(r"[^0-9\.-]", "", regex=True)
-        .replace({"": pd.NA, "-": pd.NA, ".": pd.NA})
-    )
-    return pd.to_numeric(normalized, errors="coerce")
+    def _parse_val(val: object) -> float:
+        if pd.isna(val):
+            return pd.NA
+        s = str(val).strip()
+        if not s or s in ("-", ".", ","):
+            return pd.NA
+
+        s = re.sub(r"[^0-9\.,-]", "", s)
+        if not s:
+            return pd.NA
+
+        last_dot = s.rfind(".")
+        last_comma = s.rfind(",")
+
+        if last_dot > -1 and last_comma > -1:
+            if last_dot > last_comma:
+                # 1,234.56 -> US
+                s = s.replace(",", "")
+            else:
+                # 1.234,56 -> BR
+                s = s.replace(".", "").replace(",", ".")
+        elif last_comma > -1:
+            # 1234,56 -> BR
+            s = s.replace(",", ".")
+        elif last_dot > -1:
+            # Multiple dots -> BR thousands: 1.000.000
+            if s.count(".") > 1:
+                s = s.replace(".", "")
+            # Single dot -> assume US decimal (1234.56)
+            
+        try:
+            return float(s)
+        except ValueError:
+            return pd.NA
+
+    return series.apply(_parse_val)
 
 
 def safe_read_csv(path: Path, sep: str = ";") -> pd.DataFrame:
@@ -740,6 +767,9 @@ def build_geographic_monthly_base(
         base["qtd_serv_realizado"] / base["qtd_serv_total_dist_mes"],
         0.0,
     )
+    # AVISO (PROXY GEOGRÁFICO): O INDGER fornece UCs apenas por distribuidora, não por município.
+    # Esta estimativa de exposição assume que a demanda/falhas dos serviços é igualmente
+    # distribuída pelas UCs, o que não é necessariamente verdade (ex: periferias X áreas nobres).
     base["exposicao_uc_mes"] = base["uc_ativa_mes"] * base["share_serv_dist_mes"]
 
     municipal = (

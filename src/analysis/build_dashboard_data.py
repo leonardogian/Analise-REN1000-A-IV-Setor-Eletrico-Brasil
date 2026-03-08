@@ -1017,7 +1017,9 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
         df = fato_mensal.copy()
         res_scatter = df.groupby(["distributor_label", "periodo_regulatorio"], as_index=False).agg({
             "qtd_fora_prazo": "sum",
-            "compensacao_rs_por_uc_mes": "mean"
+            "compensacao_rs_por_uc_mes": "mean",
+            "bucket_porte": "first",
+            "group_id": "first",
         })
         scat_data = []
         for _, row in res_scatter.iterrows():
@@ -1025,9 +1027,53 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
                 "x": int(row["qtd_fora_prazo"]),
                 "y": _safe(row["compensacao_rs_por_uc_mes"]),
                 "label": row["distributor_label"],
-                "regra": "REN 414" if row["periodo_regulatorio"] == "pre_2022" else "REN 1000"
+                "regra": "REN 414" if row["periodo_regulatorio"] == "pre_2022" else "REN 1000",
+                "porte": str(row["bucket_porte"]) if pd.notna(row["bucket_porte"]) else "N/A",
+                "holding": str(row["group_id"]) if pd.notna(row["group_id"]) else "N/A",
             })
         insights["scatter_eficiencia"] = scat_data
+
+        # Ranking de Grupos Econômicos — métricas agregadas por group_id (ano mais recente)
+        _KNOWN_LABELS = {
+            "neoenergia": "Neoenergia", "cpfl": "CPFL", "equatorial": "Equatorial",
+            "energisa": "Energisa", "enel": "Enel", "cemig": "Cemig", "copel": "Copel",
+            "edp": "EDP", "celesc": "Celesc", "light": "Light", "elektro": "Elektro",
+            "coelce": "Coelce", "coelba": "Coelba", "elektro_redes": "Elektro Redes",
+        }
+        ano_max = df["ano"].max()
+        df_latest = df[df["ano"] == ano_max].copy()
+        rk_agg = df_latest.groupby("group_id", as_index=False).agg(
+            fora_prazo_por_100k_uc_mes=("fora_prazo_por_100k_uc_mes", "mean"),
+            compensacao_rs_por_uc_mes=("compensacao_rs_por_uc_mes", "mean"),
+            taxa_fora_prazo=("taxa_fora_prazo", "mean"),
+            n_distribuidoras=("distributor_id", "nunique"),
+        )
+        porte_by_group = df_latest.groupby("group_id")["bucket_porte"].agg(
+            lambda x: x.mode().iloc[0] if len(x) > 0 else "N/A"
+        ).reset_index().rename(columns={"bucket_porte": "porte"})
+        rk_agg = rk_agg.merge(porte_by_group, on="group_id", how="left")
+
+        ranking_records = []
+        for _, row in rk_agg.iterrows():
+            gid = str(row["group_id"])
+            # Derive group label: single distributor → use distributor_label prefix; else use known map
+            group_rows = df_latest[df_latest["group_id"] == gid]
+            dist_labels = group_rows["distributor_label"].dropna().unique()
+            if len(dist_labels) == 1:
+                grupo_label = dist_labels[0].split(" — ")[0].strip()
+            else:
+                grupo_label = _KNOWN_LABELS.get(gid, gid.replace("_", " ").title())
+            ranking_records.append({
+                "group_id": gid,
+                "grupo": grupo_label,
+                "fora_prazo_por_100k_uc_mes": _safe(row["fora_prazo_por_100k_uc_mes"]),
+                "compensacao_rs_por_uc_mes": _safe(row["compensacao_rs_por_uc_mes"]),
+                "taxa_fora_prazo": _safe(row["taxa_fora_prazo"]),
+                "n_distribuidoras": int(row["n_distribuidoras"]),
+                "porte": str(row["porte"]) if pd.notna(row["porte"]) else "N/A",
+            })
+        ranking_records.sort(key=lambda r: r.get("fora_prazo_por_100k_uc_mes", 0), reverse=True)
+        insights["ranking_grupos"] = ranking_records
         
         # Timeseries Tendência
         df["date_str"] = df["ano"].astype(str) + "-" + df["mes"].astype(str).str.zfill(2)
@@ -1199,7 +1245,12 @@ def main() -> None:
         
     with open(timeseries_path, "w", encoding="utf-8") as f:
         json.dump({"data": franquias_insights.get("timeseries_tendencia", [])}, f, ensure_ascii=False, indent=2)
-        
+
+    ranking_path = DASHBOARD_DIR / "dashboard_groups_ranking.json"
+    with open(ranking_path, "w", encoding="utf-8") as f:
+        json.dump({"data": franquias_insights.get("ranking_grupos", [])}, f, ensure_ascii=False, indent=2)
+    print(f"✅ dashboard_groups_ranking.json → {len(franquias_insights.get('ranking_grupos', []))} grupos")
+
     print("✅ JSONs individuais de franquias_insights exportados com sucesso.")
 
 
