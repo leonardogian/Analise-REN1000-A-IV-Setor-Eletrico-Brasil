@@ -39,6 +39,7 @@ node_modules/
 # Dashboard (dados gerados)
 # ==========================
 dashboard/dashboard_data.json
+app/frontend/dashboard_*.json
 
 # ==========================
 # Manter estas pastas no Git (via .gitkeep)
