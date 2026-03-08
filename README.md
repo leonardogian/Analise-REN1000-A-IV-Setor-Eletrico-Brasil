@@ -6,6 +6,8 @@
 
 ---
 
+> **🤖 Nota para Agentes de IA:** Sempre inicie analisando commits recentes (`git log -n 5 --stat`), lendo gradualmente arquivos correlatos, e invariavelmente atualizando este `README.md` e o `AGENTS.md` com as últimas melhorias. Veja mais contexto em `.ai/CONTEXT.md`.
+
 ## 📊 Dashboard Interativo
 
 O projeto conta com um **dashboard web interativo** para visualização dos resultados, com design dark mode e gráficos Chart.js.
@@ -21,11 +23,6 @@ make serve
 make dev-serve
 # Health: http://localhost:8050/health
 # API:    http://localhost:8050/api/dashboard
-```
-
-```bash
-# Porta customizada local (exemplo 8060):
-make backend PORT=8060
 ```
 
 ### Visão Geral — Impacto Pré vs Pós REN 1000
@@ -89,6 +86,7 @@ Mapeamento completo das ocorrências de prazo estourado segmentado por Grupos Ec
 ├── reports/              ← Relatórios gerados em Markdown
 ├── notebooks/            ← Notebooks de exploração analítica
 ├── docs/                 ← Guias, imagens e documentação
+├── logos/                ← Logos PNG das holdings (espelhados em app/frontend/assets/logos/)
 ├── _archive/             ← Arquivos da versão anterior do projeto
 ├── requirements.txt      ← Bibliotecas Python necessárias
 └── COMO_USAR_GIT.md      ← Guia rápido de Git
@@ -135,9 +133,6 @@ cd app/frontend && python3 -m http.server 8000
 ```bash
 # Porta padrao 8050
 docker compose up --build
-
-# Compatibilidade com 8060 (porta externa)
-HOST_PORT=8060 docker compose up --build
 ```
 
 - A porta pública do dashboard é controlada por `HOST_PORT` (default `8050`).
@@ -263,6 +258,16 @@ Após rodar o pipeline, o projeto gera:
 
 - `reports/relatorio_aneel.md` — relatório consolidado geral
 - `reports/neoenergia_diagnostico.md` — diagnóstico das 5 Neoenergias
+
+### Apresentação (.pptx)
+
+- `output/apresentacao_tcc_investigacao_dados_analises.pptx` — deck consolidado da investigação de dados e análises.
+- Script reprodutível: `scripts/generate_tcc_investigacao_pptx.py`
+- Como gerar novamente:
+
+```bash
+.venv/bin/python scripts/generate_tcc_investigacao_pptx.py
+```
 
 ### Dashboard e Relatório Visual
 

@@ -8,6 +8,7 @@ requests
 # Formatos de arquivo
 pyarrow        # Leitura/escrita de Parquet
 openpyxl       # Leitura de Excel (.xlsx)
+python-pptx    # Geracao de apresentacoes .pptx
 
 # Visualização
 matplotlib
@@ -19,3 +20,9 @@ scikit-learn
 # Backend local (API + serving em localhost)
 fastapi
 uvicorn
+
+# Integração IA
+langchain
+langchain-openai
+langchain-experimental
+python-dotenv

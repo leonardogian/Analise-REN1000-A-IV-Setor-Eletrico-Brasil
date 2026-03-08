@@ -12,6 +12,12 @@ do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 
 > **🎯 Fase Atual do Projeto:** Toda a infraestrutura de dados (ETL, bases Parquet, Tabelas Analíticas) está montada e seus valores foram validados como **corretos**. A partir de agora o foco principal para agentes de IA que atuarem aqui é **desenvolver a aplicação analítica**: Back-End (FastAPI) fornecendo endpoints e Front-End interativo (Vanilla JS + Chart.js).
 
+> **🔄 ROTINA OBRIGATÓRIA PARA IAs:**
+>
+> 1. Inicie lendo os commits recentes (`git log -n 5 --stat`).
+> 2. Leia de certa em certa quantidade os arquivos recém-commitados e seus relacionados de negócio para formar base sólida antes de alterar qualquer código.
+> 3. Ao finalizar, **sempre retroalimente o repositório** ajustando `README.md`, `AGENTS.md` e este `CONTEXT.md` para refletir as últimas mudanças estruturais para futuras conversas de IA.
+
 ## Linguagens e Tecnologias
 
 | Camada        | Stack                                          |
@@ -68,8 +74,10 @@ TCC_leo_main/
 ├── reports/                  ← Relatórios gerados (markdown)
 ├── notebooks/                ← Jupyter (exploratórios)
 ├── docs/                     ← Documentação auxiliar + imagens
-├── docker/                   ← Infraestrutura local em contêineres (ex: Kestra)
+├── logos/                    ← Logos PNG de holdings (espelhados em app/frontend/assets/logos/)
+├── docker/                   ← Infraestrutura local em contêineres (Stack Docker nome: "tcc", ex: app, Postgres, Kestra)
 ├── scripts/                  ← Utilitários (cargas PostgreSQL, check_artifacts, validações)
+│   └── generate_tcc_investigacao_pptx.py ← Gera apresentação .pptx do trabalho (output/)
 ├── Makefile                  ← Orquestração: make pipeline, make serve, etc.
 ├── requirements.txt          ← Dependências Python
 └── README.md                 ← Documentação principal para humanos
@@ -130,6 +138,7 @@ Estes arquivos são gerados por scripts e listados no `.gitignore`:
 - `data/raw/*.csv` — dados brutos da ANEEL
 - `data/processed/*.csv` e `*.parquet` — dados transformados
 - `dashboard/dashboard_data.json` — JSON do dashboard (1.7 MB)
+- `output/apresentacao_tcc_investigacao_dados_analises.pptx` — apresentação executiva do TCC
 - `.venv/` — ambiente virtual Python
 
 ## Venv (Ambiente Virtual)
@@ -152,4 +161,5 @@ pip install -r requirements.txt
 - **Guia de análise**: `docs/GUIA_ANALISE.md`
 - **Próximos passos TCC**: `docs/PROXIMOS_PASSOS_TCC.md`
 - **Relatório Neoenergia**: `reports/neoenergia_diagnostico.md`
+- **Apresentação executiva**: `output/apresentacao_tcc_investigacao_dados_analises.pptx`
 - **Como usar Git**: `COMO_USAR_GIT.md`
