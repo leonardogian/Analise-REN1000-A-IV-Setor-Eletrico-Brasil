@@ -13,6 +13,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from src.analysis.config import (
+    ANOS_COMPARAVEIS,
+    REN1000_CUTOFF_YEAR,
+    SERIES_HISTORICA,
+)
+from src.analysis.metrics import (
+    calc_compensacao_media_por_transgressao,
+    calc_compensacao_por_uc,
+    calc_fora_prazo_por_100k,
+    calc_taxa_fora_prazo,
+    classify_periodo_regulatorio,
+)
 from src.analysis.distributor_groups import (
     annotate_distributor_group,
     build_group_dimension,
@@ -301,13 +313,9 @@ def build_fato_indicadores_anuais(qualidade: pd.DataFrame, dim_indicador: pd.Dat
     for col in ["qtd_serv", "qtd_fora_prazo", "prazo_medio", "compensacao_rs"]:
         fact[col] = fact[col].fillna(0.0)
 
-    fact["taxa_fora_prazo"] = np.where(
-        fact["qtd_serv"] > 0,
-        fact["qtd_fora_prazo"] / fact["qtd_serv"],
-        np.nan,
-    )
-    fact["periodo_regulatorio"] = np.where(fact["ano"] <= 2021, "pre_2022", "pos_2022")
-    fact["ano_comparavel_principal"] = fact["ano"].between(2011, 2023, inclusive="both")
+    fact["taxa_fora_prazo"] = calc_taxa_fora_prazo(fact["qtd_fora_prazo"], fact["qtd_serv"])
+    fact["periodo_regulatorio"] = classify_periodo_regulatorio(fact["ano"])
+    fact["ano_comparavel_principal"] = fact["ano"].between(*SERIES_HISTORICA, inclusive="both")
 
     return fact.sort_values(["ano", "group_id", "distributor_id", "codigo_base"]).reset_index(drop=True)
 
@@ -531,13 +539,9 @@ def build_fato_servicos_municipio_mes(
         .reset_index()
     )
 
-    fact["taxa_fora_prazo"] = np.where(
-        fact["qtd_serv_realizado"] > 0,
-        fact["qtd_fora_prazo"] / fact["qtd_serv_realizado"],
-        np.nan,
-    )
-    fact["periodo_regulatorio"] = np.where(fact["ano"] <= 2021, "pre_2022", "pos_2022")
-    fact["ano_comparavel_principal"] = fact["ano"].between(2023, 2025, inclusive="both")
+    fact["taxa_fora_prazo"] = calc_taxa_fora_prazo(fact["qtd_fora_prazo"], fact["qtd_serv_realizado"])
+    fact["periodo_regulatorio"] = classify_periodo_regulatorio(fact["ano"])
+    fact["ano_comparavel_principal"] = fact["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")
 
     return fact.sort_values(
         ["ano", "mes", "group_id", "distributor_id", "codmunicipioibge", "codtiposervico"]
@@ -595,28 +599,12 @@ def build_fato_transgressao_mensal_porte(
         how="left",
     )
 
-    mensal["taxa_fora_prazo"] = np.where(
-        mensal["qtd_serv_realizado"] > 0,
-        mensal["qtd_fora_prazo"] / mensal["qtd_serv_realizado"],
-        np.nan,
-    )
-    mensal["fora_prazo_por_100k_uc_mes"] = np.where(
-        mensal["uc_ativa_mes"] > 0,
-        mensal["qtd_fora_prazo"] / mensal["uc_ativa_mes"] * 100000.0,
-        np.nan,
-    )
-    mensal["compensacao_rs_por_uc_mes"] = np.where(
-        mensal["uc_ativa_mes"] > 0,
-        mensal["compensacao_rs"] / mensal["uc_ativa_mes"],
-        np.nan,
-    )
-    mensal["compensacao_media_por_transgressao_rs"] = np.where(
-        mensal["qtd_fora_prazo"] > 0,
-        mensal["compensacao_rs"] / mensal["qtd_fora_prazo"],
-        np.nan,
-    )
-    mensal["periodo_regulatorio"] = np.where(mensal["ano"] <= 2021, "pre_2022", "pos_2022")
-    mensal["ano_comparavel_principal"] = mensal["ano"].between(2023, 2025, inclusive="both")
+    mensal["taxa_fora_prazo"] = calc_taxa_fora_prazo(mensal["qtd_fora_prazo"], mensal["qtd_serv_realizado"])
+    mensal["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(mensal["qtd_fora_prazo"], mensal["uc_ativa_mes"])
+    mensal["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(mensal["compensacao_rs"], mensal["uc_ativa_mes"])
+    mensal["compensacao_media_por_transgressao_rs"] = calc_compensacao_media_por_transgressao(mensal["compensacao_rs"], mensal["qtd_fora_prazo"])
+    mensal["periodo_regulatorio"] = classify_periodo_regulatorio(mensal["ano"])
+    mensal["ano_comparavel_principal"] = mensal["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")
 
     return mensal.sort_values(
         ["ano", "mes", "group_id", "distributor_id", "classe_local_servico"]
@@ -652,28 +640,12 @@ def build_fato_transgressao_mensal_distribuidora(
             compensacao_rs=("compensacao_rs", "sum"),
         )
     )
-    fact["taxa_fora_prazo"] = np.where(
-        fact["qtd_serv_realizado"] > 0,
-        fact["qtd_fora_prazo"] / fact["qtd_serv_realizado"],
-        np.nan,
-    )
-    fact["fora_prazo_por_100k_uc_mes"] = np.where(
-        fact["uc_ativa_mes"] > 0,
-        fact["qtd_fora_prazo"] / fact["uc_ativa_mes"] * 100000.0,
-        np.nan,
-    )
-    fact["compensacao_rs_por_uc_mes"] = np.where(
-        fact["uc_ativa_mes"] > 0,
-        fact["compensacao_rs"] / fact["uc_ativa_mes"],
-        np.nan,
-    )
-    fact["compensacao_media_por_transgressao_rs"] = np.where(
-        fact["qtd_fora_prazo"] > 0,
-        fact["compensacao_rs"] / fact["qtd_fora_prazo"],
-        np.nan,
-    )
-    fact["periodo_regulatorio"] = np.where(fact["ano"] <= 2021, "pre_2022", "pos_2022")
-    fact["ano_comparavel_principal"] = fact["ano"].between(2023, 2025, inclusive="both")
+    fact["taxa_fora_prazo"] = calc_taxa_fora_prazo(fact["qtd_fora_prazo"], fact["qtd_serv_realizado"])
+    fact["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(fact["qtd_fora_prazo"], fact["uc_ativa_mes"])
+    fact["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(fact["compensacao_rs"], fact["uc_ativa_mes"])
+    fact["compensacao_media_por_transgressao_rs"] = calc_compensacao_media_por_transgressao(fact["compensacao_rs"], fact["qtd_fora_prazo"])
+    fact["periodo_regulatorio"] = classify_periodo_regulatorio(fact["ano"])
+    fact["ano_comparavel_principal"] = fact["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")
     return fact.sort_values(["ano", "mes", "group_id", "distributor_id"]).reset_index(drop=True)
 
 
@@ -698,16 +670,8 @@ def merge_fato_with_porte(fato_indicadores: pd.DataFrame, dim_porte: pd.DataFram
         how="left",
     )
 
-    enriched["fora_prazo_por_100k_uc"] = np.where(
-        enriched["uc_ativa_media_mensal"] > 0,
-        enriched["qtd_fora_prazo"] / enriched["uc_ativa_media_mensal"] * 100000.0,
-        np.nan,
-    )
-    enriched["compensacao_rs_por_uc"] = np.where(
-        enriched["uc_ativa_media_mensal"] > 0,
-        enriched["compensacao_rs"] / enriched["uc_ativa_media_mensal"],
-        np.nan,
-    )
+    enriched["fora_prazo_por_100k_uc"] = calc_fora_prazo_por_100k(enriched["qtd_fora_prazo"], enriched["uc_ativa_media_mensal"])
+    enriched["compensacao_rs_por_uc"] = calc_compensacao_por_uc(enriched["compensacao_rs"], enriched["uc_ativa_media_mensal"])
     return enriched
 
 
@@ -728,11 +692,7 @@ def build_kpi_overview(fato_indicadores: pd.DataFrame) -> pd.DataFrame:
             compensacao_rs=("compensacao_rs", "sum"),
         )
     )
-    yearly["taxa_fora_prazo"] = np.where(
-        yearly["qtd_serv"] > 0,
-        yearly["qtd_fora_prazo"] / yearly["qtd_serv"],
-        np.nan,
-    )
+    yearly["taxa_fora_prazo"] = calc_taxa_fora_prazo(yearly["qtd_fora_prazo"], yearly["qtd_serv"])
     return yearly.sort_values("ano").reset_index(drop=True)
 
 
@@ -781,7 +741,7 @@ def build_geographic_monthly_base(
             exposicao_uc_mes=("exposicao_uc_mes", "sum"),
         )
     )
-    municipal["periodo_regulatorio"] = np.where(municipal["ano"] <= 2021, "pre_2022", "pos_2022")
+    municipal["periodo_regulatorio"] = classify_periodo_regulatorio(municipal["ano"])
     return municipal
 
 
@@ -890,21 +850,9 @@ def build_dimension_snapshot(
         on=key_cols,
         how="left",
     )
-    combined["taxa_fora_prazo"] = np.where(
-        combined["qtd_serv_realizado"] > 0,
-        combined["qtd_fora_prazo"] / combined["qtd_serv_realizado"],
-        np.nan,
-    )
-    combined["fora_prazo_por_100k_uc_mes"] = np.where(
-        combined["exposicao_uc_mes"] > 0,
-        combined["qtd_fora_prazo"] / combined["exposicao_uc_mes"] * 100000.0,
-        np.nan,
-    )
-    combined["compensacao_rs_por_uc_mes"] = np.where(
-        combined["exposicao_uc_mes"] > 0,
-        combined["compensacao_rs"] / combined["exposicao_uc_mes"],
-        np.nan,
-    )
+    combined["taxa_fora_prazo"] = calc_taxa_fora_prazo(combined["qtd_fora_prazo"], combined["qtd_serv_realizado"])
+    combined["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(combined["qtd_fora_prazo"], combined["exposicao_uc_mes"])
+    combined["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(combined["compensacao_rs"], combined["exposicao_uc_mes"])
     combined["dimension_id"] = dimension_id
     combined["dimension_label"] = dimension_label
     combined["id"] = combined[id_col].astype("string")

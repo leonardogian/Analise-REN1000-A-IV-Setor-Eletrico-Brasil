@@ -8,6 +8,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from src.analysis.config import ANOS_COMPARAVEIS, EXCLUDED_SERVICE_CODES
+from src.analysis.metrics import (
+    calc_compensacao_media_por_transgressao,
+    calc_compensacao_por_uc,
+    calc_fora_prazo_por_100k,
+    calc_share,
+    calc_taxa_fora_prazo,
+)
 from src.analysis.distributor_groups import (
     annotate_distributor_group,
     default_group_label,
@@ -37,18 +45,10 @@ def append_media_brasil_annual(annual: pd.DataFrame) -> pd.DataFrame:
     mb["group_label"] = "Média Brasil"
     mb["distributor_id"] = "media_brasil"
     mb["distributor_label"] = "Média Brasil"
-    mb["taxa_fora_prazo"] = np.where(
-        mb["qtd_serv_realizado"] > 0, mb["qtd_fora_prazo"] / mb["qtd_serv_realizado"], np.nan
-    )
-    mb["fora_prazo_por_100k_uc_mes"] = np.where(
-        mb["exposicao_uc_mes"] > 0, mb["qtd_fora_prazo"] / mb["exposicao_uc_mes"] * 100000.0, np.nan
-    )
-    mb["compensacao_rs_por_uc_mes"] = np.where(
-        mb["exposicao_uc_mes"] > 0, mb["compensacao_rs"] / mb["exposicao_uc_mes"], np.nan
-    )
-    mb["compensacao_media_por_transgressao_rs"] = np.where(
-        mb["qtd_fora_prazo"] > 0, mb["compensacao_rs"] / mb["qtd_fora_prazo"], np.nan
-    )
+    mb["taxa_fora_prazo"] = calc_taxa_fora_prazo(mb["qtd_fora_prazo"], mb["qtd_serv_realizado"])
+    mb["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(mb["qtd_fora_prazo"], mb["exposicao_uc_mes"])
+    mb["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(mb["compensacao_rs"], mb["exposicao_uc_mes"])
+    mb["compensacao_media_por_transgressao_rs"] = calc_compensacao_media_por_transgressao(mb["compensacao_rs"], mb["qtd_fora_prazo"])
     return pd.concat([annual, mb], ignore_index=True)
 
 def append_media_brasil_indicadores(indicadores: pd.DataFrame) -> pd.DataFrame:
@@ -235,26 +235,10 @@ def build_annual_monthly_view(frame: pd.DataFrame) -> pd.DataFrame:
         )
         .sort_values(["group_id", "distributor_label", "ano"])
     )
-    annual["taxa_fora_prazo"] = np.where(
-        annual["qtd_serv_realizado"] > 0,
-        annual["qtd_fora_prazo"] / annual["qtd_serv_realizado"],
-        np.nan,
-    )
-    annual["fora_prazo_por_100k_uc_mes"] = np.where(
-        annual["exposicao_uc_mes"] > 0,
-        annual["qtd_fora_prazo"] / annual["exposicao_uc_mes"] * 100000.0,
-        np.nan,
-    )
-    annual["compensacao_rs_por_uc_mes"] = np.where(
-        annual["exposicao_uc_mes"] > 0,
-        annual["compensacao_rs"] / annual["exposicao_uc_mes"],
-        np.nan,
-    )
-    annual["compensacao_media_por_transgressao_rs"] = np.where(
-        annual["qtd_fora_prazo"] > 0,
-        annual["compensacao_rs"] / annual["qtd_fora_prazo"],
-        np.nan,
-    )
+    annual["taxa_fora_prazo"] = calc_taxa_fora_prazo(annual["qtd_fora_prazo"], annual["qtd_serv_realizado"])
+    annual["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(annual["qtd_fora_prazo"], annual["exposicao_uc_mes"])
+    annual["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(annual["compensacao_rs"], annual["exposicao_uc_mes"])
+    annual["compensacao_media_por_transgressao_rs"] = calc_compensacao_media_por_transgressao(annual["compensacao_rs"], annual["qtd_fora_prazo"])
     return annual.reset_index(drop=True)
 
 
@@ -306,33 +290,13 @@ def build_class_view(frame: pd.DataFrame) -> pd.DataFrame:
         )
         .sort_values(["group_id", "distributor_label", "qtd_fora_prazo"], ascending=[True, True, False])
     )
-    grouped["taxa_fora_prazo"] = np.where(
-        grouped["qtd_serv_realizado"] > 0,
-        grouped["qtd_fora_prazo"] / grouped["qtd_serv_realizado"],
-        np.nan,
-    )
-    grouped["fora_prazo_por_100k_uc_mes"] = np.where(
-        grouped["exposicao_uc_mes"] > 0,
-        grouped["qtd_fora_prazo"] / grouped["exposicao_uc_mes"] * 100000.0,
-        np.nan,
-    )
-    grouped["compensacao_rs_por_uc_mes"] = np.where(
-        grouped["exposicao_uc_mes"] > 0,
-        grouped["compensacao_rs"] / grouped["exposicao_uc_mes"],
-        np.nan,
-    )
+    grouped["taxa_fora_prazo"] = calc_taxa_fora_prazo(grouped["qtd_fora_prazo"], grouped["qtd_serv_realizado"])
+    grouped["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(grouped["qtd_fora_prazo"], grouped["exposicao_uc_mes"])
+    grouped["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(grouped["compensacao_rs"], grouped["exposicao_uc_mes"])
 
     totals = grouped.groupby(["group_id", "distributor_id"])[["qtd_fora_prazo", "compensacao_rs"]].transform("sum")
-    grouped["share_fora_prazo"] = np.where(
-        totals["qtd_fora_prazo"] > 0,
-        grouped["qtd_fora_prazo"] / totals["qtd_fora_prazo"],
-        np.nan,
-    )
-    grouped["share_compensacao"] = np.where(
-        totals["compensacao_rs"] > 0,
-        grouped["compensacao_rs"] / totals["compensacao_rs"],
-        np.nan,
-    )
+    grouped["share_fora_prazo"] = calc_share(grouped["qtd_fora_prazo"], totals["qtd_fora_prazo"])
+    grouped["share_compensacao"] = calc_share(grouped["compensacao_rs"], totals["compensacao_rs"])
     return grouped.reset_index(drop=True)
 
 
@@ -350,11 +314,7 @@ def build_long_run(indicadores: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFram
         )
         .sort_values(["group_id", "distributor_label", "ano"])
     )
-    annual["taxa_fora_prazo"] = np.where(
-        annual["qtd_serv"] > 0,
-        annual["qtd_fora_prazo"] / annual["qtd_serv"],
-        np.nan,
-    )
+    annual["taxa_fora_prazo"] = calc_taxa_fora_prazo(annual["qtd_fora_prazo"], annual["qtd_serv"])
 
     rows: list[dict[str, object]] = []
     for (group_id, distributor_id), grp in annual.groupby(["group_id", "distributor_id"]):
@@ -442,9 +402,9 @@ def build_spike_table(monthly: pd.DataFrame) -> pd.DataFrame:
 
 def build_service_code_share(
     servicos: pd.DataFrame,
-    focus_codes: tuple[str, ...] = ("69", "93"),
+    focus_codes: tuple[str, ...] = EXCLUDED_SERVICE_CODES,
 ) -> pd.DataFrame:
-    frame = servicos[servicos["ano"].between(2023, 2025, inclusive="both")].copy()
+    frame = servicos[servicos["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")].copy()
     frame["codtiposervico"] = frame["codtiposervico"].astype("string").str.strip()
     frame["serv_focus"] = np.where(
         frame["codtiposervico"].isin(focus_codes),
@@ -460,11 +420,7 @@ def build_service_code_share(
         .agg(total_serv=("qtd_serv_realizado", "sum"), serv_focus=("serv_focus", "sum"))
         .sort_values(["group_id", "distributor_label", "ano"])
     )
-    share["share_serv_focus"] = np.where(
-        share["total_serv"] > 0,
-        share["serv_focus"] / share["total_serv"],
-        np.nan,
-    )
+    share["share_serv_focus"] = calc_share(share["serv_focus"], share["total_serv"])
     return share.reset_index(drop=True)
 
 
@@ -497,9 +453,9 @@ def build_comparability_alerts(
 def build_annual_excluding_codes(
     servicos: pd.DataFrame,
     monthly: pd.DataFrame,
-    excluded_codes: tuple[str, ...] = ("69", "93"),
+    excluded_codes: tuple[str, ...] = EXCLUDED_SERVICE_CODES,
 ) -> pd.DataFrame:
-    frame = servicos[servicos["ano"].between(2023, 2025, inclusive="both")].copy()
+    frame = servicos[servicos["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")].copy()
     frame["codtiposervico"] = frame["codtiposervico"].astype("string").str.strip()
     frame = frame[~frame["codtiposervico"].isin(excluded_codes)].copy()
 
@@ -533,21 +489,9 @@ def build_annual_excluding_codes(
         .sort_values(["group_id", "distributor_label", "ano"])
     )
 
-    annual["taxa_fora_prazo"] = np.where(
-        annual["qtd_serv_realizado"] > 0,
-        annual["qtd_fora_prazo"] / annual["qtd_serv_realizado"],
-        np.nan,
-    )
-    annual["fora_prazo_por_100k_uc_mes"] = np.where(
-        annual["exposicao_uc_mes"] > 0,
-        annual["qtd_fora_prazo"] / annual["exposicao_uc_mes"] * 100000.0,
-        np.nan,
-    )
-    annual["compensacao_rs_por_uc_mes"] = np.where(
-        annual["exposicao_uc_mes"] > 0,
-        annual["compensacao_rs"] / annual["exposicao_uc_mes"],
-        np.nan,
-    )
+    annual["taxa_fora_prazo"] = calc_taxa_fora_prazo(annual["qtd_fora_prazo"], annual["qtd_serv_realizado"])
+    annual["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(annual["qtd_fora_prazo"], annual["exposicao_uc_mes"])
+    annual["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(annual["compensacao_rs"], annual["exposicao_uc_mes"])
     annual["escopo_servico"] = "sem_cod_69_93"
     return annual.reset_index(drop=True)
 
@@ -611,7 +555,7 @@ def run_all_groups() -> dict[str, pd.DataFrame]:
         ],
     )
     if "ano" in servicos.columns:
-        servicos = servicos[servicos["ano"].between(2023, 2025, inclusive="both")].copy()
+        servicos = servicos[servicos["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")].copy()
 
     monthly_dist = add_labels(
         ensure_group_columns(monthly_dist, distributor_to_group, group_labels, distributor_name_overrides),

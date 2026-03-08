@@ -11,6 +11,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from src.analysis.metrics import calc_compensacao_por_uc, calc_fora_prazo_por_100k, calc_taxa_fora_prazo
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 DIR_ANALYSIS = ROOT / "data" / "processed" / "analysis"
 REPORT_PATH = ROOT / "reports" / "relatorio_aneel.md"
@@ -93,11 +95,7 @@ def build_benchmark_table(
         )
     )
 
-    agg["taxa_fora_prazo"] = np.where(
-        agg["qtd_serv_realizado"] > 0,
-        agg["qtd_fora_prazo"] / agg["qtd_serv_realizado"],
-        np.nan,
-    )
+    agg["taxa_fora_prazo"] = calc_taxa_fora_prazo(agg["qtd_fora_prazo"], agg["qtd_serv_realizado"])
 
     agg = agg.merge(
         dim_porte[["ano", "sigagente", "uc_ativa_media_mensal", "bucket_porte", "rank_porte_ano"]],
@@ -119,21 +117,9 @@ def build_monthly_summary(fato_mensal_porte: pd.DataFrame) -> pd.DataFrame:
             uc_ativa_mes=("uc_ativa_mes", "sum"),
         )
     )
-    monthly["taxa_fora_prazo"] = np.where(
-        monthly["qtd_serv_realizado"] > 0,
-        monthly["qtd_fora_prazo"] / monthly["qtd_serv_realizado"],
-        np.nan,
-    )
-    monthly["fora_prazo_por_100k_uc"] = np.where(
-        monthly["uc_ativa_mes"] > 0,
-        monthly["qtd_fora_prazo"] / monthly["uc_ativa_mes"] * 100000.0,
-        np.nan,
-    )
-    monthly["compensacao_rs_por_uc"] = np.where(
-        monthly["uc_ativa_mes"] > 0,
-        monthly["compensacao_rs"] / monthly["uc_ativa_mes"],
-        np.nan,
-    )
+    monthly["taxa_fora_prazo"] = calc_taxa_fora_prazo(monthly["qtd_fora_prazo"], monthly["qtd_serv_realizado"])
+    monthly["fora_prazo_por_100k_uc"] = calc_fora_prazo_por_100k(monthly["qtd_fora_prazo"], monthly["uc_ativa_mes"])
+    monthly["compensacao_rs_por_uc"] = calc_compensacao_por_uc(monthly["compensacao_rs"], monthly["uc_ativa_mes"])
     return monthly.sort_values(["ano", "mes"]).reset_index(drop=True)
 
 
