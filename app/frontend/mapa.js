@@ -585,6 +585,44 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    // --- Integração com filtro global (filters.js) ---
+    // O mapa usa timeline própria (slider mês/ano). O evento filters:change carrega
+    // o período global ('all' | 'pre_2022' | 'pos_2022') e sincroniza o timelineIndex
+    // para o último mês do período selecionado, disparando um re-render.
+    window.addEventListener('filters:change', function (e) {
+        const period = (e.detail && e.detail.period) ? e.detail.period : 'all';
+
+        if (!state.timeline || state.timeline.length === 0) {
+            console.info('[mapa] filters:change recebido (period=' + period + '), timeline ainda não inicializada.');
+            return;
+        }
+
+        let targetIndex = state.timeline.length - 1; // padrão: último mês (all)
+
+        if (period === 'pre_2022') {
+            // Último mês anterior a 2022
+            const lastPre = state.timeline.reduce((best, t, idx) => {
+                return t.ano < 2022 ? idx : best;
+            }, -1);
+            if (lastPre >= 0) targetIndex = lastPre;
+        } else if (period === 'pos_2022') {
+            // Primeiro mês a partir de 2022 (janeiro/2022 em diante → mantém último)
+            const firstPos = state.timeline.findIndex(t => t.ano >= 2022);
+            if (firstPos >= 0) targetIndex = state.timeline.length - 1;
+        }
+        // 'all' → usa o último mês (já definido como padrão acima)
+
+        if (state.timelineIndex !== targetIndex) {
+            state.timelineIndex = targetIndex;
+            if (UI.timelineSlider) UI.timelineSlider.value = targetIndex;
+            updateTimelineLabel();
+            updateMap();
+            console.info('[mapa] filters:change aplicado: period=' + period + ', timelineIndex=' + targetIndex);
+        } else {
+            console.info('[mapa] filters:change recebido: period=' + period + ' (sem alteração de índice)');
+        }
+    });
+
     // --- Tema ---
     function initThemeToggle() {
         // Load saved theme initially

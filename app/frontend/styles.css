@@ -266,11 +266,11 @@ h1, h2, h3, h4 {
 }
 
 .filter-bar .filter-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-muted);
+  color: var(--green);
   margin-right: 4px;
 }
 
