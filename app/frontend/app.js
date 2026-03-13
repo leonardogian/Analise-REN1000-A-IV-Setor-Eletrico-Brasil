@@ -13,6 +13,7 @@ const dashboardState = {
 
 /* ===================== THEME (DARK-ONLY, IBERDROLA) ===================== */
 function initTheme() {
+    if (typeof Chart === 'undefined') return;
     // Dark-only: always Iberdrola corporate palette
     Chart.defaults.color = '#4a6656';
     Chart.defaults.borderColor = 'rgba(19, 42, 26, 0.6)';
@@ -53,16 +54,18 @@ const DISTRIBUTOR_PALETTE = [
 ];
 
 const CHART_FONT = { family: "'Inter', sans-serif", size: 12, weight: '500' };
-Chart.defaults.font.family = CHART_FONT.family;
-Chart.defaults.font.size = CHART_FONT.size;
-Chart.defaults.plugins.tooltip.titleFont = { ...CHART_FONT, weight: '700', size: 13 };
-Chart.defaults.plugins.tooltip.bodyFont = CHART_FONT;
-Chart.defaults.plugins.tooltip.borderWidth = 1;
-Chart.defaults.plugins.tooltip.cornerRadius = 10;
-Chart.defaults.plugins.tooltip.padding = 12;
-Chart.defaults.plugins.legend.labels.usePointStyle = true;
-Chart.defaults.plugins.legend.labels.pointStyleWidth = 10;
-Chart.defaults.plugins.legend.labels.padding = 16;
+if (typeof Chart !== 'undefined') {
+    Chart.defaults.font.family = CHART_FONT.family;
+    Chart.defaults.font.size = CHART_FONT.size;
+    Chart.defaults.plugins.tooltip.titleFont = { ...CHART_FONT, weight: '700', size: 13 };
+    Chart.defaults.plugins.tooltip.bodyFont = CHART_FONT;
+    Chart.defaults.plugins.tooltip.borderWidth = 1;
+    Chart.defaults.plugins.tooltip.cornerRadius = 10;
+    Chart.defaults.plugins.tooltip.padding = 12;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.legend.labels.pointStyleWidth = 10;
+    Chart.defaults.plugins.legend.labels.padding = 16;
+}
 
 /* ===================== CHART HELPERS ===================== */
 const chartInstances = [];
