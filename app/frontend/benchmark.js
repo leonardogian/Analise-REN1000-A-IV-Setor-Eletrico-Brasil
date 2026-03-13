@@ -24,11 +24,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         P: 'P — Pequeno', M: 'M — Médio', G: 'G — Grande', GG: 'GG — Muito Grande',
     };
 
-    // Dark-only chart defaults
-    Chart.defaults.font.family = "'Inter', sans-serif";
-    Chart.defaults.color = '#4a6656';
-    Chart.defaults.borderColor = 'rgba(19, 42, 26, 0.6)';
-
     try {
         const res = await fetch('./dashboard_scatter.json');
         if (!res.ok) throw new Error('Falha ao carregar dashboard_scatter.json');
