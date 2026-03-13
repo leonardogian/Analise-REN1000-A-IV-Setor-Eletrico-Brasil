@@ -10,7 +10,7 @@ Normativa nº 1.000/2021 da ANEEL** na qualidade dos serviços comerciais das
 distribuidoras de energia elétrica do Brasil. Foco especial nas **5 distribuidoras
 do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 
-> **🎯 Fase Atual do Projeto:** Toda a infraestrutura de dados (ETL, bases Parquet, Tabelas Analíticas) está montada e seus valores foram validados como **corretos**. A partir de agora o foco principal para agentes de IA que atuarem aqui é **desenvolver a aplicação analítica**: Back-End (FastAPI) fornecendo endpoints e Front-End interativo (Vanilla JS + Chart.js).
+> **🎯 Fase Atual do Projeto:** ETL, dados e design system do frontend estão completos. O dashboard tem 6 páginas ativas com módulos compartilhados unificados (utils.js, nav.js, filters.js, app.js). Próximos passos: camada coroplética no mapa e análises adicionais.
 
 > **🔄 ROTINA OBRIGATÓRIA PARA IAs:**
 >
@@ -53,13 +53,20 @@ TCC_leo_main/
 │   └── backend/
 │       └── main.py                  ← Backend local (API + static em localhost)
 │
-├── dashboard/
-│   ├── index.html           ← Dashboard interativo (4 abas)
-│   ├── app.js               ← Lógica JS: carrega JSON, renderiza Chart.js
-│   ├── styles.css            ← Dark mode + glassmorphism
-│   ├── relatorio.html        ← Relatório imprimível (HTML → PDF)
-│   ├── dashboard_data.json   ← Gerado, NÃO versionado (.gitignore)
-│   └── README.md             ← Doc técnica do dashboard
+├── app/
+│   ├── frontend/             ← Dashboard SPA (6 páginas ativas)
+│   │   ├── index.html / app.js           ← Visão Geral (KPIs, tendências, grupos)
+│   │   ├── transgressoes.html / .js      ← Séries temporais de transgressões
+│   │   ├── benchmark.html / .js          ← Bubble chart: volume × compensação
+│   │   ├── evolucao.html / .js           ← Heatmap mensal por holding
+│   │   ├── ranking.html / .js            ← Ranking horizontal por métrica
+│   │   ├── mapa.html / .js               ← Mapa interativo (Leaflet + timeline)
+│   │   ├── relatorio.html                ← Relatório imprimível (Ctrl+P → PDF)
+│   │   ├── utils.js                      ← Formatadores pt-BR compartilhados
+│   │   ├── nav.js                        ← Sidebar + toast system
+│   │   ├── filters.js                    ← Estado global de filtros (período/porte/grupo)
+│   │   └── styles.css                    ← Design system: dark mode, cards, grid
+│   └── backend/main.py       ← FastAPI: endpoints REST + serve static files
 │
 ├── data/
 │   ├── raw/                  ← CSVs brutos da ANEEL (não versionados)

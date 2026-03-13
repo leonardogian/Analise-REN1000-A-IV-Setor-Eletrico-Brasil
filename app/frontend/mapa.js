@@ -267,8 +267,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             const logoHtml = logoFile ? getLogo(logoFile, "24px") : `<span style="display:inline-block; margin-right: 6px; vertical-align:middle;">${holdingEmojis[d.holdingId] || holdingEmojis['outros']}</span>`;
 
             // Tooltip Labels: Mostramos sempre Valores Monetários e Qtde.
-            const valStr = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(d.valor);
-            const qtdStr = new Intl.NumberFormat('pt-BR').format(d.qtd);
+            const valStr = fmtMoneyFull(d.valor);
+            const qtdStr = fmtNum(d.qtd, 0);
 
             let formattedVal = '';
             let metricNameForTooltip = '';
@@ -276,8 +276,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (state.metric === 'relacao') {
                 metricNameForTooltip = state.invertRatio ? 'Transgressões por R$' : 'Média R$ por Transgressão';
                 formattedVal = state.invertRatio
-                    ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 6 }).format(targetVal) + ' qtd/R$'
-                    : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(targetVal) + ' / qtd';
+                    ? fmtNum(targetVal, 6) + ' qtd/R$'
+                    : fmtMoneyFull(targetVal) + ' / qtd';
             }
 
             const popupContent = `

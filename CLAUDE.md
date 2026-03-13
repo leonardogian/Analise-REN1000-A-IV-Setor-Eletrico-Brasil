@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality of Brazilian energy distributors. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units). Special focus on 5 Neoenergia distributors.
 
-**Current phase:** ETL and data infrastructure are complete. Active development is on the FastAPI backend and Vanilla JS/Chart.js frontend dashboard.
+**Current phase:** ETL, data infrastructure, and frontend design system are complete. The dashboard has 6 active pages with a unified design system (shared modules: utils.js, nav.js, filters.js, app.js). Next steps: choropleth layer on the map, and ongoing polish/analysis.
 
 ## Essential Commands
 
@@ -83,10 +83,15 @@ src/analysis/build_analysis_tables.py -> data/processed/analysis/*.csv  (version
 - `src/etl/` — extraction and transformation scripts
 - `src/analysis/` — analytical table builders, report generators
 - `app/backend/main.py` — FastAPI serving static files + REST endpoints
-- `app/frontend/` — SPA dashboard (index.html, app.js, styles.css) + JSON data files
+- `app/frontend/` — SPA dashboard (6 active pages + shared JS modules)
+  - Shared modules (load order): `utils.js → nav.js → filters.js → app.js → [page].js`
+  - `utils.js` — formatters (fmtNum, fmtMoney, fmtMoneyFull, fmtPct, fmtVar)
+  - `nav.js` — sidebar active-link, mobile toggle, toast system
+  - `filters.js` — global period/porte/group state + `filters:change` event
+  - `app.js` — Chart.js defaults (theme), shared constants
 - `data/processed/analysis/` — versioned analytical CSVs/Parquets consumed by the app
-- `dashboard/` — legacy dashboard (HTML + Chart.js), still functional
 - `docker/` — Docker Compose files (app stack, PostgreSQL, Kestra)
+- `scripts/playwright/` — browser automation: `screenshot-all.js`, `check-charts.js`, `aneel-fetch.js`
 - `scripts/` — utilities (PostgreSQL loaders, artifact checkers, pptx generator)
 - `notebooks/` — Jupyter notebooks for exploratory analysis
 
