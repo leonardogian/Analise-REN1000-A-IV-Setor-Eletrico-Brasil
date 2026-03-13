@@ -156,6 +156,7 @@ pip install -r requirements.txt
 
 ## Links Importantes
 
+- **Visão Completa dos Dados**: `.ai/DATA_OVERVIEW.md` ← **SEMPRE ler antes de qualquer análise**
 - **README humano**: `README.md`
 - **Dashboard docs**: `dashboard/README.md`
 - **Guia de análise**: `docs/GUIA_ANALISE.md`

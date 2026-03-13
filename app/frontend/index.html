@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet" />
 
   <!-- Chart.js -->
@@ -27,239 +27,284 @@
 
 <body>
 
-  <div class="bg-grid"></div>
-
-  <div class="app-wrapper">
-
-    <!-- ==================== HEADER ==================== -->
-    <header class="global-header">
-      <div class="header-brand">
-        <span class="header-logo">⚡</span>
-        <div class="header-title-group">
-          <h1 class="header-title">Análise REN 1000/2021 — ANEEL</h1>
-          <p class="header-subtitle">Qualidade comercial das distribuidoras de energia — Prazos, transgressões e
-            compensações</p>
-        </div>
-      </div>
-      <nav class="main-nav-links">
-        <a href="index.html" class="active">Visão Geral</a>
-        <a href="transgressoes.html">Séries Temporais</a>
-        <a href="mapa.html">Mapa Interativo</a>
-        <a href="ranking.html">Ranking</a>
-        <a href="evolucao.html">Evolução</a>
-        <a href="benchmark.html">Benchmark</a>
-        <a href="prompt.html">Chat IA</a>
-      </nav>
-      <div class="header-actions">
-        <span class="header-badge">
-          <span class="dot"></span>
-          Atualizado: <span id="gen-time">—</span>
-        </span>
-      </div>
-    </header>
-
-    <!-- ==================== LOADING ==================== -->
-    <div id="loading" class="loading-screen">
-      <div class="loading-spinner"></div>
-      <p class="loading-text">Carregando dados...</p>
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+    <div class="logo">
+      <span class="logo-icon">⚡</span>
+      <span>REN 1000 Dashboard</span>
     </div>
+    <div class="top-context">ANEEL · REN 1.000/2021</div>
+    <div class="topbar-right">
+      <span class="pill green">● Dados 2023</span>
+      <span class="pill ghost" id="gen-time-pill">Atualizado: <span id="gen-time">—</span></span>
+    </div>
+  </header>
 
-    <!-- ==================== DASHBOARD CONTENT ==================== -->
-    <div id="dashboard-content" class="dashboard-content">
+  <div class="layout">
 
-      <!-- Navigation -->
-      <nav class="nav-tabs">
-        <button class="nav-tab" data-tab="tab-overview">
-          <span class="tab-icon">📊</span> Visão Geral
-        </button>
-        <button class="nav-tab" data-tab="tab-advanced">
-          <span class="tab-icon">🧪</span> Análises Avançadas
-        </button>
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="nav-group">
+        <div class="nav-group-label">Análises</div>
+        <a href="index.html" class="nav-link" data-page="overview">
+          <span class="nav-icon">📊</span> Visão Geral
+        </a>
+        <a href="transgressoes.html" class="nav-link" data-page="series">
+          <span class="nav-icon">📈</span> Séries Temporais
+        </a>
+        <a href="mapa.html" class="nav-link" data-page="mapa">
+          <span class="nav-icon">🗺</span> Mapa Interativo
+        </a>
+        <a href="ranking.html" class="nav-link" data-page="ranking">
+          <span class="nav-icon">🏆</span> Ranking
+        </a>
+        <a href="evolucao.html" class="nav-link" data-page="evolucao">
+          <span class="nav-icon">🔥</span> Evolução
+        </a>
+        <a href="benchmark.html" class="nav-link" data-page="benchmark">
+          <span class="nav-icon">⚖️</span> Benchmark
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Ferramentas</div>
+        <a href="prompt.html" class="nav-link" data-page="chat">
+          <span class="nav-icon">🤖</span> Chat IA
+        </a>
+        <a href="relatorio.html" class="nav-link" data-page="report">
+          <span class="nav-icon">📋</span> Relatório PDF
+        </a>
+      </div>
+      <div class="sidebar-footer">
+        TCC — Análise de Eficácia<br>REN 1000/2021 ANEEL
+      </div>
+    </nav>
 
-        <button class="theme-toggle-btn" id="theme-toggle" onclick="toggleTheme()" title="Alternar Tema">
-          <span class="icon">🌙</span>
-        </button>
-      </nav>
+    <!-- MAIN -->
+    <main class="main">
 
-      <!-- ============ TAB 1: VISÃO GERAL ============ -->
-      <section id="tab-overview" class="tab-panel">
+      <!-- FILTER BAR -->
+      <div class="filter-bar" id="global-filters">
+        <span class="filter-label">Período</span>
+        <select class="select-styled" id="filter-period">
+          <option value="all">Todos</option>
+          <option value="pre_2022">Pré-2022 (REN 414)</option>
+          <option value="pos_2022">Pós-2022 (REN 1000)</option>
+        </select>
+        <div class="filter-sep"></div>
+        <span class="filter-label">Base</span>
+        <select class="select-styled" id="filter-base">
+          <option value="all">Ambas</option>
+          <option value="ren1000">REN 1000</option>
+          <option value="ren414">REN 414</option>
+        </select>
+      </div>
 
-        <h2 class="section-title"><span class="icon">📊</span> Impacto da REN 1000 — Pré vs Pós 2022</h2>
-        <p class="section-description">
+      <!-- PAGE HEADER -->
+      <div class="page-header">
+        <div class="breadcrumb">Dashboard / <span class="active">Visão Geral</span></div>
+        <h1 class="page-title">Visão Geral — REN 1.000/2021</h1>
+        <p class="page-subtitle">
           Comparação dos indicadores de qualidade comercial antes e depois da vigência da
-          Resolução Normativa ANEEL nº 1.000/2021, que consolidou as regras de distribuição de energia.
+          Resolução Normativa ANEEL nº 1.000/2021.
         </p>
+      </div>
 
-        <!-- KPI Row -->
-        <div class="kpi-grid">
-          <div class="kpi-card blue">
-            <div class="kpi-label">Taxa Fora do Prazo (Pré-2022)</div>
-            <div class="kpi-value blue" id="kpi-taxa-pre">—</div>
-            <div class="kpi-label kpi-note">Média anual (REN 414)</div>
-          </div>
-          <div class="kpi-card cyan">
-            <div class="kpi-label">Taxa Fora do Prazo (Pós-2022)</div>
-            <div class="kpi-value cyan" id="kpi-taxa-pos">—</div>
-            <div id="kpi-taxa-delta" class="kpi-delta">—</div>
-          </div>
-          <div class="kpi-card amber">
-            <div class="kpi-label">Compensação Total (Pré-2022)</div>
-            <div class="kpi-value amber" id="kpi-comp-pre">—</div>
-            <div class="kpi-label kpi-note">2011–2021</div>
-          </div>
-          <div class="kpi-card green">
-            <div class="kpi-label">Compensação Total (Pós-2022)</div>
-            <div class="kpi-value green" id="kpi-comp-pos">—</div>
-            <div id="kpi-comp-delta" class="kpi-delta">—</div>
-          </div>
-          <div class="kpi-card purple">
-            <div class="kpi-label">Total de Serviços Analisados</div>
-            <div class="kpi-value purple" id="kpi-serv-total">—</div>
-            <div class="kpi-label kpi-note">2011–2023</div>
-          </div>
-          <div class="kpi-card red">
-            <div class="kpi-label">Total Fora do Prazo</div>
-            <div class="kpi-value red" id="kpi-fora-total">—</div>
-            <div class="kpi-label kpi-note">Transgressões acumuladas</div>
-          </div>
-        </div>
+      <!-- LOADING -->
+      <div id="loading" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Carregando dados...</p>
+      </div>
 
-        <!-- Insights -->
-        <div class="insight-grid">
-          <div class="insight-card">
-            <span class="insight-icon">📉</span>
-            <div class="insight-text">
-              A <strong>taxa de transgressões caiu</strong> após a REN 1000, indicando melhoria na prestação dos
-              serviços
-              comerciais dentro do prazo regulamentar.
+      <!-- DASHBOARD CONTENT -->
+      <div id="dashboard-content" class="dashboard-content">
+
+        <!-- Navigation tabs -->
+        <nav class="nav-tabs">
+          <button class="nav-tab" data-tab="tab-overview">
+            <span class="tab-icon">📊</span> Visão Geral
+          </button>
+          <button class="nav-tab" data-tab="tab-advanced">
+            <span class="tab-icon">🧪</span> Análises Avançadas
+          </button>
+        </nav>
+
+        <!-- ============ TAB 1: VISÃO GERAL ============ -->
+        <section id="tab-overview" class="tab-panel">
+
+          <h2 class="section-title"><span class="icon">📊</span> Impacto da REN 1000 — Pré vs Pós 2022</h2>
+          <p class="section-description">
+            Comparação dos indicadores de qualidade comercial antes e depois da vigência da
+            Resolução Normativa ANEEL nº 1.000/2021, que consolidou as regras de distribuição de energia.
+          </p>
+
+          <!-- KPI Row -->
+          <div class="kpi-grid">
+            <div class="kpi-card blue">
+              <div class="kpi-label">Taxa Fora do Prazo (Pré-2022)</div>
+              <div class="kpi-value blue" id="kpi-taxa-pre">—</div>
+              <div class="kpi-note">Média anual (REN 414)</div>
+            </div>
+            <div class="kpi-card cyan">
+              <div class="kpi-label">Taxa Fora do Prazo (Pós-2022)</div>
+              <div class="kpi-value cyan" id="kpi-taxa-pos">—</div>
+              <div id="kpi-taxa-delta" class="kpi-delta">—</div>
+            </div>
+            <div class="kpi-card amber">
+              <div class="kpi-label">Compensação Total (Pré-2022)</div>
+              <div class="kpi-value amber" id="kpi-comp-pre">—</div>
+              <div class="kpi-note">2011–2021</div>
+            </div>
+            <div class="kpi-card green">
+              <div class="kpi-label">Compensação Total (Pós-2022)</div>
+              <div class="kpi-value green" id="kpi-comp-pos">—</div>
+              <div id="kpi-comp-delta" class="kpi-delta">—</div>
+            </div>
+            <div class="kpi-card purple">
+              <div class="kpi-label">Total de Serviços Analisados</div>
+              <div class="kpi-value purple" id="kpi-serv-total">—</div>
+              <div class="kpi-note">2011–2023</div>
+            </div>
+            <div class="kpi-card red">
+              <div class="kpi-label">Total Fora do Prazo</div>
+              <div class="kpi-value red" id="kpi-fora-total">—</div>
+              <div class="kpi-note">Transgressões acumuladas</div>
             </div>
           </div>
-          <div class="insight-card">
-            <span class="insight-icon">💰</span>
-            <div class="insight-text">
-              A <strong>compensação financeira também diminuiu</strong>, mas é preciso observar que os anos pós-2022
-              ainda estão em consolidação.
-            </div>
-          </div>
-        </div>
 
-
-        <!-- Charts -->
-        <div class="chart-grid two-col">
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">Taxa Fora do Prazo — Série Anual</div>
-                <div class="chart-subtitle">Linha tracejada marca a vigência da REN 1000 (2022)</div>
+          <!-- Insights -->
+          <div class="insight-grid">
+            <div class="insight-card">
+              <span class="insight-icon">📉</span>
+              <div class="insight-text">
+                A <strong>taxa de transgressões caiu</strong> após a REN 1000, indicando melhoria na prestação dos
+                serviços comerciais dentro do prazo regulamentar.
               </div>
-              <span class="chart-tag">2011–2023</span>
             </div>
-            <div class="chart-canvas-wrapper">
-              <canvas id="chart-serie-taxa"></canvas>
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">Compensações Financeiras — Série Anual</div>
-                <div class="chart-subtitle">Valor total pago em compensações aos consumidores</div>
+            <div class="insight-card">
+              <span class="insight-icon">💰</span>
+              <div class="insight-text">
+                A <strong>compensação financeira também diminuiu</strong>, mas é preciso observar que os anos pós-2022
+                ainda estão em consolidação.
               </div>
-              <span class="chart-tag">R$</span>
-            </div>
-            <div class="chart-canvas-wrapper">
-              <canvas id="chart-serie-comp"></canvas>
             </div>
           </div>
-        </div>
-      </section>
 
-      <!-- ============ TAB 2: ANÁLISES AVANÇADAS ============ -->
-      <section id="tab-advanced" class="tab-panel">
-        <h2 class="section-title"><span class="icon">🧪</span> Análises Avançadas (REN 1000)</h2>
-        <p class="section-description">
-          Visões analíticas avançadas explorando padrões estruturais do Setor Elétrico.
+          <!-- Charts -->
+          <div class="chart-grid two-col">
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Taxa Fora do Prazo — Série Anual</div>
+                  <div class="chart-subtitle">Linha tracejada marca a vigência da REN 1000 (2022)</div>
+                </div>
+                <span class="chart-tag">2011–2023</span>
+              </div>
+              <div class="chart-canvas-wrapper">
+                <canvas id="chart-serie-taxa"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Compensações Financeiras — Série Anual</div>
+                  <div class="chart-subtitle">Valor total pago em compensações aos consumidores</div>
+                </div>
+                <span class="chart-tag">R$</span>
+              </div>
+              <div class="chart-canvas-wrapper">
+                <canvas id="chart-serie-comp"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ TAB 2: ANÁLISES AVANÇADAS ============ -->
+        <section id="tab-advanced" class="tab-panel">
+          <h2 class="section-title"><span class="icon">🧪</span> Análises Avançadas (REN 1000)</h2>
+          <p class="section-description">
+            Visões analíticas avançadas explorando padrões estruturais do Setor Elétrico.
+          </p>
+
+          <div class="chart-grid two-col">
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">1. Intensidade de Transgressões (Top 5)</div>
+                  <div class="chart-subtitle">Heatmap: Grupo Econômico vs Classe/Local (Fora/100k UC)</div>
+                </div>
+              </div>
+              <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
+                <canvas id="chart-advanced-heatmap"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">2. Eficiência: Absoluto vs Normalizado</div>
+                  <div class="chart-subtitle">Volume de Falhas Absoluto (X) vs Compensação R$/UC (Y)</div>
+                </div>
+              </div>
+              <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
+                <canvas id="chart-advanced-scatter"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-grid two-col section-spacing-top">
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">3. SLA Comercial Top 5 (Radar)</div>
+                  <div class="chart-subtitle">Perfil multivariado de transgressões por serviço INDGER</div>
+                </div>
+              </div>
+              <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
+                <canvas id="chart-advanced-radar"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">4. Impacto Regulatório (REN 414 vs 1000)</div>
+                  <div class="chart-subtitle">Evolução de infrações com marco de implantação</div>
+                </div>
+                <div class="chart-controls" style="max-width: 320px; flex-shrink: 0;">
+                  <label for="adv-timeseries-filter"
+                    style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Filtro de Comparação:</label>
+                  <select id="adv-timeseries-filter" class="select-styled" multiple size="4"
+                    style="width: 100%; min-height: 80px;">
+                    <!-- Options populated by JS -->
+                  </select>
+                </div>
+              </div>
+              <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
+                <canvas id="chart-advanced-timeseries"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /dashboard-content -->
+
+      <!-- FOOTER -->
+      <footer class="footer">
+        <p>
+          TCC — Análise de Eficácia da REN 1000/2021 (ANEEL) &middot;
+          Dados: <a href="https://dadosabertos.aneel.gov.br" target="_blank">dadosabertos.aneel.gov.br</a> &middot;
+          Gerado automaticamente a partir dos dados processados
         </p>
+      </footer>
 
-        <div class="chart-grid two-col">
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">1. Intensidade de Transgressões (Top 5)</div>
-                <div class="chart-subtitle">Heatmap: Grupo Econômico vs Classe/Local (Fora/100k UC)</div>
-              </div>
-            </div>
-            <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
-              <canvas id="chart-advanced-heatmap"></canvas>
-            </div>
-          </div>
+    </main>
+  </div>
 
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">2. Eficiência: Absoluto vs Normalizado</div>
-                <div class="chart-subtitle">Volume de Falhas Absoluto (X) vs Compensação R$/UC (Y)</div>
-              </div>
-            </div>
-            <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
-              <canvas id="chart-advanced-scatter"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-grid two-col section-spacing-top">
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">3. SLA Comercial Top 5 (Radar)</div>
-                <div class="chart-subtitle">Perfil multivariado de transgressões por serviço INDGER</div>
-              </div>
-            </div>
-            <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
-              <canvas id="chart-advanced-radar"></canvas>
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">4. Impacto Regulatório (REN 414 vs 1000)</div>
-                <div class="chart-subtitle">Evolução de infrações com marco de implantação</div>
-              </div>
-              <div class="chart-controls" style="max-width: 320px; flex-shrink: 0;">
-                <label for="adv-timeseries-filter"
-                  style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 4px;">Filtro de Comparação
-                  (Holdings e Franquias):</label>
-                <select id="adv-timeseries-filter" multiple size="4"
-                  style="width: 100%; border-radius: 6px; padding: 4px; background: rgba(30, 41, 59, 0.8); border: 1px solid #475569; color: #e2e8f0; font-family: 'Inter', sans-serif; font-size: 0.85rem; outline: none; transition: border-color 0.2s;">
-                  <!-- Options will be populated by JS -->
-                </select>
-                <div style="font-size: 0.70rem; color: #64748b; margin-top: 4px; line-height: 1.2;">Pressione Ctrl/Cmd
-                  para selecionar várias opções.</div>
-              </div>
-            </div>
-            <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
-              <canvas id="chart-advanced-timeseries"></canvas>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-
-    </div><!-- /dashboard-content -->
-
-    <!-- ==================== FOOTER ==================== -->
-    <footer class="footer">
-      <p>
-        TCC — Análise de Eficácia da REN 1000/2021 (ANEEL) &middot;
-        Dados: <a href="https://dadosabertos.aneel.gov.br" target="_blank">dadosabertos.aneel.gov.br</a> &middot;
-        Gerado automaticamente a partir dos dados processados
-      </p>
-    </footer>
-
-  </div><!-- /app-wrapper -->
-
+  <script src="nav.js"></script>
+  <script src="filters.js"></script>
+  <script src="utils.js"></script>
   <script src="app.js"></script>
 </body>
 

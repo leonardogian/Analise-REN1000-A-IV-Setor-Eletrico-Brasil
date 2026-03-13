@@ -12,24 +12,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         ruralOnly: false
     };
 
-    // Load saved theme
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    if (savedTheme === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
-    }
-
-    // Cores CSS Variables Unificadas com app.js (Premium Theme)
+    // Cores Iberdrola Corporate
     const colors = {
-        neoenergia: "#00f0ff", // Neon Cyan
-        cpfl: "#00ff66",       // Neon Green
-        equatorial: "#ff0055", // Hot Pink
-        enel: "#f59e0b",       // Amber
-        energisa: "#b026ff",   // Neon Purple
-        cemig: "#00e5ff",      // Bright Cyan
-        copel: "#ff3366",      // Rose Neon
-        edp: "#3b82f6",        // Electric Blue
-        celesc: "#10b981",     // Lime
-        outros: "#64748b"      // Gray
+        neoenergia: "#00C65A",
+        cpfl: "#1A8FE3",
+        equatorial: "#FF6B1A",
+        enel: "#A8D96B",
+        energisa: "#8b5cf6",
+        cemig: "#ec4899",
+        copel: "#4aa8ee",
+        edp: "#ef4444",
+        celesc: "#14b8a6",
+        outros: "#4a6656"
     };
 
     const UI = {
@@ -49,11 +43,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!response.ok) throw new Error("Não foi possível carregar os dados.");
         dashboardData = await response.json();
 
+        // Apply persisted global holding filter if set on another page
+        if (window.dashboardFilters && window.dashboardFilters.grupos.size > 0) {
+            state.selectedHoldings = Array.from(window.dashboardFilters.grupos);
+        }
+
         initFilters();
         renderInsights();
         updateChart();
         initAI();
-        initThemeToggle();
 
     } catch (error) {
         console.error("Erro ao inicializar dashboard:", error);
@@ -126,15 +124,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (inflection_point) {
             UI.inflectionBadge.classList.remove('hidden');
-            let [ano, mes] = inflection_point.ano_mes.split('-');
-            const mesFormatado = new Date(ano, mes - 1).toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
-            const mesFinal = mesFormatado.charAt(0).toUpperCase() + mesFormatado.slice(1) + '/' + ano.slice(-2);
+            // Data may have "mes" (string like "Dez/.0") or "ano_mes" (string like "2023-12")
+            let mesFinal = '—';
+            if (inflection_point.ano_mes) {
+                let [ano, mes] = inflection_point.ano_mes.split('-');
+                const mesFormatado = new Date(ano, mes - 1).toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+                mesFinal = mesFormatado.charAt(0).toUpperCase() + mesFormatado.slice(1) + '/' + ano.slice(-2);
+            } else if (inflection_point.mes) {
+                mesFinal = inflection_point.mes;
+            }
             UI.inflectionMonth.textContent = mesFinal;
 
             html += `
         <div class="insight-block">
           <h3>Ponto de Inflexão (Transição para REN 1000)</h3>
-          <p>O maior salto no volume de infrações ocorreu em <strong>${mesFinal}</strong>, com um acréscimo de <strong>${inflection_point.salto_transgressoes.toLocaleString('pt-BR')}</strong> transgressões em relação ao mês anterior em nível nacional.</p>
+          <p>O maior salto no volume de infrações ocorreu em <strong>${mesFinal}</strong>, com um acréscimo de <strong>${(inflection_point.salto_transgressoes || 0).toLocaleString('pt-BR')}</strong> transgressões em relação ao mês anterior em nível nacional.</p>
         </div>
       `;
         }
@@ -263,14 +267,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             chartInstance.destroy();
         }
 
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-
-        // Configuração do Chart.js
+        // Dark-only Iberdrola chart defaults
         Chart.defaults.font.family = "'Inter', sans-serif";
-        Chart.defaults.color = isLight ? "#475569" : "#8a949e";
-        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.03)';
+        Chart.defaults.color = '#4a6656';
+        Chart.defaults.borderColor = 'rgba(19, 42, 26, 0.6)';
 
-        const gridColor = isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.03)';
+        const gridColor = 'rgba(19, 42, 26, 0.4)';
 
         chartInstance = new Chart(ctx, {
             data: {
@@ -294,12 +296,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                         }
                     },
                     tooltip: {
-                        backgroundColor: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.85)',
-                        titleFont: { size: 14, family: "'Outfit', sans-serif", weight: '600' },
+                        backgroundColor: 'rgba(10, 26, 16, 0.95)',
+                        titleFont: { size: 14, family: "'Inter', sans-serif", weight: '600' },
+                        titleColor: '#F0FDF4',
                         bodyFont: { size: 13, family: "'Inter', sans-serif" },
+                        bodyColor: '#94a3b8',
                         padding: 16,
                         cornerRadius: 12,
-                        borderColor: isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 240, 255, 0.4)',
+                        borderColor: 'rgba(0, 198, 90, 0.3)',
                         borderWidth: 1,
                         boxPadding: 4,
                         usePointStyle: true,
@@ -334,7 +338,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         title: {
                             display: true,
                             text: 'Compensações Pagas (R$)',
-                            color: isLight ? '#1e293b' : '#cbd5e1',
+                            color: '#F0FDF4',
                             font: { family: "'Outfit', sans-serif", size: 14 }
                         },
                         grid: {
@@ -357,7 +361,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         title: {
                             display: true,
                             text: 'Qtd. Transgressões',
-                            color: isLight ? '#475569' : '#94a3b8',
+                            color: '#94a3b8',
                             font: { family: "'Outfit', sans-serif", size: 14 }
                         },
                         grid: {
@@ -465,29 +469,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 UI.btnGenerateAi.disabled = false;
                 UI.btnGenerateAi.textContent = "✨ Gerar Nova Análise IA";
             }
-        });
-    }
-
-    // --- Tema ---
-    function initThemeToggle() {
-        const toggleBtn = document.getElementById('theme-toggle');
-        if (!toggleBtn) return;
-
-        const icon = toggleBtn.querySelector('.icon');
-        if (icon) {
-            icon.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '☀️' : '🌙';
-        }
-
-        toggleBtn.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-
-            if (icon) icon.textContent = newTheme === 'light' ? '☀️' : '🌙';
-
-            updateChart(); // Redraw chart with new colors
         });
     }
 

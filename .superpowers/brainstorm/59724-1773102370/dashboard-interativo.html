@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard REN 1000 — Preview Interativo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #060D0A;
+    --bg-panel: #0A1A10;
+    --bg-sidebar: #060D0A;
+    --bg-card: #0D1F14;
+    --bg-card-hover: #112618;
+    --border: #132A1A;
+    --border-subtle: #0E2016;
+    --green: #00C65A;
+    --green-dim: #00C65A18;
+    --green-mid: #00C65A40;
+    --blue: #1A8FE3;
+    --blue-dim: #1A8FE318;
+    --orange: #FF6B1A;
+    --orange-dim: #FF6B1A18;
+    --lime: #A8D96B;
+    --lime-dim: #A8D96B18;
+    --text-primary: #F0FDF4;
+    --text-secondary: #94a3b8;
+    --text-muted: #4a6656;
+    --text-dim: #2d4a36;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: 13px;
+  }
+
+  /* ─── TOPBAR ─────────────────────────────────── */
+  .topbar {
+    height: 54px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 14px;
+    flex-shrink: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 9px;
+    font-weight: 800; font-size: 15px; color: #ffffff;
+    letter-spacing: -0.3px;
+  }
+  .logo-mark {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, #00C65A 0%, #1A8FE3 100%);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+    box-shadow: 0 0 12px #00C65A44;
+  }
+  .top-sep { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
+  .top-ctx { font-size: 11px; color: var(--text-muted); }
+  .top-ctx strong { color: var(--text-secondary); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; border: 1px solid transparent;
+  }
+  .pill.green { background: var(--green-dim); border-color: var(--green-mid); color: var(--green); }
+  .pill.ghost { background: transparent; border-color: var(--border); color: var(--text-muted); }
+  .pill.ghost:hover { border-color: var(--green-mid); color: var(--text-secondary); }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+  /* ─── LAYOUT ─────────────────────────────────── */
+  .layout { display: flex; flex: 1; overflow: hidden; }
+
+  /* ─── SIDEBAR ────────────────────────────────── */
+  .sidebar {
+    width: 224px; flex-shrink: 0;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+    padding: 14px 0 0;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .sidebar-logo-area {
+    padding: 0 16px 14px;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 8px;
+  }
+  .sidebar-logo-area .version { font-size: 9px; color: var(--text-dim); margin-top: 2px; }
+
+  .nav-group { padding: 0 8px; margin-bottom: 4px; }
+  .nav-group-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.4px;
+    text-transform: uppercase; color: var(--text-dim);
+    padding: 8px 8px 4px;
+  }
+  .nav-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 7px;
+    font-size: 12.5px; font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all 0.14s;
+    text-decoration: none;
+  }
+  .nav-link:hover { background: #0A1A1066; color: var(--text-secondary); }
+  .nav-link.active {
+    background: linear-gradient(90deg, #00C65A14, transparent);
+    color: #ffffff;
+    border-left-color: var(--green);
+    font-weight: 600;
+  }
+  .nav-link .icon { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto; font-size: 8px; font-weight: 700;
+    padding: 2px 5px; border-radius: 10px;
+    background: var(--orange-dim); color: var(--orange); border: 1px solid var(--orange)44;
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .footer-link {
+    font-size: 11px; color: var(--text-dim); padding: 5px 0;
+    cursor: pointer; display: flex; align-items: center; gap: 7px;
+  }
+  .footer-link:hover { color: var(--text-muted); }
+
+  /* ─── MAIN ───────────────────────────────────── */
+  .main { flex: 1; overflow-y: auto; padding: 22px 26px; display: flex; flex-direction: column; gap: 18px; }
+  .main::-webkit-scrollbar { width: 6px; }
+  .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* ─── PAGE HEADER ────────────────────────────── */
+  .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .page-header-left {}
+  .breadcrumb { font-size: 11px; color: var(--text-dim); margin-bottom: 5px; }
+  .breadcrumb .crumb-active { color: var(--green); font-weight: 600; }
+  .page-title {
+    font-size: 24px; font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+  }
+  .page-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ─── FILTER BAR ─────────────────────────────── */
+  .filter-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 14px;
+    flex-wrap: wrap;
+  }
+  .filter-section { display: flex; align-items: center; gap: 6px; }
+  .filter-sep { width: 1px; height: 18px; background: var(--border); }
+  .filter-label { font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    background: transparent;
+  }
+  .chip:hover { border-color: var(--green-mid); color: var(--text-secondary); }
+  .chip.on { background: var(--green-dim); border-color: var(--green-mid); color: var(--green); font-weight: 600; }
+  .chip.on.blue { background: var(--blue-dim); border-color: #1A8FE344; color: var(--blue); }
+  .chip.on.orange { background: var(--orange-dim); border-color: #FF6B1A44; color: var(--orange); }
+  .chip.on.lime { background: var(--lime-dim); border-color: #A8D96B44; color: #a8d96b; }
+  .chip .x { font-size: 10px; opacity: 0.6; margin-left: 2px; }
+
+  .select-styled {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-secondary); border-radius: 7px;
+    padding: 5px 10px; font-size: 11px; cursor: pointer;
+    font-family: inherit; outline: none;
+    -webkit-appearance: none;
+    padding-right: 22px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a6656'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+  }
+  .select-styled:hover { border-color: var(--green-mid); }
+  .select-styled option { background: #0A1A10; color: #f1f5f9; }
+
+  /* ─── KPI GRID ───────────────────────────────── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    position: relative; overflow: hidden;
+    cursor: pointer; transition: all 0.18s;
+  }
+  .kpi-card:hover { border-color: var(--green-mid); background: var(--bg-card-hover); transform: translateY(-1px); }
+  .kpi-card.blue:hover { border-color: #1A8FE344; }
+  .kpi-card.orange:hover { border-color: #FF6B1A44; }
+  .kpi-card.lime:hover { border-color: #A8D96B44; }
+  .kpi-glow {
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--green);
+  }
+  .kpi-card.blue .kpi-glow { background: var(--blue); }
+  .kpi-card.orange .kpi-glow { background: var(--orange); }
+  .kpi-card.lime .kpi-glow { background: var(--lime); }
+  .kpi-bg-glow {
+    position: absolute; top: -30px; right: -30px;
+    width: 80px; height: 80px; border-radius: 50%;
+    background: var(--green); opacity: 0.04; pointer-events: none;
+  }
+  .kpi-card.blue .kpi-bg-glow { background: var(--blue); }
+  .kpi-card.orange .kpi-bg-glow { background: var(--orange); }
+  .kpi-card.lime .kpi-bg-glow { background: var(--lime); }
+  .kpi-icon-badge {
+    position: absolute; top: 14px; right: 14px;
+    font-size: 18px; opacity: 0.2;
+  }
+  .kpi-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 8px;
+  }
+  .kpi-val {
+    font-size: 28px; font-weight: 800; color: #ffffff;
+    letter-spacing: -1px; line-height: 1;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 8px;
+  }
+  .kpi-delta {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600; padding: 2px 7px;
+    border-radius: 20px;
+  }
+  .kpi-delta.pos { background: #00C65A18; color: var(--green); }
+  .kpi-delta.neg { background: #FF6B1A18; color: var(--orange); }
+  .kpi-delta.neu { background: #1A8FE318; color: var(--blue); }
+  .kpi-sparkline { margin-top: 10px; }
+
+  /* ─── CHART GRID ─────────────────────────────── */
+  .chart-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 14px; }
+  .chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .chart-title { font-size: 14px; font-weight: 700; color: #ffffff; }
+  .chart-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .tab-row { display: flex; gap: 4px; }
+  .tab-btn {
+    font-size: 11px; padding: 4px 10px; border-radius: 6px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--text-muted); cursor: pointer; font-family: inherit;
+    transition: all 0.14s;
+  }
+  .tab-btn:hover { color: var(--text-secondary); }
+  .tab-btn.active { background: var(--green-dim); border-color: var(--green-mid); color: var(--green); font-weight: 600; }
+
+  /* ─── HOLDINGS TABLE ─────────────────────────── */
+  .holdings-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .holdings-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .holding-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer; transition: all 0.14s;
+  }
+  .holding-row:hover { background: #0A1A1066; border-color: var(--border); }
+  .holding-row.selected { background: var(--green-dim); border-color: var(--green-mid); }
+  .holding-rank { font-size: 11px; font-weight: 700; color: var(--text-dim); width: 18px; text-align: center; }
+  .holding-name { font-size: 13px; font-weight: 600; color: #ffffff; flex: 1; }
+  .holding-val { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; width: 48px; text-align: right; }
+  .holding-bar-wrap { width: 100px; }
+  .holding-bar-bg { height: 5px; background: var(--border); border-radius: 3px; }
+  .holding-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+  .holding-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 10px; }
+  .holding-badge.ok { background: var(--green-dim); color: var(--green); }
+  .holding-badge.warn { background: var(--orange-dim); color: var(--orange); }
+
+  /* ─── NOTIFICATION ───────────────────────────── */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--bg-panel); border: 1px solid var(--green-mid);
+    color: var(--text-primary); padding: 10px 16px; border-radius: 10px;
+    font-size: 12px; box-shadow: 0 4px 20px #000a; z-index: 999;
+    transform: translateY(60px); opacity: 0;
+    transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast .t-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+  /* ─── TOOLTIP ────────────────────────────────── */
+  [data-tip] { position: relative; }
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: #1a2f1e; border: 1px solid var(--border);
+    color: var(--text-secondary); font-size: 10px; padding: 4px 8px; border-radius: 5px;
+    white-space: nowrap; pointer-events: none; z-index: 50;
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── TOPBAR ─── -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark">⚡</div>
+    Análise REN 1000
+  </div>
+  <div class="top-sep"></div>
+  <div class="top-ctx">ANEEL · <strong>Resolução Normativa nº 1.000/2021</strong></div>
+  <div class="topbar-right">
+    <div class="pill green"><span class="dot"></span> Dados atualizados · 2023</div>
+    <div class="pill ghost" onclick="showToast('Exportando relatório...')">↗ Exportar</div>
+    <div class="pill ghost" onclick="showToast('Abrindo relatório PDF...')">📄 Relatório</div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- ─── SIDEBAR ─── -->
+  <div class="sidebar">
+    <div class="nav-group">
+      <div class="nav-group-label">Análises</div>
+      <div class="nav-link active" onclick="setPage(this, 'Visão Geral')">
+        <span class="icon">📊</span> Visão Geral
+      </div>
+      <div class="nav-link" onclick="setPage(this, 'Séries Temporais')">
+        <span class="icon">📈</span> Séries Temporais
+      </div>
+      <div class="nav-link" onclick="setPage(this, 'Mapa Interativo')">
+        <span class="icon">🗺</span> Mapa Interativo
+      </div>
+      <div class="nav-link" onclick="setPage(this, 'Ranking')">
+        <span class="icon">🏆</span> Ranking
+        <span class="nav-badge">NOVO</span>
+      </div>
+      <div class="nav-link" onclick="setPage(this, 'Evolução')">
+        <span class="icon">🔥</span> Evolução
+      </div>
+      <div class="nav-link" onclick="setPage(this, 'Benchmark')">
+        <span class="icon">⚖️</span> Benchmark
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Ferramentas</div>
+      <div class="nav-link" onclick="setPage(this, 'Chat IA')">
+        <span class="icon">🤖</span> Chat IA
+      </div>
+      <div class="nav-link" onclick="setPage(this, 'Relatório PDF')">
+        <span class="icon">📋</span> Relatório PDF
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="footer-link">⚙ Configurações</div>
+      <div class="footer-link">? Sobre o projeto</div>
+    </div>
+  </div>
+
+  <!-- ─── MAIN ─── -->
+  <div class="main">
+
+    <!-- PAGE HEADER -->
+    <div>
+      <div class="breadcrumb">Dashboard / <span class="crumb-active" id="breadcrumb-active">Visão Geral</span></div>
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-title" id="page-title">Visão Geral — REN 1.000/2021</div>
+          <div class="page-subtitle">Eficácia regulatória · transgressões de prazo, compensações e serviços por distribuidora</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="filter-section">
+        <div class="filter-label">Período</div>
+        <select class="select-styled" id="sel-period" onchange="showToast('Período alterado para ' + this.value)">
+          <option>2023</option>
+          <option>2022</option>
+          <option>2021</option>
+          <option>2014–2023</option>
+        </select>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-section">
+        <div class="filter-label">Base</div>
+        <select class="select-styled" id="sel-base" onchange="showToast('Base: ' + this.value)">
+          <option>REN 1000/2021</option>
+          <option>REN 414/2010</option>
+          <option>Comparação</option>
+        </select>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-section" style="flex-wrap:wrap; gap:5px;">
+        <div class="filter-label">Grupos Econômicos</div>
+        <div class="chip on" onclick="toggleChip(this)" data-tip="Neoenergia: 5 distribuidoras">Neoenergia <span class="x">×</span></div>
+        <div class="chip" onclick="toggleChip(this)" data-tip="Equatorial: 7 distribuidoras">Equatorial</div>
+        <div class="chip" onclick="toggleChip(this)" data-tip="Energisa: 9 distribuidoras">Energisa</div>
+        <div class="chip" onclick="toggleChip(this)" data-tip="CEMIG: 1 distribuidora">CEMIG</div>
+        <div class="chip" onclick="toggleChip(this)" data-tip="CPFL: 5 distribuidoras">CPFL</div>
+        <div class="chip" onclick="toggleChip(this)" data-tip="EDP: 2 distribuidoras">EDP</div>
+        <div class="chip" onclick="toggleChip(this)">+ Todos</div>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-section">
+        <div class="filter-label">Porte</div>
+        <div class="chip on blue" onclick="toggleChip(this)">Grande</div>
+        <div class="chip" onclick="toggleChip(this)">Médio</div>
+        <div class="chip" onclick="toggleChip(this)">Pequeno</div>
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card" onclick="showToast('Detalhando taxa de transgressão...')" data-tip="Taxa de serviços fora de prazo por 100k UC">
+        <div class="kpi-glow"></div>
+        <div class="kpi-bg-glow"></div>
+        <div class="kpi-icon-badge">📉</div>
+        <div class="kpi-label">Redução · Taxa Transgressão</div>
+        <div class="kpi-val">−34,2%</div>
+        <div class="kpi-delta pos">↓ Melhora vs REN 414</div>
+        <div class="kpi-sparkline">
+          <svg width="100%" height="30" viewBox="0 0 180 30" preserveAspectRatio="none">
+            <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00C65A" stop-opacity="0.2"/><stop offset="100%" stop-color="#00C65A" stop-opacity="0"/></linearGradient></defs>
+            <path d="M0,26 C20,24 40,20 60,18 C80,16 100,14 120,11 C140,8 160,7 180,5 L180,30 L0,30 Z" fill="url(#g1)"/>
+            <path d="M0,26 C20,24 40,20 60,18 C80,16 100,14 120,11 C140,8 160,7 180,5" stroke="#00C65A" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="kpi-card blue" onclick="showToast('Detalhando volume de serviços...')" data-tip="Total de serviços solicitados no período">
+        <div class="kpi-glow"></div>
+        <div class="kpi-bg-glow"></div>
+        <div class="kpi-icon-badge">📦</div>
+        <div class="kpi-label">Volume de Serviços</div>
+        <div class="kpi-val">2,1M</div>
+        <div class="kpi-delta neu">↑ +8,4% vs 2022</div>
+        <div class="kpi-sparkline">
+          <svg width="100%" height="30" viewBox="0 0 180 30" preserveAspectRatio="none">
+            <defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1A8FE3" stop-opacity="0.2"/><stop offset="100%" stop-color="#1A8FE3" stop-opacity="0"/></linearGradient></defs>
+            <path d="M0,22 C30,20 60,16 90,14 C120,12 150,10 180,7 L180,30 L0,30 Z" fill="url(#g2)"/>
+            <path d="M0,22 C30,20 60,16 90,14 C120,12 150,10 180,7" stroke="#1A8FE3" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="kpi-card orange" onclick="showToast('Detalhando compensações...')" data-tip="Total de compensações pagas pelas distribuidoras">
+        <div class="kpi-glow"></div>
+        <div class="kpi-bg-glow"></div>
+        <div class="kpi-icon-badge">💰</div>
+        <div class="kpi-label">Compensações Pagas</div>
+        <div class="kpi-val">R$48M</div>
+        <div class="kpi-delta neg">↑ +12% vs 2022</div>
+        <div class="kpi-sparkline">
+          <svg width="100%" height="30" viewBox="0 0 180 30" preserveAspectRatio="none">
+            <defs><linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF6B1A" stop-opacity="0.2"/><stop offset="100%" stop-color="#FF6B1A" stop-opacity="0"/></linearGradient></defs>
+            <path d="M0,20 C20,22 40,18 60,24 C80,20 100,14 130,16 C150,17 165,13 180,10 L180,30 L0,30 Z" fill="url(#g3)"/>
+            <path d="M0,20 C20,22 40,18 60,24 C80,20 100,14 130,16 C150,17 165,13 180,10" stroke="#FF6B1A" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="kpi-card lime" onclick="showToast('Detalhando distribuidoras conformes...')" data-tip="Distribuidoras abaixo do limite regulatório">
+        <div class="kpi-glow"></div>
+        <div class="kpi-bg-glow"></div>
+        <div class="kpi-icon-badge">🏢</div>
+        <div class="kpi-label">Distribuidoras Conformes</div>
+        <div class="kpi-val">18 / 26</div>
+        <div class="kpi-delta pos">↑ +4 vs 2022</div>
+        <div class="kpi-sparkline">
+          <svg width="100%" height="30" viewBox="0 0 180 30" preserveAspectRatio="none">
+            <defs><linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#A8D96B" stop-opacity="0.2"/><stop offset="100%" stop-color="#A8D96B" stop-opacity="0"/></linearGradient></defs>
+            <path d="M0,28 C40,26 80,22 120,16 C150,11 165,10 180,8 L180,30 L0,30 Z" fill="url(#g4)"/>
+            <path d="M0,28 C40,26 80,22 120,16 C150,11 165,10 180,8" stroke="#A8D96B" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS + TABLE ROW -->
+    <div class="chart-grid">
+      <!-- LINE CHART -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Transgressões / 100k UC por Mês</div>
+            <div class="chart-sub">Comparativo entre regimes regulatórios por holding selecionada</div>
+          </div>
+          <div class="tab-row">
+            <button class="tab-btn active" onclick="setTab(this)">Anual</button>
+            <button class="tab-btn" onclick="setTab(this)">Mensal</button>
+            <button class="tab-btn" onclick="setTab(this)">Acumulado</button>
+          </div>
+        </div>
+        <svg width="100%" height="110" viewBox="0 0 500 110">
+          <!-- Grid -->
+          <line x1="0" y1="20" x2="500" y2="20" stroke="#132A1A" stroke-width="1"/>
+          <line x1="0" y1="50" x2="500" y2="50" stroke="#132A1A" stroke-width="1"/>
+          <line x1="0" y1="80" x2="500" y2="80" stroke="#132A1A" stroke-width="1"/>
+          <!-- Y labels -->
+          <text x="2" y="19" fill="#2d4a36" font-size="8">alto</text>
+          <text x="2" y="49" fill="#2d4a36" font-size="8">med</text>
+          <text x="2" y="79" fill="#2d4a36" font-size="8">bai</text>
+          <!-- REN 414 (dashed blue) -->
+          <path d="M20,88 C60,85 100,82 140,80 C180,78 220,75 260,73 C300,71 340,68 380,66 C420,64 460,62 490,60" stroke="#1A8FE3" stroke-width="1.5" fill="none" stroke-dasharray="6,3" opacity="0.7"/>
+          <!-- REN 1000 area fill -->
+          <defs>
+            <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00C65A" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="#00C65A" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M260,82 C280,78 300,70 330,62 C360,54 400,46 430,40 C450,36 470,32 490,28 L490,95 L260,95 Z" fill="url(#lineGrad)"/>
+          <!-- REN 1000 (solid green) -->
+          <path d="M20,85 C60,82 100,79 140,76 C180,73 220,70 260,82 C280,78 300,70 330,62 C360,54 400,46 430,40 C450,36 470,32 490,28" stroke="#00C65A" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <!-- Marker REN 1000 start -->
+          <line x1="260" y1="10" x2="260" y2="95" stroke="#FF6B1A" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+          <rect x="216" y="10" width="88" height="16" rx="4" fill="#FF6B1A18"/>
+          <text x="260" y="21" fill="#FF6B1A" font-size="8" font-weight="700" text-anchor="middle">▶ REN 1000 entra</text>
+          <!-- Year ticks -->
+          <text x="20" y="108" fill="#2d4a36" font-size="8" text-anchor="middle">2014</text>
+          <text x="100" y="108" fill="#2d4a36" font-size="8" text-anchor="middle">2016</text>
+          <text x="185" y="108" fill="#2d4a36" font-size="8" text-anchor="middle">2018</text>
+          <text x="265" y="108" fill="#2d4a36" font-size="8" text-anchor="middle">2020</text>
+          <text x="370" y="108" fill="#2d4a36" font-size="8" text-anchor="middle">2022</text>
+          <text x="490" y="108" fill="#2d4a36" font-size="8" text-anchor="middle">2023</text>
+          <!-- Dots -->
+          <circle cx="490" cy="28" r="3.5" fill="#00C65A" stroke="#060D0A" stroke-width="1.5"/>
+          <circle cx="490" cy="60" r="3" fill="#1A8FE3" stroke="#060D0A" stroke-width="1.5"/>
+        </svg>
+        <div style="display:flex; gap:14px; margin-top:6px;">
+          <div style="display:flex; align-items:center; gap:5px; font-size:10px; color:var(--text-muted);">
+            <div style="width:20px; height:2px; background:#00C65A; border-radius:1px;"></div> REN 1.000/2021
+          </div>
+          <div style="display:flex; align-items:center; gap:5px; font-size:10px; color:var(--text-muted);">
+            <div style="width:20px; height:2px; background:#1A8FE3; border-radius:1px; background: repeating-linear-gradient(90deg,#1A8FE3 0,#1A8FE3 4px,transparent 4px,transparent 7px);"></div> REN 414/2010
+          </div>
+          <div style="display:flex; align-items:center; gap:5px; font-size:10px; color:var(--text-muted);">
+            <div style="width:12px; height:2px; background:#FF6B1A; border-radius:1px; background:repeating-linear-gradient(90deg,#FF6B1A 0,#FF6B1A 3px,transparent 3px,transparent 6px);"></div> Marco regulatório
+          </div>
+        </div>
+      </div>
+
+      <!-- HOLDINGS TABLE -->
+      <div class="holdings-card">
+        <div class="chart-header" style="margin-bottom:4px;">
+          <div>
+            <div class="chart-title">Rankings por Holding</div>
+            <div class="chart-sub">Clique para filtrar o dashboard</div>
+          </div>
+          <select class="select-styled" onchange="showToast('Métrica: ' + this.value)" style="font-size:10px;">
+            <option>Fora de prazo / 100k UC</option>
+            <option>Compensação R$/UC</option>
+            <option>Variação vs 2021</option>
+          </select>
+        </div>
+        <div class="holdings-grid">
+          <div class="holding-row selected" onclick="toggleHolding(this)">
+            <div class="holding-rank">1</div>
+            <div class="holding-name">Neoenergia</div>
+            <div class="holding-val" style="color:var(--green)">2,4</div>
+            <div class="holding-bar-wrap">
+              <div class="holding-bar-bg"><div class="holding-bar-fill" style="width:24%; background:var(--green);"></div></div>
+            </div>
+            <div class="holding-badge ok">Conforme</div>
+          </div>
+          <div class="holding-row" onclick="toggleHolding(this)">
+            <div class="holding-rank">2</div>
+            <div class="holding-name">Equatorial</div>
+            <div class="holding-val" style="color:var(--lime)">3,8</div>
+            <div class="holding-bar-wrap">
+              <div class="holding-bar-bg"><div class="holding-bar-fill" style="width:38%; background:var(--lime);"></div></div>
+            </div>
+            <div class="holding-badge ok">Conforme</div>
+          </div>
+          <div class="holding-row" onclick="toggleHolding(this)">
+            <div class="holding-rank">3</div>
+            <div class="holding-name">Energisa</div>
+            <div class="holding-val" style="color:var(--blue)">5,1</div>
+            <div class="holding-bar-wrap">
+              <div class="holding-bar-bg"><div class="holding-bar-fill" style="width:51%; background:var(--blue);"></div></div>
+            </div>
+            <div class="holding-badge ok">Conforme</div>
+          </div>
+          <div class="holding-row" onclick="toggleHolding(this)">
+            <div class="holding-rank">4</div>
+            <div class="holding-name">CEMIG</div>
+            <div class="holding-val" style="color:var(--orange)">7,2</div>
+            <div class="holding-bar-wrap">
+              <div class="holding-bar-bg"><div class="holding-bar-fill" style="width:72%; background:var(--orange);"></div></div>
+            </div>
+            <div class="holding-badge warn">Alerta</div>
+          </div>
+          <div class="holding-row" onclick="toggleHolding(this)">
+            <div class="holding-rank">5</div>
+            <div class="holding-name">CPFL</div>
+            <div class="holding-val" style="color:var(--orange)">8,9</div>
+            <div class="holding-bar-wrap">
+              <div class="holding-bar-bg"><div class="holding-bar-fill" style="width:89%; background:var(--orange);"></div></div>
+            </div>
+            <div class="holding-badge warn">Alerta</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="t-dot"></span>
+  <span id="toast-msg">—</span>
+</div>
+
+<script>
+  // Nav
+  function setPage(el, name) {
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('breadcrumb-active').textContent = name;
+    document.getElementById('page-title').textContent = name + ' — REN 1.000/2021';
+    showToast('Navegando para ' + name + '...');
+  }
+
+  // Chips
+  function toggleChip(el) {
+    const wasOn = el.classList.contains('on');
+    el.classList.toggle('on');
+    if (el.querySelector('.x') && wasOn) el.querySelector('.x').remove();
+    else if (!wasOn) {
+      const x = document.createElement('span');
+      x.className = 'x'; x.textContent = '×';
+      el.appendChild(x);
+    }
+    showToast(wasOn ? 'Filtro removido: ' + el.textContent.replace('×','').trim() : 'Filtro aplicado: ' + el.textContent.replace('×','').trim());
+  }
+
+  // Tabs
+  function setTab(el) {
+    el.closest('.tab-row').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    showToast('Visualização: ' + el.textContent);
+  }
+
+  // Holdings
+  function toggleHolding(el) {
+    el.classList.toggle('selected');
+    const name = el.querySelector('.holding-name').textContent;
+    const isOn = el.classList.contains('selected');
+    showToast(isOn ? '✓ Filtrando por ' + name : 'Removido filtro: ' + name);
+  }
+
+  // Toast
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+</script>
+
+</body>
+</html>

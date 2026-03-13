@@ -1,77 +1,112 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard: Benchmark de Distribuidoras</title>
+    <title>Benchmark — REN 1000 Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-<div class="layout-container">
-    <header class="global-header">
-        <div class="header-brand">
-            <span class="header-logo">⚡</span>
-            <div class="header-title-group">
-                <h1 class="header-title">Benchmark de Distribuidoras</h1>
-                <span class="header-subtitle">Volume × compensação por distribuidora, segmentado por porte</span>
-            </div>
-        </div>
-        <nav class="main-nav-links">
-            <a href="index.html">Visão Geral</a>
-            <a href="transgressoes.html">Séries Temporais</a>
-            <a href="mapa.html">Mapa Interativo</a>
-            <a href="ranking.html">Ranking</a>
-            <a href="evolucao.html">Evolução</a>
-            <a href="benchmark.html" class="active">Benchmark</a>
-            <a href="prompt.html">Chat IA</a>
-        </nav>
-        <div class="header-actions">
-            <button class="theme-toggle-btn" id="theme-toggle" title="Alternar Tema">
-                <span class="icon">🌙</span>
-            </button>
-        </div>
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+        <div class="logo"><span class="logo-icon">⚡</span><span>REN 1000 Dashboard</span></div>
+        <div class="top-context">ANEEL · REN 1.000/2021</div>
+        <div class="topbar-right"><span class="pill green">● Benchmark</span></div>
     </header>
 
-    <main class="dashboard-grid">
-        <aside class="sidebar-panel">
-            <section class="control-card glass-panel">
-                <h2 class="card-title">Filtros</h2>
-                <div class="filter-group">
-                    <label>Porte</label>
-                    <div id="porte-checkboxes" style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.25rem">
+    <div class="layout">
+        <nav class="sidebar" id="sidebar">
+            <div class="nav-group">
+                <div class="nav-group-label">Análises</div>
+                <a href="index.html" class="nav-link" data-page="overview"><span class="nav-icon">📊</span> Visão
+                    Geral</a>
+                <a href="transgressoes.html" class="nav-link" data-page="series"><span class="nav-icon">📈</span> Séries
+                    Temporais</a>
+                <a href="mapa.html" class="nav-link" data-page="mapa"><span class="nav-icon">🗺</span> Mapa
+                    Interativo</a>
+                <a href="ranking.html" class="nav-link" data-page="ranking"><span class="nav-icon">🏆</span> Ranking</a>
+                <a href="evolucao.html" class="nav-link" data-page="evolucao"><span class="nav-icon">🔥</span>
+                    Evolução</a>
+                <a href="benchmark.html" class="nav-link" data-page="benchmark"><span class="nav-icon">⚖️</span>
+                    Benchmark</a>
+            </div>
+            <div class="nav-group">
+                <div class="nav-group-label">Ferramentas</div>
+                <a href="prompt.html" class="nav-link" data-page="chat"><span class="nav-icon">🤖</span> Chat IA</a>
+                <a href="relatorio.html" class="nav-link" data-page="report"><span class="nav-icon">📋</span> Relatório
+                    PDF</a>
+            </div>
+            <div class="sidebar-footer">TCC — Análise de Eficácia<br>REN 1000/2021 ANEEL</div>
+        </nav>
+
+        <main class="main">
+
+            <!-- FILTER BAR -->
+            <div class="filter-bar" id="global-filters">
+                <span class="filter-label">Porte</span>
+                <div class="chip-group" id="porte-checkboxes">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- PAGE HEADER -->
+            <div class="page-header">
+                <div class="breadcrumb">Dashboard / <span class="active">Benchmark</span></div>
+                <h1 class="page-title">Benchmark de Distribuidoras</h1>
+                <p class="page-subtitle">Volume × compensação por distribuidora, segmentado por porte</p>
+            </div>
+
+            <!-- CHARTS: 2-column grid -->
+            <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:14px;">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Top 15 Distribuidoras — Volume × Compensação</h2>
+                    </div>
+                    <p style="font-size:11px;color:var(--text-muted);margin-top:-4px;">
+                        Barras: total de serviços fora do prazo · Linha: compensação R$/UC-mês
+                    </p>
+                    <div class="chart-wrapper" style="min-height:500px;">
+                        <canvas id="benchmarkBarChart"></canvas>
                     </div>
                 </div>
-                <div class="filter-group" style="margin-top:1rem">
-                    <label for="regra-select">Período Regulatório</label>
-                    <select id="regra-select" class="custom-select" style="height:auto">
-                        <option value="all">Todos</option>
-                        <option value="REN 1000" selected>REN 1000 (pós-2022)</option>
-                        <option value="REN 414">REN 414 (pré-2022)</option>
-                    </select>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Radar — Top 5 por Volume</h2>
+                    </div>
+                    <p style="font-size:11px;color:var(--text-muted);margin-top:-4px;">
+                        Comparativo normalizado: volume, compensação e eficiência
+                    </p>
+                    <div class="chart-wrapper" style="min-height:500px;">
+                        <canvas id="benchmarkRadarChart"></canvas>
+                    </div>
                 </div>
-            </section>
-            <section class="insight-card glass-panel highlight-border">
-                <h2 class="card-title">Resumo por Porte</h2>
-                <div id="benchmark-summary"></div>
-            </section>
-        </aside>
+            </div>
 
-        <section class="main-panel-split glass-panel">
-            <div class="chart-header">
-                <h2 class="card-title">Bubble Chart: Volume × Compensação por Distribuidora</h2>
-                <p style="font-size:0.8rem; color:var(--text-muted)">Eixo X: Total de serviços fora do prazo · Eixo Y: Compensação média R$/UC-mês · Tamanho: volume relativo</p>
+            <!-- SUMMARY CARDS -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:14px; margin-top:14px;"
+                id="summary-cards"></div>
+
+            <!-- SUMMARY -->
+            <div class="chart-card" style="margin-top:14px;border-top:2px solid var(--green);">
+                <h3 class="chart-title">Resumo por Porte</h3>
+                <div id="benchmark-summary" style="font-size:12px;color:var(--text-secondary);"></div>
             </div>
-            <div class="chart-wrapper">
-                <canvas id="benchmarkChart"></canvas>
-            </div>
-            <div class="summary-cards-grid" id="summary-cards"></div>
-        </section>
-    </main>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="benchmark.js"></script>
+
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="nav.js"></script>
+    <script src="filters.js"></script>
+    <script src="utils.js"></script>
+    <script src="benchmark.js"></script>
 </body>
+
 </html>

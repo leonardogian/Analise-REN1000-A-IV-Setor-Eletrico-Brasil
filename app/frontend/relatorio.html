@@ -14,18 +14,19 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <style>
         :root {
-            /* Map styles.css variables to report variables */
-            --text: var(--text-primary);
-            --text-light: var(--text-secondary);
-            /* --text-muted exists in styles.css, inherited */
-            --bg: var(--bg-primary);
-            /* --bg-card exists in styles.css, inherited */
-            --border: var(--glass-border);
-            --accent: var(--accent-blue);
-            --accent-light: var(--accent-blue-light);
-            --green: var(--accent-green);
-            --red: var(--accent-red);
-            --amber: var(--accent-amber);
+            /* Map styles.css Iberdrola variables to report variables */
+            --text: var(--text-primary, #F0FDF4);
+            --text-light: var(--text-secondary, #94a3b8);
+            --text-muted: var(--text-muted, #4a6656);
+            --bg: var(--bg-primary, #060D0A);
+            --bg-card: var(--bg-card, #0D1F14);
+            --bg-card-hover: #112618;
+            --border: var(--border, #132A1A);
+            --accent: var(--green, #00C65A);
+            --accent-light: #2fc66a;
+            --green: var(--green, #00C65A);
+            --red: #ef4444;
+            --amber: var(--orange, #FF6B1A);
         }
 
         @media print {
@@ -135,30 +136,7 @@
             background: var(--accent-light);
         }
 
-        #theme-toggle-report {
-            position: fixed;
-            top: 16px;
-            right: 240px;
-            z-index: 100;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            color: var(--text);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
-        }
 
-        #theme-toggle-report:hover {
-            transform: scale(1.05);
-            background: var(--bg-card-hover);
-        }
 
         /* Sections */
         h2 {
@@ -353,9 +331,6 @@
                 display: none !important;
             }
 
-            #theme-toggle-report {
-                display: none !important;
-            }
 
             body {
                 padding: 20px;
@@ -383,7 +358,6 @@
 
     <a href="index.html" class="back-btn">← Voltar ao Dashboard</a>
     <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
-    <button id="theme-toggle-report" onclick="toggleTheme()" title="Alternar Tema">🌙</button>
 
     <header class="report-header">
         <h1>⚡ Relatório de Análise — REN 1000/2021</h1>
@@ -521,55 +495,21 @@
             return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         };
 
-        const C = { blue: '#00A443', cyan: '#00843D', green: '#34d399', amber: '#F4A100', rose: '#fb7185' };
-        const PALETTE = ['#00A443', '#00843D', '#34d399', '#F4A100', '#fb7185', '#0ea5e9', '#8b5cf6', '#f97316'];
+        const C = { blue: '#00C65A', cyan: '#00843D', green: '#A8D96B', amber: '#FF6B1A', rose: '#ef4444' };
+        const PALETTE = ['#00C65A', '#1A8FE3', '#FF6B1A', '#A8D96B', '#8b5cf6', '#ec4899', '#4aa8ee', '#ef4444'];
         const reportState = { data: null, charts: [], selectedRegulatoryId: null };
 
-        function getPreferredTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme;
-            return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-        }
-
-        function applyChartTheme(theme) {
-            if (theme === 'light') {
-                Chart.defaults.color = '#475569';
-                Chart.defaults.borderColor = 'rgba(0, 0, 0, 0.05)';
-                Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-                Chart.defaults.plugins.tooltip.titleColor = '#0f172a';
-                Chart.defaults.plugins.tooltip.bodyColor = '#475569';
-                Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 0, 0, 0.1)';
-                return;
-            }
-            Chart.defaults.color = '#8a949e';
-            Chart.defaults.borderColor = 'rgba(0, 164, 67, 0.08)';
-            Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 15, 15, 0.85)';
-            Chart.defaults.plugins.tooltip.titleColor = '#fff';
-            Chart.defaults.plugins.tooltip.bodyColor = '#fff';
-            Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 164, 67, 0.3)';
-        }
-
-        function updateThemeButton(theme) {
-            const btn = document.getElementById('theme-toggle-report');
-            if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
-        }
-
-        function applyReportTheme(theme, { rerender = false } = {}) {
-            document.documentElement.setAttribute('data-theme', theme);
-            updateThemeButton(theme);
-            applyChartTheme(theme);
-            if (rerender && reportState.data) renderReport(reportState.data);
+        function applyChartTheme() {
+            Chart.defaults.color = '#4a6656';
+            Chart.defaults.borderColor = 'rgba(19, 42, 26, 0.6)';
+            Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(10, 26, 16, 0.95)';
+            Chart.defaults.plugins.tooltip.titleColor = '#F0FDF4';
+            Chart.defaults.plugins.tooltip.bodyColor = '#94a3b8';
+            Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 198, 90, 0.3)';
         }
 
         function initReportTheme() {
-            applyReportTheme(getPreferredTheme());
-        }
-
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
-            applyReportTheme(newTheme, { rerender: true });
+            applyChartTheme();
         }
 
         function destroyReportCharts() {
@@ -705,11 +645,16 @@
             const colors = colorMap(distributors);
 
             document.getElementById('report-date').textContent = new Date(data.meta.generated_at).toLocaleString('pt-BR');
-            document.getElementById('r-group-title-main').textContent = regulatory.class_label;
-            document.getElementById('r-group-count').textContent = String(regulatory.distributor_count || 0);
-            document.getElementById('r-group-title-reg').textContent = regulatory.class_label;
-            document.getElementById('r-group-label-reg').textContent = regulatory.class_label.toLowerCase();
-            document.getElementById('r-group-title-diag').textContent = regulatory.class_label;
+            const elMain = document.getElementById('r-group-title-main');
+            if (elMain) elMain.textContent = regulatory.class_label;
+            const elCount = document.getElementById('r-group-count');
+            if (elCount) elCount.textContent = String(regulatory.distributor_count || 0);
+            const elReg = document.getElementById('r-group-title-reg');
+            if (elReg) elReg.textContent = regulatory.class_label;
+            const elRegLabel = document.getElementById('r-group-label-reg');
+            if (elRegLabel) elRegLabel.textContent = regulatory.class_label.toLowerCase();
+            const elDiag = document.getElementById('r-group-title-diag');
+            if (elDiag) elDiag.textContent = regulatory.class_label;
 
             document.getElementById('s-pre-taxa').textContent = fmtPct(kpi.pre_taxa_media);
             document.getElementById('s-pos-taxa').textContent = fmtPct(kpi.pos_taxa_media);
@@ -864,8 +809,7 @@
             renderReport(data);
         }
 
-        window.toggleTheme = toggleTheme;
-        document.addEventListener('DOMContentLoaded', init);
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 

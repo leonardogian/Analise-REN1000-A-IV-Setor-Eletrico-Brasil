@@ -1012,7 +1012,8 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
             })
         insights["heatmap_transgressoes"] = heat_data
 
-    # Scatter Eficiência
+    # Scatter Eficiência — combina fato_mensal (pos_2022) + fato_indicadores (pre_2022)
+    scat_data = []
     if not fato_mensal.empty:
         df = fato_mensal.copy()
         res_scatter = df.groupby(["distributor_label", "periodo_regulatorio"], as_index=False).agg({
@@ -1021,7 +1022,6 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
             "bucket_porte": "first",
             "group_id": "first",
         })
-        scat_data = []
         for _, row in res_scatter.iterrows():
             scat_data.append({
                 "x": int(row["qtd_fora_prazo"]),
@@ -1031,9 +1031,16 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
                 "porte": str(row["bucket_porte"]) if pd.notna(row["bucket_porte"]) else "N/A",
                 "holding": str(row["group_id"]) if pd.notna(row["group_id"]) else "N/A",
             })
-        insights["scatter_eficiencia"] = scat_data
 
-        # Ranking de Grupos Econômicos — métricas agregadas por group_id (ano mais recente)
+    # Nota: dados REN 414 (pre_2022) de fato_indicadores não incluídos no scatter
+    # pois faltam métricas per-UC para o período (uc_ativa_media_mensal é nulo),
+    # tornando os eixos incomparáveis. A comparação pre/pos REN 1000 é feita
+    # via ranking_grupos (variacao_taxa_pct, variacao_comp_pct).
+    insights["scatter_eficiencia"] = scat_data
+
+    # Ranking de Grupos Econômicos — métricas agregadas + variação pre/pos REN 1000
+    if not fato_mensal.empty:
+        df = fato_mensal.copy()
         _KNOWN_LABELS = {
             "neoenergia": "Neoenergia", "cpfl": "CPFL", "equatorial": "Equatorial",
             "energisa": "Energisa", "enel": "Enel", "cemig": "Cemig", "copel": "Copel",
@@ -1053,17 +1060,49 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
         ).reset_index().rename(columns={"bucket_porte": "porte"})
         rk_agg = rk_agg.merge(porte_by_group, on="group_id", how="left")
 
+        # Calcular variação pre/pos REN 1000 via fato_indicadores (dados anuais 2011-2023+)
+        variacao_by_group = {}
+        if not fato_indicadores.empty and "periodo_regulatorio" in fato_indicadores.columns:
+            ind = fato_indicadores.copy()
+            ind_agg = ind.groupby(["group_id", "periodo_regulatorio"], as_index=False).agg(
+                taxa_fora_prazo=("taxa_fora_prazo", "mean"),
+                compensacao_rs_por_uc=("compensacao_rs_por_uc", "mean"),
+                fora_prazo_por_100k_uc=("fora_prazo_por_100k_uc", "mean"),
+            )
+            for gid in ind_agg["group_id"].unique():
+                g_data = ind_agg[ind_agg["group_id"] == gid]
+                pre = g_data[g_data["periodo_regulatorio"] == "pre_2022"]
+                pos = g_data[g_data["periodo_regulatorio"] == "pos_2022"]
+                if pre.empty or pos.empty:
+                    continue
+                pre_taxa = pre["taxa_fora_prazo"].iloc[0]
+                pos_taxa = pos["taxa_fora_prazo"].iloc[0]
+                pre_comp = pre["compensacao_rs_por_uc"].iloc[0]
+                pos_comp = pos["compensacao_rs_por_uc"].iloc[0]
+                pre_fora = pre["fora_prazo_por_100k_uc"].iloc[0]
+                pos_fora = pos["fora_prazo_por_100k_uc"].iloc[0]
+                variacao_by_group[str(gid)] = {
+                    "pre_taxa": _safe(pre_taxa),
+                    "pos_taxa": _safe(pos_taxa),
+                    "variacao_taxa_pct": _safe((pos_taxa - pre_taxa) / pre_taxa * 100) if pre_taxa else None,
+                    "pre_comp_por_uc": _safe(pre_comp),
+                    "pos_comp_por_uc": _safe(pos_comp),
+                    "variacao_comp_pct": _safe((pos_comp - pre_comp) / pre_comp * 100) if pre_comp else None,
+                    "pre_fora_100k": _safe(pre_fora),
+                    "pos_fora_100k": _safe(pos_fora),
+                    "variacao_fora_100k_pct": _safe((pos_fora - pre_fora) / pre_fora * 100) if pre_fora else None,
+                }
+
         ranking_records = []
         for _, row in rk_agg.iterrows():
             gid = str(row["group_id"])
-            # Derive group label: single distributor → use distributor_label prefix; else use known map
             group_rows = df_latest[df_latest["group_id"] == gid]
             dist_labels = group_rows["distributor_label"].dropna().unique()
             if len(dist_labels) == 1:
                 grupo_label = dist_labels[0].split(" — ")[0].strip()
             else:
                 grupo_label = _KNOWN_LABELS.get(gid, gid.replace("_", " ").title())
-            ranking_records.append({
+            record = {
                 "group_id": gid,
                 "grupo": grupo_label,
                 "fora_prazo_por_100k_uc_mes": _safe(row["fora_prazo_por_100k_uc_mes"]),
@@ -1071,7 +1110,11 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
                 "taxa_fora_prazo": _safe(row["taxa_fora_prazo"]),
                 "n_distribuidoras": int(row["n_distribuidoras"]),
                 "porte": str(row["porte"]) if pd.notna(row["porte"]) else "N/A",
-            })
+            }
+            # Merge pre/pos variation if available
+            var = variacao_by_group.get(gid, {})
+            record.update(var)
+            ranking_records.append(record)
         ranking_records.sort(key=lambda r: r.get("fora_prazo_por_100k_uc_mes", 0), reverse=True)
         insights["ranking_grupos"] = ranking_records
         
@@ -1103,12 +1146,18 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
         final_df = pd.concat(dfs, ignore_index=True)
         ts_data = []
         for _, row in final_df.iterrows():
+            # Inferir periodo_regulatorio a partir do ano no date_str
+            try:
+                ano_ts = int(row["date_str"].split("-")[0])
+            except (ValueError, AttributeError):
+                ano_ts = 9999
             ts_data.append({
                 "grupo": row["grupo"],
                 "tipo": row["tipo"],
                 "date": row["date_str"],
                 "fora_prazo_por_100k_uc_mes": _safe(row.get("fora_prazo_por_100k_uc_mes")),
-                "compensacao_rs_por_uc_mes": _safe(row.get("compensacao_rs_por_uc_mes"))
+                "compensacao_rs_por_uc_mes": _safe(row.get("compensacao_rs_por_uc_mes")),
+                "periodo_regulatorio": "pre_2022" if ano_ts <= 2021 else "pos_2022",
             })
         insights["timeseries_tendencia"] = ts_data
 
@@ -1142,6 +1191,40 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
             "services": list(top_services),
             "data": radar_data
         }
+
+    # Headlines — insights textuais pré-calculados para exibição no frontend
+    headlines = {}
+    ranking = insights.get("ranking_grupos", [])
+    groups_with_var = [r for r in ranking if r.get("variacao_taxa_pct") is not None]
+    if groups_with_var:
+        melhoraram = sum(1 for r in groups_with_var if r["variacao_taxa_pct"] < 0)
+        total = len(groups_with_var)
+        headlines["ranking"] = (
+            f"{melhoraram} de {total} grupos reduziram a taxa de transgressão após a REN 1000"
+        )
+        best = min(groups_with_var, key=lambda r: r["variacao_taxa_pct"])
+        worst = max(groups_with_var, key=lambda r: r["variacao_taxa_pct"])
+        headlines["ranking_best"] = (
+            f'{best["grupo"]}: maior melhoria ({best["variacao_taxa_pct"]:+.1f}%)'
+        )
+        headlines["ranking_worst"] = (
+            f'{worst["grupo"]}: maior piora ({worst["variacao_taxa_pct"]:+.1f}%)'
+        )
+
+    scatter = insights.get("scatter_eficiencia", [])
+    ren414_pts = [s for s in scatter if s.get("regra") == "REN 414" and s.get("y") is not None]
+    ren1000_pts = [s for s in scatter if s.get("regra") == "REN 1000" and s.get("y") is not None]
+    if ren414_pts and ren1000_pts:
+        avg_414 = sum(s["y"] for s in ren414_pts) / len(ren414_pts)
+        avg_1000 = sum(s["y"] for s in ren1000_pts) / len(ren1000_pts)
+        if avg_414 > 0:
+            var_pct = (avg_1000 - avg_414) / avg_414 * 100
+            direcao = "caiu" if var_pct < 0 else "subiu"
+            headlines["scatter"] = (
+                f"Compensação média por UC {direcao} {abs(var_pct):.1f}% entre REN 414 e REN 1000"
+            )
+
+    insights["headlines"] = headlines
 
     return insights
 
@@ -1248,7 +1331,10 @@ def main() -> None:
 
     ranking_path = DASHBOARD_DIR / "dashboard_groups_ranking.json"
     with open(ranking_path, "w", encoding="utf-8") as f:
-        json.dump({"data": franquias_insights.get("ranking_grupos", [])}, f, ensure_ascii=False, indent=2)
+        json.dump({
+            "data": franquias_insights.get("ranking_grupos", []),
+            "headlines": franquias_insights.get("headlines", {}),
+        }, f, ensure_ascii=False, indent=2)
     print(f"✅ dashboard_groups_ranking.json → {len(franquias_insights.get('ranking_grupos', []))} grupos")
 
     print("✅ JSONs individuais de franquias_insights exportados com sucesso.")

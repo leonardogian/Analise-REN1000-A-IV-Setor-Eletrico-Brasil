@@ -11,110 +11,45 @@ const dashboardState = {
     showSuppressed: false,
 };
 
-/* ===================== THEME TOGGLE ===================== */
-function getPreferredTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light' || savedTheme === 'dark') {
-        return savedTheme;
-    }
-    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-}
-
+/* ===================== THEME (DARK-ONLY, IBERDROLA) ===================== */
 function initTheme() {
-    applyTheme(getPreferredTheme());
+    // Dark-only: always Iberdrola corporate palette
+    Chart.defaults.color = '#4a6656';
+    Chart.defaults.borderColor = 'rgba(19, 42, 26, 0.6)';
+    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(10, 26, 16, 0.95)';
+    Chart.defaults.plugins.tooltip.titleColor = '#F0FDF4';
+    Chart.defaults.plugins.tooltip.bodyColor = '#94a3b8';
+    Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 198, 90, 0.3)';
 }
 
-function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('theme', newTheme);
-    applyTheme(newTheme, { rerender: true });
-}
+/* fmtNum, fmtPct, fmtMoney, fmtMoneyFull — see utils.js */
 
-function updateThemeIcon(theme) {
-    const btn = document.getElementById('theme-toggle');
-    if (!btn) return;
-    const iconSpan = btn.querySelector('.icon') || btn;
-    iconSpan.textContent = theme === 'dark' ? '🌙' : '☀️';
-}
-
-function updateChartTheme(theme) {
-    if (theme === 'light') {
-        Chart.defaults.color = '#475569';
-        Chart.defaults.borderColor = 'rgba(0, 0, 0, 0.05)';
-        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-        Chart.defaults.plugins.tooltip.titleColor = '#0f172a';
-        Chart.defaults.plugins.tooltip.bodyColor = '#475569';
-        Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 0, 0, 0.1)';
-        return;
-    }
-    Chart.defaults.color = '#8a949e';
-    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.03)';
-    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.85)';
-    Chart.defaults.plugins.tooltip.titleColor = '#fff';
-    Chart.defaults.plugins.tooltip.bodyColor = '#cbd5e1';
-    Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 240, 255, 0.4)';
-}
-
-function applyTheme(theme, { rerender = false } = {}) {
-    document.documentElement.setAttribute('data-theme', theme);
-    updateThemeIcon(theme);
-    updateChartTheme(theme);
-    if (rerender && dashboardState.data) {
-        destroyCharts();
-        renderAll(dashboardState.data);
-    }
-}
-
-window.toggleTheme = toggleTheme;
-
-/* ===================== FORMATTERS (pt-BR) ===================== */
-const fmtNum = (v, d = 0) => {
-    if (v == null || isNaN(v)) return '—';
-    return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
-};
-
-const fmtPct = (v, d = 2) => {
-    if (v == null || isNaN(v)) return '—';
-    return (Number(v) * 100).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%';
-};
-
-const fmtMoney = (v) => {
-    if (v == null || isNaN(v)) return '—';
-    if (Math.abs(v) >= 1e6) return 'R$ ' + (v / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + 'M';
-    if (Math.abs(v) >= 1e3) return 'R$ ' + (v / 1e3).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + 'k';
-    return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
-
-const fmtMoneyFull = (v) => {
-    if (v == null || isNaN(v)) return '—';
-    return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
-
-/* ===================== COLORS ===================== */
+/* ===================== COLORS (IBERDROLA CORPORATE) ===================== */
 const COLORS = {
-    blue: '#00f0ff',
-    blueLight: '#00e5ff',
-    cyan: '#00ffff',
-    green: '#00ff66',
-    amber: '#f59e0b',
-    red: '#ff0055',
-    purple: '#b026ff',
-    rose: '#ff3366',
-    slate: '#64748b',
+    blue: '#1A8FE3',
+    blueLight: '#4aa8ee',
+    cyan: '#1A8FE3',
+    green: '#00C65A',
+    amber: '#FF6B1A',
+    red: '#ef4444',
+    purple: '#8b5cf6',
+    rose: '#ec4899',
+    slate: '#4a6656',
+    lime: '#A8D96B',
+    orange: '#FF6B1A',
 };
 
 const DISTRIBUTOR_PALETTE = [
-    '#00f0ff',
-    '#00ff66',
-    '#ff0055',
+    '#00C65A',
+    '#1A8FE3',
+    '#FF6B1A',
+    '#A8D96B',
+    '#8b5cf6',
+    '#ec4899',
+    '#4aa8ee',
+    '#ef4444',
+    '#14b8a6',
     '#f59e0b',
-    '#b026ff',
-    '#00e5ff',
-    '#ff3366',
-    '#3b82f6',
-    '#10b981',
-    '#f43f5e',
 ];
 
 const CHART_FONT = { family: "'Inter', sans-serif", size: 12, weight: '500' };
@@ -1294,7 +1229,46 @@ async function renderAdvancedAnalytics() {
     }
 }
 
+/* ===================== RENDER ALL ===================== */
+function renderAll(data) {
+    // Activate the first tab
+    const firstTab = document.querySelector('.nav-tab[data-tab]');
+    const firstPanel = firstTab ? document.getElementById(firstTab.dataset.tab) : null;
+    if (firstTab) firstTab.classList.add('active');
+    if (firstPanel) firstPanel.classList.add('active');
 
+    // Tab 1: Overview KPIs & charts
+    renderOverview(data);
+
+    // Group-based context
+    const context = getActiveDimensionContext(data);
+    if (context.selectedGroup) {
+        const groupId = context.selectedGroup.id;
+        const views = data.group_views || {};
+        const view = views[groupId] || { anual: [], tendencia: [], benchmark: [], classe_local: [], longa_resumo: [], mensal: [] };
+        const distributors = getDistributorMeta(view);
+        const colors = makeColorMap(distributors);
+
+        renderBenchmark(view, distributors, colors);
+    }
+
+    // Dimension-level analyses
+    renderDimensionBenchmark(context);
+    renderFeaturedGroupComparison(context);
+    renderGroupInsights(context);
+
+    // Regulatory context
+    const regContext = getActiveRegulatoryContext(data);
+    if (regContext.regulatory) {
+        const view = regContext.view;
+        const distributors = getDistributorMeta(view);
+        const colors = makeColorMap(distributors);
+        renderRegulatory(view, distributors, colors);
+    }
+
+    // Advanced analytics (tab 2)
+    renderAdvancedAnalytics();
+}
 
 /* ===================== MAIN ===================== */
 async function loadData() {

@@ -178,3 +178,22 @@ docker compose up --build
 docker compose -f docker/docker-compose.kestra.yml up -d
 # Requires GEMINI_API_KEY in .env for AI flows
 ```
+
+## AI Tooling para este Projeto
+
+### MCP Relevante
+- **context7** — busca de docs de pandas, FastAPI, Chart.js durante desenvolvimento
+
+### Browser Automation
+- Usar **playwright CLI** via Bash: `npx playwright test` ou `npx playwright codegen`
+- Plugin **playwright** (Claude Code) fornece skills e agentes para automação
+
+### MCPs Fora do Escopo
+- firebase, stripe, linear, gitlab, laravel-boost, asana — não se aplicam ao stack Python/Vanilla JS
+
+### Skills Úteis neste Projeto
+- `/commit` (commit-commands) — commits convencionais em português
+- `feature-dev` — ao adicionar novas páginas/análises ao dashboard
+- `code-review` — antes de merges importantes
+- `claude-md-management` — para manter este CLAUDE.md atualizado
+- `systematic-debugging` (superpowers) — ao debugar pipeline ETL ou frontend
