@@ -103,6 +103,12 @@ backend: preflight-backend
 	@echo "🚀 Backend FastAPI em http://localhost:$(PORT)"
 	$(PYTHON) -m uvicorn app.backend.main:app --host 0.0.0.0 --port $(PORT)
 
+screenshots:  ## Tirar screenshots de todas as páginas (requer: make serve)
+	node scripts/playwright/screenshot-all.js
+
+check-visual:  ## Verificar erros de console e charts em todas as páginas (requer: make serve)
+	node scripts/playwright/check-charts.js
+
 dev-serve: dashboard-full preflight-backend
 	@echo "🚀 Backend FastAPI (reload) em http://localhost:$(PORT)"
 	$(PYTHON) -m uvicorn app.backend.main:app --host 0.0.0.0 --port $(PORT) --reload
