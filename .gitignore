@@ -36,10 +36,10 @@ Thumbs.db
 node_modules/
 
 # ==========================
-# Dashboard (dados gerados)
+# Dashboard (dados gerados — path legado)
 # ==========================
 dashboard/dashboard_data.json
-app/frontend/dashboard_*.json
+# app/frontend/dashboard_*.json  ← LIBERADO para deploy Vercel estático
 
 # ==========================
 # Manter estas pastas no Git (via .gitkeep)
