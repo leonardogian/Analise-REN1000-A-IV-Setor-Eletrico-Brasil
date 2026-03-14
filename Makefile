@@ -11,7 +11,8 @@ ANALYSIS_DIR := data/processed/analysis
 .PHONY: help venv install extract transform update-data analysis report grupos-diagnostico neoenergia-diagnostico \
 	dashboard dashboard-full serve backend dev-serve preflight-backend pipeline \
 	check-artifacts check-artifacts-full validate-contracts validate-contracts-processed \
-	test-fast test-smoke test clean-analysis venv-recreate doctor extract-ibge inspect-tables
+	test-fast test-smoke test clean-analysis venv-recreate doctor extract-ibge inspect-tables \
+	docker-up docker-down docker-build docker-ps logs logs-backend logs-nginx health
 
 help:
 	@echo "Targets disponíveis:"
@@ -41,6 +42,16 @@ help:
 	@echo "  make test-smoke      - smoke completo com grupos + dashboard"
 	@echo "  make test            - alias para test-fast"
 	@echo "  make clean-analysis  - remove saídas em data/processed/analysis"
+	@echo ""
+	@echo "Docker:"
+	@echo "  make docker-up       - sobe nginx + backend em background (requer make dashboard-full)"
+	@echo "  make docker-down     - para e remove os containers"
+	@echo "  make docker-build    - reconstrói a imagem do backend"
+	@echo "  make docker-ps       - status dos containers"
+	@echo "  make logs            - segue logs de todos os containers"
+	@echo "  make logs-backend    - segue logs do backend FastAPI"
+	@echo "  make logs-nginx      - segue logs do nginx"
+	@echo "  make health          - checa /health e exibe JSON formatado"
 
 venv:
 	python3 -m venv .venv
@@ -141,3 +152,32 @@ test: test-fast
 
 clean-analysis:
 	rm -rf $(ANALYSIS_DIR)
+
+## Docker ──────────────────────────────────────────────────────────────────────
+
+docker-up: ## Inicia os containers em background (rode make dashboard-full antes)
+	@echo "🐳 Subindo nginx + backend em http://localhost:$(PORT)"
+	docker compose -f docker/docker-compose.yml up -d
+
+docker-down: ## Para e remove os containers
+	docker compose -f docker/docker-compose.yml down
+
+docker-build: ## Reconstrói a imagem do backend
+	docker compose -f docker/docker-compose.yml build backend
+
+docker-ps: ## Status dos containers
+	docker compose -f docker/docker-compose.yml ps
+
+## Rastreamento / Logs ─────────────────────────────────────────────────────────
+
+logs: ## Segue os logs de todos os containers (Ctrl+C para sair)
+	docker compose -f docker/docker-compose.yml logs -f
+
+logs-backend: ## Segue apenas os logs do backend FastAPI
+	docker compose -f docker/docker-compose.yml logs -f backend
+
+logs-nginx: ## Segue apenas os logs do nginx
+	docker compose -f docker/docker-compose.yml logs -f nginx
+
+health: ## Verifica o endpoint /health e exibe o status formatado
+	@curl -s http://localhost:$(PORT)/health | $(PYTHON) -m json.tool

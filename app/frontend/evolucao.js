@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const grid = document.createElement('div');
         grid.className = 'heatmap-grid';
-        grid.style.gridTemplateColumns = `160px repeat(${months.length}, minmax(20px, 1fr))`;
+        grid.style.gridTemplateColumns = `140px repeat(${months.length}, 22px)`;
 
         // Header row: corner + month labels
         grid.appendChild(document.createElement('div'));

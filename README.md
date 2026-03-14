@@ -6,7 +6,7 @@
 
 ---
 
-> **🤖 Nota para Agentes de IA:** Sempre inicie analisando commits recentes (`git log -n 5 --stat`), lendo gradualmente arquivos correlatos, e invariavelmente atualizando este `README.md` e o `AGENTS.md` com as últimas melhorias. Veja mais contexto em `.ai/CONTEXT.md`.
+> **🤖 Nota para Agentes de IA:** Sempre inicie analisando commits recentes (`git log -n 5 --stat`), lendo gradualmente arquivos correlatos, e invariavelmente atualizando este `README.md` e o `AGENTS.md` com as últimas melhorias. Para comandos e arquitetura técnica, veja `CLAUDE.md`. Para contexto de IA, veja `.ai/CONTEXT.md`.
 
 ## 📊 Dashboard Interativo
 
@@ -56,9 +56,9 @@ Mapeamento completo das ocorrências de prazo estourado segmentado por Grupos Ec
 ![Visão Principal do Dashboard de Transgressões](docs/images/dashboard_transgressoes_main.png)
 ![Visão de Multas Rurais Filtrada](docs/images/dashboard_transgressoes_filtrado.png)
 
-> 📖 Documentação técnica completa (como alterar gráficos, arquitetura, dependências):
+> 📖 Documentação técnica completa (como alterar gráficos, arquitetura, módulos compartilhados):
 >
-> 👉 [`dashboard/README.md`](dashboard/README.md)
+> 👉 [`app/frontend/README.md`](app/frontend/README.md)
 
 ---
 
@@ -76,12 +76,23 @@ Mapeamento completo das ocorrências de prazo estourado segmentado por Grupos Ec
 │   │   └── transform_aneel.py  ← Limpa e salva em Parquet/CSV
 │   └── analysis/               ← Análises, benchmark e geração de dados
 │
-├── dashboard/            ← Dashboard interativo + relatório imprimível
-│   ├── index.html        ← SPA com 4 abas (Chart.js + dark mode)
-│   ├── app.js            ← Lógica de gráficos e navegação
-│   ├── styles.css        ← Design system (CSS puro)
-│   ├── relatorio.html    ← Relatório otimizado para PDF
-│   └── README.md         ← Documentação técnica do dashboard
+├── app/
+│   ├── frontend/         ← Dashboard SPA (6 páginas + módulos compartilhados)
+│   │   ├── index.html         ← Visão geral (KPIs, tendências, grupos)
+│   │   ├── transgressoes.html ← Séries temporais de transgressão
+│   │   ├── benchmark.html     ← Bubble chart: volume × compensação
+│   │   ├── evolucao.html      ← Heatmap mensal por holding
+│   │   ├── ranking.html       ← Ranking horizontal por métrica
+│   │   ├── mapa.html          ← Mapa geográfico interativo
+│   │   ├── relatorio.html     ← Relatório otimizado para PDF (Ctrl+P)
+│   │   ├── styles.css         ← Design system dark mode (CSS puro)
+│   │   ├── utils.js           ← Formatadores pt-BR (fmtNum, fmtMoney…)
+│   │   ├── nav.js             ← Sidebar, mobile toggle, toast system
+│   │   ├── filters.js         ← Estado global de filtros + evento filters:change
+│   │   ├── app.js             ← Chart.js defaults, constantes compartilhadas
+│   │   └── README.md          ← Documentação técnica do frontend
+│   └── backend/
+│       └── main.py       ← FastAPI: API REST + serving de estáticos
 │
 ├── reports/              ← Relatórios gerados em Markdown
 ├── notebooks/            ← Notebooks de exploração analítica
@@ -271,9 +282,10 @@ Após rodar o pipeline, o projeto gera:
 
 ### Dashboard e Relatório Visual
 
-- `dashboard/index.html` — **dashboard interativo** (Chart.js, 4 abas)
-- `dashboard/relatorio.html` — **relatório imprimível** (Ctrl+P → PDF)
-- `dashboard/dashboard_data.json` — dados JSON (gerado automaticamente)
+- `app/frontend/index.html` — **dashboard interativo** (6 páginas com sidebar, Chart.js)
+- `app/frontend/relatorio.html` — **relatório imprimível** (Ctrl+P → PDF)
+- `app/frontend/dashboard_data.json` — payload principal, ~27 MB (gerado automaticamente)
+- JSONs auxiliares: `dashboard_transgressoes.json`, `dashboard_timeseries.json`, `dashboard_scatter.json`, `dashboard_heatmap.json`, `dashboard_radar.json`, `dashboard_groups_ranking.json`
 
 ### Notebooks de apoio
 
@@ -339,7 +351,7 @@ python3 -m src.analysis.build_dashboard_data
 |---|---|
 | [`docs/GUIA_ANALISE.md`](docs/GUIA_ANALISE.md) | Guia operacional detalhado (métricas, exemplos, checklist) |
 | [`docs/PROXIMOS_PASSOS_TCC.md`](docs/PROXIMOS_PASSOS_TCC.md) | Roadmap de execução até a versão final |
-| [`dashboard/README.md`](dashboard/README.md) | Documentação técnica do dashboard (tecnologias, como alterar, arquitetura) |
+| [`app/frontend/README.md`](app/frontend/README.md) | Documentação técnica do frontend (páginas, módulos compartilhados, JSONs, como alterar) |
 | [`COMO_USAR_GIT.md`](COMO_USAR_GIT.md) | Guia rápido de Git para trabalho em equipe |
 
 ---

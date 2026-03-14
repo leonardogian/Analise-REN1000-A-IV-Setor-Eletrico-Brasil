@@ -1,243 +1,169 @@
-# 📊 Dashboard Interativo — REN 1000/2021
+# 📊 Frontend — Dashboard REN 1000/2021
 
-Painel analítico para visualização dos dados de qualidade comercial das distribuidoras de energia elétrica, com foco na eficácia da Resolução Normativa ANEEL nº 1.000/2021.
+> Para comandos de build, arquitetura geral e constraints, veja [`CLAUDE.md`](../../CLAUDE.md).
+> Para diretrizes operacionais de IA, veja [`AGENTS.md`](../../AGENTS.md).
+
+Painel analítico interativo para visualização dos dados de qualidade comercial das distribuidoras de energia elétrica, com foco na eficácia da Resolução Normativa ANEEL nº 1.000/2021.
 
 ---
 
-## 🖥️ Tecnologias Utilizadas
+## 🖥️ Tecnologias
 
 | Tecnologia | Versão | Uso |
 |---|---|---|
-| **HTML5** | — | Estrutura da SPA e do relatório |
+| **HTML5** | — | Estrutura das páginas |
 | **CSS3** | — | Design system dark mode (Vanilla CSS, sem frameworks) |
 | **JavaScript** (ES2020+) | — | Lógica de navegação, formatação e renderização |
-| **Chart.js** | 4.4.7 | Gráficos interativos (line, bar, radar, doughnut, stacked area) |
-| **Google Fonts** | — | Tipografia Inter (UI) + JetBrains Mono (números) |
-| **Python** | 3.10+ | Geração do arquivo `dashboard_data.json` a partir dos CSVs |
-| **FastAPI** | — | Backend local para API e serving estático em localhost |
+| **Chart.js** | 4.4.7 | Gráficos interativos (line, bar, radar, doughnut, stacked area, bubble) |
+| **Google Fonts** | — | Inter (UI) + JetBrains Mono (números) |
 
-> **Zero dependências de build.** Não há Node.js, npm, bundlers nem transpilers.  
-> Os arquivos são servidos diretamente — basta um servidor HTTP simples.
+> **Zero dependências de build.** Sem Node.js, npm, bundlers nem transpilers.
+> Servido diretamente via `make serve` ou `make backend` — nunca via `file://` (CORS).
 
 ---
 
 ## 📂 Estrutura de Arquivos
 
 ```
-dashboard/
-├── index.html              ← Dashboard interativo (SPA, 4 abas)
-├── styles.css              ← Design system completo (dark mode, glassmorphism)
-├── app.js                  ← Lógica de charts, navegação e formatação pt-BR
-├── relatorio.html          ← Relatório imprimível (otimizado para PDF via Ctrl+P)
-├── dashboard_data.json     ← Dados gerados (NÃO versionado — .gitignore)
-└── README.md               ← Este arquivo
+app/frontend/
+├── index.html              ← Visão Geral (KPIs, tendências, grupos overview)
+├── transgressoes.html      ← Séries temporais de transgressão por distribuidora
+├── benchmark.html          ← Bubble chart: volume de serviços × compensação por porte
+├── evolucao.html           ← Heatmap mensal: transgressões por holding (2023–2025)
+├── ranking.html            ← Ranking horizontal por métrica de grupo
+├── mapa.html               ← Mapa geográfico interativo
+├── relatorio.html          ← Relatório imprimível (Ctrl+P → PDF)
+│
+├── styles.css              ← Design system (variáveis CSS, dark mode, glassmorphism)
+│
+├── utils.js                ← Formatadores pt-BR compartilhados
+├── nav.js                  ← Sidebar, mobile toggle, toast system
+├── filters.js              ← Estado global de filtros + evento filters:change
+├── app.js                  ← Chart.js defaults (tema), constantes compartilhadas
+│
+├── transgressoes.js        ← Lógica da página transgressoes.html
+├── benchmark.js            ← Lógica da página benchmark.html
+├── evolucao.js             ← Lógica da página evolucao.html
+├── ranking.js              ← Lógica da página ranking.html
+├── mapa.js                 ← Lógica da página mapa.html
+│
+├── dashboard_data.json           ← Payload principal ~27 MB (NÃO versionado)
+├── dashboard_transgressoes.json  ← Transgressões por distribuidora/grupo/rural
+├── dashboard_timeseries.json     ← Séries mensais para evolucao.html
+├── dashboard_scatter.json        ← Scatter: volume × compensação para benchmark.html
+├── dashboard_heatmap.json        ← Matriz grupo × dimensão
+├── dashboard_radar.json          ← Perfis multidimensionais de grupo
+├── dashboard_groups_ranking.json ← Ranking top-N de grupos para ranking.html
+│
+└── assets/
+    └── logos/              ← Logos das holdings (neoenergia.png, cpfl.png, etc.)
 ```
 
 ---
 
-## 🚀 Como Subir / Visualizar
+## 🏗️ Arquitetura de Módulos Compartilhados
 
-### Opção 1: `make serve`
+Os módulos são carregados em ordem específica em todas as páginas:
 
-```bash
-# A partir da raiz do projeto
-make serve
+```
+utils.js → nav.js → filters.js → app.js → [page].js
 ```
 
-Isso gera o JSON (se necessário) e inicia um servidor Python em `http://localhost:8051` (ou `PORT` customizada).
+| Módulo | Responsabilidade |
+|--------|-----------------|
+| `utils.js` | Formatadores: `fmtNum`, `fmtMoney`, `fmtMoneyFull`, `fmtPct`, `fmtVar` |
+| `nav.js` | Sidebar active-link, mobile toggle, toast notifications |
+| `filters.js` | Estado global (período, porte, grupo) + evento `filters:change` |
+| `app.js` | Chart.js defaults (tema dark), constantes compartilhadas |
 
-### Opção 1B: `make dev-serve` (recomendado para backend local)
+Cada `[page].js` escuta o evento `filters:change` para reagir a filtros globais sem acoplamento direto.
+
+---
+
+## 📄 Páginas do Dashboard
+
+| Página | Arquivo JS | JSON consumido | O que mostra |
+|--------|------------|----------------|-------------|
+| Visão Geral | `app.js` (inline) | `dashboard_data.json` | KPIs pré/pós REN 1000, séries anuais |
+| Transgressões | `transgressoes.js` | `dashboard_transgressoes.json` | Séries temporais mensais por distribuidora/grupo |
+| Benchmark | `benchmark.js` | `dashboard_scatter.json` | Bubble chart: volume × compensação por porte |
+| Evolução | `evolucao.js` | `dashboard_timeseries.json` | Heatmap mensal de transgressões por holding |
+| Ranking | `ranking.js` | `dashboard_groups_ranking.json` | Barras horizontais: grupos por métrica |
+| Mapa | `mapa.js` | `dashboard_data.json` | Mapa geográfico interativo |
+| Relatório | — | `dashboard_data.json` | Relatório imprimível (Ctrl+P → PDF) |
+
+---
+
+## 🔄 Como Regenerar os JSONs
 
 ```bash
-# A partir da raiz do projeto
+# Todos os JSONs de uma vez (recomendado)
+make dashboard-full
+
+# JSONs individuais
+python3 -m src.analysis.build_dashboard_data      # dashboard_data.json
+python3 -m src.analysis.dashboard_transgressoes   # dashboard_transgressoes.json
+# dashboard_timeseries, scatter, heatmap, radar e groups_ranking são gerados
+# pelos scripts em src/analysis/ — veja CLAUDE.md para o mapeamento completo
+```
+
+---
+
+## 🚀 Como Subir
+
+```bash
+# Opção 1: servidor HTTP simples
+make serve        # http://localhost:8051
+
+# Opção 2: backend FastAPI (API + estáticos)
+make backend      # http://localhost:8051
+
+# Opção 3: full pipeline + backend com --reload
 make dev-serve
-```
 
-Isso executa preflight (artefatos + contratos), sobe backend FastAPI em `http://localhost:8051` e expõe:
-
-- `GET /health`
-- `GET /api/dashboard`
-- `GET /api/dashboard/{section}`
-
-### Recuperação rápida de ambiente (quando não sobe)
-
-```bash
-# raiz do projeto
-make venv-recreate
-make install
-make doctor
-make preflight-backend
-make backend
-```
-
-### Opção 2: Servidor HTTP manual
-
-```bash
-cd dashboard
-python3 -m http.server 8051
-# Abra http://localhost:8051 no navegador
-```
-
-### Opção 4: Docker Compose
-
-```bash
-# Na raiz do projeto
+# Opção 4: Docker Compose
 docker compose up --build
 ```
 
-### Opção 3: Extensão Live Server (VS Code)
-
-1. Instale a extensão **Live Server** no VS Code.
-2. Clique com botão direito em `dashboard/index.html` → **Open with Live Server**.
-
-### ⚠️ Por que não basta abrir o arquivo direto?
-
-Navegadores bloqueiam `fetch()` em protocolo `file://` (política CORS). O dashboard precisa carregar `dashboard_data.json` via HTTP. Por isso é necessário um servidor local.
-
----
-
-## 🔄 Como Atualizar os Dados
-
-O dashboard consome um único arquivo JSON gerado a partir dos CSVs analíticos:
-
-```bash
-# Opção 1: apenas gerar o JSON
-make dashboard
-
-# Opção 2: benchmark Neoenergia (gera tabelas e relatório específicos)
-python3 -m src.analysis.neoenergia_diagnostico
-
-# Opção 3: pipeline completo (ETL → análise → diagnóstico Neoenergia → dashboard)
-make pipeline
-
-# Opção 4: direto pelo Python
-python3 -m src.analysis.build_dashboard_data
-```
-
-O script lê os CSVs de `data/processed/analysis/` e gera `dashboard/dashboard_data.json` (~1.6 MB).
-
-> Nota: os arquivos de `data/processed/analysis/grupos/` também podem ser gerados via SQL em PostgreSQL (DBeaver), usando `sql/grupos_diagnostico_dbeaver.sql`. Instruções: `docs/DBEAVER_SQL_MIGRATION.md`.
-
-### Fluxo de dados
-
-```
-data/raw/*.csv
-    ↓ extract_aneel.py
-data/processed/*.parquet
-    ↓ transform_aneel.py + build_analysis_tables.py
-data/processed/analysis/*.csv
-    ↓ neoenergia_diagnostico.py (subconjunto neoenergia/* + relatório dedicado)
-data/processed/analysis/neoenergia/*.csv + reports/neoenergia_diagnostico.md
-    ↓ build_dashboard_data.py
-dashboard/dashboard_data.json
-    ↓ app.js (fetch)
-Gráficos no navegador
-```
+> **Nunca abrir via `file://`** — CORS bloqueia os `fetch()` dos JSONs.
 
 ---
 
 ## 🎨 Como Alterar o Dashboard
 
-### Adicionar/editar gráficos
+### Adicionar gráfico em página existente
 
-Os gráficos são renderizados em **`app.js`** usando Chart.js. Cada aba tem sua função:
+1. Adicione `<canvas id="meu-chart">` na página HTML desejada.
+2. Na função de renderização do `[page].js`, chame `new Chart('meu-chart', config)`.
+3. Siga o padrão [Chart.js v4](https://www.chartjs.org/docs/latest/).
 
-| Função | Aba | O que renderiza |
-|---|---|---|
-| `renderOverview()` | Visão Geral | KPIs + série anual (taxa e compensação) |
-| `renderNeoenergia()` | Neoenergia | Benchmark 5 distribuidoras + radar + tendência |
-| `renderRegulatory()` | Análise Regulatória | Série mensal (taxa + compensação empilhada) |
-| `renderDiagnostico()` | Diagnóstico | Donuts por classe/local + série longa 2011–2023 |
+### Adicionar nova página
 
-Para adicionar um novo gráfico:
-
-1. Adicione um `<canvas id="meu-chart">` no `index.html` dentro da aba desejada.
-2. Chame `createChart('meu-chart', config)` na função da aba em `app.js`.
-3. A configuração segue o padrão [Chart.js v4](https://www.chartjs.org/docs/latest/).
+1. Crie `nova-pagina.html` e `nova-pagina.js` em `app/frontend/`.
+2. Inclua os módulos compartilhados na ordem: `utils.js → nav.js → filters.js → app.js → nova-pagina.js`.
+3. Adicione o link na sidebar em todos os HTMLs existentes (via `nav.js`).
+4. Atualize `app/backend/main.py` se precisar de novo endpoint de dados.
 
 ### Alterar cores e layout
 
-- **`styles.css`** contém todas as variáveis CSS em `:root` (cores, fontes, espaçamentos).
-- O design usa **CSS custom properties** — basta alterar uma variável para mudar globalmente.
-- Cores das distribuidoras Neoenergia estão em `NEO_COLORS` no `app.js`.
+`styles.css` contém todas as variáveis CSS em `:root` — basta alterar uma variável para mudar globalmente.
 
 ### Alterar dados disponíveis
 
-O script `src/analysis/build_dashboard_data.py` controla quais CSVs são convertidos em JSON.  
-Para adicionar um novo dataset:
-
-1. Crie uma função `build_nome_dataset(df)` no script Python.
-2. Adicione a chave ao dicionário `data` na função `main()`.
-3. Consuma a nova chave em `app.js` dentro da função de renderização.
-
-### Alterar o relatório imprimível
-
-O arquivo `relatorio.html` é independente do dashboard — tem seus próprios estilos inline e scripts Chart.js. Para alterar:
-
-1. Edite seções diretamente no HTML.
-2. A função `init()` no `<script>` do relatório carrega o mesmo `dashboard_data.json`.
-3. Use `@media print` para ajustar estilos de impressão.
-4. `page-break` classes controlam quebras de página no PDF.
-
----
-
-## 📋 Abas do Dashboard
-
-### 1. Visão Geral
-
-- **6 KPI cards** com comparação pré vs pós REN 1000
-- **Gráfico de linha** — taxa fora do prazo (2011–2023)
-- **Gráfico de barras** — compensações financeiras anuais
-- Insights automáticos baseados nos dados
-
-### 2. Neoenergia (Benchmark)
-
-- **Barras agrupadas** — transgressões por 100k UC-mês
-- **Barras agrupadas** — compensação por UC-mês
-- **Radar chart** — benchmark multidimensional
-- **Tabela** — tendência 2023 → 2025
-
-### 3. Análise Regulatória
-
-- **Multi-line chart** — taxa mensal por distribuidora (2023–2025)
-- **Stacked area** — compensação financeira mensal empilhada
-
-### 4. Diagnóstico Detalhado
-
-- **Donut charts** — distribuição por classe/localização (5 distribuidoras)
-- **Barras comparativas** — taxa 2011 vs 2023
-- **Tabela** — série longa com variação percentual
+1. Crie/edite o script Python correspondente em `src/analysis/`.
+2. Adicione a chave ao dicionário `data` na função `main()` do script.
+3. Consuma a nova chave no `[page].js` correspondente.
 
 ---
 
 ## 🖨️ Relatório Imprimível
 
-O arquivo `relatorio.html` é otimizado para impressão/PDF:
+`relatorio.html` é otimizado para impressão/PDF:
 
 ```
 Ctrl + P  →  Salvar como PDF
 ```
 
 - Layout claro em fundo branco com tipografia Inter
-- Botão "Imprimir / Salvar PDF" no canto superior
-- Botão de alternância de tema (sincronizado com o dashboard principal)
-- Quebras de página automáticas entre seções
-- Gráficos Chart.js renderizam no PDF
-
----
-
-## 🧰 Dependências
-
-**Frontend (CDN — sem instalação):**
-
-- `chart.js@4.4.7` — via jsDelivr CDN
-- Google Fonts (Inter, JetBrains Mono)
-
-**Backend (Python — já está no requirements.txt):**
-
-- `pandas` — leitura e manipulação dos CSVs
-- `numpy` — operações numéricas
-- `fastapi` — API local e static serving
-- `uvicorn` — servidor ASGI local
-
-Nenhuma dependência adicional é necessária.
+- Quebras de página automáticas entre seções via classes `page-break`
+- Gráficos Chart.js renderizam corretamente no PDF

@@ -28,7 +28,7 @@ python3 -m src.analysis.build_dashboard_data   # generate dashboard JSON
 python3 -m src.analysis.grupos_diagnostico     # generate group benchmarks (grupos/ CSVs)
 python3 -m src.analysis.dashboard_transgressoes  # generate dashboard_transgressoes.json
 
-# Serving the dashboard
+# Generating dashboard data
 make grupos-diagnostico    # generate data/processed/analysis/grupos/ analytics CSVs
 make neoenergia-diagnostico # generate data/processed/analysis/neoenergia/ CSVs
 make dashboard-full        # analysis + grupos + neoenergia + all dashboard JSONs
@@ -158,11 +158,15 @@ chore: atualizar requirements.txt
 
 ### Context Files for AI Agents
 After making structural changes, update these files to keep AI context current:
-- `README.md` — human documentation
-- `AGENTS.md` — AI directives and current project phase
+- `README.md` — human documentation (directory structure, outputs, workflow)
+- `AGENTS.md` — AI directives, current phase, operational rules
+- `CLAUDE.md` — commands, architecture, constraints (this file)
+- `app/frontend/README.md` — frontend pages, shared modules, JSON data flow
 - `.ai/CONTEXT.md` — AI-focused architecture overview
 - `.ai/PIPELINE.md` — data pipeline details
 - `.ai/CONVENTIONS.md` — coding and commit conventions
+- `.ai/DASHBOARD.md` — dashboard-specific AI context
+- `.ai/DATA_OVERVIEW.md` — data sources, schemas and column reference
 
 ## Testing
 

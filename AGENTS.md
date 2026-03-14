@@ -1,6 +1,6 @@
 # Diretrizes Principais para IA (Contexto e Escopo Atual)
 
-> **⚠️ ATENÇÃO IAs:** Antes de atuar, leiam sempre todos os arquivos na pasta `.ai/` (especialmente `CONTEXT.md` e `CONVENTIONS.md`).
+> **⚠️ ATENÇÃO IAs:** Antes de atuar, leia sempre `CLAUDE.md` (comandos, arquitetura, constraints) e os arquivos em `.ai/` (especialmente `CONTEXT.md` e `CONVENTIONS.md`). Para detalhes do frontend, consulte `app/frontend/README.md`.
 
 ## 🎯 Momento Atual do Projeto
 
@@ -14,7 +14,7 @@ Sempre que iniciar uma nova interação ou tarefa neste repositório, você DEVE
 
 1. **Analise os Commits Recentes:** Execute `git log -n 5 --stat` e `git status` para entender as últimas mudanças.
 2. **Leia os Arquivos Relacionados:** Leia os arquivos recém-modificados e arquivos chaves para o domínio do problema. Faça isso expandindo o contexto lendo os arquivos em blocos/lotes (de certa em certa quantidade) para não se perder.
-3. **Mantenha o Contexto Atualizado:** Ao concluir mudanças, sempre atualize `README.md`, `AGENTS.md` e `.ai/CONTEXT.md` com o status mais recente do código para que todos os seus próximos chats/agentes comecem alinhados.
+3. **Mantenha o Contexto Atualizado:** Ao concluir mudanças, sempre atualize os arquivos de contexto relevantes com o status mais recente — veja a lista canônica em `CLAUDE.md` seção "Context Files for AI Agents". No mínimo: `README.md`, `AGENTS.md`, `CLAUDE.md` e `.ai/CONTEXT.md`. Para mudanças no frontend, atualize também `app/frontend/README.md`.
 
 ## 🛑 Escopo Estrito e Limites de Domínio (MUITO IMPORTANTE)
 

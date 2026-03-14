@@ -199,4 +199,5 @@ def api_timeseries_tendencia() -> dict[str, Any]:
 
 
 
-app.mount("/", StaticFiles(directory=str(DASHBOARD_DIR), html=True), name="dashboard")
+if os.getenv("SERVE_STATIC", "true").lower() != "false":
+    app.mount("/", StaticFiles(directory=str(DASHBOARD_DIR), html=True), name="dashboard")

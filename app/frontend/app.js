@@ -512,7 +512,7 @@ function renderOverview(data) {
                             label: {
                                 display: true,
                                 content: 'REN 1000',
-                                position: 'start',
+                                position: 'top',
                                 backgroundColor: 'rgba(251, 191, 36, 0.2)',
                                 color: '#fbbf24',
                                 font: { size: 11, weight: '600' },

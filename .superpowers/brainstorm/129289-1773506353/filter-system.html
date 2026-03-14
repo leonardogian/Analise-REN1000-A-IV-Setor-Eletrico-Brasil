@@ -1,0 +1,161 @@
+<h2>Sistema de Filtros Cross-Page</h2>
+<p class="subtitle">Como os filtros devem funcionar entre as 6 páginas do dashboard?</p>
+
+<div class="cards">
+  <!-- Option A: Enhanced Current -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#09090b;padding:16px;border-radius:8px;font-family:'Inter',sans-serif;font-size:10px;color:#a1a1aa">
+        <!-- Filter bar mockup -->
+        <div style="background:#111113;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:10px 14px">
+          <!-- Row 1: Dropdowns -->
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <div style="font-size:7px;color:#71717a;text-transform:uppercase;letter-spacing:0.5px">Período</div>
+              <div style="padding:4px 8px;background:#18181b;border:1px solid #27272a;border-radius:4px;font-size:8px;display:flex;align-items:center;gap:4px">
+                <span style="color:#fafafa">Todos</span>
+                <span style="color:#71717a;font-size:6px">▼</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <div style="font-size:7px;color:#71717a;text-transform:uppercase;letter-spacing:0.5px">Base Normativa</div>
+              <div style="padding:4px 8px;background:#18181b;border:1px solid #27272a;border-radius:4px;font-size:8px;display:flex;align-items:center;gap:4px">
+                <span style="color:#fafafa">REN 1000</span>
+                <span style="color:#71717a;font-size:6px">▼</span>
+              </div>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:4px">
+              <div style="padding:3px 6px;background:#18181b;border:1px solid #27272a;border-radius:4px;font-size:7px;color:#71717a;cursor:pointer">Limpar filtros</div>
+            </div>
+          </div>
+          <!-- Row 2: Chips - Holdings -->
+          <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+            <div style="font-size:7px;color:#71717a;min-width:45px">Holdings:</div>
+            <div style="padding:2px 6px;background:#00C65A25;border:1px solid #00C65A;border-radius:10px;font-size:7px;color:#00C65A">Neoenergia ✕</div>
+            <div style="padding:2px 6px;background:#1A8FE325;border:1px solid #1A8FE3;border-radius:10px;font-size:7px;color:#1A8FE3">CPFL ✕</div>
+            <div style="padding:2px 6px;background:#27272a;border:1px solid #3f3f46;border-radius:10px;font-size:7px;color:#71717a">Equatorial</div>
+            <div style="padding:2px 6px;background:#27272a;border:1px solid #3f3f46;border-radius:10px;font-size:7px;color:#71717a">Enel</div>
+            <div style="padding:2px 6px;background:#27272a;border:1px solid #3f3f46;border-radius:10px;font-size:7px;color:#71717a">Energisa</div>
+            <div style="padding:2px 6px;background:#27272a;border:1px solid #3f3f46;border-radius:10px;font-size:7px;color:#71717a">+12</div>
+          </div>
+          <!-- Row 3: Chips - Porte -->
+          <div style="display:flex;gap:4px;align-items:center">
+            <div style="font-size:7px;color:#71717a;min-width:45px">Porte:</div>
+            <div style="padding:2px 6px;background:#8b5cf625;border:1px solid #8b5cf6;border-radius:10px;font-size:7px;color:#8b5cf6">GG ✕</div>
+            <div style="padding:2px 6px;background:#1A8FE325;border:1px solid #1A8FE3;border-radius:10px;font-size:7px;color:#1A8FE3">G ✕</div>
+            <div style="padding:2px 6px;background:#27272a;border:1px solid #3f3f46;border-radius:10px;font-size:7px;color:#71717a">M</div>
+            <div style="padding:2px 6px;background:#27272a;border:1px solid #3f3f46;border-radius:10px;font-size:7px;color:#71717a">P</div>
+          </div>
+        </div>
+        <!-- Active summary -->
+        <div style="margin-top:8px;padding:6px 10px;background:#00C65A08;border:1px solid #00C65A20;border-radius:6px;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:7px;color:#00C65A">4 filtros ativos → 23 distribuidoras de 96</div>
+          <div style="font-size:6px;color:#71717a">Sincronizado em todas as páginas</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Barra de Filtros Aprimorada</h3>
+      <p>Barra sticky no topo com dropdowns + chips coloridos por holding. Indicador de filtros ativos + contagem de distribuidoras visíveis. Botão "limpar filtros". Sync global via sessionStorage.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Collapsible Panel -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#09090b;padding:16px;border-radius:8px;font-family:'Inter',sans-serif;font-size:10px;color:#a1a1aa">
+        <!-- Collapsed state -->
+        <div style="background:#111113;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:8px 14px;margin-bottom:6px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;gap:6px;align-items:center">
+              <div style="font-size:8px;color:#fafafa;font-weight:600">Filtros</div>
+              <!-- Active pills -->
+              <div style="padding:1px 5px;background:#00C65A20;border:1px solid #00C65A40;border-radius:8px;font-size:6px;color:#00C65A">Pós-REN 1000</div>
+              <div style="padding:1px 5px;background:#1A8FE320;border:1px solid #1A8FE340;border-radius:8px;font-size:6px;color:#1A8FE3">2 holdings</div>
+              <div style="padding:1px 5px;background:#8b5cf620;border:1px solid #8b5cf640;border-radius:8px;font-size:6px;color:#8b5cf6">GG + G</div>
+            </div>
+            <div style="font-size:7px;color:#00C65A;cursor:pointer">Expandir ▼</div>
+          </div>
+        </div>
+        <!-- Expanded state -->
+        <div style="background:#111113;border:1px solid #00C65A30;border-radius:8px;padding:12px 14px;box-shadow:0 4px 20px rgba(0,198,90,0.08)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:8px;color:#fafafa;font-weight:600">Filtros Expandidos</div>
+            <div style="font-size:7px;color:#00C65A;cursor:pointer">Recolher ▲</div>
+          </div>
+          <!-- Grid of filter groups -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <!-- Period -->
+            <div style="background:#18181b;border-radius:6px;padding:8px">
+              <div style="font-size:6px;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Período</div>
+              <div style="display:flex;gap:3px">
+                <div style="flex:1;padding:3px;background:#27272a;border-radius:3px;font-size:7px;text-align:center;color:#71717a">Todos</div>
+                <div style="flex:1;padding:3px;background:#1A8FE320;border:1px solid #1A8FE3;border-radius:3px;font-size:7px;text-align:center;color:#1A8FE3">Pré</div>
+                <div style="flex:1;padding:3px;background:#00C65A20;border:1px solid #00C65A;border-radius:3px;font-size:7px;text-align:center;color:#00C65A">Pós</div>
+              </div>
+            </div>
+            <!-- Porte -->
+            <div style="background:#18181b;border-radius:6px;padding:8px">
+              <div style="font-size:6px;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Porte</div>
+              <div style="display:flex;gap:3px">
+                <div style="flex:1;padding:3px;background:#8b5cf620;border:1px solid #8b5cf6;border-radius:3px;font-size:7px;text-align:center;color:#8b5cf6">GG</div>
+                <div style="flex:1;padding:3px;background:#1A8FE320;border:1px solid #1A8FE3;border-radius:3px;font-size:7px;text-align:center;color:#1A8FE3">G</div>
+                <div style="flex:1;padding:3px;background:#27272a;border-radius:3px;font-size:7px;text-align:center;color:#71717a">M</div>
+                <div style="flex:1;padding:3px;background:#27272a;border-radius:3px;font-size:7px;text-align:center;color:#71717a">P</div>
+              </div>
+            </div>
+            <!-- Holdings - spans 2 cols -->
+            <div style="grid-column:1/3;background:#18181b;border-radius:6px;padding:8px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <div style="font-size:6px;color:#71717a;text-transform:uppercase;letter-spacing:0.5px">Holdings</div>
+                <div style="font-size:6px;color:#00C65A;cursor:pointer">Selecionar todas</div>
+              </div>
+              <div style="display:flex;gap:3px;flex-wrap:wrap">
+                <div style="padding:2px 6px;background:#00C65A25;border:1px solid #00C65A;border-radius:8px;font-size:6px;color:#00C65A">⚡ Neoenergia</div>
+                <div style="padding:2px 6px;background:#1A8FE325;border:1px solid #1A8FE3;border-radius:8px;font-size:6px;color:#1A8FE3">🌿 CPFL</div>
+                <div style="padding:2px 6px;background:#27272a;border:1px solid #3f3f46;border-radius:8px;font-size:6px;color:#71717a">Equatorial</div>
+                <div style="padding:2px 6px;background:#27272a;border:1px solid #3f3f46;border-radius:8px;font-size:6px;color:#71717a">Enel</div>
+                <div style="padding:2px 6px;background:#27272a;border:1px solid #3f3f46;border-radius:8px;font-size:6px;color:#71717a">Energisa</div>
+                <div style="padding:2px 6px;background:#27272a;border:1px solid #3f3f46;border-radius:8px;font-size:6px;color:#71717a">Light</div>
+                <div style="padding:2px 6px;background:#27272a;border:1px solid #3f3f46;border-radius:8px;font-size:6px;color:#71717a">Cemig</div>
+                <div style="padding:2px 6px;background:#27272a;border:1px solid #3f3f46;border-radius:8px;font-size:6px;color:#71717a">+10</div>
+              </div>
+            </div>
+          </div>
+          <!-- Apply button -->
+          <div style="margin-top:8px;display:flex;justify-content:flex-end;gap:6px">
+            <div style="padding:4px 10px;background:#27272a;border-radius:4px;font-size:7px;color:#71717a;cursor:pointer">Limpar</div>
+            <div style="padding:4px 10px;background:#00C65A;border-radius:4px;font-size:7px;color:#09090b;font-weight:600;cursor:pointer">Aplicar (23 distribuidoras)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Painel Colapsável</h3>
+      <p>Recolhido mostra pills dos filtros ativos (1 linha). Expandido revela grid organizado por categoria com "Selecionar todas" + botão "Aplicar". Não ocupa espaço quando fechado.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>Funcionalidades Cross-Page</h3>
+  <p class="subtitle">Independente do layout visual, estes comportamentos melhoram a análise:</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+    <div style="padding:12px;background:var(--bg-card,#1a1a2e);border-radius:8px;border-left:3px solid #00C65A">
+      <strong>Sync Global</strong>
+      <p style="font-size:13px;margin-top:4px">Filtros persistem via sessionStorage ao navegar entre páginas. Cada página reage ao evento <code>filters:change</code>.</p>
+    </div>
+    <div style="padding:12px;background:var(--bg-card,#1a1a2e);border-radius:8px;border-left:3px solid #1A8FE3">
+      <strong>Contagem de Resultados</strong>
+      <p style="font-size:13px;margin-top:4px">Badge mostrando "23 de 96 distribuidoras" para feedback imediato do impacto dos filtros.</p>
+    </div>
+    <div style="padding:12px;background:var(--bg-card,#1a1a2e);border-radius:8px;border-left:3px solid #FF6B1A">
+      <strong>Deeplink / URL Params</strong>
+      <p style="font-size:13px;margin-top:4px">Salvar filtros na URL (<code>?grupos=neo,cpfl&porte=GG</code>) para compartilhar análises específicas.</p>
+    </div>
+    <div style="padding:12px;background:var(--bg-card,#1a1a2e);border-radius:8px;border-left:3px solid #8b5cf6">
+      <strong>Presets Rápidos</strong>
+      <p style="font-size:13px;margin-top:4px">Atalhos: "Só Neoenergia", "Top 5 holdings", "Distribuidoras GG" — 1 clique aplica um conjunto de filtros.</p>
+    </div>
+  </div>
+</div>

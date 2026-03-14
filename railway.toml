@@ -1,0 +1,9 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "docker/Dockerfile.backend"
+
+[deploy]
+startCommand = "bash docker/railway-start.sh"
+healthcheckPath = "/health"
+healthcheckTimeout = 60
+restartPolicyType = "on_failure"

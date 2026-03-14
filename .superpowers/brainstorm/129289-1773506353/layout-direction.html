@@ -1,0 +1,295 @@
+<h2>Direção de Layout do Dashboard</h2>
+<p class="subtitle">Qual abordagem visual se encaixa melhor para analisar dados regulatórios da ANEEL?</p>
+
+<div class="cards">
+  <!-- Option A: Current Enhanced -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#09090b;padding:12px;border-radius:8px;font-family:monospace;font-size:10px;color:#a1a1aa;line-height:1.6">
+        <div style="display:flex;gap:4px;height:220px">
+          <!-- Sidebar -->
+          <div style="width:50px;background:#111113;border-radius:4px;padding:6px">
+            <div style="width:100%;height:6px;background:#00C65A;border-radius:2px;margin-bottom:6px"></div>
+            <div style="width:100%;height:4px;background:#27272a;border-radius:2px;margin-bottom:4px"></div>
+            <div style="width:100%;height:4px;background:#27272a;border-radius:2px;margin-bottom:4px"></div>
+            <div style="width:100%;height:4px;background:#27272a;border-radius:2px;margin-bottom:4px"></div>
+            <div style="width:100%;height:4px;background:#27272a;border-radius:2px;margin-bottom:4px"></div>
+            <div style="width:100%;height:4px;background:#27272a;border-radius:2px;margin-bottom:4px"></div>
+          </div>
+          <!-- Main -->
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+            <!-- Filter bar -->
+            <div style="height:20px;background:#111113;border-radius:4px;display:flex;align-items:center;padding:0 6px;gap:4px">
+              <div style="width:40px;height:10px;background:#18181b;border:1px solid #27272a;border-radius:3px"></div>
+              <div style="width:40px;height:10px;background:#18181b;border:1px solid #27272a;border-radius:3px"></div>
+              <div style="display:flex;gap:2px;margin-left:auto">
+                <div style="width:16px;height:10px;background:#00C65A40;border:1px solid #00C65A;border-radius:3px"></div>
+                <div style="width:16px;height:10px;background:#27272a;border-radius:3px"></div>
+                <div style="width:16px;height:10px;background:#27272a;border-radius:3px"></div>
+              </div>
+            </div>
+            <!-- KPIs row -->
+            <div style="display:flex;gap:3px">
+              <div style="flex:1;height:32px;background:#18181b;border-radius:4px;border-top:2px solid #1A8FE3;padding:3px;display:flex;flex-direction:column;justify-content:space-between">
+                <div style="width:60%;height:3px;background:#27272a;border-radius:1px"></div>
+                <div style="width:40%;height:6px;background:#fafafa20;border-radius:1px"></div>
+              </div>
+              <div style="flex:1;height:32px;background:#18181b;border-radius:4px;border-top:2px solid #FF6B1A;padding:3px;display:flex;flex-direction:column;justify-content:space-between">
+                <div style="width:60%;height:3px;background:#27272a;border-radius:1px"></div>
+                <div style="width:40%;height:6px;background:#fafafa20;border-radius:1px"></div>
+              </div>
+              <div style="flex:1;height:32px;background:#18181b;border-radius:4px;border-top:2px solid #00C65A;padding:3px;display:flex;flex-direction:column;justify-content:space-between">
+                <div style="width:60%;height:3px;background:#27272a;border-radius:1px"></div>
+                <div style="width:40%;height:6px;background:#fafafa20;border-radius:1px"></div>
+              </div>
+              <div style="flex:1;height:32px;background:#18181b;border-radius:4px;border-top:2px solid #8b5cf6;padding:3px;display:flex;flex-direction:column;justify-content:space-between">
+                <div style="width:60%;height:3px;background:#27272a;border-radius:1px"></div>
+                <div style="width:40%;height:6px;background:#fafafa20;border-radius:1px"></div>
+              </div>
+            </div>
+            <!-- Charts grid 2 col -->
+            <div style="flex:1;display:flex;gap:3px">
+              <div style="flex:1;background:#18181b;border-radius:4px;padding:4px">
+                <div style="width:50%;height:3px;background:#27272a;border-radius:1px;margin-bottom:4px"></div>
+                <div style="height:calc(100% - 10px);display:flex;align-items:flex-end;gap:2px;padding-top:4px">
+                  <div style="flex:1;height:40%;background:#1A8FE340;border-radius:1px"></div>
+                  <div style="flex:1;height:65%;background:#1A8FE360;border-radius:1px"></div>
+                  <div style="flex:1;height:80%;background:#1A8FE3;border-radius:1px"></div>
+                  <div style="flex:1;height:55%;background:#1A8FE360;border-radius:1px"></div>
+                  <div style="flex:1;height:90%;background:#00C65A;border-radius:1px"></div>
+                </div>
+              </div>
+              <div style="flex:1;background:#18181b;border-radius:4px;padding:4px">
+                <div style="width:50%;height:3px;background:#27272a;border-radius:1px;margin-bottom:4px"></div>
+                <div style="height:calc(100% - 10px);position:relative;padding-top:4px">
+                  <svg viewBox="0 0 100 60" style="width:100%;height:100%">
+                    <polyline points="5,50 20,45 35,30 50,35 65,20 80,25 95,10" fill="none" stroke="#00C65A" stroke-width="2"/>
+                    <polyline points="5,40 20,42 35,38 50,30 65,28 80,15 95,18" fill="none" stroke="#1A8FE3" stroke-width="2" stroke-dasharray="3"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Polish do Layout Atual</h3>
+      <p>Manter sidebar fixa + área principal. Melhorar espaçamento, agrupar KPIs pré/pós, refinar filtros, zebra em tabelas. Mudanças incrementais, menos risco.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Dense Analytical -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#09090b;padding:12px;border-radius:8px;font-family:monospace;font-size:10px;color:#a1a1aa;line-height:1.6">
+        <div style="display:flex;gap:4px;height:220px">
+          <!-- Narrow icon sidebar -->
+          <div style="width:28px;background:#111113;border-radius:4px;padding:4px;display:flex;flex-direction:column;align-items:center;gap:6px">
+            <div style="width:16px;height:16px;background:#00C65A30;border:1px solid #00C65A;border-radius:4px"></div>
+            <div style="width:12px;height:12px;background:#27272a;border-radius:3px"></div>
+            <div style="width:12px;height:12px;background:#27272a;border-radius:3px"></div>
+            <div style="width:12px;height:12px;background:#27272a;border-radius:3px"></div>
+            <div style="width:12px;height:12px;background:#27272a;border-radius:3px"></div>
+          </div>
+          <!-- Main dense -->
+          <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+            <!-- Sticky filter + context bar -->
+            <div style="display:flex;gap:3px">
+              <div style="flex:1;height:18px;background:#111113;border-radius:3px;display:flex;align-items:center;padding:0 4px;gap:3px">
+                <div style="width:30px;height:8px;background:#18181b;border:1px solid #27272a;border-radius:2px;font-size:6px;text-align:center">Período</div>
+                <div style="width:30px;height:8px;background:#18181b;border:1px solid #27272a;border-radius:2px"></div>
+                <div style="display:flex;gap:1px;margin-left:auto">
+                  <div style="width:12px;height:8px;background:#00C65A40;border:1px solid #00C65A;border-radius:2px;font-size:5px;text-align:center;color:#00C65A">Neo</div>
+                  <div style="width:12px;height:8px;background:#1A8FE340;border:1px solid #1A8FE3;border-radius:2px;font-size:5px;text-align:center;color:#1A8FE3">CPF</div>
+                  <div style="width:12px;height:8px;background:#27272a;border-radius:2px"></div>
+                </div>
+              </div>
+              <!-- Active filter summary -->
+              <div style="width:60px;height:18px;background:#00C65A15;border:1px solid #00C65A30;border-radius:3px;display:flex;align-items:center;justify-content:center;gap:2px">
+                <div style="font-size:6px;color:#00C65A">3 filtros ativos</div>
+              </div>
+            </div>
+            <!-- KPI paired cards (pre vs post) -->
+            <div style="display:flex;gap:3px">
+              <!-- Pre group -->
+              <div style="flex:1;background:#18181b;border-radius:4px;padding:4px;border-left:2px solid #1A8FE3">
+                <div style="font-size:5px;color:#1A8FE3;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.5px">Pré-REN 1000</div>
+                <div style="display:flex;gap:2px">
+                  <div style="flex:1">
+                    <div style="font-size:5px;color:#71717a">Transgressões</div>
+                    <div style="font-size:8px;color:#fafafa;font-weight:bold">847k</div>
+                  </div>
+                  <div style="flex:1">
+                    <div style="font-size:5px;color:#71717a">Compensação</div>
+                    <div style="font-size:8px;color:#fafafa;font-weight:bold">R$2.1B</div>
+                  </div>
+                </div>
+              </div>
+              <!-- Post group -->
+              <div style="flex:1;background:#18181b;border-radius:4px;padding:4px;border-left:2px solid #00C65A">
+                <div style="font-size:5px;color:#00C65A;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.5px">Pós-REN 1000</div>
+                <div style="display:flex;gap:2px">
+                  <div style="flex:1">
+                    <div style="font-size:5px;color:#71717a">Transgressões</div>
+                    <div style="font-size:8px;color:#fafafa;font-weight:bold">312k</div>
+                    <div style="font-size:5px;color:#00C65A">▼ 63%</div>
+                  </div>
+                  <div style="flex:1">
+                    <div style="font-size:5px;color:#71717a">Compensação</div>
+                    <div style="font-size:8px;color:#fafafa;font-weight:bold">R$890M</div>
+                    <div style="font-size:5px;color:#00C65A">▼ 58%</div>
+                  </div>
+                </div>
+              </div>
+              <!-- Delta highlight -->
+              <div style="width:45px;background:#00C65A10;border:1px solid #00C65A30;border-radius:4px;padding:3px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:5px;color:#71717a;text-transform:uppercase">Variação</div>
+                <div style="font-size:10px;color:#00C65A;font-weight:bold">-63%</div>
+                <div style="font-size:5px;color:#00C65A">melhora</div>
+              </div>
+            </div>
+            <!-- Charts with context panel -->
+            <div style="flex:1;display:flex;gap:3px">
+              <!-- Chart area -->
+              <div style="flex:1.5;background:#18181b;border-radius:4px;padding:4px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                  <div style="width:50%;height:3px;background:#27272a;border-radius:1px"></div>
+                  <div style="display:flex;gap:1px">
+                    <div style="width:8px;height:6px;background:#27272a;border-radius:1px"></div>
+                    <div style="width:8px;height:6px;background:#27272a;border-radius:1px"></div>
+                  </div>
+                </div>
+                <div style="height:calc(100% - 14px);display:flex;align-items:flex-end;gap:1px">
+                  <div style="flex:1;height:40%;background:#1A8FE340;border-radius:1px"></div>
+                  <div style="flex:1;height:55%;background:#1A8FE350;border-radius:1px"></div>
+                  <div style="flex:1;height:70%;background:#1A8FE360;border-radius:1px"></div>
+                  <div style="flex:1;height:85%;background:#1A8FE3;border-radius:1px"></div>
+                  <div style="flex:1;height:45%;background:linear-gradient(#FF6B1A,#FF6B1A60);border-radius:1px;border:1px dashed #FF6B1A40"></div>
+                  <div style="flex:1;height:35%;background:#00C65A60;border-radius:1px"></div>
+                  <div style="flex:1;height:25%;background:#00C65A;border-radius:1px"></div>
+                </div>
+              </div>
+              <!-- Insights sidebar -->
+              <div style="width:55px;display:flex;flex-direction:column;gap:2px">
+                <div style="background:#18181b;border-radius:3px;padding:3px;border-left:2px solid #00C65A;flex:1">
+                  <div style="font-size:5px;color:#00C65A;margin-bottom:1px">Insight</div>
+                  <div style="font-size:4.5px;color:#a1a1aa;line-height:1.3">Queda de 63% nas transgressões após REN 1000</div>
+                </div>
+                <div style="background:#18181b;border-radius:3px;padding:3px;border-left:2px solid #FF6B1A;flex:1">
+                  <div style="font-size:5px;color:#FF6B1A;margin-bottom:1px">Alerta</div>
+                  <div style="font-size:4.5px;color:#a1a1aa;line-height:1.3">2022 pico de transição regulatória</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Dashboard Analítico Denso</h3>
+      <p>Sidebar slim (ícones), KPIs pareados (pré × pós com delta), painel de insights ao lado dos charts, barra de filtros ativos. Máxima densidade de informação para análise.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Storytelling -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#09090b;padding:12px;border-radius:8px;font-family:monospace;font-size:10px;color:#a1a1aa;line-height:1.6">
+        <div style="display:flex;gap:4px;height:220px">
+          <!-- Sidebar with context -->
+          <div style="width:50px;background:#111113;border-radius:4px;padding:5px">
+            <div style="width:100%;height:6px;background:#00C65A;border-radius:2px;margin-bottom:8px"></div>
+            <div style="width:100%;height:4px;background:#27272a;border-radius:2px;margin-bottom:3px"></div>
+            <div style="width:100%;height:4px;background:#00C65A20;border-radius:2px;margin-bottom:3px;border:1px solid #00C65A40"></div>
+            <div style="width:100%;height:4px;background:#27272a;border-radius:2px;margin-bottom:3px"></div>
+            <div style="width:100%;height:4px;background:#27272a;border-radius:2px;margin-bottom:3px"></div>
+            <div style="width:100%;height:4px;background:#27272a;border-radius:2px;margin-bottom:12px"></div>
+            <!-- Mini context -->
+            <div style="border-top:1px solid #27272a;padding-top:5px">
+              <div style="font-size:5px;color:#71717a;text-transform:uppercase;margin-bottom:3px">Contexto</div>
+              <div style="font-size:4.5px;color:#a1a1aa;line-height:1.4">REN 1.000/2021 entrou em vigor em abril 2022</div>
+            </div>
+          </div>
+          <!-- Main storytelling -->
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+            <!-- Hero section -->
+            <div style="background:linear-gradient(135deg,#00C65A08,#1A8FE308);border:1px solid #00C65A20;border-radius:6px;padding:6px;display:flex;align-items:center;gap:6px">
+              <div style="flex:1">
+                <div style="font-size:6px;color:#00C65A;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">Resultado Principal</div>
+                <div style="font-size:9px;color:#fafafa;font-weight:bold;line-height:1.2">Transgressões caíram 63% após a REN 1.000</div>
+                <div style="font-size:5px;color:#a1a1aa;margin-top:2px">Comparando períodos 2019-2021 vs 2023-2025</div>
+              </div>
+              <div style="width:35px;height:35px;background:#00C65A15;border-radius:50%;display:flex;align-items:center;justify-content:center">
+                <div style="font-size:10px;color:#00C65A;font-weight:bold">↓63%</div>
+              </div>
+            </div>
+            <!-- Filters inline -->
+            <div style="display:flex;gap:2px;align-items:center">
+              <div style="font-size:5px;color:#71717a">Filtros:</div>
+              <div style="padding:1px 4px;background:#18181b;border:1px solid #27272a;border-radius:2px;font-size:5px">Todos os períodos</div>
+              <div style="padding:1px 4px;background:#00C65A20;border:1px solid #00C65A40;border-radius:2px;font-size:5px;color:#00C65A">Neoenergia</div>
+              <div style="padding:1px 4px;background:#18181b;border:1px solid #27272a;border-radius:2px;font-size:5px">Todos portes</div>
+            </div>
+            <!-- Chart with annotation -->
+            <div style="flex:1;background:#18181b;border-radius:4px;padding:4px;position:relative">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <div style="font-size:5px;color:#fafafa;font-weight:bold">Evolução Anual de Transgressões</div>
+                <div style="display:flex;gap:2px">
+                  <div style="font-size:4px;padding:1px 3px;background:#27272a;border-radius:2px">Mensal</div>
+                  <div style="font-size:4px;padding:1px 3px;background:#00C65A30;border:1px solid #00C65A;border-radius:2px;color:#00C65A">Anual</div>
+                </div>
+              </div>
+              <div style="height:calc(100% - 14px);display:flex;align-items:flex-end;gap:1px;position:relative">
+                <div style="flex:1;height:35%;background:#1A8FE340;border-radius:1px"></div>
+                <div style="flex:1;height:50%;background:#1A8FE350;border-radius:1px"></div>
+                <div style="flex:1;height:65%;background:#1A8FE360;border-radius:1px"></div>
+                <div style="flex:1;height:90%;background:#1A8FE3;border-radius:1px"></div>
+                <!-- REN 1000 marker -->
+                <div style="flex:0;width:1px;height:100%;background:#FF6B1A;position:relative">
+                  <div style="position:absolute;top:-1px;left:2px;font-size:4px;color:#FF6B1A;white-space:nowrap;background:#18181b;padding:0 2px;border-radius:1px">← REN 1000</div>
+                </div>
+                <div style="flex:1;height:50%;background:#00C65A60;border-radius:1px"></div>
+                <div style="flex:1;height:35%;background:#00C65A80;border-radius:1px"></div>
+                <div style="flex:1;height:25%;background:#00C65A;border-radius:1px"></div>
+              </div>
+            </div>
+            <!-- Narrative footer -->
+            <div style="background:#18181b;border-radius:4px;padding:4px;display:flex;gap:4px;align-items:center">
+              <div style="width:10px;height:10px;background:#00C65A20;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <div style="font-size:6px">💡</div>
+              </div>
+              <div style="font-size:4.5px;color:#a1a1aa;line-height:1.3">A queda é consistente em todos os portes, mas distribuidoras de porte P mostram a maior variação relativa (-71%).</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Storytelling Analítico</h3>
+      <p>Hero com conclusão principal no topo, charts com anotações contextuais (marco REN 1000), narrativa guiando o olhar. Ótimo para apresentação de TCC, mas menos flexível para exploração livre.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>Comparação Rápida</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Forças de cada abordagem</h4>
+      <ul>
+        <li><strong>A (Polish):</strong> Menor risco, mantém o que funciona, rápido de implementar</li>
+        <li><strong>B (Denso):</strong> Máxima info por pixel, KPIs pareados pré/pós, painel de insights</li>
+        <li><strong>C (Story):</strong> Hero com conclusão, anotações contextuais, ideal para defesa de TCC</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Tradeoffs</h4>
+      <ul>
+        <li><strong>A:</strong> Não resolve a falta de agrupamento pré/pós e insights automáticos</li>
+        <li><strong>B:</strong> Mais complexo, pode ficar denso demais em telas menores</li>
+        <li><strong>C:</strong> Menos flexível para exploração livre, mais "apresentação" que "ferramenta"</li>
+      </ul>
+    </div>
+  </div>
+</div>
