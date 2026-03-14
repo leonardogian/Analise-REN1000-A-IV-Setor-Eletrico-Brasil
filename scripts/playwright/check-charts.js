@@ -1,13 +1,13 @@
 /**
  * check-charts.js — Verifica erros de console JS e presença de charts em todas as páginas.
  *
- * Pré-requisito: make serve (servidor em localhost:8050)
+ * Pré-requisito: make serve (servidor em localhost:8051)
  * Uso: node scripts/playwright/check-charts.js
  * Exit code: 0 se tudo OK, 1 se houver erros.
  */
 const { chromium } = require('playwright');
 
-const BASE_URL = 'http://localhost:8050';
+const BASE_URL = 'http://localhost:8051';
 const PAGES = [
     { file: 'index.html',         minCharts: 2 },
     { file: 'transgressoes.html', minCharts: 1 },

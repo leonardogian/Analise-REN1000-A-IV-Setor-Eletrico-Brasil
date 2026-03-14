@@ -8,3 +8,7 @@ data/raw
 .cursor
 .pytest_cache
 node_modules
+data/processed/*.csv
+data/processed/*.parquet
+notebooks/
+scripts/playwright/

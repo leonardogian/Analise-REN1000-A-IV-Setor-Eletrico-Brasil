@@ -109,8 +109,8 @@ make dashboard       # gera dashboard_data.json
 make dashboard-full  # analysis + neoenergia + dashboard
 
 # Dashboard local
-make serve           # HTTP server em http://localhost:8050
-make backend         # FastAPI em http://localhost:8050
+make serve           # HTTP server em http://localhost:8051
+make backend         # FastAPI em http://localhost:8051
 make dev-serve       # dashboard-full + preflight + backend (--reload)
 
 # Testes
@@ -132,11 +132,12 @@ make clean-analysis  # remove data/processed/analysis/
 | 5433  | PostgreSQL (AgentCycle)    | ⚠️ Ocupada |
 | 6379  | Redis (AgentCycle)         | ⚠️ Ocupada |
 | 8000  | AgentCycle Backend         | ⚠️ Ocupada |
-| 8050  | **TCC Dashboard (make serve)** | ✅ Livre |
+| 8050  | TCC Dashboard (Docker)     | ⚠️ Docker only |
+| 8051  | **TCC Dashboard (make serve)** | ✅ Local dev |
 | 8080  | Airflow Webserver / Kestra | ⚠️ Ocupada |
 | 8090  | Kestra (Alternativa)       | ⚠️ Ocupada |
 
-> **NÃO mude a porta 8050** sem antes verificar com `ss -tlnp | grep :PORTA`
+> Dev local: porta **8051**. Docker: porta 8050. Não usar 8000 para o dashboard.
 
 ## Arquivos Gerados (NÃO versionados)
 

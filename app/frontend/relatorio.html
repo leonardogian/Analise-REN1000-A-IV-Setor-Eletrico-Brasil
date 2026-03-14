@@ -801,7 +801,7 @@
 
         async function init() {
             initReportTheme();
-            const res = await fetch('dashboard_data.json');
+            const res = await fetch('./dashboard_data.json');
             const raw = await res.json();
             const data = normalizePayload(raw);
             reportState.data = data;

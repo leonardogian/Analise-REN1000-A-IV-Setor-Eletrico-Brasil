@@ -29,10 +29,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         return `hsl(${hue}, ${sat}%, ${lit}%)`;
     }
 
+    if (typeof showSkeleton === 'function') showSkeleton('heatmap-container', 420);
     try {
         const res = await fetch('./dashboard_timeseries.json');
         if (!res.ok) throw new Error('Falha ao carregar dashboard_timeseries.json');
         const json = await res.json();
+        if (typeof hideSkeleton === 'function') hideSkeleton('heatmap-container');
 
         allData = (json.data || []).filter(d => d.tipo === 'holding');
         const holdings = [...new Set(allData.map(d => d.grupo))].sort();

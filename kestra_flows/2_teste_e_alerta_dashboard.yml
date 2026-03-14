@@ -11,7 +11,7 @@ triggers:
 tasks:
   - id: verificar_dashboard_online
     type: io.kestra.plugin.core.http.Request
-    uri: "http://localhost:8050/health" # Ele bateu naquela rota /health do seu app 
+    uri: "http://localhost:8051/health" # Ele bateu naquela rota /health do seu app 
     method: GET
     # Se o dashboard estiver fora, o Request vai dar erro (código 500)
     

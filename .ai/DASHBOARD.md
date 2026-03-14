@@ -5,18 +5,18 @@
 ```bash
 # Opção 1: Automatizado (gera JSON + sobe servidor)
 make serve
-# → http://localhost:8050
+# → http://localhost:8051
 
 # Opção 1B: Backend FastAPI (API + estático)
 make dev-serve
-# → http://localhost:8050 (health em /health, API em /api/dashboard)
+# → http://localhost:8051 (health em /health, API em /api/dashboard)
 
 # Opção 2: Só gerar os dados
 make dashboard
-# → dashboard/dashboard_data.json
+# → app/frontend/dashboard_data.json
 
 # Opção 3: Servidor manual
-cd dashboard && python3 -m http.server 8050
+cd app/frontend && python3 -m http.server 8051
 ```
 
 > ⚠️ O dashboard **NÃO funciona** abrindo `index.html` diretamente no navegador
@@ -138,6 +138,6 @@ Gerado por `src/analysis/build_dashboard_data.py`. Lê estes CSVs:
 | "Erro ao carregar dados" | `dashboard_data.json` não existe | `make dashboard` |
 | "Erro ao carregar dados" | Acessou via `file://` | `make serve` |
 | Backend não sobe | Pré-check falhou em artefatos/schema | `make preflight-backend` |
-| Porta 8050 ocupada | Outro processo na porta | `ss -tlnp \| grep :8050` |
+| Porta 8051 ocupada | Outro processo na porta | `ss -tlnp \| grep :8051` |
 | Gráficos vazios | JSON desatualizado | `make dashboard` (regenerar) |
 | Charts não renderizam | CDN Chart.js inacessível | Verificar internet |

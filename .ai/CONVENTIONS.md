@@ -6,7 +6,7 @@ Usar **Conventional Commits** em português:
 
 ```
 feat: dashboard interativo com 4 abas
-fix: porta do make serve para 8050
+fix: porta do make serve para 8051
 docs: README com showcase do dashboard
 refactor: separação das tabelas analíticas
 ```
@@ -67,7 +67,7 @@ Não há framework de teste formal (pytest). Os testes existentes são:
 
 ## Coisas para NÃO Fazer
 
-1. **NÃO alterar a porta 8050** sem verificar portas livres
+1. **NÃO alterar a porta 8051** (local dev) sem verificar portas livres. Docker usa 8050.
 2. **NÃO usar `python`** — usar `python3` ou `make` (que trata automaticamente)
 3. **NÃO commitar dados brutos** (`data/raw/`) — são muito grandes
 4. **NÃO commitar `dashboard_data.json`** — é gerado

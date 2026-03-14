@@ -15,14 +15,14 @@ O projeto conta com um **dashboard web interativo** para visualização dos resu
 ```bash
 # Para visualizar o dashboard:
 make serve
-# Acesse http://localhost:8050
+# Acesse http://localhost:8051
 ```
 
 ```bash
 # Para usar backend local (API + arquivos estáticos):
 make dev-serve
-# Health: http://localhost:8050/health
-# API:    http://localhost:8050/api/dashboard
+# Health: http://localhost:8051/health
+# API:    http://localhost:8051/api/dashboard
 ```
 
 ### Visão Geral — Impacto Pré vs Pós REN 1000
@@ -122,8 +122,8 @@ make backend
 make serve
 
 # Para testar analitico cruzado de Transgressões e Grupos Econômicos:
-cd app/frontend && python3 -m http.server 8000
-# Acesse http://localhost:8000/transgressoes.html
+cd app/frontend && python3 -m http.server 8051
+# Acesse http://localhost:8051/transgressoes.html
 ```
 
 ### 🐳 Docker (Dashboard e Orquestração)
@@ -131,11 +131,11 @@ cd app/frontend && python3 -m http.server 8000
 **Dashboard (API + Estáticos)**:
 
 ```bash
-# Porta padrao 8050
+# Docker e local dev usam a porta 8051 via make serve ou docker compose
 docker compose up --build
 ```
 
-- A porta pública do dashboard é controlada por `HOST_PORT` (default `8050`).
+- A porta pública do Docker e para desenvolvimento local é a `8051`. No Docker, essa porta é exportada e mapeada corretamente. Para desenvolvimento local, use `make serve` ou `make backend`.
 
 **Apache Kestra (Orquestração de Dados + Gemini)**:
 O repositório inclui a infraestrutura local em contêiner para orquestração analítica avançada:
@@ -217,9 +217,9 @@ make report                     # gera relatório markdown
 make neoenergia-diagnostico     # benchmark detalhado das 5 Neoenergias
 make dashboard                  # gera JSON + instruções para abrir
 make dashboard-full             # analysis + neoenergia + dashboard
-make serve                      # servidor local em http://localhost:${PORT} (default 8050)
+make serve                      # servidor local em http://localhost:${PORT} (default 8051)
 make backend                    # backend FastAPI local em http://localhost:${PORT}
-make dev-serve                  # dashboard-full + preflight + backend (--reload, PORT customizavel)
+make dev-serve                  # dashboard-full + preflight + backend (--reload, PORT customizável, default 8051)
 make doctor                     # valida .venv + imports criticos (numpy/pandas/fastapi/uvicorn)
 make validate-contracts         # valida contratos de schema (raw + processed)
 make check-artifacts-full       # valida artefatos completos + dashboard JSON

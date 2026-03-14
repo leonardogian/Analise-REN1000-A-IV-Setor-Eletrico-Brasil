@@ -22,18 +22,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         playbackTimer: null,
     };
 
-    // Cores CSS Variables Unificadas com app.js (Premium Theme)
+    // Cores alinhadas com o design system de app.js (COLORS Iberdrola)
     const colors = {
-        neoenergia: "#00f0ff", // Neon Cyan
-        cpfl: "#00ff66",       // Neon Green
-        equatorial: "#ff0055", // Hot Pink
-        enel: "#f59e0b",       // Amber
-        energisa: "#b026ff",   // Neon Purple
-        cemig: "#00e5ff",      // Bright Cyan
-        copel: "#ff3366",      // Rose Neon
-        edp: "#3b82f6",        // Electric Blue
-        celesc: "#10b981",     // Lime
-        outros: "#64748b"      // Gray
+        neoenergia: '#00C65A', // green
+        cpfl:       '#1A8FE3', // blue
+        equatorial: '#FF6B1A', // orange
+        enel:       '#A8D96B', // lime
+        energisa:   '#8b5cf6', // purple
+        cemig:      '#ec4899', // rose
+        copel:      '#06b6d4', // cyan
+        edp:        '#f59e0b', // amber
+        celesc:     '#10b981', // emerald
+        outros:     '#71717a'  // zinc-500
     };
 
     // Emojis/Logos de Identificação para as Holdings
@@ -551,7 +551,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             try {
                 const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                    ? `http://127.0.0.1:8000/api/v1/ai-insights`
+                    ? `http://127.0.0.1:8051/api/v1/ai-insights`
                     : '/api/v1/ai-insights';
 
                 const response = await fetch(backendUrl, {

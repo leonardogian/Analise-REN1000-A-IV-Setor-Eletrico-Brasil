@@ -1,7 +1,7 @@
 /**
  * screenshot-all.js — Captura screenshots de todas as páginas do dashboard.
  *
- * Pré-requisito: make serve (servidor em localhost:8050)
+ * Pré-requisito: make serve (servidor em localhost:8051)
  * Uso: node scripts/playwright/screenshot-all.js
  * Saída: output/screenshots/YYYY-MM-DD-HHMMSS/
  */
@@ -9,7 +9,7 @@ const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
 
-const BASE_URL = 'http://localhost:8050';
+const BASE_URL = 'http://localhost:8051';
 const PAGES = [
     'index.html',
     'transgressoes.html',
@@ -28,7 +28,7 @@ async function main() {
     const outDir = path.resolve('output', 'screenshots', timestamp);
     fs.mkdirSync(outDir, { recursive: true });
 
-    const browser = await chromium.launch();
+    const browser = await chromium.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page = await browser.newPage();
     await page.setViewportSize({ width: 1440, height: 900 });
 

@@ -24,10 +24,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         P: 'P — Pequeno', M: 'M — Médio', G: 'G — Grande', GG: 'GG — Muito Grande',
     };
 
+    if (typeof showSkeleton === 'function') showSkeleton('benchmark-bar-wrapper', 480);
     try {
         const res = await fetch('./dashboard_scatter.json');
         if (!res.ok) throw new Error('Falha ao carregar dashboard_scatter.json');
         const json = await res.json();
+        if (typeof hideSkeleton === 'function') hideSkeleton('benchmark-bar-wrapper');
         allData = json.data || [];
 
         const portes = [...new Set(allData.map(d => d.porte).filter(Boolean))].sort();

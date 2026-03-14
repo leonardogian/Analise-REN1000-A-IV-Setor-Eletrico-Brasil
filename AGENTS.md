@@ -27,11 +27,11 @@ Sempre que iniciar uma nova interação ou tarefa neste repositório, você DEVE
 - **Interface Web:** A aplicação frontend consome `app/frontend/dashboard_data.json` e `app/frontend/dashboard_transgressoes.json`.
 - **Apresentação do TCC (.pptx):** Gerar via `scripts/generate_tcc_investigacao_pptx.py`, com saída em `output/apresentacao_tcc_investigacao_dados_analises.pptx`.
 - **Logos das Holdings:** Manter os logos em `logos/` (raiz) e espelhar em `app/frontend/assets/logos/` com nomes padronizados (`neoenergia.png`, `cpfl.png`, `equatorial.png`, etc.).
-- **Porta Padronizada:** A interface de usuário completa e as APIs de backend **DEVEM sempre rodar na porta `8050` (`http://localhost:8050/`)**. Todas as operações e scripts do Docker e Makefile focam exclusivamente nesta porta, sem variações para porta 8060 ou outras.
+- **Porta Padronizada:** Desenvolvimento local e via Docker usam a **porta `8051`** (`http://localhost:8051/`). Não usar porta 8000 ou outras para o dashboard.
 
 ---
 
-# Regras de Espera e Monitoramento de Tempo
+## Regras de Espera e Monitoramento de Tempo
 
 Estas regras valem para qualquer execucao bloqueante (comando/app) quando nao for possivel avancar em outra tarefa no mesmo momento.
 

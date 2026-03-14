@@ -14,13 +14,15 @@ const dashboardState = {
 /* ===================== THEME (DARK-ONLY, IBERDROLA) ===================== */
 function initTheme() {
     if (typeof Chart === 'undefined') return;
-    // Dark-only: always Iberdrola corporate palette
-    Chart.defaults.color = '#4a6656';
-    Chart.defaults.borderColor = 'rgba(19, 42, 26, 0.6)';
-    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(10, 26, 16, 0.95)';
-    Chart.defaults.plugins.tooltip.titleColor = '#F0FDF4';
-    Chart.defaults.plugins.tooltip.bodyColor = '#94a3b8';
-    Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 198, 90, 0.3)';
+    // Dark Premium — zinc-950 neutral palette
+    Chart.defaults.color = '#71717a';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.07)';
+    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(17, 17, 19, 0.97)';
+    Chart.defaults.plugins.tooltip.titleColor = '#fafafa';
+    Chart.defaults.plugins.tooltip.bodyColor = '#a1a1aa';
+    Chart.defaults.plugins.tooltip.borderColor = 'rgba(0, 198, 90, 0.35)';
+    Chart.defaults.plugins.tooltip.padding = 10;
+    Chart.defaults.plugins.tooltip.cornerRadius = 8;
 }
 
 /* fmtNum, fmtPct, fmtMoney, fmtMoneyFull — see utils.js */
@@ -52,6 +54,38 @@ const DISTRIBUTOR_PALETTE = [
     '#14b8a6',
     '#f59e0b',
 ];
+
+/* ===================== SKELETON LOADING UTILITIES ===================== */
+/**
+ * Mostra um skeleton de loading num container.
+ * @param {string} containerId — id do elemento que recebe o skeleton
+ * @param {number} height — altura do skeleton em px (default 320)
+ */
+function showSkeleton(containerId, height = 320) {
+    const el = document.getElementById(containerId);
+    if (!el || !el.parentNode) return;
+    const skId = `__sk_${containerId}`;
+    if (!document.getElementById(skId)) {
+        const sk = document.createElement('div');
+        sk.id = skId;
+        sk.className = 'skeleton';
+        sk.style.cssText = `height:${height}px; width:100%;`;
+        el.parentNode.insertBefore(sk, el);
+    }
+    el.style.display = 'none';
+}
+
+/**
+ * Remove o skeleton de loading de um container.
+ * @param {string} containerId
+ */
+function hideSkeleton(containerId) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const sk = document.getElementById(`__sk_${containerId}`);
+    if (sk) sk.remove();
+    el.style.display = '';
+}
 
 const CHART_FONT = { family: "'Inter', sans-serif", size: 12, weight: '500' };
 if (typeof Chart !== 'undefined') {
@@ -1346,4 +1380,7 @@ async function init() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+// Só inicializa o dashboard principal se os elementos do index.html existirem
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('loading')) init();
+});

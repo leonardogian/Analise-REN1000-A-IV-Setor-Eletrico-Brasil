@@ -13,6 +13,15 @@ COPY app /app/app
 COPY data /app/data
 COPY scripts /app/scripts
 
-EXPOSE 8050
+# Gerar todos os JSON files do frontend a partir dos CSVs versionados
+RUN python3 -m src.analysis.build_dashboard_data && \
+    python3 -m src.analysis.dashboard_transgressoes
 
-CMD ["uvicorn", "app.backend.main:app", "--host", "0.0.0.0", "--port", "8050"]
+EXPOSE 8051
+
+# Add a non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN chown -R appuser:appuser /app
+USER appuser
+
+CMD ["uvicorn", "app.backend.main:app", "--host", "0.0.0.0", "--port", "8051"]

@@ -38,10 +38,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     // Inicialização
+    if (typeof showSkeleton === 'function') showSkeleton('transgressions-chart-wrapper', 400);
     try {
         const response = await fetch('./dashboard_transgressoes.json');
         if (!response.ok) throw new Error("Não foi possível carregar os dados.");
         dashboardData = await response.json();
+        if (typeof hideSkeleton === 'function') hideSkeleton('transgressions-chart-wrapper');
 
         // Apply persisted global holding filter if set on another page
         if (window.dashboardFilters && window.dashboardFilters.grupos.size > 0) {
@@ -434,10 +436,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
 
             try {
-                // If the static html is opened locally, it might run on 5500 via live server
-                // But the FastAPI backend will run on 8000. Let's point to localhost:8000 for this demo.
                 const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                    ? `http://127.0.0.1:8000/api/v1/ai-insights`
+                    ? `http://127.0.0.1:8051/api/v1/ai-insights`
                     : '/api/v1/ai-insights';
 
                 const response = await fetch(backendUrl, {

@@ -299,7 +299,7 @@ def build_presentation() -> Path:
         dark=True,
         size=18,
     )
-    add_footer(s9, "Projeto TCC REN 1000/2021 | Dashboard e API na porta 8050", dark=True)
+    add_footer(s9, "Projeto TCC REN 1000/2021 | Dashboard e API na porta 8051", dark=True)
 
     # 10. Encerramento
     s10 = prs.slides.add_slide(blank)

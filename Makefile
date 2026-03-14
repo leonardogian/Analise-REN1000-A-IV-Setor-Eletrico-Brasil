@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-PORT ?= 8050
+PORT ?= 8051
 PROJECT_ROOT := $(CURDIR)
 PYTHON_VENV := $(PROJECT_ROOT)/.venv/bin/python
 PYTHON ?= $(if $(shell test -x $(PYTHON_VENV) && echo ok),$(PYTHON_VENV),python3)
@@ -29,9 +29,9 @@ help:
 	@echo "  make neoenergia-diagnostico - alias de compatibilidade (exporta artefatos legados neo)"
 	@echo "  make dashboard       - gera JSON + abre dashboard/relatorio interativo"
 	@echo "  make dashboard-full  - analysis + grupos + dashboard JSON"
-	@echo "  make serve           - servidor local para visualizar o dashboard (PORT=8050 por padrão)"
+	@echo "  make serve           - servidor local para visualizar o dashboard (PORT=8051 por padrão)"
 	@echo "  make backend         - sobe backend FastAPI local em http://localhost:\$${PORT}"
-	@echo "  make dev-serve       - dashboard-full + preflight + backend em modo reload (PORT=8050)"
+	@echo "  make dev-serve       - dashboard-full + preflight + backend em modo reload (PORT=8051)"
 	@echo "  make pipeline        - update-data + analysis + report + grupos + dashboard"
 	@echo "  make inspect-tables  - imprime relatório sobre as tabelas parquet existentes"
 	@echo "  make validate-contracts - valida contratos de schema (raw + processed)"

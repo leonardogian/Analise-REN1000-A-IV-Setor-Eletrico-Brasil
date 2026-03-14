@@ -132,8 +132,8 @@ extract → transform → analysis ─┬─→ report
 source .venv/bin/activate
 make clean-analysis   # limpa tabelas analíticas
 make pipeline         # roda tudo: ETL → análise → relatório → dashboard
-make serve            # sobe dashboard em http://localhost:8050
-make dev-serve        # sobe backend FastAPI (com preflight) em http://localhost:8050
+make serve            # sobe dashboard em http://localhost:8051
+make dev-serve        # sobe backend FastAPI (com preflight) em http://localhost:8051
 ```
 
 ## Gotchas e Armadilhas
@@ -146,8 +146,8 @@ make dev-serve        # sobe backend FastAPI (com preflight) em http://localhost
    `.venv/bin/python` automaticamente. Para rodar direto, ative o venv.
 4. **`dashboard_data.json` não está no Git**: É gerado. Rode `make dashboard`.
 5. **Dashboard via `file://` não funciona**: Precisa de servidor HTTP (CORS).
-   Use `make serve` (porta 8050).
+   Use `make serve` (porta 8051).
 6. **Contratos de schema**: valide com `make validate-contracts` quando mudar ETL.
 7. **Backend local**: para API + estático use `make backend`/`make dev-serve`.
-8. **Porta 8050**: Confirmada livre. Portas 3000/5433/6379/8000/8080/8090
-   estão ocupadas por outros serviços (AgentCycle, Airflow, Kestra).
+8. **Porta 8051**: Porta do dev local. Portas 3000/5433/6379/8000/8050/8080/8090
+   estão ocupadas por outros serviços (AgentCycle, Airflow, Kestra, Docker TCC).

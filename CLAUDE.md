@@ -35,8 +35,8 @@ make dashboard-full        # analysis + grupos + neoenergia + all dashboard JSON
 make clean-analysis        # remove data/processed/analysis/ outputs
 
 # Serving the dashboard
-make serve             # HTTP server at http://localhost:8050
-make backend           # FastAPI (API + static files) at http://localhost:8050
+make serve             # HTTP server at http://localhost:8051
+make backend           # FastAPI (API + static files) at http://localhost:8051
 make dev-serve         # dashboard-full + preflight + backend with --reload
 
 # Tests
@@ -132,7 +132,7 @@ Key files consumed by backend and dashboard:
 
 ## Critical Constraints
 
-1. **Port 8050 only** — all services must use port 8050. Ports 3000/5433/6379/8000/8080/8090 are occupied by other local services.
+1. **Port 8051 for local dev and Docker** — `make serve`, `make backend`, Playwright scripts, and Docker all use port 8051. Ports 3000/5433/6379/8000/8050/8080/8090 are occupied by other local services.
 2. **Use `python3`, not `python`** — `python` binary does not exist on this machine. Makefile handles this automatically.
 3. **No JS/CSS frameworks** — dashboard is pure Vanilla JS, pure CSS. No Tailwind, Bootstrap, or npm packages for the frontend. Chart.js is loaded via CDN only.
 4. **Never open dashboard via `file://`** — CORS issues. Always use `make serve` or `make backend`.
@@ -176,7 +176,7 @@ No pytest framework. Tests are Make targets:
 ## Docker
 
 ```bash
-# Main stack (dashboard + backend), port 8050
+# Main stack (dashboard + backend), Docker uses port 8051 internally
 docker compose up --build
 
 # Kestra orchestration (data pipelines + Gemini AI flows)

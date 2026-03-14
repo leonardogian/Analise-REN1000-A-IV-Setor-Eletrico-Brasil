@@ -26,10 +26,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
+    if (typeof showSkeleton === 'function') showSkeleton('ranking-chart-wrapper', 360);
     try {
         const res = await fetch('./dashboard_groups_ranking.json');
         if (!res.ok) throw new Error('Falha ao carregar dashboard_groups_ranking.json — execute: python3 -m src.analysis.build_dashboard_data');
         const json = await res.json();
+        if (typeof hideSkeleton === 'function') hideSkeleton('ranking-chart-wrapper');
         data = json.data || [];
         headlines = json.headlines || {};
 
