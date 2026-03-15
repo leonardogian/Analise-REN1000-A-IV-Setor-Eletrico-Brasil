@@ -34,10 +34,11 @@ make neoenergia-diagnostico # generate data/processed/analysis/neoenergia/ CSVs
 make dashboard-full        # analysis + grupos + neoenergia + all dashboard JSONs
 make clean-analysis        # remove data/processed/analysis/ outputs
 
-# Serving the dashboard
-make serve             # HTTP server at http://localhost:8051
-make backend           # FastAPI (API + static files) at http://localhost:8051
-make dev-serve         # dashboard-full + preflight + backend with --reload
+# Serving the dashboard & Testing Local API
+# URL Base (Local): http://localhost:8051 | URL Base (Produção Railway): https://tcc-ren1000x414-production.up.railway.app
+make serve             # Frontend HTTP server apenas (mock/static-testing) at http://localhost:8051
+make backend           # FastAPI backend at http://localhost:8051
+make dev-serve         # Backend with --reload (also serves static files locally as a fallback)
 
 # Tests
 make test-fast         # compile + imports + schema contracts + core artifacts
@@ -73,10 +74,20 @@ src/analysis/build_analysis_tables.py -> data/processed/analysis/*.csv  (version
 | Layer | Tech |
 |-------|------|
 | ETL/Analysis | Python 3.10+, pandas, numpy |
-| Backend | FastAPI + Uvicorn (`app/backend/main.py`) |
-| Frontend | HTML5, Vanilla JS, Chart.js 4.4.7 (CDN), CSS pure |
+| Backend | FastAPI + Uvicorn (`app/backend/main.py`) no **Railway** |
+| Frontend | HTML5, Vanilla JS, Chart.js 4.4.7 (CDN), CSS pure no **Vercel** |
 | Orchestration | GNU Make + Docker Compose |
 | Data formats | CSV, Parquet (preferred for speed), JSON |
+
+### Filosofia de Arquitetura (Vercel x Railway)
+
+Nossa configuração de Produção opera de maneira estritamente desacoplada:
+
+1. **Frontend (Vercel)**: Qualquer modificação de roteamento, arquivos estáticos puros ou redirecionamentos de chamadas à API são governados unicamente pelo cliente e por seu arquivo de setup principal, **`vercel.json`**.
+2. **Backend (Railway)**: Todo e qualquer consumo, distribuição JSON ou lógica de agregação via REST devem ser modificadas e concentradas em **`app/backend/main.py`** sob a responsabilidade do contêiner instanciado no **Railway**.
+   - URL Base da API em Produção: `https://tcc-ren1000x414-production.up.railway.app`
+
+*Nota sobre testes locais e mock:* Durante simulações de teste e desenvolvimento local da API, nós mapeamos e testamos internamente as rotas FastAPI via `make dev-serve` / `make backend` rodando em `http://localhost:8051`. No frontend Vercel (Produção), os `fetch()` para `/api/...` são implicitamente reescritos e encaminhados à nossa URL Base do Railway transparentemente por causa das regras de rewrite em `vercel.json`!
 
 ### Key Directories
 

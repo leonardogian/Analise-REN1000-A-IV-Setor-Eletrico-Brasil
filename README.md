@@ -12,17 +12,27 @@
 
 O projeto conta com um **dashboard web interativo** com 6 páginas, design dark mode e gráficos Chart.js/Leaflet.
 
-```bash
-# Para visualizar o dashboard:
-make serve
-# Acesse http://localhost:8051
-```
+### 🌐 Acessando o Projeto (Produção)
+
+A arquitetura de produção do TCC foi desacoplada em duas plataformas distintas para escalabilidade e adequação de build:
+
+- **Front-End (Vercel)**: O dashboard web (`app/frontend/`) pode ser acessado em Produção através da URL do Vercel. O Vercel serve os arquivos estáticos e realiza URL Rewrites para a API (`framework: null`).
+- **Back-End (Railway)**: A API dinâmica em FastAPI (`app/backend/`) roda nativamente em container Docker no Railway, centralizando todos os dados de resposta JSON consumidos via `fetch()`.
+  - **URL da API (Back-End)**: `https://tcc-ren1000x414-production.up.railway.app`
+
+*(Qualquer menção antiga a Hospedagem Integrada local, Hostinger, ou problemas de porta relacionadas à Produção foram resolvidos com esse split/desacoplamento Frontend x Backend).*
+
+### 💻 Como executar localmente:
 
 ```bash
-# Para usar backend local (API + arquivos estáticos):
+# Para usar backend local (API + arquivos estáticos) na mesma porta:
 make dev-serve
 # Health: http://localhost:8051/health
 # API:    http://localhost:8051/api/dashboard
+
+# Somente para simulação de arquivos estáticos localmente:
+make serve
+# Acesse http://localhost:8051
 ```
 
 ### Visão Geral — KPIs e Tendências (`index.html`)
@@ -132,14 +142,14 @@ make install
 make doctor
 make preflight-backend
 
-# Subir backend/API + estatico:
+# Subir unicamente o backend/API (porta 8051):
 make backend
-# ou:
-make serve
 
-# Para testar analitico cruzado de Transgressões e Grupos Econômicos:
+# Subir servidor estático + API localmente integrados:
+make dev-serve
+
+# Apenas visualização de arquivos do frontend:
 cd app/frontend && python3 -m http.server 8051
-# Acesse http://localhost:8051/transgressoes.html
 ```
 
 ### 🐳 Docker (Dashboard e Orquestração)

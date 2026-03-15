@@ -20,6 +20,7 @@ Sempre que iniciar uma nova interação ou tarefa neste repositório, você DEVE
 
 - **O domínio exclusivo do projeto é a regulação distribuidora de energia da ANEEL (REN 1000/2021).**
 - O projeto foca em transgressões regulatórias (prazos de serviços, UCs ativas) e suas respectivas **compensações financeiras pagas na fatura dos consumidores**.
+- **Infraestrutura e Build Vercel:** O build estático do Frontend para o Vercel depende de NÃO existirem arquivos ou diretórios python soltos (ex: arquivos falsos como `/api/index.py`) na pasta global que gerem conflitos Serverless indesejados no build autônomo do Vercel. **Todo o código backend (FastAPI) reside exclusivamente em `app/backend/`.**
 
 ## 💾 Acesso aos Dados Importantes & Portas Padrão
 
