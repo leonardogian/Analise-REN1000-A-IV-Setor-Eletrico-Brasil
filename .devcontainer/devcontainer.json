@@ -1,0 +1,29 @@
+{
+  "name": "TCC REN1000 Dashboard",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bullseye",
+  "forwardPorts": [8051],
+  "portsAttributes": {
+    "8051": { "label": "Dashboard", "onAutoForward": "notify" }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "lts" },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "files.eol": "\n"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "ecmel.vscode-html-css"
+      ]
+    }
+  },
+  "postCreateCommand": "make venv-recreate && make install && npm install -g vercel@latest @railway/cli",
+  "remoteUser": "vscode"
+}
