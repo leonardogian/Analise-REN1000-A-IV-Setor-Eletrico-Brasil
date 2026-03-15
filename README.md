@@ -10,7 +10,7 @@
 
 ## 📊 Dashboard Interativo
 
-O projeto conta com um **dashboard web interativo** para visualização dos resultados, com design dark mode e gráficos Chart.js.
+O projeto conta com um **dashboard web interativo** com 6 páginas, design dark mode e gráficos Chart.js/Leaflet.
 
 ```bash
 # Para visualizar o dashboard:
@@ -25,36 +25,41 @@ make dev-serve
 # API:    http://localhost:8051/api/dashboard
 ```
 
-### Visão Geral — Impacto Pré vs Pós REN 1000
+### Visão Geral — KPIs e Tendências (`index.html`)
 
-KPIs comparando os períodos regulatórios, séries temporais de taxa fora do prazo (2011–2023) e evolução das compensações financeiras:
+KPIs comparando os períodos regulatórios (pré/pós REN 1000), série anual de taxa fora do prazo (2011–2023) e visão consolidada por grupos econômicos:
 
-![Visão Geral — KPIs e séries temporais](docs/images/dashboard_visao_geral.png)
+![Visão Geral — KPIs e tendências](docs/images/dashboard_visao_geral.png)
 
-### Benchmark Neoenergia — 5 Distribuidoras
+### Transgressões — Séries Temporais (`transgressoes.html`)
 
-Análise comparativa normalizada por 100k UC-mês entre Brasília, Coelba, Cosern, Elektro e Pernambuco, com radar multidimensional e tabela de tendência:
+Gráfico bi-eixo com volume de transgressões e compensações financeiras mensais por distribuidora, com filtros por holding e período:
 
-![Benchmark das 5 distribuidoras Neoenergia](docs/images/dashboard_neoenergia.png)
+![Transgressões — séries temporais](docs/images/dashboard_transgressoes.png)
 
-### Análise Regulatória — Série Mensal
+### Benchmark — Volume × Compensação (`benchmark.html`)
 
-Acompanhamento mensal da taxa de transgressão e compensações financeiras empilhadas por distribuidora (2023–2025):
+Scatter plot interativo: volume de serviços versus compensação financeira por porte de distribuidora (normalizado por 100k UC-mês):
 
-![Análise Regulatória — séries mensais](docs/images/dashboard_analise_regulatoria.png)
+![Benchmark — volume × compensação por porte](docs/images/dashboard_benchmark.png)
 
-### Diagnóstico Detalhado
+### Evolução — Heatmap Mensal por Holding (`evolucao.html`)
 
-Distribuição por classe/localização (donut charts) e evolução da série longa 2011–2023 por distribuidora:
+Heatmap de sazonalidade mensal da taxa de transgressão por holding/grupo econômico (2023–2025):
 
-![Diagnóstico — donuts e série longa](docs/images/dashboard_diagnostico.png)
+![Evolução — heatmap mensal](docs/images/dashboard_evolucao.png)
 
-### Dashboard Transgressões & Grupos Econômicos
+### Ranking — Grupos Econômicos por Métrica (`ranking.html`)
 
-Mapeamento completo das ocorrências de prazo estourado segmentado por Grupos Econômicos (Holding > Franquias) e flag para compensações rurais. Visão cruzada em bi-eixo mensal mostrando volume de R$ versus contagem das transgressões:
+Ranking horizontal de grupos econômicos por métrica selecionável (taxa de transgressão, compensação R$/UC-mês, volume):
 
-![Visão Principal do Dashboard de Transgressões](docs/images/dashboard_transgressoes_main.png)
-![Visão de Multas Rurais Filtrada](docs/images/dashboard_transgressoes_filtrado.png)
+![Ranking — grupos econômicos](docs/images/dashboard_ranking.png)
+
+### Mapa Geográfico Interativo (`mapa.html`)
+
+Mapa choropleth Leaflet com distribuidoras por estado, colorido por taxa de transgressão ou compensação financeira:
+
+![Mapa geográfico interativo](docs/images/dashboard_mapa.png)
 
 > 📖 Documentação técnica completa (como alterar gráficos, arquitetura, módulos compartilhados):
 >
