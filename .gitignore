@@ -64,3 +64,5 @@ output/
 data/processed/**/*.csv
 data/processed/**/*.parquet
 data/processed/**/*.xlsx
+.vercel
+.env*.local
