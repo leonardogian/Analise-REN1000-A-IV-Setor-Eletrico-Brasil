@@ -1,6 +1,6 @@
-# Impede a Vercel de auto-detectar FastAPI e tentar fazer deploy do backend.
-# A Vercel serve apenas os arquivos estáticos de app/frontend/.
-# O backend FastAPI roda no Railway.
+# Vercel serves only static frontend files from app/frontend/.
+# The FastAPI backend runs on Railway — proxied via vercel.json rewrites.
+# api/index.py exists only to satisfy Vercel's FastAPI entrypoint detection.
 requirements.txt
 src/
 app/backend/
@@ -14,3 +14,5 @@ Makefile
 *.toml
 *.cfg
 *.ini
+!api/index.py
+!api/requirements.txt
