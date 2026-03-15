@@ -1,5 +1,8 @@
 {
   "outputDirectory": "app/frontend",
+  "framework": null,
+  "buildCommand": null,
+  "installCommand": null,
   "rewrites": [
     {
       "source": "/api/:path*",
