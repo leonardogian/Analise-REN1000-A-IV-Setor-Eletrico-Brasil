@@ -3,11 +3,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://RAILWAY_BACKEND_URL/api/:path*"
+      "destination": "https://tcc-ren1000x414-production.up.railway.app/api/:path*"
     },
     {
       "source": "/health",
-      "destination": "https://RAILWAY_BACKEND_URL/health"
+      "destination": "https://tcc-ren1000x414-production.up.railway.app/health"
     }
   ],
   "headers": [
