@@ -44,8 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (err) {
         console.error(err);
-        document.getElementById('ranking-summary').innerHTML =
-            `<p style="color:#ef4444; font-size:0.85rem">${err.message}</p>`;
+        showError(document.getElementById('ranking-summary'), err.message);
     }
 
     function initFilters(numericKeys) {
@@ -194,7 +193,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return `
             <tr>
                 <td><span class="rank-badge">${i + 1}</span></td>
-                <td style="font-weight:500; color: var(--text-primary)">${d.grupo}</td>
+                <td style="font-weight:500; color: var(--text-primary)">${escapeHtml(d.grupo)}</td>
                 <td style="${colorClass}; font-weight:600">${metaInfo.fmt(val)} <small style="color:var(--text-muted)">${metaInfo.unit}</small></td>
                 ${isVariation ? `<td>${d.pre_taxa != null ? fmtPct(d.pre_taxa) : '—'}</td><td>${d.pos_taxa != null ? fmtPct(d.pos_taxa) : '—'}</td>` : ''}
                 <td>${d.n_distribuidoras || '—'}</td>
@@ -212,7 +211,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         let headlineHtml = '';
         if (headlines.ranking) {
             headlineHtml = `<div class="insight-block" style="border-color: var(--pop-cyan); margin-bottom: 1rem">
-                <p style="font-size: 0.95rem; font-weight: 600">${headlines.ranking}</p>
+                <p style="font-size: 0.95rem; font-weight: 600">${escapeHtml(headlines.ranking)}</p>
             </div>`;
         }
 
@@ -223,11 +222,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 ${headlineHtml}
                 <div class="insight-block" style="border-color: #10b981">
                     <h3>Maior Melhoria</h3>
-                    <p><strong>${best.grupo}</strong>: ${metaInfo.fmt(best[state.metric])}</p>
+                    <p><strong>${escapeHtml(best.grupo)}</strong>: ${metaInfo.fmt(best[state.metric])}</p>
                 </div>
                 <div class="insight-block" style="margin-top:0.75rem; border-color: #ef4444">
                     <h3>Maior Piora</h3>
-                    <p><strong>${worst.grupo}</strong>: ${metaInfo.fmt(worst[state.metric])}</p>
+                    <p><strong>${escapeHtml(worst.grupo)}</strong>: ${metaInfo.fmt(worst[state.metric])}</p>
                 </div>
                 <p style="margin-top:0.75rem; font-size:0.8rem; color:var(--text-muted)">${sorted.length} grupos analisados · Comparação REN 414 vs REN 1000</p>
             `;
@@ -238,11 +237,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 ${headlineHtml}
                 <div class="insight-block">
                     <h3>Melhor Desempenho</h3>
-                    <p><strong>${best.grupo}</strong>: ${metaInfo.fmt(best[state.metric])}</p>
+                    <p><strong>${escapeHtml(best.grupo)}</strong>: ${metaInfo.fmt(best[state.metric])}</p>
                 </div>
                 <div class="insight-block" style="margin-top:0.75rem; border-color: var(--pop-orange)">
                     <h3>Pior Desempenho</h3>
-                    <p><strong>${worst.grupo}</strong>: ${metaInfo.fmt(worst[state.metric])}</p>
+                    <p><strong>${escapeHtml(worst.grupo)}</strong>: ${metaInfo.fmt(worst[state.metric])}</p>
                 </div>
                 <p style="margin-top:0.75rem; font-size:0.8rem; color:var(--text-muted)">${sorted.length} grupos analisados · Ano mais recente</p>
             `;

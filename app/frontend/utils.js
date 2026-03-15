@@ -66,4 +66,28 @@
         if (v == null || isNaN(v)) return '—';
         return (v > 0 ? '+' : '') + Number(v).toFixed(1) + '%';
     };
+
+    /* ==================== SECURITY UTILITIES ==================== */
+
+    /** Escape HTML entities to prevent XSS when inserting data into innerHTML. */
+    window.escapeHtml = function (str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
+
+    /** Safely display an error message in a container using textContent (no innerHTML). */
+    window.showError = function (container, message) {
+        if (!container) return;
+        container.textContent = '';
+        var p = document.createElement('p');
+        p.className = 'error';
+        p.style.color = '#ef4444';
+        p.textContent = message;
+        container.appendChild(p);
+    };
 })();

@@ -344,7 +344,7 @@ function initDimensionSelector(data) {
 
     const dimensions = getDimensionDefs(data);
     selector.innerHTML = dimensions
-        .map(dim => `<option value="${dim.dimension_id}">${dim.dimension_label}</option>`)
+        .map(dim => `<option value="${escapeHtml(dim.dimension_id)}">${escapeHtml(dim.dimension_label)}</option>`)
         .join('');
 
     const preferred = dashboardState.selectedDimensionId
@@ -377,7 +377,7 @@ function initGroupSelector(data) {
     selector.innerHTML = groups
         .map(group => {
             const tag = group.suppressed_low_volume ? ' (suprimido)' : '';
-            return `<option value="${group.id}">${group.label}${tag}</option>`;
+            return `<option value="${escapeHtml(group.id)}">${escapeHtml(group.label)}${tag}</option>`;
         })
         .join('');
 
@@ -422,7 +422,7 @@ function initRegulatorySelector(data) {
     selector.innerHTML = classes
         .map(item => {
             const coverage = item.monthly_coverage ? 'mensal' : (item.annual_coverage ? 'anual' : 'sem cobertura');
-            return `<option value="${item.class_id}">${item.class_label} (${coverage})</option>`;
+            return `<option value="${escapeHtml(item.class_id)}">${escapeHtml(item.class_label)} (${coverage})</option>`;
         })
         .join('');
 
@@ -696,7 +696,7 @@ function renderBenchmark(view, distributors, colors) {
             const deltaPct = t.delta_fora_prazo_por_100k_uc_mes_pct;
             const deltaClass = deltaPct <= 0 ? 'positive' : 'negative';
             return `<tr>
-                <td>${t.distributor_label}</td>
+                <td>${escapeHtml(t.distributor_label)}</td>
                 <td class="num">${fmtNum(t.fora_prazo_por_100k_uc_mes_2023, 2)}</td>
                 <td class="num">${fmtNum(t.fora_prazo_por_100k_uc_mes_2025, 2)}</td>
                 <td class="num"><span class="kpi-delta ${deltaClass}">${deltaPct != null ? fmtPct(deltaPct) : '—'}</span></td>
@@ -794,7 +794,7 @@ function renderDimensionBenchmark(context) {
             const delta = g.period_compare?.delta?.taxa_fora_prazo;
             const deltaClass = (delta ?? 0) <= 0 ? 'positive' : 'negative';
             return `<tr>
-                <td>${g.label}</td>
+                <td>${escapeHtml(g.label)}</td>
                 <td class="num">${fmtPct(pre, 3)}</td>
                 <td class="num">${fmtPct(pos, 3)}</td>
                 <td class="num"><span class="kpi-delta ${deltaClass}">${fmtPct(delta, 3)}</span></td>
@@ -855,7 +855,7 @@ function renderFeaturedGroupComparison(context) {
     if (tbody) {
         tbody.innerHTML = ranked.slice(0, 10).map((row, idx) => {
             return `<tr>
-                <td>${row.label}</td>
+                <td>${escapeHtml(row.label)}</td>
                 <td class="num">${fmtNum(row.metrics?.fora_prazo_por_100k_uc_mes, 2)}</td>
                 <td class="num">${fmtNum(row.metrics?.compensacao_rs_por_uc_mes, 4)}</td>
                 <td class="num">${idx + 1}</td>
@@ -875,8 +875,8 @@ function renderGroupInsights(context) {
         if (groups.length) {
             const best = [...groups].sort((a, b) => (a.metrics?.fora_prazo_por_100k_uc_mes || 0) - (b.metrics?.fora_prazo_por_100k_uc_mes || 0))[0];
             const worst = [...groups].sort((a, b) => (b.metrics?.fora_prazo_por_100k_uc_mes || 0) - (a.metrics?.fora_prazo_por_100k_uc_mes || 0))[0];
-            insightBest.innerHTML = `<strong>${best.label}</strong> tem a menor pressão normalizada: ${fmtNum(best.metrics?.fora_prazo_por_100k_uc_mes, 2)} por 100k UC-mês.`;
-            insightWorst.innerHTML = `<strong>${worst.label}</strong> concentra a maior pressão normalizada: ${fmtNum(worst.metrics?.fora_prazo_por_100k_uc_mes, 2)} por 100k UC-mês.`;
+            insightBest.innerHTML = `<strong>${escapeHtml(best.label)}</strong> tem a menor pressão normalizada: ${fmtNum(best.metrics?.fora_prazo_por_100k_uc_mes, 2)} por 100k UC-mês.`;
+            insightWorst.innerHTML = `<strong>${escapeHtml(worst.label)}</strong> concentra a maior pressão normalizada: ${fmtNum(worst.metrics?.fora_prazo_por_100k_uc_mes, 2)} por 100k UC-mês.`;
         } else {
             insightBest.textContent = 'Sem dados suficientes para identificar o melhor grupo na dimensão selecionada.';
             insightWorst.textContent = 'Sem dados suficientes para identificar o pior grupo na dimensão selecionada.';
@@ -1364,19 +1364,30 @@ async function init() {
         renderAll(data);
     } catch (err) {
         console.error('Erro ao carregar dados:', err);
-        document.getElementById('loading').innerHTML = `
-            <div class="loading-error">
-                <h3>⚡ Erro ao carregar dados</h3>
-                <p class="loading-error-message">${err.message}</p>
-                <p class="loading-error-hint">
-                    O navegador bloqueia <code>fetch()</code> em <code>file://</code>.
-                    <br>Use o servidor local:
-                </p>
-                <pre class="loading-error-command">make serve</pre>
-                <p class="loading-error-alt">
-                    ou: <code>cd dashboard && python3 -m http.server 8080</code>
-                </p>
-            </div>`;
+        var loadingEl = document.getElementById('loading');
+        loadingEl.textContent = '';
+        var errorDiv = document.createElement('div');
+        errorDiv.className = 'loading-error';
+        var h3 = document.createElement('h3');
+        h3.textContent = '\u26A1 Erro ao carregar dados';
+        var pMsg = document.createElement('p');
+        pMsg.className = 'loading-error-message';
+        pMsg.textContent = err.message;
+        var pHint = document.createElement('p');
+        pHint.className = 'loading-error-hint';
+        pHint.innerHTML = 'O navegador bloqueia <code>fetch()</code> em <code>file://</code>.<br>Use o servidor local:';
+        var pre = document.createElement('pre');
+        pre.className = 'loading-error-command';
+        pre.textContent = 'make serve';
+        var pAlt = document.createElement('p');
+        pAlt.className = 'loading-error-alt';
+        pAlt.innerHTML = 'ou: <code>cd dashboard && python3 -m http.server 8080</code>';
+        errorDiv.appendChild(h3);
+        errorDiv.appendChild(pMsg);
+        errorDiv.appendChild(pHint);
+        errorDiv.appendChild(pre);
+        errorDiv.appendChild(pAlt);
+        loadingEl.appendChild(errorDiv);
     }
 }
 

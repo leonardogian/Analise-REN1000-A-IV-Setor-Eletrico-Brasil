@@ -52,8 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (err) {
         console.error(err);
-        document.getElementById('heatmap-container').innerHTML =
-            `<p style="color:#ef4444; padding:1rem">${err.message}</p>`;
+        showError(document.getElementById('heatmap-container'), err.message);
     }
 
     function initFilters(holdings) {
@@ -221,9 +220,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         const fmtVal = state.metric.includes('compensacao') ? fmtMoney : fmtNum;
         document.getElementById('evolucao-summary').innerHTML = `
             <p>Média: <strong>${fmtNum(avg)}</strong></p>
-            <p style="margin-top:0.5rem">Pico: <strong>${maxEntry.grupo}</strong> em ${maxEntry.date}<br>
+            <p style="margin-top:0.5rem">Pico: <strong>${escapeHtml(maxEntry.grupo)}</strong> em ${escapeHtml(maxEntry.date)}<br>
             <strong style="color:#ef4444">${fmtVal(maxEntry[state.metric])}</strong></p>
-            <p style="margin-top:0.5rem">Vale: <strong>${minEntry.grupo}</strong> em ${minEntry.date}<br>
+            <p style="margin-top:0.5rem">Vale: <strong>${escapeHtml(minEntry.grupo)}</strong> em ${escapeHtml(minEntry.date)}<br>
             <strong style="color:#10b981">${fmtVal(minEntry[state.metric])}</strong></p>
         `;
     }

@@ -47,8 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (err) {
         console.error(err);
-        document.getElementById('benchmark-summary').innerHTML =
-            `<p style="color:#ef4444; font-size:0.85rem">${err.message}</p>`;
+        showError(document.getElementById('benchmark-summary'), err.message);
     }
 
     function initFilters(portes) {
@@ -61,8 +60,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             label.className = isSelected ? 'chip on' : 'chip';
             label.style.cursor = 'pointer';
             label.innerHTML = `
-                <input type="checkbox" value="${seg}" ${isSelected ? 'checked' : ''} style="display:none;">
-                <span style="color:${colors.border}">${PORTE_LABELS[seg] || seg}</span>
+                <input type="checkbox" value="${escapeHtml(seg)}" ${isSelected ? 'checked' : ''} style="display:none;">
+                <span style="color:${colors.border}">${escapeHtml(PORTE_LABELS[seg] || seg)}</span>
             `;
             label.addEventListener('click', function () {
                 const cb = this.querySelector('input');
@@ -293,7 +292,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const colors = PORTE_COLORS[seg] || PORTE_COLORS['N_A'];
             return `
                 <div class="chart-card" style="border-top: 3px solid ${colors.border};">
-                    <h3 class="chart-title" style="color:${colors.border}">${PORTE_LABELS[seg] || seg}</h3>
+                    <h3 class="chart-title" style="color:${colors.border}">${escapeHtml(PORTE_LABELS[seg] || seg)}</h3>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.82rem;color:var(--text-secondary);">
                         <div>
                             <div style="color:var(--text-muted);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;">Distribuidoras</div>
@@ -309,7 +308,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         </div>
                         <div>
                             <div style="color:var(--text-muted);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;">Maior Volume</div>
-                            <div style="font-size:0.85rem;font-weight:600;color:var(--text-secondary)">${topDist.label.split(' — ')[0]}</div>
+                            <div style="font-size:0.85rem;font-weight:600;color:var(--text-secondary)">${escapeHtml(topDist.label.split(' — ')[0])}</div>
                         </div>
                     </div>
                 </div>
@@ -327,11 +326,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                 <div class="insight-block" style="border-color:#00C65A;">
                     <h4 style="color:#00C65A;font-size:0.8rem;margin:0 0 4px;">Menor Compensação</h4>
-                    <p style="margin:0;font-size:0.85rem;"><strong>${best.label.split(' — ')[0]}</strong> — ${fmtMoney(best.y)}/UC-mês</p>
+                    <p style="margin:0;font-size:0.85rem;"><strong>${escapeHtml(best.label.split(' — ')[0])}</strong> — ${fmtMoney(best.y)}/UC-mês</p>
                 </div>
                 <div class="insight-block" style="border-color:#ef4444;">
                     <h4 style="color:#ef4444;font-size:0.8rem;margin:0 0 4px;">Maior Compensação</h4>
-                    <p style="margin:0;font-size:0.85rem;"><strong>${worst.label.split(' — ')[0]}</strong> — ${fmtMoney(worst.y)}/UC-mês</p>
+                    <p style="margin:0;font-size:0.85rem;"><strong>${escapeHtml(worst.label.split(' — ')[0])}</strong> — ${fmtMoney(worst.y)}/UC-mês</p>
                 </div>
             </div>
             <p style="margin-top:10px;font-size:0.78rem;color:var(--text-muted);">

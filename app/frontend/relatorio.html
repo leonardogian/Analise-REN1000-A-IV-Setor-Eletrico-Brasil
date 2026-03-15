@@ -12,6 +12,7 @@
         rel="stylesheet" />
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="utils.js"></script>
     <style>
         :root {
             /* Map styles.css Iberdrola variables to report variables */
@@ -617,7 +618,7 @@
             const selector = document.getElementById('report-regulatory-selector');
             const classes = getRegulatoryClasses(data);
             if (!selector || !classes.length) return;
-            selector.innerHTML = classes.map(item => `<option value="${item.class_id}">${item.class_label} (${item.distributor_count})</option>`).join('');
+            selector.innerHTML = classes.map(item => `<option value="${escapeHtml(item.class_id)}">${escapeHtml(item.class_label)} (${item.distributor_count})</option>`).join('');
             selector.value = reportState.selectedRegulatoryId || data.default_regulatory_id || classes[0].class_id;
             selector.addEventListener('change', () => {
                 reportState.selectedRegulatoryId = selector.value;
@@ -665,7 +666,7 @@
             if (trend.length) {
                 const comparable = trend.filter(t => t.delta_fora_prazo_por_100k_uc_mes_pct != null && !isNaN(t.delta_fora_prazo_por_100k_uc_mes_pct));
                 const improved = comparable.filter(t => t.delta_fora_prazo_por_100k_uc_mes_pct <= 0);
-                document.getElementById('s-trend-summary').innerHTML = `Na classe regulatória ${regulatory.class_label.toLowerCase()}, <strong>${improved.length} de ${comparable.length} distribuidoras</strong> reduziram a taxa normalizada de transgressões entre 2023 e 2025.`;
+                document.getElementById('s-trend-summary').innerHTML = `Na classe regulatória ${escapeHtml(regulatory.class_label.toLowerCase())}, <strong>${improved.length} de ${comparable.length} distribuidoras</strong> reduziram a taxa normalizada de transgressões entre 2023 e 2025.`;
             } else {
                 document.getElementById('s-trend-summary').textContent = `Sem dados de tendência suficientes para a classe regulatória ${regulatory.class_label.toLowerCase()}.`;
             }
@@ -673,7 +674,7 @@
             if (benchmark.length) {
                 const best = [...benchmark].sort((a, b) => (a.fora_prazo_por_100k_uc_mes || 0) - (b.fora_prazo_por_100k_uc_mes || 0))[0];
                 const worst = [...benchmark].sort((a, b) => (b.fora_prazo_por_100k_uc_mes || 0) - (a.fora_prazo_por_100k_uc_mes || 0))[0];
-                document.getElementById('s-best-worst-summary').innerHTML = `<strong>${best.distributor_label}</strong> apresenta a menor pressão (${fmtNum(best.fora_prazo_por_100k_uc_mes, 2)}/100k UC) e <strong>${worst.distributor_label}</strong> a maior (${fmtNum(worst.fora_prazo_por_100k_uc_mes, 2)}/100k UC).`;
+                document.getElementById('s-best-worst-summary').innerHTML = `<strong>${escapeHtml(best.distributor_label)}</strong> apresenta a menor pressão (${fmtNum(best.fora_prazo_por_100k_uc_mes, 2)}/100k UC) e <strong>${escapeHtml(worst.distributor_label)}</strong> a maior (${fmtNum(worst.fora_prazo_por_100k_uc_mes, 2)}/100k UC).`;
             } else {
                 document.getElementById('s-best-worst-summary').textContent = 'Sem dados de benchmark suficientes para identificar melhor e pior desempenho.';
             }
@@ -738,7 +739,7 @@
 
             document.getElementById('r-featured-body').innerHTML = featuredLatest.map(row => {
                 return `<tr>
-                    <td>${row.group_label || row.group_id}</td>
+                    <td>${escapeHtml(row.group_label || row.group_id)}</td>
                     <td class="num">${fmtNum(row.fora_prazo_por_100k_uc_mes, 2)}</td>
                     <td class="num">${fmtNum(row.compensacao_rs_por_uc_mes, 4)}</td>
                     <td class="num">${fmtNum(row.rank_fora_100k, 0)}</td>
@@ -795,7 +796,7 @@
 
             document.getElementById('r-longa-body').innerHTML = longa.map(r => {
                 const deltaClass = r.delta_taxa_pct <= 0 ? 'good' : 'bad';
-                return `<tr><td>${r.distributor_label}</td><td class="num">${r.ano_inicio}</td><td class="num">${r.ano_fim}</td><td class="num">${fmtPct(r.taxa_inicio)}</td><td class="num">${fmtPct(r.taxa_fim)}</td><td class="num trend-delta ${deltaClass}">${fmtPct(r.delta_taxa_pct)}</td></tr>`;
+                return `<tr><td>${escapeHtml(r.distributor_label)}</td><td class="num">${r.ano_inicio}</td><td class="num">${r.ano_fim}</td><td class="num">${fmtPct(r.taxa_inicio)}</td><td class="num">${fmtPct(r.taxa_fim)}</td><td class="num trend-delta ${deltaClass}">${fmtPct(r.delta_taxa_pct)}</td></tr>`;
             }).join('');
         }
 

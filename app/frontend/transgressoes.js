@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (error) {
         console.error("Erro ao inicializar dashboard:", error);
-        UI.insightContainer.innerHTML = `<p class="error">Erro ao carregar dados: ${error.message}</p>`;
+        showError(UI.insightContainer, 'Erro ao carregar dados: ' + error.message);
     }
 
     // --- Funções de Filtro ---
@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             html += `
         <div class="insight-block">
           <h3>Ponto de Inflexão (Transição para REN 1000)</h3>
-          <p>O maior salto no volume de infrações ocorreu em <strong>${mesFinal}</strong>, com um acréscimo de <strong>${(inflection_point.salto_transgressoes || 0).toLocaleString('pt-BR')}</strong> transgressões em relação ao mês anterior em nível nacional.</p>
+          <p>O maior salto no volume de infrações ocorreu em <strong>${escapeHtml(mesFinal)}</strong>, com um acréscimo de <strong>${(inflection_point.salto_transgressoes || 0).toLocaleString('pt-BR')}</strong> transgressões em relação ao mês anterior em nível nacional.</p>
         </div>
       `;
         }
@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <ul class="insight-list">
             ${top_rural_groups.map(g => {
                 const groupName = dashboardData.groups.find(x => x.id === g.holding)?.label || g.holding;
-                return `<li><strong>${groupName}</strong>: ${(g.rural_share * 100).toFixed(1)}% das compensações são rurais.</li>`;
+                return `<li><strong>${escapeHtml(groupName)}</strong>: ${(g.rural_share * 100).toFixed(1)}% das compensações são rurais.</li>`;
             }).join('')}
           </ul>
           <p class="insight-meta">Estes grupos tendem a sofrer mais com a exigência de atendimento da REN 1000 devido à sua vasta extensão territorial.</p>
@@ -453,7 +453,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 const data = await response.json();
 
-                // Markdown visual parsing
+                // TODO(security): sanitize LLM output with DOMPurify before innerHTML
                 let htmlContent = data.insight
                     .replace(/\\*\\*(.*?)\\*\\*/g, '<strong style="color: white;">$1</strong>')
                     .replace(/\\*(.*?)\\*/g, '<em>$1</em>')
@@ -464,7 +464,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             } catch (error) {
                 console.error("AI Insight Error:", error);
-                UI.aiInsightContainer.innerHTML = `<p style="color: #ef4444;">Erro ao gerar insight: ${error.message}</p>`;
+                showError(UI.aiInsightContainer, 'Erro ao gerar insight: ' + error.message);
             } finally {
                 UI.btnGenerateAi.disabled = false;
                 UI.btnGenerateAi.textContent = "✨ Gerar Nova Análise IA";

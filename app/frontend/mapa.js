@@ -133,6 +133,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (error) {
         console.error("Erro ao inicializar mapa:", error);
+        showError(document.getElementById('map'), 'Erro ao carregar dados do mapa: ' + error.message);
     }
 
     // --- Funções do Mapa ---
@@ -284,9 +285,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <div class="custom-popup" style="font-family: 'Inter', sans-serif; min-width: 220px; padding: 4px; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(16px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);">
                     <div class="popup-title" style="color: ${color}; text-shadow: 0px 0px 8px ${color}80; font-size: 1.1rem; font-weight: 700; margin-bottom: 2px;">
                         ${logoHtml}
-                        <span style="vertical-align:middle;">${d.label}</span>
+                        <span style="vertical-align:middle;">${escapeHtml(d.label)}</span>
                     </div>
-                    <div class="popup-meta" style="color: #cbd5e1; font-size: 0.85rem; padding-left: 2px;">Grupo: <span style="font-weight: 600;">${d.holdingLabel}</span></div>
+                    <div class="popup-meta" style="color: #cbd5e1; font-size: 0.85rem; padding-left: 2px;">Grupo: <span style="font-weight: 600;">${escapeHtml(d.holdingLabel)}</span></div>
                     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <div style="font-size: 0.85rem; color: #94a3b8;">💰 Financeiro</div>
@@ -567,6 +568,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 const resData = await response.json();
 
+                // TODO(security): sanitize LLM output with DOMPurify before innerHTML
                 let htmlContent = resData.insight
                     .replace(/\*\*(.*?)\*\*/g, '<strong style="color: white;">$1</strong>')
                     .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -577,7 +579,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             } catch (error) {
                 console.error("AI Insight Error:", error);
-                aiInsightContainer.innerHTML = `<p style="color: #ef4444;">Erro ao gerar insight: ${error.message}</p>`;
+                showError(aiInsightContainer, 'Erro ao gerar insight: ' + error.message);
             } finally {
                 btnGenerateAi.disabled = false;
                 btnGenerateAi.textContent = "✨ Gerar Nova Análise do Mapa";
