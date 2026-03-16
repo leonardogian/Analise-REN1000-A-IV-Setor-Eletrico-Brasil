@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -70,6 +71,8 @@ def _safe(v):
         return round(float(v), 6)
     if isinstance(v, (np.bool_,)):
         return bool(v)
+    if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+        return None
     if pd.isna(v):
         return None
     return v

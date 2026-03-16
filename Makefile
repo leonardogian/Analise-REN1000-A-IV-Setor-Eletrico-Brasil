@@ -138,11 +138,15 @@ validate-contracts:
 validate-contracts-processed:
 	$(PYTHON) scripts/validate_schema_contracts.py --processed-only
 
+test-unit:  ## Roda testes unitários com pytest (não requer dados gerados)
+	$(PYTHON) -m pytest tests/ -v
+
 test-fast:
 	$(PYTHON) -m py_compile src/etl/extract_aneel.py src/etl/transform_aneel.py src/etl/schema_contracts.py src/analysis/build_analysis_tables.py src/analysis/build_report.py src/analysis/distributor_groups.py src/analysis/grupos_diagnostico.py src/analysis/neoenergia_diagnostico.py src/analysis/build_dashboard_data.py app/backend/main.py
 	$(PYTHON) scripts/smoke_imports.py
 	@$(MAKE) validate-contracts-processed
 	@$(MAKE) check-artifacts
+	@$(MAKE) test-unit
 
 test-smoke: analysis report grupos-diagnostico neoenergia-diagnostico dashboard
 	@$(MAKE) validate-contracts
