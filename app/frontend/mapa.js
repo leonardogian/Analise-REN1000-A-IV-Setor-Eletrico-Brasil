@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const state = {
         metric: 'valor', // 'valor', 'qtd' ou 'relacao'
         invertRatio: false, // false: R$/Qtd, true: Qtd/R$
-        selectedHoldings: ["neoenergia", "cpfl", "equatorial", "enel", "energisa"], // Principais
+        selectedHoldings: Array.from(window.MAJOR_HOLDINGS),
         timeline: [],
         timelineIndex: 0,
         isAccumulated: true,
@@ -254,8 +254,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // Raio proporcional dinâmico (com min/max scale)
             // Agora usando L.circle (escala em Metros na geografia real) -> Ajusta com o Zoom magicamente
-            const maxRadius = 450000; // 450 km raio max
-            const minRadius = 40000;   // 40  km raio min
+            const maxRadius = 800000; // 800 km raio max
+            const minRadius = 120000;  // 120 km raio min
             let radius = Math.sqrt(intensity) * maxRadius;
             if (radius < minRadius) radius = minRadius;
 
@@ -305,9 +305,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             const marker = L.circle(d.coords, {
                 radius: radius,
                 fillColor: color,
-                color: color,
-                weight: 1,
-                opacity: 1,
+                color: '#ffffff',
+                weight: 1.5,
+                opacity: 0.8,
                 fillOpacity: 0.55
             }).addTo(map);
 
@@ -315,15 +315,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // Adiciona logo ou emoji centralizado
             const centerIconHtml = logoFile
-                ? `<div style="text-align: center; line-height: 1;"><img src="assets/logos/${logoFile}" style="width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5)); border-radius: 50%; background: rgba(255,255,255,0.8); padding: 2px;" /></div>`
-                : `<div style="font-size: 1.4rem; text-align: center; line-height: 1; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));">${holdingEmojis[d.holdingId] || holdingEmojis['outros']}</div>`;
+                ? `<div style="text-align: center; line-height: 1;"><img src="assets/logos/${logoFile}" style="width: 36px; height: 36px; object-fit: contain; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5)); border-radius: 50%; background: rgba(255,255,255,0.8); padding: 2px;" /></div>`
+                : `<div style="font-size: 1.6rem; text-align: center; line-height: 1; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));">${holdingEmojis[d.holdingId] || holdingEmojis['outros']}</div>`;
 
             const iconMarker = L.marker(d.coords, {
                 icon: L.divIcon({
                     className: 'emoji-marker',
                     html: centerIconHtml,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16]
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
                 }),
                 interactive: false // Não bloqueia o hover e clique da bolha
             }).addTo(map);
@@ -336,34 +336,149 @@ document.addEventListener("DOMContentLoaded", async () => {
                 this.setStyle({ fillOpacity: 0.55, weight: 1, color: color });
             });
 
+            // Click to toggle holding filter
+            const onClickHandler = function(e) {
+                const holdingId = d.holdingId;
+                if (state.selectedHoldings.includes(holdingId)) {
+                    state.selectedHoldings = state.selectedHoldings.filter(h => h !== holdingId);
+                } else {
+                    state.selectedHoldings.push(holdingId);
+                }
+                
+                Array.from(UI.holdingSelect.options).forEach(opt => {
+                    opt.selected = state.selectedHoldings.includes(opt.value);
+                });
+                
+                if (window.dashboardFilters) {
+                    window.dashboardFilters.grupos = new Set(state.selectedHoldings);
+                    if (window.saveFilters) window.saveFilters();
+                    if (window.dispatchFilterChange) window.dispatchFilterChange();
+                }
+                updateMap();
+            };
+
+            marker.on('click', onClickHandler);
+            iconMarker.on('click', onClickHandler);
+
             circleMarkers.push(marker);
             circleMarkers.push(iconMarker);
         });
+
+        // Update coverage badge
+        const totalDists = new Set(dashboardData.series
+            .filter(item => activeHoldings.length === 0 || activeHoldings.includes(item.holding))
+            .map(item => item.distribuidora)).size;
+        const mappedDists = Object.keys(distData).length;
+        const badgeEl = document.getElementById('map-coverage-badge');
+        if (badgeEl) {
+            if (totalDists > mappedDists) {
+                badgeEl.textContent = `Exibindo ${mappedDists} de ${totalDists} distribuidoras mapeadas`;
+            } else {
+                badgeEl.textContent = `Exibindo ${mappedDists} distribuidoras`;
+            }
+        }
+    }
+
+    // --- Tabela de Pequenos (cooperativas sem mapa) ---
+    function updatePequenosTable() {
+        const container = document.getElementById('pequenos-container');
+        const wrapper = document.getElementById('pequenos-table-wrapper');
+        if (!container || !wrapper) return;
+
+        const category = window.dashboardFilters ? window.dashboardFilters.category : 'holdings';
+
+        // Show table only when "pequenos" or "all" tab is active
+        if (category === 'holdings') {
+            container.style.display = 'none';
+            return;
+        }
+
+        // Aggregate data for selected pequenos that have no geoMap coordinates
+        const activeHoldings = state.selectedHoldings;
+        const pequenoData = {};
+
+        dashboardData.series.forEach(item => {
+            if (activeHoldings.length > 0 && !activeHoldings.includes(item.holding)) return;
+            // Only show distributors WITHOUT coordinates
+            if (geoMap[item.distribuidora]) return;
+
+            const distId = item.distribuidora;
+            if (!pequenoData[distId]) {
+                const holdingLabel = dashboardData.groups.find(g => g.id === item.holding)?.label || item.holding;
+                pequenoData[distId] = {
+                    label: item.distribuidora_label || distId,
+                    holding: holdingLabel,
+                    valor: 0,
+                    qtd: 0
+                };
+            }
+            pequenoData[distId].valor += item.valor_pago;
+            pequenoData[distId].qtd += item.qtd_transgressoes;
+        });
+
+        const rows = Object.values(pequenoData).sort((a, b) => b.valor - a.valor);
+
+        if (rows.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'block';
+        wrapper.innerHTML = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>Distribuidora</th>
+                        <th>Grupo</th>
+                        <th style="text-align:right">Compensações (R$)</th>
+                        <th style="text-align:right">Transgressões</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows.map(r => `
+                        <tr>
+                            <td>${escapeHtml(r.label)}</td>
+                            <td>${escapeHtml(r.holding)}</td>
+                            <td style="text-align:right">${fmtMoneyFull(r.valor)}</td>
+                            <td style="text-align:right">${fmtNum(r.qtd, 0)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
     }
 
     // --- Funções de Filtro ---
 
     function initFilters() {
-        // 1. Popular Holdings
-        const holdings = dashboardData.groups;
-        UI.holdingSelect.innerHTML = "";
+        // 1. Popular Holdings via buildGroupTabs
+        const tabsEl = document.getElementById('group-tabs');
+        const allGroups = dashboardData.groups.map(g => ({ id: g.id, label: g.label }));
 
-        holdings.forEach(g => {
-            const option = document.createElement('option');
-            option.value = g.id;
-            option.textContent = g.label;
-            if (state.selectedHoldings.includes(g.id)) option.selected = true;
-            UI.holdingSelect.appendChild(option);
-        });
+        if (tabsEl && window.buildGroupTabs) {
+            window.buildGroupTabs(tabsEl, UI.holdingSelect, allGroups, {
+                onPopulate: function (filtered) {
+                    state.selectedHoldings = filtered
+                        .filter(g => window.dashboardFilters.grupos.has(g.id))
+                        .map(g => g.id);
+                    if (state.selectedHoldings.length === 0) {
+                        state.selectedHoldings = filtered.map(g => g.id);
+                    }
+                    updateMap();
+                    updatePequenosTable();
+                }
+            });
+        }
 
         UI.holdingSelect.addEventListener('change', (e) => {
             const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
-            if (selected.length > 0) {
-                state.selectedHoldings = selected;
-            } else {
-                state.selectedHoldings = []; // Todas ou Nenhuma (Nenhuma plota nada)
+            state.selectedHoldings = selected;
+            if (window.dashboardFilters) {
+                window.dashboardFilters.grupos = new Set(state.selectedHoldings);
+                if (window.saveFilters) window.saveFilters();
             }
             updateMap();
+            updatePequenosTable();
         });
 
         // 2. Metrica
@@ -568,14 +683,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 const resData = await response.json();
 
-                // TODO(security): sanitize LLM output with DOMPurify before innerHTML
                 let htmlContent = resData.insight
                     .replace(/\*\*(.*?)\*\*/g, '<strong style="color: white;">$1</strong>')
                     .replace(/\*(.*?)\*/g, '<em>$1</em>')
                     .replace(/^- (.*)$/gm, '<li style="margin-left: 1.5rem;">$1</li>')
                     .replace(/\n/g, '<br/>');
 
-                aiInsightContainer.innerHTML = htmlContent;
+                const PURIFY_CFG = { ALLOWED_TAGS: ['strong', 'em', 'li', 'br', 'ul', 'ol', 'p'], ALLOWED_ATTR: ['style'] };
+                aiInsightContainer.innerHTML = typeof DOMPurify !== 'undefined'
+                    ? DOMPurify.sanitize(htmlContent, PURIFY_CFG)
+                    : escapeHtml(resData.insight);
 
             } catch (error) {
                 console.error("AI Insight Error:", error);
@@ -622,6 +739,21 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.info('[mapa] filters:change aplicado: period=' + period + ', timelineIndex=' + targetIndex);
         } else {
             console.info('[mapa] filters:change recebido: period=' + period + ' (sem alteração de índice)');
+        }
+
+        if (e.detail && e.detail.grupos) {
+            if (e.detail.grupos.size > 0) {
+                state.selectedHoldings = Array.from(e.detail.grupos);
+            } else {
+                state.selectedHoldings = Array.from(window.MAJOR_HOLDINGS);
+            }
+            if (UI.holdingSelect) {
+                Array.from(UI.holdingSelect.options).forEach(opt => {
+                    opt.selected = state.selectedHoldings.includes(opt.value);
+                });
+            }
+            updateMap();
+            updatePequenosTable();
         }
     });
 

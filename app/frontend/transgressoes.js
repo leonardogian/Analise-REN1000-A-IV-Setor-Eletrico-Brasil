@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let dashboardData = null;
     let chartInstance = null;
     const state = {
-        selectedHoldings: ["neoenergia", "cpfl", "equatorial", "enel", "energisa"], // Principais por padrão
+        selectedHoldings: Array.from(window.MAJOR_HOLDINGS),
         selectedDistributors: [],
         ruralOnly: false
     };
@@ -60,23 +60,64 @@ document.addEventListener("DOMContentLoaded", async () => {
         showError(UI.insightContainer, 'Erro ao carregar dados: ' + error.message);
     }
 
+    // --- Listener de Filtro Global ---
+    window.addEventListener('filters:change', (e) => {
+        if (!e.detail || !dashboardData) return;
+        let needsUpdate = false;
+
+        if (e.detail.grupos) {
+            if (e.detail.grupos.size > 0) {
+                state.selectedHoldings = Array.from(e.detail.grupos);
+            } else {
+                // Empty set → reset to major holdings
+                state.selectedHoldings = Array.from(window.MAJOR_HOLDINGS);
+            }
+            if (UI.holdingSelect) {
+                Array.from(UI.holdingSelect.options).forEach(opt => {
+                    opt.selected = state.selectedHoldings.includes(opt.value);
+                });
+            }
+            updateDistributorList();
+            needsUpdate = true;
+        }
+
+        // Period change also triggers re-render
+        if (e.detail.period != null) {
+            needsUpdate = true;
+        }
+
+        if (needsUpdate) updateChart();
+    });
+
     // --- Funções de Filtro ---
 
     function initFilters() {
-        // 1. Popular Holdings
-        const holdings = dashboardData.groups;
-        UI.holdingSelect.innerHTML = "";
+        // 1. Popular Holdings via buildGroupTabs
+        const tabsEl = document.getElementById('group-tabs');
+        const allGroups = dashboardData.groups.map(g => ({ id: g.id, label: g.label }));
 
-        holdings.forEach(g => {
-            const option = document.createElement('option');
-            option.value = g.id;
-            option.textContent = g.label;
-            if (state.selectedHoldings.includes(g.id)) option.selected = true;
-            UI.holdingSelect.appendChild(option);
-        });
+        if (tabsEl && window.buildGroupTabs) {
+            window.buildGroupTabs(tabsEl, UI.holdingSelect, allGroups, {
+                onPopulate: function (filtered) {
+                    // Sync state with what's visible in the select
+                    state.selectedHoldings = filtered
+                        .filter(g => window.dashboardFilters.grupos.has(g.id))
+                        .map(g => g.id);
+                    if (state.selectedHoldings.length === 0) {
+                        state.selectedHoldings = filtered.map(g => g.id);
+                    }
+                    updateDistributorList();
+                    updateChart();
+                }
+            });
+        }
 
         UI.holdingSelect.addEventListener('change', (e) => {
             state.selectedHoldings = Array.from(e.target.selectedOptions).map(opt => opt.value);
+            if (window.dashboardFilters) {
+                window.dashboardFilters.grupos = new Set(state.selectedHoldings);
+                if (window.saveFilters) window.saveFilters();
+            }
             updateDistributorList();
             updateChart();
         });
@@ -130,10 +171,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             let mesFinal = '—';
             if (inflection_point.ano_mes) {
                 let [ano, mes] = inflection_point.ano_mes.split('-');
+                ano = ano.replace('.0', '');
+                mes = mes.replace('.0', '');
                 const mesFormatado = new Date(ano, mes - 1).toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
                 mesFinal = mesFormatado.charAt(0).toUpperCase() + mesFormatado.slice(1) + '/' + ano.slice(-2);
             } else if (inflection_point.mes) {
                 mesFinal = inflection_point.mes;
+                if (mesFinal.includes('.0')) {
+                    mesFinal = mesFinal.replace('.0', '20');
+                }
             }
             UI.inflectionMonth.textContent = mesFinal;
 
@@ -169,6 +215,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const ctx = document.getElementById('transgressionsChart').getContext('2d');
 
         // Filtrar Séries Temporais
+        const period = window.dashboardFilters ? window.dashboardFilters.period : 'all';
         let filteredSeries = dashboardData.series.filter(s => {
             // Filtrar por Rural
             if (state.ruralOnly && !s.is_rural) return false;
@@ -179,14 +226,19 @@ document.addEventListener("DOMContentLoaded", async () => {
             // Filtrar por Distribuidora (se houver alguma selecionada, senão pega todas da holding)
             if (state.selectedDistributors.length > 0 && !state.selectedDistributors.includes(s.distribuidora)) return false;
 
+            // Filtrar por Período (pré/pós REN 1000)
+            if (period === 'pre_2022' && s.ano >= 2022) return false;
+            if (period === 'pos_2022' && s.ano < 2022) return false;
+
             return true;
         });
 
         // Precisamos montar os datasets. Vamos agregar por Holding para visualização macro, 
         // ou por Distribuidora se houver distribuidores específicos selecionados.
 
-        // Obter array unificado de meses (Labels do X)
-        const allMonths = [...new Set(dashboardData.series.map(s => s.mes))];
+        // Obter array unificado de meses do período filtrado (Labels do X), em ordem cronológica
+        const sortedFiltered = [...filteredSeries].sort((a, b) => a.ano !== b.ano ? a.ano - b.ano : a.mes_num - b.mes_num);
+        const allMonths = [...new Set(sortedFiltered.map(s => s.mes))];
 
         // Decidir o nível de agregação (Holding ou Distribuidora)
         const aggregateBy = state.selectedDistributors.length > 0 ? 'distribuidora' : 'holding';
@@ -210,13 +262,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             // Dados para a Curva (Valores Pagos R$)
             const lineData = allMonths.map(month => {
                 const records = filteredSeries.filter(s => s.mes === month && s[aggregateBy] === groupId);
-                return records.reduce((sum, r) => sum + r.valor_pago, 0);
+                return safeSum(records.map(r => r.valor_pago));
             });
 
             // Dados para as Barras (Qtd Transgressões)
             const barData = allMonths.map(month => {
                 const records = filteredSeries.filter(s => s.mes === month && s[aggregateBy] === groupId);
-                return records.reduce((sum, r) => sum + r.qtd_transgressoes, 0);
+                return safeSum(records.map(r => r.qtd_transgressoes));
             });
 
             // Converte cor hex para rgba com transparência
@@ -265,114 +317,120 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         });
 
+        // Update datasets without destroying chart (criterion #5)
         if (chartInstance) {
-            chartInstance.destroy();
-        }
+            chartInstance.data.labels = allMonths;
+            chartInstance.data.datasets = datasets;
+            chartInstance.update();
+        } else {
+            // Dark-only Iberdrola chart defaults
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.color = '#4a6656';
+            Chart.defaults.borderColor = 'rgba(19, 42, 26, 0.6)';
 
-        // Dark-only Iberdrola chart defaults
-        Chart.defaults.font.family = "'Inter', sans-serif";
-        Chart.defaults.color = '#4a6656';
-        Chart.defaults.borderColor = 'rgba(19, 42, 26, 0.6)';
+            const gridColor = 'rgba(19, 42, 26, 0.4)';
 
-        const gridColor = 'rgba(19, 42, 26, 0.4)';
-
-        chartInstance = new Chart(ctx, {
-            data: {
-                labels: allMonths,
-                datasets: datasets
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
+            chartInstance = new Chart(ctx, {
+                data: {
+                    labels: allMonths,
+                    datasets: datasets
                 },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20,
-                            font: { family: "'Outfit', sans-serif", size: 13, weight: '500' }
-                        }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
                     },
-                    tooltip: {
-                        backgroundColor: 'rgba(10, 26, 16, 0.95)',
-                        titleFont: { size: 14, family: "'Inter', sans-serif", weight: '600' },
-                        titleColor: '#F0FDF4',
-                        bodyFont: { size: 13, family: "'Inter', sans-serif" },
-                        bodyColor: '#94a3b8',
-                        padding: 16,
-                        cornerRadius: 12,
-                        borderColor: 'rgba(0, 198, 90, 0.3)',
-                        borderWidth: 1,
-                        boxPadding: 4,
-                        usePointStyle: true,
-                        callbacks: {
-                            label: function (context) {
-                                let label = context.dataset.label || '';
-                                if (label) label += ': ';
-                                if (context.dataset.type === 'line') {
-                                    label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
-                                } else {
-                                    label += new Intl.NumberFormat('pt-BR').format(context.parsed.y) + ' ocorrências';
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: { family: "'Outfit', sans-serif", size: 13, weight: '500' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 26, 16, 0.95)',
+                            titleFont: { size: 14, family: "'Inter', sans-serif", weight: '600' },
+                            titleColor: '#F0FDF4',
+                            bodyFont: { size: 13, family: "'Inter', sans-serif" },
+                            bodyColor: '#94a3b8',
+                            padding: 16,
+                            cornerRadius: 12,
+                            borderColor: 'rgba(0, 198, 90, 0.3)',
+                            borderWidth: 1,
+                            boxPadding: 4,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.dataset.type === 'line') {
+                                        label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+                                    } else {
+                                        label += new Intl.NumberFormat('pt-BR').format(context.parsed.y) + ' ocorrências';
+                                    }
+                                    return label;
                                 }
-                                return label;
                             }
                         }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            color: gridColor,
-                            drawBorder: false
-                        },
-                        ticks: {
-                            font: { size: 12, family: "'Inter', sans-serif" }
-                        }
                     },
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: {
-                            display: true,
-                            text: 'Compensações Pagas (R$)',
-                            color: '#F0FDF4',
-                            font: { family: "'Outfit', sans-serif", size: 14 }
-                        },
-                        grid: {
-                            color: gridColor,
-                            drawBorder: false
-                        },
-                        ticks: {
-                            callback: function (value) {
-                                if (value >= 1e6) return 'R$ ' + (value / 1e6).toFixed(1) + 'M';
-                                if (value >= 1e3) return 'R$ ' + (value / 1e3).toFixed(0) + 'k';
-                                return 'R$ ' + value;
+                    scales: {
+                        x: {
+                            grid: {
+                                color: gridColor,
+                                drawBorder: false
                             },
-                            font: { family: "'Inter', sans-serif", size: 11 }
-                        }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: {
-                            display: true,
-                            text: 'Qtd. Transgressões',
-                            color: '#94a3b8',
-                            font: { family: "'Outfit', sans-serif", size: 14 }
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 12,
+                                maxRotation: 45,
+                                font: { size: 12, family: "'Inter', sans-serif" }
+                            }
                         },
-                        grid: {
-                            drawOnChartArea: false, // Só mostrar grid do eixo principal
-                        }
-                    },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Compensações Pagas (R$)',
+                                color: '#F0FDF4',
+                                font: { family: "'Outfit', sans-serif", size: 14 }
+                            },
+                            grid: {
+                                color: gridColor,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                callback: function (value) {
+                                    if (value >= 1e6) return 'R$ ' + (value / 1e6).toFixed(1) + 'M';
+                                    if (value >= 1e3) return 'R$ ' + (value / 1e3).toFixed(0) + 'k';
+                                    return 'R$ ' + value;
+                                },
+                                font: { family: "'Inter', sans-serif", size: 11 }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Qtd. Transgressões',
+                                color: '#94a3b8',
+                                font: { family: "'Outfit', sans-serif", size: 14 }
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            }
+                        },
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     // --- Funções de IA ---
@@ -453,14 +511,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 const data = await response.json();
 
-                // TODO(security): sanitize LLM output with DOMPurify before innerHTML
                 let htmlContent = data.insight
                     .replace(/\\*\\*(.*?)\\*\\*/g, '<strong style="color: white;">$1</strong>')
                     .replace(/\\*(.*?)\\*/g, '<em>$1</em>')
                     .replace(/^- (.*)$/gm, '<li style="margin-left: 1.5rem;">$1</li>')
                     .replace(/\n/g, '<br/>');
 
-                UI.aiInsightContainer.innerHTML = htmlContent;
+                const PURIFY_CFG = { ALLOWED_TAGS: ['strong', 'em', 'li', 'br', 'ul', 'ol', 'p'], ALLOWED_ATTR: ['style'] };
+                UI.aiInsightContainer.innerHTML = typeof DOMPurify !== 'undefined'
+                    ? DOMPurify.sanitize(htmlContent, PURIFY_CFG)
+                    : escapeHtml(data.insight);
 
             } catch (error) {
                 console.error("AI Insight Error:", error);

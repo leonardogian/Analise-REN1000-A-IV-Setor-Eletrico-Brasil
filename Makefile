@@ -12,7 +12,8 @@ ANALYSIS_DIR := data/processed/analysis
 	dashboard dashboard-full serve backend dev-serve preflight-backend pipeline \
 	check-artifacts check-artifacts-full validate-contracts validate-contracts-processed \
 	test-fast test-smoke test clean-analysis venv-recreate doctor extract-ibge inspect-tables \
-	docker-up docker-down docker-build docker-ps logs logs-backend logs-nginx health
+	docker-up docker-down docker-build docker-ps logs logs-backend logs-nginx health \
+	docker-full-up docker-full-down docker-full-ps
 
 help:
 	@echo "Targets disponíveis:"
@@ -52,6 +53,11 @@ help:
 	@echo "  make logs-backend    - segue logs do backend FastAPI"
 	@echo "  make logs-nginx      - segue logs do nginx"
 	@echo "  make health          - checa /health e exibe JSON formatado"
+	@echo ""
+	@echo "Docker (stack completa):"
+	@echo "  make docker-full-up  - sobe app + banco + kestra em background"
+	@echo "  make docker-full-down - para e remove todos os containers"
+	@echo "  make docker-full-ps  - status de todos os containers"
 
 venv:
 	python3 -m venv .venv
@@ -181,3 +187,25 @@ logs-nginx: ## Segue apenas os logs do nginx
 
 health: ## Verifica o endpoint /health e exibe o status formatado
 	@curl -s http://localhost:$(PORT)/health | $(PYTHON) -m json.tool
+
+docker-full-up: ## Sobe app + banco + kestra (stack completa)
+	@echo "🐳 Subindo stack completa em http://localhost:$(PORT)"
+	docker compose \
+	  -f docker/docker-compose.yml \
+	  -f docker/docker-compose.db.yml \
+	  -f docker/docker-compose.kestra.yml \
+	  up -d
+
+docker-full-down: ## Para e remove todos os containers (app + banco + kestra)
+	docker compose \
+	  -f docker/docker-compose.yml \
+	  -f docker/docker-compose.db.yml \
+	  -f docker/docker-compose.kestra.yml \
+	  down
+
+docker-full-ps: ## Status de todos os containers (app + banco + kestra)
+	docker compose \
+	  -f docker/docker-compose.yml \
+	  -f docker/docker-compose.db.yml \
+	  -f docker/docker-compose.kestra.yml \
+	  ps

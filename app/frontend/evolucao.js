@@ -5,8 +5,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     let allData = [];
     const state = {
         metric: 'fora_prazo_por_100k_uc_mes',
-        selectedHoldings: []
+        selectedHoldings: [],
+        showSubsidiaries: false
     };
+
+    // ID mappings: timeseries uses title-case ("Neoenergia"), filters use lowercase ("neoenergia")
+    const idToGrupo = {};  // "neoenergia" → "Neoenergia"
+    const grupoToId = {};  // "Neoenergia" → "neoenergia"
+
+    // Hierarchy: parent_id → [franchise grupo names]
+    let groupsHierarchy = {};
+    // All groups for buildGroupTabs: { id, label }
+    let allGroupsList = [];
 
     const fmtNum = v => window.fmtNum(v, 3);
     const fmtMoney = v => window.fmtMoneyPrecise(v, 4);
@@ -19,14 +29,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     // REN 1000 boundary: April 2022 (vigência)
     const REN1000_BOUNDARY = '2022-04';
 
-
-
     // Iberdrola heatmap: green (low) → orange (mid) → red (high)
     function metricToColor(normalized) {
-        const hue = 140 - normalized * 140; // 140=green → 0=red
+        const hue = 140 - normalized * 140;
         const sat = 70 + normalized * 30;
         const lit = 28 + normalized * 12;
         return `hsl(${hue}, ${sat}%, ${lit}%)`;
+    }
+
+    /** Truncate long franchise names: "Neoenergia Coelba — COMPANHIA..." → "Neoenergia Coelba" */
+    function shortLabel(name) {
+        const dashIdx = name.indexOf(' — ');
+        return dashIdx > 0 ? name.substring(0, dashIdx) : name;
     }
 
     if (typeof showSkeleton === 'function') showSkeleton('heatmap-container', 420);
@@ -36,18 +50,62 @@ document.addEventListener("DOMContentLoaded", async () => {
         const json = await res.json();
         if (typeof hideSkeleton === 'function') hideSkeleton('heatmap-container');
 
-        allData = (json.data || []).filter(d => d.tipo === 'holding');
-        const holdings = [...new Set(allData.map(d => d.grupo))].sort();
+        allData = (json.data || []).filter(d =>
+            d.tipo === 'holding' || (d.tipo && d.tipo.startsWith('franquia'))
+        );
 
-        // Apply persisted global holding filter if set on another page
+        // Build hierarchy and ID mappings
+        groupsHierarchy = {};
+        const seenGroups = new Set();
+
+        allData.forEach(d => {
+            if (d.tipo === 'holding') {
+                const id = window.normalizeGroupId(d.grupo);
+                idToGrupo[id] = d.grupo;
+                grupoToId[d.grupo] = id;
+                if (!groupsHierarchy[id]) groupsHierarchy[id] = [];
+                seenGroups.add(id);
+            } else if (d.tipo && d.tipo.startsWith('franquia|')) {
+                const parentId = d.tipo.split('|')[1];
+                if (!groupsHierarchy[parentId]) groupsHierarchy[parentId] = [];
+                const shortName = shortLabel(d.grupo);
+                if (!groupsHierarchy[parentId].includes(shortName)) {
+                    groupsHierarchy[parentId].push(shortName);
+                }
+                // Map franchise grupo name to parent id
+                grupoToId[d.grupo] = parentId;
+                // For cooperatives that are their own franchise
+                if (!seenGroups.has(parentId)) {
+                    idToGrupo[parentId] = shortName;
+                    seenGroups.add(parentId);
+                }
+            }
+        });
+
+        // Build allGroupsList for buildGroupTabs
+        allGroupsList = Array.from(seenGroups).map(id => ({
+            id: id,
+            label: idToGrupo[id] || id
+        }));
+
+        // Apply persisted global holding filter
         if (window.dashboardFilters && window.dashboardFilters.grupos.size > 0) {
-            const filtered = holdings.filter(h => window.dashboardFilters.grupos.has(h));
-            state.selectedHoldings = filtered.length > 0 ? filtered : [...holdings];
+            state.selectedHoldings = allGroupsList
+                .filter(g => window.dashboardFilters.grupos.has(g.id))
+                .map(g => g.id);
+            if (state.selectedHoldings.length === 0) {
+                // Fallback: select all holdings in current category
+                state.selectedHoldings = allGroupsList
+                    .filter(g => window.isHolding(g.id))
+                    .map(g => g.id);
+            }
         } else {
-            state.selectedHoldings = [...holdings];
+            state.selectedHoldings = allGroupsList
+                .filter(g => window.isHolding(g.id))
+                .map(g => g.id);
         }
 
-        initFilters(holdings);
+        initFilters();
         renderHeatmap();
 
     } catch (err) {
@@ -55,32 +113,137 @@ document.addEventListener("DOMContentLoaded", async () => {
         showError(document.getElementById('heatmap-container'), err.message);
     }
 
-    function initFilters(holdings) {
+    // --- Listener de Filtro Global ---
+    window.addEventListener('filters:change', (e) => {
+        if (!e.detail || allData.length === 0) return;
+        let needsUpdate = false;
+
+        if (e.detail.grupos) {
+            if (e.detail.grupos.size > 0) {
+                // Map incoming lowercase IDs to our known groups
+                state.selectedHoldings = allGroupsList
+                    .filter(g => e.detail.grupos.has(g.id))
+                    .map(g => g.id);
+            } else {
+                state.selectedHoldings = allGroupsList
+                    .filter(g => window.isHolding(g.id))
+                    .map(g => g.id);
+            }
+            const sel = document.getElementById('holding-select');
+            if (sel) {
+                Array.from(sel.options).forEach(opt => {
+                    opt.selected = state.selectedHoldings.includes(opt.value);
+                });
+            }
+            needsUpdate = true;
+        }
+
+        if (e.detail.period != null) {
+            needsUpdate = true;
+        }
+
+        if (needsUpdate) renderHeatmap();
+    });
+
+    function initFilters() {
         const sel = document.getElementById('holding-select');
-        holdings.forEach(h => {
-            const opt = document.createElement('option');
-            opt.value = h;
-            opt.textContent = h;
-            opt.selected = state.selectedHoldings.includes(h);
-            sel.appendChild(opt);
-        });
+        const tabsEl = document.getElementById('group-tabs');
+
+        // Use buildGroupTabs for category switching
+        if (tabsEl && window.buildGroupTabs) {
+            window.buildGroupTabs(tabsEl, sel, allGroupsList, {
+                onPopulate: function (filtered) {
+                    state.selectedHoldings = filtered
+                        .filter(g => window.dashboardFilters.grupos.has(g.id))
+                        .map(g => g.id);
+                    if (state.selectedHoldings.length === 0) {
+                        state.selectedHoldings = filtered.map(g => g.id);
+                    }
+                    renderHeatmap();
+                }
+            });
+        }
+
         sel.addEventListener('change', e => {
             state.selectedHoldings = Array.from(e.target.selectedOptions).map(o => o.value);
+            if (window.dashboardFilters) {
+                window.dashboardFilters.grupos = new Set(state.selectedHoldings);
+                if (window.saveFilters) window.saveFilters();
+            }
             renderHeatmap();
         });
+
+        // Metric radios
         document.querySelectorAll('input[name="metric-radio"]').forEach(r => {
             r.addEventListener('change', e => {
                 state.metric = e.target.value;
                 renderHeatmap();
             });
         });
+
+        // Show subsidiaries toggle
+        const subToggle = document.getElementById('show-subsidiaries');
+        if (subToggle) {
+            subToggle.addEventListener('change', e => {
+                state.showSubsidiaries = e.target.checked;
+                renderHeatmap();
+            });
+        }
     }
 
     function renderHeatmap() {
         const container = document.getElementById('heatmap-container');
         container.innerHTML = '';
+        container.style.overflowX = 'auto';
 
-        const filtered = allData.filter(d => state.selectedHoldings.includes(d.grupo));
+        const period = window.dashboardFilters ? window.dashboardFilters.period : 'all';
+
+        // Build list of grupo names to show
+        let gruposToShow = [];
+
+        state.selectedHoldings.forEach(id => {
+            const grupoName = idToGrupo[id];
+            if (!grupoName) return;
+
+            // Check if this is a real holding (tipo=holding exists)
+            const isRealHolding = allData.some(d => d.tipo === 'holding' && window.normalizeGroupId(d.grupo) === id);
+
+            if (isRealHolding) {
+                gruposToShow.push(grupoName);
+                // Add subsidiaries if toggle is on
+                if (state.showSubsidiaries && groupsHierarchy[id]) {
+                    groupsHierarchy[id].forEach(franchiseName => {
+                        // Find matching data grupo name (may be long)
+                        const matchingGrupos = allData
+                            .filter(d => d.tipo && d.tipo.startsWith('franquia|' + id))
+                            .map(d => d.grupo);
+                        const unique = [...new Set(matchingGrupos)];
+                        unique.forEach(g => {
+                            if (!gruposToShow.includes(g)) gruposToShow.push(g);
+                        });
+                    });
+                }
+            } else {
+                // Cooperative: show its franchise data directly
+                const matchingGrupos = allData
+                    .filter(d => d.tipo === 'franquia|' + id)
+                    .map(d => d.grupo);
+                const unique = [...new Set(matchingGrupos)];
+                unique.forEach(g => {
+                    if (!gruposToShow.includes(g)) gruposToShow.push(g);
+                });
+            }
+        });
+
+        let filtered = allData.filter(d => gruposToShow.includes(d.grupo));
+
+        // Apply period filter
+        if (period === 'pre_2022') {
+            filtered = filtered.filter(d => d.date < REN1000_BOUNDARY);
+        } else if (period === 'pos_2022') {
+            filtered = filtered.filter(d => d.date >= REN1000_BOUNDARY);
+        }
+
         if (!filtered.length) {
             container.innerHTML = '<p style="padding:1rem; color:var(--text-muted)">Nenhum dado para os filtros selecionados.</p>';
             return;
@@ -121,7 +284,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const grid = document.createElement('div');
         grid.className = 'heatmap-grid';
-        grid.style.gridTemplateColumns = `140px repeat(${months.length}, 22px)`;
+        grid.style.gridTemplateColumns = `140px repeat(${months.length}, 35px)`;
+        grid.style.minWidth = '800px';
 
         // Header row: corner + month labels
         grid.appendChild(document.createElement('div'));
@@ -130,14 +294,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             lbl.className = 'heatmap-axis-label';
             const [yr, mo] = m.split('-');
 
-            // Show REN 1000 label at boundary
             if (colIdx === boundaryIdx) {
                 lbl.textContent = 'REN 1000';
                 lbl.style.color = '#1A8FE3';
                 lbl.style.fontWeight = '700';
                 lbl.style.fontSize = '0.6rem';
             } else {
-                lbl.textContent = mo === '01' ? `Jan/${yr.slice(2)}` : (mo === '07' ? 'Jul' : '');
+                const mesesLabel = { '01': `Jan/${yr.slice(2)}`, '04': 'Abr', '07': 'Jul', '10': 'Out' };
+                lbl.textContent = mesesLabel[mo] || '';
             }
             lbl.title = m;
             grid.appendChild(lbl);
@@ -147,7 +311,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         holdings.forEach(holding => {
             const rowLabel = document.createElement('div');
             rowLabel.className = 'heatmap-row-label';
-            rowLabel.textContent = holding;
+            rowLabel.textContent = shortLabel(holding);
+            rowLabel.title = holding;
             grid.appendChild(rowLabel);
 
             const pv = peakValley[holding] || {};
@@ -157,7 +322,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const cell = document.createElement('div');
                 cell.className = 'heatmap-cell';
 
-                // Add REN 1000 boundary separator
                 if (colIdx === boundaryIdx) {
                     cell.style.borderLeft = '2px solid #1A8FE3';
                 }
@@ -165,9 +329,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (val != null && isFinite(val)) {
                     const norm = (val - vMin) / range;
                     cell.style.backgroundColor = metricToColor(norm);
-                    cell.title = `${holding} — ${m}: ${fmtNum(val)}`;
+                    cell.title = `${shortLabel(holding)} — ${m}: ${fmtNum(val)}`;
 
-                    // Highlight peak and valley
                     if (pv.peak && pv.peak.m === m) {
                         cell.style.outline = '2px solid #ef4444';
                         cell.style.outlineOffset = '-1px';
@@ -182,14 +345,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                     cell.addEventListener('mouseenter', () => {
                         const fmt = state.metric.includes('compensacao') ? fmtMoney : fmtNum;
-                        let info = `${holding} · ${m}: ${fmt(val)}`;
+                        let info = `${shortLabel(holding)} · ${m}: ${fmt(val)}`;
                         if (pv.peak && pv.peak.m === m) info += ' (pico)';
                         if (pv.valley && pv.valley.m === m) info += ' (vale)';
                         document.getElementById('heatmap-tooltip-info').textContent = info;
                     });
                 } else {
                     cell.style.backgroundColor = 'rgba(255,255,255,0.03)';
-                    cell.title = `${holding} — ${m}: sem dados`;
+                    cell.title = `${shortLabel(holding)} — ${m}: sem dados`;
                 }
                 grid.appendChild(cell);
             });
@@ -208,7 +371,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         container.appendChild(legend);
 
         // Summary
-        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+        const avg = safeAvg(values) ?? 0;
         const maxEntry = filtered.reduce((a, b) => b[state.metric] > a[state.metric] ? b : a);
         const minEntry = filtered.reduce((a, b) => {
             const bVal = b[state.metric];
@@ -220,9 +383,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         const fmtVal = state.metric.includes('compensacao') ? fmtMoney : fmtNum;
         document.getElementById('evolucao-summary').innerHTML = `
             <p>Média: <strong>${fmtNum(avg)}</strong></p>
-            <p style="margin-top:0.5rem">Pico: <strong>${escapeHtml(maxEntry.grupo)}</strong> em ${escapeHtml(maxEntry.date)}<br>
+            <p style="margin-top:0.5rem">Pico: <strong>${escapeHtml(shortLabel(maxEntry.grupo))}</strong> em ${escapeHtml(maxEntry.date)}<br>
             <strong style="color:#ef4444">${fmtVal(maxEntry[state.metric])}</strong></p>
-            <p style="margin-top:0.5rem">Vale: <strong>${escapeHtml(minEntry.grupo)}</strong> em ${escapeHtml(minEntry.date)}<br>
+            <p style="margin-top:0.5rem">Vale: <strong>${escapeHtml(shortLabel(minEntry.grupo))}</strong> em ${escapeHtml(minEntry.date)}<br>
             <strong style="color:#10b981">${fmtVal(minEntry[state.metric])}</strong></p>
         `;
     }

@@ -14,8 +14,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const METRIC_LABELS = {
         variacao_taxa_pct: { label: 'Variação Taxa (%) Pós-REN 1000', fmt: fmtVar, unit: '', isVariation: true },
+        qtd_fora_prazo: { label: 'Qtd. Falhas Absolutas (Total)', fmt: fmtNum, unit: 'falhas' },
         fora_prazo_por_100k_uc_mes: { label: 'Falhas / 100k UCs-mês', fmt: fmtNum, unit: 'falhas/100k UC' },
         taxa_fora_prazo: { label: 'Taxa Fora do Prazo', fmt: fmtPct, unit: '' },
+        compensacao_rs: { label: 'Compensação Absoluta (R$)', fmt: fmtMoney, unit: '' },
         compensacao_rs_por_uc_mes: { label: 'Compensação R$/UC-mês', fmt: fmtMoney, unit: '' },
     };
 
@@ -67,7 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (preferred) { metricSelect.value = preferred; state.metric = preferred; }
 
         metricSelect.addEventListener('change', e => { state.metric = e.target.value; render(); });
-        document.getElementById('topn-select').addEventListener('change', e => { state.topN = +e.target.value; render(); });
+        document.getElementById('topn-select').addEventListener('change', e => { state.topN = +e.target.value || 10; render(); });
         document.getElementById('asc-toggle').addEventListener('change', e => { state.ascending = e.target.checked; render(); });
     }
 
@@ -88,11 +90,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     function renderChart(sliced) {
         const ctx = document.getElementById('rankingChart').getContext('2d');
+        const container = document.getElementById('rankingChart').parentElement;
+        container.style.minHeight = Math.max(350, sliced.length * 35) + 'px';
+
         if (chartInstance) chartInstance.destroy();
 
 
         const metaInfo = METRIC_LABELS[state.metric] || { fmt: fmtNum, unit: '' };
         const isVariation = metaInfo.isVariation || false;
+
+        let scaleType = 'linear';
+        if (!isVariation) {
+            const vals = sliced.map(d => d[state.metric]).filter(v => v > 0);
+            if (vals.length > 0) {
+                const max = Math.max(...vals);
+                const min = Math.min(...vals);
+                if (min > 0 && (max / min > 20)) scaleType = 'logarithmic';
+            }
+        }
 
         document.getElementById('chart-title').textContent =
             `Ranking: ${METRIC_LABELS[state.metric]?.label || state.metric}`;
@@ -165,7 +180,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 },
                 scales: {
-                    x: { grid: { color: gridColor } },
+                    x: { type: scaleType, grid: { color: gridColor } },
                     y: { grid: { color: gridColor }, ticks: { font: { size: 11 } } }
                 }
             }

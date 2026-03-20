@@ -153,6 +153,11 @@ def build_kpi_overview(kpi: pd.DataFrame) -> dict:
 
     pre_taxa = pre["taxa_fora_prazo"].mean() if len(pre) > 0 else 0
     pos_taxa = pos["taxa_fora_prazo"].mean() if len(pos) > 0 else 0
+    # Guard all-NaN .mean() results (NaN propagates to delta calculations)
+    if pd.isna(pre_taxa):
+        pre_taxa = 0
+    if pd.isna(pos_taxa):
+        pos_taxa = 0
     pre_comp = pre["compensacao_rs"].sum() if len(pre) > 0 else 0
     pos_comp = pos["compensacao_rs"].sum() if len(pos) > 0 else 0
     pre_serv = pre["qtd_serv"].sum() if len(pre) > 0 else 0
@@ -190,6 +195,7 @@ def build_fato_mensal_distribuidora(df: pd.DataFrame) -> list[dict]:
         "ano",
         "mes",
         "group_id",
+        "group_label",
         "distributor_id",
         "sigagente",
         "nomagente",
@@ -1054,6 +1060,8 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
             compensacao_rs_por_uc_mes=("compensacao_rs_por_uc_mes", "mean"),
             taxa_fora_prazo=("taxa_fora_prazo", "mean"),
             n_distribuidoras=("distributor_id", "nunique"),
+            qtd_fora_prazo=("qtd_fora_prazo", "sum"),
+            compensacao_rs=("compensacao_rs", "sum"),
         )
         porte_by_group = df_latest.groupby("group_id")["bucket_porte"].agg(
             lambda x: x.mode().iloc[0] if len(x) > 0 else "N/A"
@@ -1108,6 +1116,8 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
                 "fora_prazo_por_100k_uc_mes": _safe(row["fora_prazo_por_100k_uc_mes"]),
                 "compensacao_rs_por_uc_mes": _safe(row["compensacao_rs_por_uc_mes"]),
                 "taxa_fora_prazo": _safe(row["taxa_fora_prazo"]),
+                "qtd_fora_prazo": int(row["qtd_fora_prazo"]),
+                "compensacao_rs": _safe(row["compensacao_rs"]),
                 "n_distribuidoras": int(row["n_distribuidoras"]),
                 "porte": str(row["porte"]) if pd.notna(row["porte"]) else "N/A",
             }
@@ -1141,7 +1151,9 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
         for d in distributors:
             subset = df[df["distributor_label"] == d]
             if not subset.empty:
-                dfs.append(calc_mean(subset, d, "franquia"))
+                grupo_mae = str(subset["group_label"].iloc[0]) if "group_label" in subset.columns else str(subset["group_id"].iloc[0])
+                dfs.append(calc_mean(subset, d, "franquia|" + grupo_mae))
+                
                 
         final_df = pd.concat(dfs, ignore_index=True)
         ts_data = []

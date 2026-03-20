@@ -455,7 +455,7 @@ function renderOverview(data) {
         const { period, base, grupos, porte } = window.dashboardFilters;
         
         let filtered = rawData.filter(d => {
-            if (grupos.size > 0 && !grupos.has(d.group_label)) return false;
+            if (grupos.size > 0 && !grupos.has(d.group_id)) return false;
             // Porte
             if (porte.size > 0 && !porte.has(d.bucket_porte)) return false;
             return true;
@@ -1148,16 +1148,22 @@ async function renderAdvancedAnalytics() {
             fetch('./dashboard_timeseries.json').then(r => r.ok ? r.json() : { data: [] })
         ]);
 
-        // Read global filter state
+        // Read global filter state (grupos uses group_id like "neoenergia")
         const activeGrupos = window.dashboardFilters ? window.dashboardFilters.grupos : null;
         const totalGrupos = document.getElementById('filter-grupo')?.options.length || 0;
         // Only filter if some groups are deselected (not all selected)
         const shouldFilterGrupo = activeGrupos && activeGrupos.size > 0 && activeGrupos.size < totalGrupos;
 
+        // Build label→id map for heatmap (x values are "Grupo Neoenergia" format)
+        const labelToGroupId = {};
+        (dashboardState.data.distributor_groups || []).forEach(g => {
+            labelToGroupId[g.group_label] = g.group_id;
+        });
+
         if (heatmapRes.data && heatmapRes.data.length > 0) {
             let data = heatmapRes.data;
             if (shouldFilterGrupo) {
-                data = data.filter(d => activeGrupos.has(d.x));
+                data = data.filter(d => activeGrupos.has(labelToGroupId[d.x] || d.x.replace(/^Grupo\s+/i, '').toLowerCase()));
             }
             const xLabels = [...new Set(data.map(d => d.x))];
             const yLabels = [...new Set(data.map(d => d.y))];
@@ -1218,9 +1224,8 @@ async function renderAdvancedAnalytics() {
             };
             if (shouldFilterGrupo) {
                 data = data.filter(d => {
-                    const h = MAJOR_HOLDINGS[d.holding];
-                    if (!h) return true; // keep "outros"
-                    return activeGrupos.has('Grupo ' + h.label);
+                    if (!d.holding) return true; // keep "outros"
+                    return activeGrupos.has(d.holding);
                 });
             }
             const grouped = {};
@@ -1489,20 +1494,30 @@ function renderAll(data) {
         renderRegulatory(view, distributors, colors);
     }
 
-    // Populate Grupo Economico filter from data
+    // Populate Grupo Economico filter from data (use group_id for values)
     const grupoSelect = document.getElementById('filter-grupo');
+    const groupTabsEl = document.getElementById('group-tabs');
     if (grupoSelect && grupoSelect.options.length === 0 && data.distributor_groups) {
-        const groups = [...new Map(data.distributor_groups.map(g => [g.group_label, g])).values()];
-        groups.sort((a, b) => a.group_label.localeCompare(b.group_label));
-        groups.forEach(g => {
-            const opt = document.createElement('option');
-            opt.value = g.group_label;
-            opt.textContent = g.group_label;
-            opt.selected = true;
-            grupoSelect.appendChild(opt);
-        });
-        // Initialize filter state with all groups selected
-        window.dashboardFilters.grupos = new Set(groups.map(g => g.group_label));
+        const allGroups = [...new Map(data.distributor_groups.map(g => [g.group_id, g])).values()]
+            .map(g => ({ id: g.group_id, label: g.group_label }));
+
+        if (groupTabsEl && window.buildGroupTabs) {
+            window.buildGroupTabs(groupTabsEl, grupoSelect, allGroups);
+        } else {
+            // Fallback: populate directly
+            allGroups.sort((a, b) => a.label.localeCompare(b.label));
+            const persistedGrupos = window.dashboardFilters.grupos;
+            allGroups.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.id;
+                opt.textContent = g.label;
+                opt.selected = persistedGrupos.size > 0 ? persistedGrupos.has(g.id) : true;
+                grupoSelect.appendChild(opt);
+            });
+            if (persistedGrupos.size === 0) {
+                window.dashboardFilters.grupos = new Set(allGroups.map(g => g.id));
+            }
+        }
     }
 
     // Advanced analytics (tab 2)

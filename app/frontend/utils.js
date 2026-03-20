@@ -80,6 +80,28 @@
             .replace(/'/g, '&#39;');
     };
 
+    /* ==================== SAFE AGGREGATION ==================== */
+
+    /** Sum array filtering null/NaN/Infinity/strings. Returns 0 if empty. */
+    window.safeSum = function (arr) {
+        var sum = 0;
+        for (var i = 0; i < arr.length; i++) {
+            if (Number.isFinite(arr[i])) sum += arr[i];
+        }
+        return sum;
+    };
+
+    /** Average array filtering null/NaN/Infinity/strings. Returns null if no valid items. */
+    window.safeAvg = function (arr) {
+        var sum = 0, count = 0;
+        for (var i = 0; i < arr.length; i++) {
+            if (Number.isFinite(arr[i])) { sum += arr[i]; count++; }
+        }
+        return count > 0 ? sum / count : null;
+    };
+
+    /* ==================== ERROR DISPLAY ==================== */
+
     /** Safely display an error message in a container using textContent (no innerHTML). */
     window.showError = function (container, message) {
         if (!container) return;

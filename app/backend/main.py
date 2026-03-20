@@ -133,12 +133,21 @@ app = FastAPI(
     version="1.0.0",
 )
 
+_CORS_ORIGINS_PROD = [
+    "https://analise-ren-1000-a-iv-setor-eletric.vercel.app",
+    "https://tcc-ren1000x414-production.up.railway.app",
+]
+_allowed_origins = (
+    ["*"] if os.getenv("ENV", "local") == "local"
+    else _CORS_ORIGINS_PROD
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
     allow_credentials=False,
     allow_methods=["GET"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "Accept"],
 )
 
 
@@ -158,11 +167,16 @@ def api_dashboard() -> dict[str, Any]:
     return _load_dashboard_payload()
 
 
+_VALID_SECTIONS = frozenset(REQUIRED_JSON_KEYS | LEGACY_NEO_KEYS | {"franquias_insights"})
+
+
 @app.get("/api/dashboard/{section}")
 def api_dashboard_section(section: str) -> dict[str, Any]:
+    if section not in _VALID_SECTIONS:
+        raise HTTPException(status_code=404, detail="Section not found.")
     payload = _load_dashboard_payload()
     if section not in payload:
-        raise HTTPException(status_code=404, detail=f"Section not found: {section}")
+        raise HTTPException(status_code=404, detail="Section not found.")
     return {
         "meta": payload.get("meta", {}),
         "section": section,

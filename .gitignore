@@ -60,6 +60,13 @@ playwright-cli.json
 # Output and logs
 output/
 
+# Playwright MCP screenshots/logs (gerados automaticamente)
+.playwright-mcp/
+
+# Screenshots de teste temporários (raiz e pasta de screenshots)
+*.png
+docs/screenshots/
+
 # Processed data subdirectories
 data/processed/**/*.csv
 data/processed/**/*.parquet

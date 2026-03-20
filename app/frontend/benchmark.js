@@ -50,6 +50,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         showError(document.getElementById('benchmark-summary'), err.message);
     }
 
+    // --- Listener de Filtro Global ---
+    window.addEventListener('filters:change', (e) => {
+        if (e.detail && e.detail.porte) {
+            state.selectedPortes = new Set(e.detail.porte);
+            
+            const container = document.getElementById('porte-checkboxes');
+            if (container) {
+                container.querySelectorAll('label.chip').forEach(lbl => {
+                    const cb = lbl.querySelector('input');
+                    if (cb) {
+                        cb.checked = state.selectedPortes.has(cb.value);
+                        lbl.classList.toggle('on', cb.checked);
+                    }
+                });
+            }
+            if (allData.length > 0) render();
+        }
+    });
+
     function initFilters(portes) {
         const container = document.getElementById('porte-checkboxes');
 
@@ -70,6 +89,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 state.selectedPortes = new Set(
                     Array.from(container.querySelectorAll('input:checked')).map(i => i.value)
                 );
+                if (window.dashboardFilters) {
+                    window.dashboardFilters.porte = new Set(state.selectedPortes);
+                    if (window.saveFilters) window.saveFilters();
+                }
                 render();
             });
             container.appendChild(label);
@@ -117,8 +140,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                         borderColor: '#FF6B1A',
                         backgroundColor: 'rgba(255,107,26,0.15)',
                         borderWidth: 2.5,
-                        pointRadius: 4,
+                        pointRadius: 6,
                         pointBackgroundColor: '#FF6B1A',
+                        pointBorderColor: '#FFF',
+                        pointBorderWidth: 2,
                         tension: 0.3,
                         fill: true,
                         yAxisID: 'y1',
@@ -177,7 +202,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                     },
                     y1: {
                         position: 'right',
-                        display: false,
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'R$/UC-mês',
+                            color: '#FF6B1A',
+                            font: { family: "'Inter', sans-serif", size: 11 }
+                        },
+                        grid: { drawOnChartArea: false },
+                        ticks: { font: { size: 11 }, color: '#FF6B1A' }
                     }
                 }
             }
@@ -204,6 +237,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const radarLabels = ['Volume', 'Compensação', 'Eficiência'];
         const RADAR_COLORS = ['#00C65A', '#1A8FE3', '#FF6B1A', '#A8D96B', '#8b5cf6'];
+        const hexToRgba = (hex, alpha) => {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        };
 
         radarChart = new Chart(ctx, {
             type: 'radar',
@@ -219,10 +258,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                     return {
                         label: name,
                         data: [volNorm, compNorm, effNorm],
+                        fill: true,
                         borderColor: RADAR_COLORS[i],
-                        backgroundColor: RADAR_COLORS[i] + '20',
+                        backgroundColor: hexToRgba(RADAR_COLORS[i], 0.3),
                         borderWidth: 2,
-                        pointRadius: 4,
+                        pointRadius: 5,
+                        pointBorderColor: '#FFF',
+                        pointBorderWidth: 1.5,
                         pointBackgroundColor: RADAR_COLORS[i],
                     };
                 })
@@ -286,8 +328,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         cardsEl.innerHTML = portes.map(seg => {
             const points = filtered.filter(d => d.porte === seg);
             if (!points.length) return '';
-            const avgY = points.reduce((s, d) => s + d.y, 0) / points.length;
-            const totalVol = points.reduce((s, d) => s + d.x, 0);
+            const avgY = safeAvg(points.map(d => d.y)) ?? 0;
+            const totalVol = safeSum(points.map(d => d.x));
             const topDist = [...points].sort((a, b) => b.x - a.x)[0];
             const colors = PORTE_COLORS[seg] || PORTE_COLORS['N_A'];
             return `
@@ -317,8 +359,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Overall summary
         const totalDist = filtered.length;
-        const avgComp = filtered.reduce((s, d) => s + d.y, 0) / totalDist;
-        const totalVol = filtered.reduce((s, d) => s + d.x, 0);
+        const avgComp = totalDist > 0 ? (safeAvg(filtered.map(d => d.y)) ?? 0) : 0;
+        const totalVol = safeSum(filtered.map(d => d.x));
         const worst = [...filtered].sort((a, b) => b.y - a.y)[0];
         const best = [...filtered].sort((a, b) => a.y - b.y)[0];
 
