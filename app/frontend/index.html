@@ -36,7 +36,7 @@
     </div>
     <div class="top-context">ANEEL · REN 1.000/2021</div>
     <div class="topbar-right">
-      <span class="pill green">● Dados 2023</span>
+      <span class="pill green" id="data-range-pill">● Dados 2011–2023</span>
       <span class="pill ghost" id="gen-time-pill">Atualizado: <span id="gen-time">—</span></span>
     </div>
   </header>
@@ -68,6 +68,8 @@
       </div>
       <div class="nav-group">
         <div class="nav-group-label">Ferramentas</div>
+        <a href="qualidade.html" class="nav-link" data-page="qualidade">
+          <span class="nav-icon">🔍</span> Dados & Qualidade</a>
         <a href="relatorio.html" class="nav-link" data-page="report">
           <span class="nav-icon">📋</span> Relatório PDF
         </a>
@@ -94,6 +96,11 @@
           <option value="all">Ambas</option>
           <option value="ren1000">REN 1000</option>
           <option value="ren414">REN 414</option>
+        </select>
+        <div class="filter-sep"></div>
+        <span class="filter-label">Grupo</span>
+        <select class="select-styled" id="filter-grupo" multiple size="3">
+          <!-- Populated by JS from distributor_groups -->
         </select>
       </div>
 
@@ -193,7 +200,7 @@
               <div class="chart-header">
                 <div>
                   <div class="chart-title">Taxa Fora do Prazo — Série Anual</div>
-                  <div class="chart-subtitle">Linha tracejada marca a vigência da REN 1000 (2022)</div>
+                  <div class="chart-subtitle">Linha tracejada marca a vigência da REN 1000 (2021)</div>
                 </div>
                 <span class="chart-tag">2011–2023</span>
               </div>

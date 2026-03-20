@@ -327,8 +327,48 @@ h1, h2, h3, h4 {
 .select-styled[multiple] {
   padding: 6px 10px;
   height: auto;
-  min-height: 80px;
+  min-height: 100px;
   background-image: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-mid) var(--bg-card);
+}
+
+.select-styled[multiple] option {
+  padding: 6px 8px;
+  margin-bottom: 2px;
+  border-radius: 4px;
+  transition: background 0.1s, color 0.1s;
+}
+
+.select-styled[multiple] option:checked {
+  background: var(--green-dim) linear-gradient(0deg, var(--green-dim) 0%, var(--green-dim) 100%);
+  color: var(--green);
+  font-weight: 600;
+}
+
+/* Multi-select inside filter bar (compact) */
+.filter-bar .select-styled[multiple] {
+  min-height: 60px;
+  max-height: 90px;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+/* Inline chart controls */
+.chart-controls-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.filter-label-inline {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--green);
 }
 
 /* Chips */
@@ -504,6 +544,19 @@ h1, h2, h3, h4 {
 .kpi-card.green { border-top-color: var(--green); }
 .kpi-card.purple { border-top-color: #8b5cf6; }
 .kpi-card.red { border-top-color: #ef4444; }
+
+/* ==================== COVERAGE BADGES (qualidade.html) ==================== */
+.coverage-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.coverage-badge.ok   { background: rgba(0, 198, 90, 0.12); color: var(--green); }
+.coverage-badge.warn { background: rgba(255, 107, 26, 0.12); color: var(--orange); }
+.coverage-badge.fail { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
 
 /* ==================== CHART CARDS ==================== */
 .chart-grid {

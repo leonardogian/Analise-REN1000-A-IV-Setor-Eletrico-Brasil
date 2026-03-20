@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dados & Qualidade — REN 1000 Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+        <div class="logo"><span class="logo-icon">⚡</span><span>REN 1000 Dashboard</span></div>
+        <div class="top-context">ANEEL · REN 1.000/2021</div>
+        <div class="topbar-right"><span class="pill green">● Qualidade dos Dados</span></div>
+    </header>
+
+    <div class="layout">
+        <nav class="sidebar" id="sidebar">
+            <div class="nav-group">
+                <div class="nav-group-label">Análises</div>
+                <a href="index.html" class="nav-link" data-page="overview"><span class="nav-icon">📊</span> Visão
+                    Geral</a>
+                <a href="transgressoes.html" class="nav-link" data-page="series"><span class="nav-icon">📈</span> Séries
+                    Temporais</a>
+                <a href="mapa.html" class="nav-link" data-page="mapa"><span class="nav-icon">🗺</span> Mapa
+                    Interativo</a>
+                <a href="ranking.html" class="nav-link" data-page="ranking"><span class="nav-icon">🏆</span> Ranking</a>
+                <a href="evolucao.html" class="nav-link" data-page="evolucao"><span class="nav-icon">🔥</span>
+                    Evolução</a>
+                <a href="benchmark.html" class="nav-link" data-page="benchmark"><span class="nav-icon">⚖️</span>
+                    Benchmark</a>
+            </div>
+            <div class="nav-group">
+                <div class="nav-group-label">Ferramentas</div>
+                <a href="qualidade.html" class="nav-link" data-page="qualidade"><span class="nav-icon">🔍</span> Dados &
+                    Qualidade</a>
+                <a href="relatorio.html" class="nav-link" data-page="report"><span class="nav-icon">📋</span> Relatório
+                    PDF</a>
+            </div>
+            <div class="sidebar-footer">TCC — Análise de Eficácia<br>REN 1000/2021 ANEEL</div>
+        </nav>
+
+        <main class="main">
+
+            <!-- PAGE HEADER -->
+            <div class="page-header">
+                <div class="breadcrumb">Dashboard / <span class="active">Dados & Qualidade</span></div>
+                <h1 class="page-title">Procedência e Qualidade dos Dados</h1>
+                <p class="page-subtitle">Fontes primárias, limitações conhecidas e matriz de cobertura temporal</p>
+            </div>
+
+            <!-- SECTION 1: PROVENANCE TABLE -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h2 class="chart-title">Mapa de Procedência</h2>
+                    <p class="chart-subtitle" style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Origem, granularidade e arquivos processados de cada métrica do dashboard</p>
+                </div>
+                <div class="table-wrapper">
+                    <table class="ranking-table" id="provenance-table">
+                        <thead>
+                            <tr>
+                                <th>Dado / Métrica</th>
+                                <th>Fonte Primária</th>
+                                <th>Recurso ANEEL</th>
+                                <th>Período</th>
+                                <th>Granularidade</th>
+                                <th>Arquivo Processado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Taxa fora do prazo (%)</td>
+                                <td>ANEEL Qualidade Atendimento Comercial</td>
+                                <td><code>qualidade-atendimento-comercial</code></td>
+                                <td>2011–2023</td>
+                                <td>Anual × Distribuidora × Indicador</td>
+                                <td><code>qualidade_comercial.parquet</code></td>
+                            </tr>
+                            <tr>
+                                <td>Compensações R$ (pré-2022)</td>
+                                <td>ANEEL Qualidade Atendimento Comercial</td>
+                                <td><code>qualidade-atendimento-comercial</code></td>
+                                <td>2011–2023</td>
+                                <td>Anual × Distribuidora</td>
+                                <td><code>qualidade_comercial.parquet</code></td>
+                            </tr>
+                            <tr>
+                                <td>Transgressões mensais</td>
+                                <td>ANEEL INDGER Serviços Comerciais</td>
+                                <td><code>indger</code></td>
+                                <td>Jan/2023–Mar/2025</td>
+                                <td>Mensal × Município × Tipo Serviço</td>
+                                <td><code>indger_servicos_comerciais.parquet</code></td>
+                            </tr>
+                            <tr>
+                                <td>Compensações R$ (pós-2022)</td>
+                                <td>ANEEL INDGER Dados Comerciais</td>
+                                <td><code>indger</code></td>
+                                <td>Jan/2023–Mar/2025</td>
+                                <td>Mensal × Distribuidora</td>
+                                <td><code>indger_dados_comerciais.parquet</code></td>
+                            </tr>
+                            <tr>
+                                <td>UCs Ativas (pós-2022)</td>
+                                <td>ANEEL INDGER Dados Comerciais</td>
+                                <td><code>indger</code></td>
+                                <td>Jan/2023–Mar/2025</td>
+                                <td>Mensal × Distribuidora</td>
+                                <td><code>indger_dados_comerciais.parquet</code></td>
+                            </tr>
+                            <tr>
+                                <td>UCs Ativas (pré-2022, proxy)</td>
+                                <td>Estimativa anual</td>
+                                <td>—</td>
+                                <td>2011–2022</td>
+                                <td>Anual (proxy)</td>
+                                <td><code>dim_distribuidora_porte.parquet</code></td>
+                            </tr>
+                            <tr>
+                                <td>Classe Rural/Urbano</td>
+                                <td>ANEEL INDGER Serviços Comerciais</td>
+                                <td><code>indger</code></td>
+                                <td>Jan/2023–Mar/2025</td>
+                                <td>Disponível pós-2022 apenas</td>
+                                <td><code>fato_transgressao_mensal_porte.csv</code></td>
+                            </tr>
+                            <tr>
+                                <td>Holdings / Grupos Econômicos</td>
+                                <td>Mapeamento manual</td>
+                                <td><code>distributor_groups_overrides.json</code></td>
+                                <td>Estático</td>
+                                <td>Por distribuidora</td>
+                                <td><code>dim_distributor_group.csv</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECTION 2: QUALITY ALERTS -->
+            <div style="margin-top:28px;">
+                <h2 class="chart-title" style="margin-bottom:16px;">⚠️ Limitações & Gaps Conhecidos</h2>
+                <div class="kpi-grid" id="quality-alerts">
+
+                    <div class="kpi-card orange">
+                        <div class="kpi-label">Granularidade mensal pré-2022 ausente</div>
+                        <div class="kpi-val" style="font-size:14px;color:var(--orange);">Apenas Anual</div>
+                        <div class="kpi-note">Dados ANEEL Qualidade Comercial disponíveis apenas anualmente para 2011–2021. Análise de transição REN 414→REN 1000 usa apenas agregados anuais.</div>
+                    </div>
+
+                    <div class="kpi-card orange">
+                        <div class="kpi-label">UCs ativas pré-2022 são estimativas</div>
+                        <div class="kpi-val" style="font-size:14px;color:var(--orange);">Proxy Anual</div>
+                        <div class="kpi-note">O campo <code>uc_ativa_mes</code> mensal existe apenas a partir de Jan/2023 (INDGER). Para 2011–2022, usa-se proxy anual da <code>dim_distribuidora_porte</code>. Normalizações por 100k UC pré-2022 têm precisão moderada.</div>
+                    </div>
+
+                    <div class="kpi-card orange">
+                        <div class="kpi-label">Ano de transição 2022 misturado</div>
+                        <div class="kpi-val" style="font-size:14px;color:var(--orange);">REN 414 + 1000</div>
+                        <div class="kpi-note">A REN 1.000 entrou em vigor em abril/2022. O ano 2022 inteiro é tratado como "pós-2022" nas análises, embora os 4 primeiros meses ainda eram REN 414.</div>
+                    </div>
+
+                    <div class="kpi-card orange">
+                        <div class="kpi-label">Compensação = créditos cedidos apenas</div>
+                        <div class="kpi-val" style="font-size:14px;color:var(--orange);">Subestimado</div>
+                        <div class="kpi-note"><code>compensacao_rs</code> representa créditos cedidos diretamente na fatura. Não inclui: multas ANEEL (Autos de Infração), indenizações judiciais ou honorários. O custo regulatório real é subestimado.</div>
+                    </div>
+
+                    <div class="kpi-card orange">
+                        <div class="kpi-label">Códigos de serviço 69 e 93 irregulares</div>
+                        <div class="kpi-val" style="font-size:14px;color:var(--orange);">Cobertura Variável</div>
+                        <div class="kpi-note">Os códigos "Serviços Diversos" (69) e "Leitura de Medidor" (93) aparecem de forma inconsistente entre distribuidoras e meses no INDGER. Podem inflar totais de serviços em alguns períodos.</div>
+                    </div>
+
+                    <div class="kpi-card orange">
+                        <div class="kpi-label">Classe rural/urbano indisponível pré-2022</div>
+                        <div class="kpi-val" style="font-size:14px;color:var(--red);">Indisponível</div>
+                        <div class="kpi-note">A distinção Rural/Urbano na <code>classe_local_servico</code> existe apenas nos dados INDGER (pós-2022). Os dados 2011–2021 usam categorias genéricas incomparáveis.</div>
+                    </div>
+
+                    <div class="kpi-card blue">
+                        <div class="kpi-label">Volume de dados brutos INDGER</div>
+                        <div class="kpi-val" style="font-size:14px;color:var(--blue);">43 CSVs / ~7 GB</div>
+                        <div class="kpi-note">Cada mês de Jan/2023 a Mar/2025 corresponde a um CSV separado baixado da API ANEEL. Total de ~7 GB de dados brutos (não versionados em <code>/data/raw/</code>).</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SECTION 3: COVERAGE MATRIX -->
+            <div class="chart-card" style="margin-top:28px;">
+                <div class="chart-header">
+                    <h2 class="chart-title">Matriz de Cobertura Temporal</h2>
+                    <p class="chart-subtitle" style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Disponibilidade de cada métrica por período regulatório</p>
+                </div>
+                <div class="table-wrapper">
+                    <table class="ranking-table" id="coverage-matrix">
+                        <thead>
+                            <tr>
+                                <th>Métrica</th>
+                                <th>Pré-2022 (2011–2021)</th>
+                                <th>Pós-2022 (2022–2025)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Taxa Fora do Prazo</td>
+                                <td><span class="coverage-badge ok">Anual</span></td>
+                                <td><span class="coverage-badge ok">Mensal</span></td>
+                            </tr>
+                            <tr>
+                                <td>Compensações R$</td>
+                                <td><span class="coverage-badge ok">Anual</span></td>
+                                <td><span class="coverage-badge ok">Mensal</span></td>
+                            </tr>
+                            <tr>
+                                <td>UC Ativas</td>
+                                <td><span class="coverage-badge warn">Proxy anual</span></td>
+                                <td><span class="coverage-badge ok">Mensal</span></td>
+                            </tr>
+                            <tr>
+                                <td>Classe Rural/Urbano</td>
+                                <td><span class="coverage-badge fail">Indisponível</span></td>
+                                <td><span class="coverage-badge ok">Mensal</span></td>
+                            </tr>
+                            <tr>
+                                <td>Tipo Serviço Granular</td>
+                                <td><span class="coverage-badge fail">Indisponível</span></td>
+                                <td><span class="coverage-badge ok">43 tipos</span></td>
+                            </tr>
+                            <tr>
+                                <td>Normalizado / 100k UC</td>
+                                <td><span class="coverage-badge warn">Impreciso</span></td>
+                                <td><span class="coverage-badge ok">Confiável</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="nav.js"></script>
+    <script src="filters.js"></script>
+    <script src="app.js"></script>
+    <script src="qualidade.js"></script>
+</body>
+
+</html>

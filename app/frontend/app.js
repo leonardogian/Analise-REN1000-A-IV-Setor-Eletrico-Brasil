@@ -447,26 +447,89 @@ function initRegulatorySelector(data) {
 
 /* ===================== TAB 1: VISÃO GERAL ===================== */
 function renderOverview(data) {
-    const kpi = data.kpi_overview || {};
-    const serie = data.serie_anual || [];
+    // Aplicação dos Filtros Globais no nível de Visão Geral (Série Mensal)
+    let rawData = data.serie_mensal_nacional || [];
+    
+    // Filtrar dados antes de agregar
+    if (window.dashboardFilters) {
+        const { period, base, grupos, porte } = window.dashboardFilters;
+        
+        let filtered = rawData.filter(d => {
+            if (grupos.size > 0 && !grupos.has(d.group_label)) return false;
+            // Porte
+            if (porte.size > 0 && !porte.has(d.bucket_porte)) return false;
+            return true;
+        });
+        
+        // Base / Period filters
+        if (base === 'ren1000') {
+            filtered = filtered.filter(d => d.ano >= 2022);
+        } else if (base === 'ren414') {
+            filtered = filtered.filter(d => d.ano < 2022);
+        }
+        
+        if (period === 'pre_2022') {
+            filtered = filtered.filter(d => d.ano < 2022);
+        } else if (period === 'pos_2022') {
+            filtered = filtered.filter(d => d.ano >= 2022);
+        }
+        
+        rawData = filtered;
+    }
+    
+    // Recalcular KPIs 
+    let pre_serv = 0, pos_serv = 0;
+    let pre_fora = 0, pos_fora = 0;
+    let pre_comp = 0, pos_comp = 0;
 
-    document.getElementById('kpi-taxa-pre').textContent = fmtPct(kpi.pre_taxa_media);
-    document.getElementById('kpi-taxa-pos').textContent = fmtPct(kpi.pos_taxa_media);
-    document.getElementById('kpi-taxa-delta').textContent = fmtPct(kpi.delta_taxa);
-    document.getElementById('kpi-taxa-delta').className = 'kpi-delta ' + ((kpi.delta_taxa ?? 0) <= 0 ? 'positive' : 'negative');
+    rawData.forEach(d => {
+        const isPre = d.ano < 2022;
+        if (isPre) {
+            pre_serv += (d.qtd_serv_realizado || 0);
+            pre_fora += (d.qtd_fora_prazo || 0);
+            pre_comp += (d.compensacao_rs || 0);
+        } else {
+            pos_serv += (d.qtd_serv_realizado || 0);
+            pos_fora += (d.qtd_fora_prazo || 0);
+            pos_comp += (d.compensacao_rs || 0);
+        }
+    });
 
-    document.getElementById('kpi-comp-pre').textContent = fmtMoney(kpi.pre_compensacao_total);
-    document.getElementById('kpi-comp-pos').textContent = fmtMoney(kpi.pos_compensacao_total);
-    document.getElementById('kpi-comp-delta').textContent = fmtMoney(kpi.delta_compensacao);
-    document.getElementById('kpi-comp-delta').className = 'kpi-delta ' + ((kpi.delta_compensacao ?? 0) <= 0 ? 'positive' : 'negative');
+    const pre_taxa = pre_serv > 0 ? pre_fora / pre_serv : 0;
+    const pos_taxa = pos_serv > 0 ? pos_fora / pos_serv : 0;
+    const delta_taxa = pos_taxa - pre_taxa;
+    const delta_comp = pos_comp - pre_comp;
 
-    document.getElementById('kpi-serv-total').textContent = fmtNum((kpi.pre_servicos_total || 0) + (kpi.pos_servicos_total || 0));
-    document.getElementById('kpi-fora-total').textContent = fmtNum((kpi.pre_fora_prazo_total || 0) + (kpi.pos_fora_prazo_total || 0));
+    document.getElementById('kpi-taxa-pre').textContent = fmtPct(pre_taxa);
+    document.getElementById('kpi-taxa-pos').textContent = fmtPct(pos_taxa);
+    document.getElementById('kpi-taxa-delta').textContent = fmtPct(delta_taxa);
+    document.getElementById('kpi-taxa-delta').className = 'kpi-delta ' + (delta_taxa <= 0 ? 'positive' : 'negative');
 
-    const years = serie.map(r => r.ano);
-    const taxas = serie.map(r => (r.taxa_fora_prazo || 0) * 100);
-    const comps = serie.map(r => r.compensacao_rs || 0);
-    const bgColors = serie.map(r => r.periodo_regulatorio === 'pre_2022' ? COLORS.blue : COLORS.cyan);
+    document.getElementById('kpi-comp-pre').textContent = fmtMoney(pre_comp);
+    document.getElementById('kpi-comp-pos').textContent = fmtMoney(pos_comp);
+    document.getElementById('kpi-comp-delta').textContent = fmtMoney(delta_comp);
+    document.getElementById('kpi-comp-delta').className = 'kpi-delta ' + (delta_comp <= 0 ? 'positive' : 'negative');
+
+    document.getElementById('kpi-serv-total').textContent = fmtNum(pre_serv + pos_serv);
+    document.getElementById('kpi-fora-total').textContent = fmtNum(pre_fora + pos_fora);
+
+    // Agregar para série anual
+    const aggAnualItem = {};
+    rawData.forEach(d => {
+        if (!aggAnualItem[d.ano]) {
+            aggAnualItem[d.ano] = { ano: d.ano, serv: 0, fora: 0, comp: 0, periodo_regulatorio: d.ano < 2022 ? 'pre_2022' : 'pos_2022' };
+        }
+        aggAnualItem[d.ano].serv += (d.qtd_serv_realizado || 0);
+        aggAnualItem[d.ano].fora += (d.qtd_fora_prazo || 0);
+        aggAnualItem[d.ano].comp += (d.compensacao_rs || 0);
+    });
+
+    const serieClean = Object.values(aggAnualItem).sort((a,b) => a.ano - b.ano);
+    
+    const years = serieClean.map(r => r.ano);
+    const taxas = serieClean.map(r => r.serv > 0 ? (r.fora / r.serv * 100) : 0);
+    const comps = serieClean.map(r => r.comp);
+    const bgColors = serieClean.map(r => r.periodo_regulatorio === 'pre_2022' ? COLORS.blue : COLORS.cyan);
 
     createChart('chart-serie-taxa', {
         type: 'line',
@@ -495,7 +558,7 @@ function renderOverview(data) {
                     callbacks: {
                         label: ctx => `Taxa: ${ctx.parsed.y.toFixed(3)}%`,
                         afterLabel: ctx => {
-                            const r = serie[ctx.dataIndex];
+                            const r = serieClean[ctx.dataIndex];
                             return `Período: ${r.periodo_regulatorio === 'pre_2022' ? 'Pré-REN 1000' : 'Pós-REN 1000'}`;
                         },
                     },
@@ -504,10 +567,10 @@ function renderOverview(data) {
                     annotations: {
                         line1: {
                             type: 'line',
-                            xMin: '2022',
-                            xMax: '2022',
-                            borderColor: 'rgba(251, 191, 36, 0.5)',
-                            borderWidth: 2,
+                            xMin: 2021,
+                            xMax: 2021,
+                            borderColor: 'rgba(251, 191, 36, 0.7)',
+                            borderWidth: 2.5,
                             borderDash: [6, 4],
                             label: {
                                 display: true,
@@ -517,6 +580,13 @@ function renderOverview(data) {
                                 color: '#fbbf24',
                                 font: { size: 11, weight: '600' },
                             },
+                        },
+                        box1: {
+                            type: 'box',
+                            xMin: 2022,
+                            xMax: 2023,
+                            backgroundColor: 'rgba(0, 198, 90, 0.06)',
+                            borderWidth: 0,
                         },
                     },
                 },
@@ -552,6 +622,33 @@ function renderOverview(data) {
             plugins: {
                 legend: { display: false },
                 tooltip: { callbacks: { label: ctx => fmtMoneyFull(ctx.parsed.y) } },
+                annotation: {
+                    annotations: {
+                        line1: {
+                            type: 'line',
+                            xMin: 2021,
+                            xMax: 2021,
+                            borderColor: 'rgba(251, 191, 36, 0.7)',
+                            borderWidth: 2.5,
+                            borderDash: [6, 4],
+                            label: {
+                                display: true,
+                                content: 'REN 1000',
+                                position: 'top',
+                                backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                                color: '#fbbf24',
+                                font: { size: 11, weight: '600' },
+                            },
+                        },
+                        box1: {
+                            type: 'box',
+                            xMin: 2022,
+                            xMax: 2023,
+                            backgroundColor: 'rgba(0, 198, 90, 0.06)',
+                            borderWidth: 0,
+                        },
+                    },
+                },
             },
             scales: {
                 x: { grid: { display: false } },
@@ -650,6 +747,14 @@ function renderBenchmark(view, distributors, colors) {
         const maxComp = Math.max(...bench.map(b => b.compensacao_rs_por_uc_mes || 0), 0);
         const maxTaxa = Math.max(...bench.map(b => b.taxa_fora_prazo || 0), 0);
 
+        const hexToRgba = (hex, alpha) => {
+            if (!hex || !hex.startsWith('#')) return `rgba(100,100,100,${alpha})`;
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        };
+
         createChart('chart-neo-radar', {
             type: 'radar',
             data: {
@@ -665,8 +770,9 @@ function renderBenchmark(view, distributors, colors) {
                             b.indice_fora_vs_mediana_grupo ? b.indice_fora_vs_mediana_grupo * 50 : 0,
                             b.indice_comp_vs_mediana_grupo ? b.indice_comp_vs_mediana_grupo * 25 : 0,
                         ],
+                        fill: true,
                         borderColor: colors[key],
-                        backgroundColor: colors[key] + '20',
+                        backgroundColor: hexToRgba(colors[key], 0.2),
                         borderWidth: 2,
                         pointRadius: 4,
                         pointBackgroundColor: colors[key],
@@ -947,7 +1053,9 @@ function renderRegulatory(view, distributors, colors) {
                 x: {
                     grid: { display: false },
                     ticks: {
-                        maxTicksLimit: 18,
+                        autoSkip: true,
+                        maxTicksLimit: 12,
+                        maxRotation: 45,
                         callback: function (val) {
                             const label = this.getLabelForValue(val);
                             return label.endsWith('-01') ? label : '';
@@ -999,7 +1107,9 @@ function renderRegulatory(view, distributors, colors) {
                 x: {
                     grid: { display: false },
                     ticks: {
-                        maxTicksLimit: 18,
+                        autoSkip: true,
+                        maxTicksLimit: 12,
+                        maxRotation: 45,
                         callback: function (val) {
                             const label = this.getLabelForValue(val);
                             return label.endsWith('-01') ? label : '';
@@ -1018,6 +1128,17 @@ function renderRegulatory(view, distributors, colors) {
 }
 
 
+const GROUP_COLORS = {
+    'Grupo Cemig':       '#00E5FF',
+    'Grupo ENEL':        '#FF4081',
+    'Grupo Energisa':    '#FFD600',
+    'Grupo Equatorial':  '#2979FF',
+    'Grupo Neoenergia':  '#FF6D00',
+    'Grupo CPFL':        '#AA00FF',
+    'Grupo EDP':         '#00E676',
+    'Grupo Light':       '#F50057',
+};
+
 async function renderAdvancedAnalytics() {
     try {
         const [heatmapRes, scatterRes, radarRes, tsRes] = await Promise.all([
@@ -1027,8 +1148,17 @@ async function renderAdvancedAnalytics() {
             fetch('./dashboard_timeseries.json').then(r => r.ok ? r.json() : { data: [] })
         ]);
 
+        // Read global filter state
+        const activeGrupos = window.dashboardFilters ? window.dashboardFilters.grupos : null;
+        const totalGrupos = document.getElementById('filter-grupo')?.options.length || 0;
+        // Only filter if some groups are deselected (not all selected)
+        const shouldFilterGrupo = activeGrupos && activeGrupos.size > 0 && activeGrupos.size < totalGrupos;
+
         if (heatmapRes.data && heatmapRes.data.length > 0) {
-            const data = heatmapRes.data;
+            let data = heatmapRes.data;
+            if (shouldFilterGrupo) {
+                data = data.filter(d => activeGrupos.has(d.x));
+            }
             const xLabels = [...new Set(data.map(d => d.x))];
             const yLabels = [...new Set(data.map(d => d.y))];
             createChart('chart-advanced-heatmap', {
@@ -1040,10 +1170,18 @@ async function renderAdvancedAnalytics() {
                         backgroundColor(context) {
                             const value = context.dataset.data[context.dataIndex]?.v || 0;
                             const maxVal = Math.max(...context.dataset.data.map(d => d.v));
-                            const alpha = maxVal > 0 ? Math.min(Math.max((value / maxVal), 0.15), 1) : 0.15;
-                            return `rgba(0, 164, 67, ${alpha})`;
+                            const ratio = maxVal > 0 ? value / maxVal : 0;
+                            // 3-stop scale: cyan(0) -> blue(0.5) -> purple(1)
+                            const alpha = 0.3 + ratio * 0.7;
+                            if (ratio < 0.5) {
+                                const t = ratio * 2;
+                                return `rgba(${Math.round(0 + 41*t)}, ${Math.round(229 - 106*t)}, 255, ${alpha})`;
+                            } else {
+                                const t = (ratio - 0.5) * 2;
+                                return `rgba(${Math.round(41 + 129*t)}, ${Math.round(123 - 123*t)}, 255, ${alpha})`;
+                            }
                         },
-                        hoverBackgroundColor: '#00A443',
+                        hoverBackgroundColor: '#AA00FF',
                         borderColor: 'rgba(255, 255, 255, 0.05)',
                         borderWidth: 1,
                         borderRadius: 4,
@@ -1066,18 +1204,62 @@ async function renderAdvancedAnalytics() {
         }
 
         if (scatterRes.data && scatterRes.data.length > 0) {
-            const data = scatterRes.data;
+            let data = scatterRes.data;
+            // Map lowercase holding keys to major economic groups
+            const MAJOR_HOLDINGS = {
+                'neoenergia': { label: 'Neoenergia', color: '#FF6D00' },
+                'cpfl':       { label: 'CPFL',       color: '#AA00FF' },
+                'energisa':   { label: 'Energisa',   color: '#00E5FF' },
+                'equatorial': { label: 'Equatorial', color: '#2979FF' },
+                'enel':       { label: 'Enel',       color: '#00E676' },
+                'cemig':      { label: 'Cemig',      color: '#FFD600' },
+                'edp':        { label: 'EDP',        color: '#FF4081' },
+                'light':      { label: 'Light',      color: '#F50057' },
+            };
+            if (shouldFilterGrupo) {
+                data = data.filter(d => {
+                    const h = MAJOR_HOLDINGS[d.holding];
+                    if (!h) return true; // keep "outros"
+                    return activeGrupos.has('Grupo ' + h.label);
+                });
+            }
+            const grouped = {};
+            data.forEach(d => {
+                const key = MAJOR_HOLDINGS[d.holding] ? d.holding : '_outros';
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(d);
+            });
+            const scatterDatasets = Object.entries(MAJOR_HOLDINGS)
+                .filter(([k]) => grouped[k])
+                .map(([k, v]) => ({
+                    label: v.label,
+                    data: grouped[k],
+                    backgroundColor: v.color + '88',
+                    borderColor: v.color,
+                    borderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 9,
+                }));
+            if (grouped._outros) {
+                scatterDatasets.push({
+                    label: 'Outros',
+                    data: grouped._outros,
+                    backgroundColor: 'rgba(113, 113, 122, 0.4)',
+                    borderColor: '#71717a',
+                    borderWidth: 1,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
+                });
+            }
             createChart('chart-advanced-scatter', {
                 type: 'scatter',
-                data: {
-                    datasets: [
-                        { label: 'REN 414', data: data.filter(d => d.regra === 'REN 414'), backgroundColor: 'rgba(0, 164, 67, 0.4)', borderColor: '#00A443', borderWidth: 2, pointRadius: 7, pointHoverRadius: 10 },
-                        { label: 'REN 1000', data: data.filter(d => d.regra === 'REN 1000'), backgroundColor: 'rgba(230, 51, 18, 0.4)', borderColor: '#E63312', borderWidth: 2, pointRadius: 7, pointHoverRadius: 10 }
-                    ]
-                },
+                data: { datasets: scatterDatasets },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { tooltip: { callbacks: { label: ctx => `${ctx.raw.label} (${ctx.dataset.label}): Abs=${ctx.raw.x}, R$${ctx.raw.y.toFixed(2)}/UC` } } },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { size: 10 } } },
+                        tooltip: { callbacks: { label: ctx => `${ctx.raw.label} (${ctx.dataset.label}): Abs=${ctx.raw.x}, R$${ctx.raw.y.toFixed(2)}/UC` } }
+                    },
                     scales: {
                         x: { title: { display: true, text: 'Transgressões Absolutas' }, type: 'logarithmic' },
                         y: { title: { display: true, text: 'Compensação R$/UC' } }
@@ -1100,6 +1282,14 @@ async function renderAdvancedAnalytics() {
                 'AteCo': 'Atendimento'
             };
 
+            const RADAR_COLORS = ['#FF6D00', '#AA00FF', '#00E676', '#2979FF', '#FF4081', '#FFD600', '#00E5FF', '#F50057'];
+            const hexToRgba = (hex, alpha) => {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            };
+
             createChart('chart-advanced-radar', {
                 type: 'radar',
                 data: {
@@ -1107,13 +1297,13 @@ async function renderAdvancedAnalytics() {
                     datasets: radarRes.data.map((d, i) => ({
                         label: d.distributor_label,
                         data: services.map(s => d.metrics[s] || 0),
-                        backgroundColor: DISTRIBUTOR_PALETTE[i % DISTRIBUTOR_PALETTE.length] + '44',
-                        borderColor: DISTRIBUTOR_PALETTE[i % DISTRIBUTOR_PALETTE.length],
-                        borderWidth: 2,
-                        pointBackgroundColor: DISTRIBUTOR_PALETTE[i % DISTRIBUTOR_PALETTE.length],
+                        backgroundColor: hexToRgba(RADAR_COLORS[i % RADAR_COLORS.length], 0.25),
+                        borderColor: RADAR_COLORS[i % RADAR_COLORS.length],
+                        borderWidth: 2.5,
+                        pointBackgroundColor: RADAR_COLORS[i % RADAR_COLORS.length],
                         pointBorderColor: '#fff',
-                        pointHoverRadius: 6,
-                        pointRadius: 3,
+                        pointHoverRadius: 7,
+                        pointRadius: 4,
                         fill: true
                     }))
                 },
@@ -1125,6 +1315,8 @@ async function renderAdvancedAnalytics() {
                     },
                     scales: {
                         r: {
+                            beginAtZero: true,
+                            suggestedMax: 0.5,
                             ticks: { display: false },
                             grid: { color: 'rgba(255, 255, 255, 0.1)' },
                             angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
@@ -1185,12 +1377,12 @@ async function renderAdvancedAnalytics() {
             }
 
             const groupColors = {
-                'Média Nacional': '#F4A100', // yellow
-                'Neoenergia': '#00A859', // light green
-                'CPFL': '#005F27', // dark green
-                'Energisa': '#E63312', // red
-                'Equatorial': '#0A0E1A', // black
-                'Enel': '#00843D' // default green
+                'Média Nacional': '#FFD600',
+                'Neoenergia':     '#FF6D00',
+                'CPFL':           '#AA00FF',
+                'Energisa':       '#00E5FF',
+                'Equatorial':     '#2979FF',
+                'Enel':           '#00E676',
             };
 
             let currentChart = null;
@@ -1212,19 +1404,21 @@ async function renderAdvancedAnalytics() {
                         label: grupo,
                         data: dataPoints,
                         borderColor: color,
-                        borderWidth: isNacional ? 4 : 2,
-                        borderDash: isNacional ? [] : [4, 4],
-                        backgroundColor: isNacional ? 'rgba(244, 161, 0, 0.05)' : 'transparent',
+                        borderWidth: isNacional ? 4 : 3,
+                        borderDash: isNacional ? [] : [8, 4],
+                        backgroundColor: isNacional ? 'rgba(255, 214, 0, 0.05)' : 'transparent',
                         fill: isNacional,
                         tension: 0.4,
                         yAxisID: 'y',
-                        pointRadius: isNacional ? 3 : 0,
+                        pointRadius: isNacional ? 3 : 1,
                         pointHoverRadius: 6
                     };
                 });
 
-                if (currentChart && window.appCharts && window.appCharts['chart-advanced-timeseries']) {
-                    window.appCharts['chart-advanced-timeseries'].destroy();
+                if (currentChart) {
+                    currentChart.destroy();
+                    const idx = chartInstances.indexOf(currentChart);
+                    if (idx > -1) chartInstances.splice(idx, 1);
                 }
 
                 currentChart = createChart('chart-advanced-timeseries', {
@@ -1236,15 +1430,7 @@ async function renderAdvancedAnalytics() {
                     options: {
                         responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                         plugins: {
-                            annotation: {
-                                annotations: {
-                                    line1: {
-                                        scaleID: 'x', value: '2022-04-01',
-                                        borderColor: 'rgba(230, 51, 18, 0.8)', borderDash: [6, 6], borderWidth: 2,
-                                        label: { content: 'Fronteira REN 1000', display: true, position: 'start', color: '#E63312', backgroundColor: 'rgba(255,255,255,0.8)' }
-                                    }
-                                }
-                            }
+                            legend: { position: 'top', labels: { boxWidth: 10, padding: 8, font: { size: 10 } } },
                         },
                         scales: {
                             x: {
@@ -1275,7 +1461,7 @@ function renderAll(data) {
     if (firstPanel) firstPanel.classList.add('active');
 
     // Tab 1: Overview KPIs & charts
-    renderOverview(data);
+    try { renderOverview(data); } catch (e) { console.error('renderOverview failed:', e); }
 
     // Group-based context
     const context = getActiveDimensionContext(data);
@@ -1301,6 +1487,22 @@ function renderAll(data) {
         const distributors = getDistributorMeta(view);
         const colors = makeColorMap(distributors);
         renderRegulatory(view, distributors, colors);
+    }
+
+    // Populate Grupo Economico filter from data
+    const grupoSelect = document.getElementById('filter-grupo');
+    if (grupoSelect && grupoSelect.options.length === 0 && data.distributor_groups) {
+        const groups = [...new Map(data.distributor_groups.map(g => [g.group_label, g])).values()];
+        groups.sort((a, b) => a.group_label.localeCompare(b.group_label));
+        groups.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.group_label;
+            opt.textContent = g.group_label;
+            opt.selected = true;
+            grupoSelect.appendChild(opt);
+        });
+        // Initialize filter state with all groups selected
+        window.dashboardFilters.grupos = new Set(groups.map(g => g.group_label));
     }
 
     // Advanced analytics (tab 2)
@@ -1360,8 +1562,21 @@ async function init() {
             document.getElementById('gen-time').textContent = d.toLocaleString('pt-BR');
         }
 
+        // Dynamic data range pill
+        const rangePill = document.getElementById('data-range-pill');
+        if (rangePill && data.kpi_overview) {
+            const allYears = [...(data.kpi_overview.anos_pre || []), ...(data.kpi_overview.anos_pos || [])];
+            if (allYears.length) rangePill.textContent = '\u25cf Dados ' + Math.min(...allYears) + '\u2013' + Math.max(...allYears);
+        }
+
         destroyCharts();
         renderAll(data);
+
+        // Re-render all charts when global filters change
+        window.addEventListener('filters:change', () => {
+            destroyCharts();
+            renderAll(data);
+        });
     } catch (err) {
         console.error('Erro ao carregar dados:', err);
         var loadingEl = document.getElementById('loading');

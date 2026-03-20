@@ -93,6 +93,18 @@
                 if (window.showToast) window.showToast('Base: ' + this.options[this.selectedIndex].text, 'blue');
             });
         }
+
+        const grupoSelect = document.getElementById('filter-grupo');
+        if (grupoSelect) {
+            grupoSelect.addEventListener('change', function () {
+                window.dashboardFilters.grupos = new Set(
+                    Array.from(this.selectedOptions).map(o => o.value)
+                );
+                dispatchFilterChange();
+                if (window.showToast) window.showToast('Filtro de grupo atualizado', 'green');
+            });
+        }
+
     }
 
     /* ==================== CHIP CLICK DELEGATION ==================== */
