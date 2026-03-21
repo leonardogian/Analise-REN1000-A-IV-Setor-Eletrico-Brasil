@@ -170,8 +170,6 @@ O repositório inclui a infraestrutura local em contêiner para orquestração a
 docker compose -f docker/docker-compose.kestra.yml up -d
 ```
 
-> **Nota**: Para que os fluxos com IA funcionem, inclua `GEMINI_API_KEY` em seu arquivo `.env`, o qual é lido pelo Kestra via `.env` map no compose e injetado nos containers de plugin do Kestra.
-
 ---
 
 ## 🚀 Como Usar (Pipeline Completo)

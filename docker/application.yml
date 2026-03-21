@@ -1,6 +1,1 @@
-kestra:
-  ai:
-    type: "gemini"
-    gemini:
-      api-key: "${GEMINI_API_KEY}"
-      model-name: "gemini-2.5-flash"
+# Kestra application config

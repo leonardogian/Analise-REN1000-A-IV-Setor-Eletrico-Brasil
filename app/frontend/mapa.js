@@ -128,7 +128,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         initTimelineData();
         initFilters();
         updateMap();
-        initAIMap();
         initThemeToggle();
 
     } catch (error) {
@@ -601,107 +600,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         UI.playText.textContent = "Play";
         clearInterval(state.playbackTimer);
         state.isPlaying = false;
-    }
-
-    // --- Funções de IA ---
-    function initAIMap() {
-        const btnGenerateAi = document.getElementById('btn-generate-ai');
-        const aiInsightContainer = document.getElementById('ai-insight-container');
-
-        if (!btnGenerateAi) return;
-
-        btnGenerateAi.addEventListener('click', async () => {
-            btnGenerateAi.disabled = true;
-            btnGenerateAi.textContent = "Analisando Mapa... ⏳";
-            aiInsightContainer.style.display = "block";
-            aiInsightContainer.innerHTML = "<p>Avaliando distruibuição geográfica baseada nas holdings visíveis...</p>";
-
-            const customPromptStr = document.getElementById('ai-custom-prompt') ? document.getElementById('ai-custom-prompt').value : "";
-
-            const filters = {
-                contexto: "Mapa Interativo Georeferenciado",
-                metricaSelecionada: state.metric,
-                holdingsAtivas: state.selectedHoldings
-            };
-
-            let totalValor = 0;
-            let totalQtd = 0;
-            const distData = {};
-
-            dashboardData.series.forEach(item => {
-                if (state.selectedHoldings.length > 0 && !state.selectedHoldings.includes(item.holding)) return;
-                const distId = item.distribuidora;
-                if (!geoMap[distId]) return;
-
-                if (!distData[distId]) {
-                    distData[distId] = { id: distId, valor: 0, qtd: 0 };
-                }
-                distData[distId].valor += item.valor_pago;
-                distData[distId].qtd += item.qtd_transgressoes;
-                totalValor += item.valor_pago;
-                totalQtd += item.qtd_transgressoes;
-            });
-
-            // Separa top 3 distribuidores visiveis na metrica atual para ajudar o llm
-            const sortedDist = Object.values(distData).sort((a, b) => {
-                let valA = a.valor; let valB = b.valor;
-                if (state.metric === 'qtd') { valA = a.qtd; valB = b.qtd; }
-                else if (state.metric === 'relacao') {
-                    valA = state.invertRatio ? (a.valor > 0 ? a.qtd / a.valor : 0) : (a.qtd > 0 ? a.valor / a.qtd : 0);
-                    valB = state.invertRatio ? (b.valor > 0 ? b.qtd / b.valor : 0) : (b.qtd > 0 ? b.valor / b.qtd : 0);
-                }
-                return valB - valA;
-            });
-
-            const top3 = sortedDist.slice(0, 3).map(d => ({
-                distribuidora: d.id,
-                valor: 'R$ ' + (d.valor / 1e6).toFixed(2) + 'M',
-                qtd: d.qtd
-            }));
-
-            const metrics = {
-                total_nacional_visivel_valor: 'R$ ' + (totalValor / 1e6).toFixed(2) + 'M',
-                total_nacional_visivel_qtd: totalQtd,
-                top_3_distribuidoras_no_mapa: top3
-            };
-
-            try {
-                const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                    ? `http://127.0.0.1:8051/api/v1/ai-insights`
-                    : '/api/v1/ai-insights';
-
-                const response = await fetch(backendUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ filters, metrics, prompt: customPromptStr })
-                });
-
-                if (!response.ok) {
-                    const errorObj = await response.json().catch(() => ({}));
-                    throw new Error(errorObj.detail || "Erro na solicitação. O backend FastAPI está rodando e a OPENROUTER_API_KEY no .env?");
-                }
-
-                const resData = await response.json();
-
-                let htmlContent = resData.insight
-                    .replace(/\*\*(.*?)\*\*/g, '<strong style="color: white;">$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/^- (.*)$/gm, '<li style="margin-left: 1.5rem;">$1</li>')
-                    .replace(/\n/g, '<br/>');
-
-                const PURIFY_CFG = { ALLOWED_TAGS: ['strong', 'em', 'li', 'br', 'ul', 'ol', 'p'], ALLOWED_ATTR: ['style'] };
-                aiInsightContainer.innerHTML = typeof DOMPurify !== 'undefined'
-                    ? DOMPurify.sanitize(htmlContent, PURIFY_CFG)
-                    : escapeHtml(resData.insight);
-
-            } catch (error) {
-                console.error("AI Insight Error:", error);
-                showError(aiInsightContainer, 'Erro ao gerar insight: ' + error.message);
-            } finally {
-                btnGenerateAi.disabled = false;
-                btnGenerateAi.textContent = "✨ Gerar Nova Análise do Mapa";
-            }
-        });
     }
 
     // --- Integração com filtro global (filters.js) ---

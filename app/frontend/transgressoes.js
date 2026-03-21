@@ -9,7 +9,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const state = {
         selectedHoldings: Array.from(window.MAJOR_HOLDINGS),
         selectedDistributors: [],
-        ruralOnly: false
+        ruralOnly: false,
+        viewMode: 'monthly'
     };
 
     // Cores Iberdrola Corporate
@@ -32,9 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         ruralToggle: document.getElementById('rural-only-toggle'),
         insightContainer: document.getElementById('insight-container'),
         inflectionBadge: document.getElementById('inflection-badge'),
-        inflectionMonth: document.getElementById('inflection-month'),
-        btnGenerateAi: document.getElementById('btn-generate-ai'),
-        aiInsightContainer: document.getElementById('ai-insight-container')
+        inflectionMonth: document.getElementById('inflection-month')
     };
 
     // Inicialização
@@ -53,7 +52,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         initFilters();
         renderInsights();
         updateChart();
-        initAI();
 
     } catch (error) {
         console.error("Erro ao inicializar dashboard:", error);
@@ -431,105 +429,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             });
         }
-    }
-
-    // --- Funções de IA ---
-    function initAI() {
-        if (!UI.btnGenerateAi) return;
-
-        UI.btnGenerateAi.addEventListener('click', async () => {
-            UI.btnGenerateAi.disabled = true;
-            UI.btnGenerateAi.textContent = "Gerando Análise... ⏳";
-            UI.aiInsightContainer.style.display = "block";
-            UI.aiInsightContainer.innerHTML = "<p>Pensando e estruturando a análise baseada no contexto atual...</p>";
-
-            const customPromptStr = document.getElementById('ai-custom-prompt') ? document.getElementById('ai-custom-prompt').value : "";
-
-            // Build Context
-            const filters = {
-                holdingsAtivas: state.selectedHoldings,
-                distribuidorasAtivas: state.selectedDistributors,
-                apenasRural: state.ruralOnly
-            };
-
-            let totalFinanceiro = 0;
-            let totalTransgressoes = 0;
-
-            const aggregateBy = state.selectedDistributors.length > 0 ? 'distribuidora' : 'holding';
-            const activeGroups = state.selectedDistributors.length > 0 ? state.selectedDistributors : state.selectedHoldings;
-
-            let groupMetrics = {};
-            activeGroups.forEach(groupId => {
-                groupMetrics[groupId] = { valor_pago: 0, qtd_transgressoes: 0 };
-            });
-
-            const filteredSeries = dashboardData.series.filter(s => {
-                if (state.ruralOnly && !s.is_rural) return false;
-                if (state.selectedHoldings.length > 0 && !state.selectedHoldings.includes(s.holding)) return false;
-                if (state.selectedDistributors.length > 0 && !state.selectedDistributors.includes(s.distribuidora)) return false;
-                return true;
-            });
-
-            filteredSeries.forEach(s => {
-                const id = s[aggregateBy];
-                if (groupMetrics[id]) {
-                    groupMetrics[id].valor_pago += s.valor_pago;
-                    groupMetrics[id].qtd_transgressoes += s.qtd_transgressoes;
-                    totalFinanceiro += s.valor_pago;
-                    totalTransgressoes += s.qtd_transgressoes;
-                }
-            });
-
-            // Format numbers slightly for better AI comprehension
-            const formatMoney = v => "R$ " + (v / 1e6).toFixed(2) + "M";
-
-            const metrics = {
-                totalGeralFinanceiro: formatMoney(totalFinanceiro),
-                totalGeralTransgressoes: totalTransgressoes,
-                detalhamentoFinanceiro: {}
-            };
-
-            activeGroups.forEach(id => {
-                metrics.detalhamentoFinanceiro[id] = formatMoney(groupMetrics[id].valor_pago) + " (" + groupMetrics[id].qtd_transgressoes + " transgressões)";
-            });
-
-            try {
-                const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                    ? `http://127.0.0.1:8051/api/v1/ai-insights`
-                    : '/api/v1/ai-insights';
-
-                const response = await fetch(backendUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ filters, metrics, prompt: customPromptStr })
-                });
-
-                if (!response.ok) {
-                    const errorObj = await response.json().catch(() => ({}));
-                    throw new Error(errorObj.detail || "Erro na solicitação. O backend FastAPI está rodando e a OPENROUTER_API_KEY no .env?");
-                }
-
-                const data = await response.json();
-
-                let htmlContent = data.insight
-                    .replace(/\\*\\*(.*?)\\*\\*/g, '<strong style="color: white;">$1</strong>')
-                    .replace(/\\*(.*?)\\*/g, '<em>$1</em>')
-                    .replace(/^- (.*)$/gm, '<li style="margin-left: 1.5rem;">$1</li>')
-                    .replace(/\n/g, '<br/>');
-
-                const PURIFY_CFG = { ALLOWED_TAGS: ['strong', 'em', 'li', 'br', 'ul', 'ol', 'p'], ALLOWED_ATTR: ['style'] };
-                UI.aiInsightContainer.innerHTML = typeof DOMPurify !== 'undefined'
-                    ? DOMPurify.sanitize(htmlContent, PURIFY_CFG)
-                    : escapeHtml(data.insight);
-
-            } catch (error) {
-                console.error("AI Insight Error:", error);
-                showError(UI.aiInsightContainer, 'Erro ao gerar insight: ' + error.message);
-            } finally {
-                UI.btnGenerateAi.disabled = false;
-                UI.btnGenerateAi.textContent = "✨ Gerar Nova Análise IA";
-            }
-        });
     }
 
 });

@@ -13,12 +13,6 @@ services:
     command: server local
     ports:
       - "8081:8080"
-    environment:
-      # O Kestra lê variáveis de ambiente que começam com SECRET_ e as oculta na interface (Secret Variables)
-      SECRET_GEMINI_API_KEY: "${GEMINI_API_KEY}"
-      KESTRA_AI_TYPE: "gemini"
-      KESTRA_AI_GEMINI_API_KEY: "${GEMINI_API_KEY}"
-      KESTRA_AI_GEMINI_MODEL_NAME: "gemini-2.5-flash"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - kestra-data:/app/storage
