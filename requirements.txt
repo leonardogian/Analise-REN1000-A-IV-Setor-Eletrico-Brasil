@@ -20,6 +20,8 @@ scikit-learn
 # Backend local (API + serving em localhost)
 fastapi
 uvicorn
+asyncpg
+redis
 
 # Integração IA
 langchain

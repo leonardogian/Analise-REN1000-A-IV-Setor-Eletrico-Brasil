@@ -10,7 +10,7 @@ Normativa nº 1.000/2021 da ANEEL** na qualidade dos serviços comerciais das
 distribuidoras de energia elétrica do Brasil. Foco especial nas **5 distribuidoras
 do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 
-> **🎯 Fase Atual do Projeto:** ETL, dados e design system do frontend estão completos. O dashboard tem 6 páginas ativas com módulos compartilhados unificados (utils.js, nav.js, filters.js, app.js). Próximos passos: camada coroplética no mapa e análises adicionais.
+> **🎯 Fase Atual do Projeto:** ETL, dados e design system do frontend estão completos. O dashboard tem 6 páginas ativas com módulos compartilhados unificados (utils.js, nav.js, filters.js, app.js). Notebook de diagnóstico e análises estatísticas concluído (`notebooks/diagnostico_dados.ipynb`). Próximos passos: corrigir bug de nomes de distribuidoras em `fato_indicadores_anuais`, camada coroplética no mapa, e refinamento das análises estatísticas.
 
 > **🔄 ROTINA OBRIGATÓRIA PARA IAs:**
 >
@@ -24,11 +24,11 @@ do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 |---------------|-------------------------------------------------|
 | ETL           | Python 3.10+, pandas, numpy, requests           |
 | Análise       | Python, pandas, numpy                            |
-| Backend local | FastAPI, Uvicorn                                 |
-| Dashboard     | HTML5, CSS3, Vanilla JS, Chart.js 4.4.7 (CDN)   |
+| Backend Cloud | FastAPI, PostgreSQL, Redis (no Railway)          |
+| Dashboard     | HTML5, CSS3, Vanilla JS, Chart.js (na Vercel)    |
 | Relatório     | HTML print-optimized (Ctrl+P → PDF)              |
 | Build         | GNU Make                                         |
-| Dados         | CSV, Parquet, JSON                               |
+| Dados         | PostgreSQL DB, Redis Cache, Parquet              |
 | Versionamento | Git (branch: main)                               |
 
 ## Estrutura do Repositório
@@ -79,7 +79,15 @@ TCC_leo_main/
 │           └── neoenergia/   ← CSVs específicos do grupo Neoenergia
 │
 ├── reports/                  ← Relatórios gerados (markdown)
-├── notebooks/                ← Jupyter (exploratórios)
+├── notebooks/                ← Jupyter (exploratórios + diagnóstico)
+│   ├── diagnostico_dados.ipynb              ← Diagnóstico + análises estatísticas (3 partes)
+│   ├── diagnostico_dados_executed.ipynb     ← Versão executada com outputs
+│   ├── 01_mapa_dados_e_qualidade.ipynb      ← Mapa de dados e qualidade
+│   ├── fig_teste_medias_pre_pos.png         ← Box plot pré/pós REN 1000
+│   ├── fig_decomposicao_sazonal.png         ← Decomposição sazonal 4 painéis
+│   ├── fig_ranking_melhoria_piora.png       ← Top 15 melhoria/piora
+│   ├── fig_porte_vs_transgressao.png        ← Scatter porte × transgressão
+│   └── fig_compensacoes_evolucao.png        ← Evolução compensações R$
 ├── docs/                     ← Documentação auxiliar + imagens
 ├── logos/                    ← Logos PNG de holdings (espelhados em app/frontend/assets/logos/)
 ├── docker/                   ← Infraestrutura local em contêineres (Stack Docker nome: "tcc", ex: app, Postgres, Kestra)
@@ -172,3 +180,22 @@ pip install -r requirements.txt
 - **Relatório Neoenergia**: `reports/neoenergia_diagnostico.md`
 - **Apresentação executiva**: `output/apresentacao_tcc_investigacao_dados_analises.pptx`
 - **Como usar Git**: `COMO_USAR_GIT.md`
+- **Diagnóstico de dados e análises**: `notebooks/diagnostico_dados.ipynb`
+
+## Resultados Estatísticos (Diagnóstico Mar 2026)
+
+Notebook `diagnostico_dados.ipynb` contém análises estatísticas completas para o TCC:
+
+| Análise | Resultado | Significância |
+|---------|-----------|---------------|
+| Taxa pré vs pós REN 1000 | 3.00% → 2.08% (Mann-Whitney p=0.015, d=0.283) | Significativo |
+| Tendência temporal | Mann-Kendall S=-28, p=0.10, slope=-0.085 p.p./ano | Marginal |
+| Distribuidoras que melhoraram | 44/102 (43%), binomial p=0.93 | Não significativo |
+| Porte × transgressão | Spearman rho=-0.286, p=0.49 (apenas 8 distrib.) | Fraca |
+| Compensação/transgressão | R$33 → R$207 (+528%) | Descritivo |
+
+## Bugs Conhecidos no Pipeline
+
+1. ~~**`distributor_label` NaN em `fato_indicadores_anuais`**~~: **CORRIGIDO** (2026-03-21). Adicionados 35 aliases em `data/config/distributor_names_overrides.json` mapeando IDs históricos (COELBA→neoenergia_coelba, AME→amazonas_energia, etc.). Groupby em `build_fato_indicadores_anuais()` agora preserva colunas de nome. Resultado: 99.1% label fill, 95.2% match com dim_distributor_group, 5 Neoenergias rastreadas 2011-2023.
+2. **Ano 2023 com 25% do volume**: 7M serviços vs 28M em 2022 (91 vs 105 distribuidoras). Causa indeterminada.
+3. **Anos 2024-2025 fragmentados**: 17 e 11 distribuidoras respectivamente. Excluir de análises anuais comparativas.

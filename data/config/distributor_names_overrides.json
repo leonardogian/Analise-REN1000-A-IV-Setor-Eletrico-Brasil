@@ -31,6 +31,42 @@
     "cpfl_santa_cruz": {
       "sigagente": "CPFL Santa Cruz",
       "nomagente": "COMPANHIA JAGUARI DE ENERGIA - CPFL SANTA CRUZ"
+    },
+    "amazonas_energia": {
+      "sigagente": "Amazonas Energia",
+      "nomagente": "AMAZONAS ENERGIA S.A."
+    },
+    "roraima_energia": {
+      "sigagente": "Roraima Energia",
+      "nomagente": "RORAIMA ENERGIA S.A."
+    },
+    "enel_sp": {
+      "sigagente": "Enel SP",
+      "nomagente": "ELETROPAULO METROPOLITANA ELETRICIDADE DE SÃO PAULO S.A."
+    },
+    "enel_go": {
+      "sigagente": "Enel GO",
+      "nomagente": "CELG DISTRIBUIÇÃO S.A."
+    },
+    "edp_sp": {
+      "sigagente": "EDP SP",
+      "nomagente": "EDP SÃO PAULO DISTRIBUIÇÃO DE ENERGIA S.A."
+    },
+    "cerr": {
+      "sigagente": "Cerr",
+      "nomagente": "COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO RURAL"
+    },
+    "mesa": {
+      "sigagente": "Mesa",
+      "nomagente": "MESA"
+    },
+    "pacto_energia_pr": {
+      "sigagente": "Pacto Energia PR",
+      "nomagente": "PACTO ENERGIA PARANÁ"
+    },
+    "uhenpal": {
+      "sigagente": "Uhenpal",
+      "nomagente": "USINA HIDRELÉTRICA PANAMBI LTDA"
     }
   },
   "distributor_aliases": {
@@ -40,6 +76,47 @@
     "cpfl_jaguari": "cpfl_santa_cruz",
     "cpfl_mococa": "cpfl_santa_cruz",
     "cpfl_leste_pauli": "cpfl_paulista",
-    "cpfl_sul_paulist": "cpfl_paulista"
+    "cpfl_sul_paulist": "cpfl_paulista",
+
+    "coelba": "neoenergia_coelba",
+    "cosern": "neoenergia_cosern",
+    "elektro": "neoenergia_elektro",
+    "ceb": "neoenergia_brasilia",
+
+    "ame": "amazonas_energia",
+    "boa_vista": "roraima_energia",
+    "cea": "cea_equatorial",
+    "ceee_d": "ceee_equatorial",
+    "celesc": "celesc_dis",
+    "equatorial_go": "enel_go",
+    "eletropaulo": "enel_sp",
+    "light_sesa": "light",
+    "rge_sul": "rge",
+
+    "muxenergia": "mux_energia",
+    "certaja": "certaja_energia",
+    "cersad_distribui": "cersad",
+    "efljc": "joao_cesa",
+    "elfsm": "santa_maria",
+
+    "eac": "energisa_ac",
+    "ebo": "energisa_pb",
+    "emr": "energisa_minas_rio",
+    "ems": "energisa_ms",
+    "emt": "energisa_mt",
+    "enf": "energisa_sul_sudeste",
+    "epb": "energisa_pb",
+    "ero": "energisa_ro",
+    "ese": "energisa_se",
+    "ess": "energisa_sul_sudeste",
+    "eto": "energisa_to",
+
+    "cflo": "cpfl_santa_cruz",
+    "cnee": "cpfl_santa_cruz",
+    "edevp": "edp_sp",
+    "eeb": "edp_sp",
+
+    "ceral": "ceral_anitapolis",
+    "ceral_dis": "ceral_anitapolis"
   }
 }

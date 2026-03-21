@@ -209,9 +209,12 @@ make inspect-tables
 
 ---
 
-## 🐘 Integração Relacional (PostgreSQL)
+## 🐘 Integração em Nuvem: PostgreSQL + Redis
 
-Para tirar carga de processamento na memória e dar suporte a análises avançadas (Window Functions, CTEs complexas), o projeto possui integração direta com PostgreSQL.
+O projeto evoluiu de arquivos `.json` estáticos para uma arquitetura "Hybrid Data" de 3 camadas na nuvem (Railway), garantindo alta velocidade e capacidade de filtragem dinâmica:
+
+- **PostgreSQL**: Todas as tabelas analíticas (`kpi_regulatorio_anual`, `fato_transgressao_mensal_distribuidora`, etc) agora residem num banco relacional, sendo consultadas via SQL (`asyncpg`).
+- **Redis**: As agregações retornadas pelo PostgreSQL são cacheadas em memória pelo Redis (`redis.asyncio`), economizando recursos da API e entregando respostas ultrarrápidas para o front-end (Vercel).
 
 ### Scripts Automáticos de Carga
 
@@ -304,6 +307,7 @@ Após rodar o pipeline, o projeto gera:
 
 ### Notebooks de apoio
 
+- `notebooks/diagnostico_dados.ipynb` — **Diagnóstico completo + análises estatísticas** (3 partes: qualidade dados, testes estatísticos, melhorias dashboard)
 - `notebooks/01_mapa_dados_e_qualidade.ipynb`
 - `notebooks/02_tendencia_regulatoria_414_vs_1000.ipynb`
 - `notebooks/03_porte_e_benchmark_distribuidoras.ipynb`

@@ -35,9 +35,8 @@ def calc_compensacao_media_por_transgressao(
     compensacao_rs: pd.Series, qtd_fora_prazo: pd.Series
 ) -> pd.Series:
     """Compensação média por transgressão (R$/transgressão)."""
-    return np.where(
-        qtd_fora_prazo > 0, compensacao_rs / qtd_fora_prazo, np.nan
-    )
+    safe_denom = qtd_fora_prazo.replace(0, np.nan)
+    return compensacao_rs / safe_denom
 
 
 def calc_share(parte: pd.Series, total: pd.Series) -> pd.Series:

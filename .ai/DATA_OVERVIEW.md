@@ -23,7 +23,7 @@ Localização: `data/processed/analysis/`
 | **fato_uc_ativa_mensal_distribuidora** | Fato | Mensal × Distribuidora | 2023–2025 | `uc_ativa_mes` | ✅ Normalização |
 | **fato_grupos_algoritmicos** | Fato Agregado | Pré-computado por dimensão | 2023–2025 | Consolidados por agrupamento | ✅ Performance |
 | **kpi_regulatorio_anual** | KPI | Anual Brasil (agregado) | 2011–2023 | `taxa_fora_prazo`, `compensacao_rs` | ✅ Agregado |
-| **dim_distribuidora_porte** | Dimensão | Anual × Distribuidora | 2011–2023 | `bucket_porte` (P/M/G/GG), `rank_porte_ano` | ✅ Categorização |
+| **dim_distribuidora_porte** | Dimensão | Anual × Distribuidora | 2023–2025 | `bucket_porte` (P/M/G/GG), `rank_porte_ano` | ⚠️ Apenas pós-2023 |
 | **dim_indicador_servico** | Dimensão | Catálogo | Estático | Mapeamento serviços → famílias (QS/QV/PM/CR) | ✅ Referência |
 | **dim_distributor_group** | Dimensão | Mapeamento Holdings | Estático | Agrupamento corporativo (Neoenergia, CPFL, Equatorial, etc.) | ✅ Hierarquia |
 
@@ -401,6 +401,31 @@ INDGER_SERVICOS_SCHEMA = {
 - **Impacto:** Ano 2022 contém transição (4 meses REN 414, 8 meses REN 1000)
 - **Status:** Não decomposto; misturado no agregado 2022
 - **Workaround:** Usar 2023+ para análise pós-REN1000 "pura"; marcar 2022 como "transição"
+
+### G. BUG: Nomes de Distribuidoras Perdidos em `fato_indicadores_anuais`
+
+- **Problema:** `build_fato_indicadores_anuais()` faz groupby que descarta colunas de nome (`distributor_label`, `nomagente`, `distributor_name_sig`). O `merge_fato_with_porte()` tenta recuperar via `dim_porte`, mas este só tem 2023-2025. Além disso, `sigagente` em `fato` é MAIÚSCULO (`AME`, `CEMIG-D`) mas em `dim_porte` é title case (`Amazonas Energia`, `Cemig-D`), impedindo o join.
+- **Impacto:** 99.3% dos registros (33.969/34.193) têm `distributor_label = NaN`. Rankings e labels do notebook mostram `nan` ao invés dos nomes das distribuidoras.
+- **Status:** Bug não corrigido (Mar 2026). Os dados numéricos (taxas, compensações) estão corretos; apenas os labels de nome são afetados.
+- **Workaround temporário:** Usar `distributor_id` como chave e fazer merge manual com `dim_distributor_group` via `distributor_id`:
+  ```python
+  fato.merge(dim_grupo[['distributor_id','distributor_label']], on='distributor_id', how='left', suffixes=('','_grp'))
+  ```
+- **Fix definitivo:** Em `build_fato_indicadores_anuais()`, preservar colunas de nome no groupby (via `first()`) ou re-merge com input `qualidade` após agregação.
+
+### H. Ano 2023 Potencialmente Incompleto
+
+- **Problema:** 2023 tem apenas 25% do volume de 2022 (7M vs 28M serviços) e 14 distribuidoras a menos (91 vs 105)
+- **Impacto:** Análises pós-REN 1000 baseiam-se essencialmente em 2022 (que é ano de transição) se 2023 for descartado
+- **Status:** Causa indeterminada — pode ser cobertura parcial na ANEEL ou mudança de reporte
+- **Recomendação:** Documentar como ressalva no TCC; usar 2023 com cautela
+
+### I. Anos 2024-2025 com Cobertura Fragmentada
+
+- **Problema:** 2024 tem apenas 17 distribuidoras, 2025 tem 11
+- **Impacto:** Análises anuais comparativas são inviáveis para estes anos
+- **Status:** Dados estão em processo de publicação pela ANEEL
+- **Recomendação:** Excluir de análises anuais; usar apenas os dados mensais de 2024-2025 (INDGER) para análise de tendência
 
 ---
 

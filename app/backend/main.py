@@ -14,7 +14,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from contextlib import asynccontextmanager
 
+from app.backend.core.database import db_manager, get_db_pool, get_redis
+from app.backend.core.cache import fetch_with_cache
 
 load_dotenv()
 
@@ -127,10 +130,19 @@ def _artifact_status() -> dict[str, Any]:
     }
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await db_manager.connect()
+    yield
+    # Shutdown
+    await db_manager.disconnect()
+
 app = FastAPI(
     title="TCC REN1000 Local Backend",
     description="Local API and static serving for ANEEL analysis dashboard.",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 _CORS_ORIGINS_PROD = [
@@ -152,12 +164,32 @@ app.add_middleware(
 
 
 @app.get("/health")
-def health() -> dict[str, Any]:
+async def health() -> dict[str, Any]:
     status = _artifact_status()
-    ok = not status["missing_artifacts"]
+    db_ok = False
+    redis_ok = False
+    
+    if db_manager.pool:
+        try:
+            async with db_manager.pool.acquire() as conn:
+                await conn.execute("SELECT 1")
+            db_ok = True
+        except Exception:
+            pass
+            
+    if db_manager.redis:
+        try:
+            await db_manager.redis.ping()
+            redis_ok = True
+        except Exception:
+            pass
+            
+    ok = not status["missing_artifacts"] and db_ok and redis_ok
     return {
         "status": "ok" if ok else "degraded",
         "service": "tcc-local-backend",
+        "database_connected": db_ok,
+        "redis_connected": redis_ok,
         **status,
     }
 
@@ -209,6 +241,32 @@ def api_timeseries_tendencia() -> dict[str, Any]:
     payload = _load_dashboard_payload()
     return {"data": payload.get("franquias_insights", {}).get("timeseries_tendencia", [])}
 
+@app.get("/api/v1/kpi-regulatorio")
+async def api_kpi_regulatorio(ano: int = None) -> dict[str, Any]:
+    """
+    Rota viva usando Postgres + Redis.
+    Busca os dados de `kpi_regulatorio_anual`, com cache de 1 hora.
+    """
+    cache_key = f"db_kpi_ano_{ano}" if ano else "db_kpi_all"
+    query = "SELECT * FROM kpi_regulatorio_anual"
+    params = []
+    
+    if ano:
+        query += " WHERE ano = $1"
+        params.append(ano)
+        
+    try:
+        dados = await fetch_with_cache(
+            redis=db_manager.redis,
+            pool=db_manager.pool,
+            cache_key=cache_key,
+            query=query,
+            *params,
+            expire=3600
+        )
+        return {"meta": {"fonte": "PostgreSQL+Redis", "table": "kpi_regulatorio_anual"}, "data": dados}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro interno no BD: {str(e)}")
 
 
 

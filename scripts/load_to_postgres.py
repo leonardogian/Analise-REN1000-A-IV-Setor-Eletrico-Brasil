@@ -21,7 +21,18 @@ def load_in_chunks(file_path, engine, table_name, chunksize=50000):
     print(f"Sucesso: {table_name} carregado com sucesso em lotes!")
 
 def main():
-    engine = create_engine('postgresql+psycopg2://admin:adminpassword@localhost:5432/tcc_db')
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    db_url = os.getenv('DATABASE_URL', 'postgresql+psycopg2://admin:adminpassword@localhost:5432/tcc_db')
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    
+    # SQLAlchemy sometimes works better with postgresql+psycopg2 explicitly if not using async
+    if db_url.startswith("postgresql://") and "+psycopg2" not in db_url:
+        db_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+        
+    engine = create_engine(db_url)
     
     # Processed and Analysis folders
     base_dir = Path(__file__).resolve().parent.parent

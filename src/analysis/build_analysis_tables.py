@@ -177,16 +177,30 @@ def ensure_name_columns(frame: pd.DataFrame) -> pd.DataFrame:
         out["distributor_name_sig"] = out["sigagente"].astype("string").fillna("")
     if "nomagente" in out.columns and "distributor_name_legal" not in out.columns:
         out["distributor_name_legal"] = out["nomagente"].astype("string").fillna(out.get("distributor_name_sig", ""))
-    if "distributor_label" not in out.columns and "distributor_name_sig" in out.columns:
+    needs_label = (
+        "distributor_label" not in out.columns
+        or out["distributor_label"].isna().any()
+        or (out["distributor_label"].astype(str).str.strip() == "").any()
+    )
+    if needs_label and "distributor_name_sig" in out.columns:
         legal_series = (
             out["distributor_name_legal"].astype("string").fillna("")
             if "distributor_name_legal" in out.columns
             else pd.Series([""] * len(out), index=out.index, dtype="string")
         )
-        out["distributor_label"] = [
-            sig if not legal or sig == legal else f"{sig} — {legal}"
-            for sig, legal in zip(out["distributor_name_sig"].astype(str), legal_series.astype(str))
-        ]
+        computed_labels = pd.Series(
+            [
+                sig if not legal or sig == legal else f"{sig} — {legal}"
+                for sig, legal in zip(out["distributor_name_sig"].astype(str), legal_series.astype(str))
+            ],
+            index=out.index,
+            dtype="string",
+        )
+        if "distributor_label" not in out.columns:
+            out["distributor_label"] = computed_labels
+        else:
+            mask = out["distributor_label"].isna() | (out["distributor_label"].astype(str).str.strip() == "")
+            out.loc[mask, "distributor_label"] = computed_labels[mask]
     return out
 
 
@@ -276,7 +290,11 @@ def build_fato_indicadores_anuais(qualidade: pd.DataFrame, dim_indicador: pd.Dat
     enriched = enriched[enriched["familia_indicador"].isin(FAMILIAS_VALIDAS)].copy()
     enriched = enriched.dropna(subset=["ano", "sigagente", "codigo_base", "distributor_id", "group_id"])
 
-    keys = ["ano", "group_id", "distributor_id", "sigagente", "codigo_base", "classe_local"]
+    keys = [
+        "ano", "group_id", "distributor_id", "sigagente",
+        "distributor_name_sig", "distributor_name_legal", "distributor_label",
+        "codigo_base", "classe_local",
+    ]
 
     qs = (
         enriched[enriched["familia_indicador"] == "QS"]
@@ -658,10 +676,6 @@ def merge_fato_with_porte(fato_indicadores: pd.DataFrame, dim_porte: pd.DataFram
         "uc_ativa_media_mensal",
         "bucket_porte",
         "rank_porte_ano",
-        "nomagente",
-        "distributor_name_sig",
-        "distributor_name_legal",
-        "distributor_label",
     ]
     merge_cols = [c for c in merge_cols if c in dim_porte.columns]
     enriched = fato_indicadores.merge(
@@ -969,6 +983,14 @@ def run_all() -> dict[str, pd.DataFrame]:
         uc_ativa_mensal_distribuidora=uc_ativa_mensal,
         dim_distributor_group=dim_group,
     )
+
+    # Harmonize name columns in fato_indicadores using dim_group as canonical source
+    _name_lookup = dim_group.drop_duplicates("distributor_id").set_index("distributor_id")
+    for _col in ["sigagente", "nomagente", "distributor_name_sig", "distributor_name_legal", "distributor_label"]:
+        if _col in _name_lookup.columns and _col in fato_indicadores.columns:
+            _mapping = _name_lookup[_col]
+            _mask = fato_indicadores["distributor_id"].isin(_mapping.index)
+            fato_indicadores.loc[_mask, _col] = fato_indicadores.loc[_mask, "distributor_id"].map(_mapping)
 
     fact_tables = {
         "dim_distribuidora_porte": dim_porte,

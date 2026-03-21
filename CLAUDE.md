@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality of Brazilian energy distributors. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units). Special focus on 5 Neoenergia distributors.
 
-**Current phase:** ETL, data infrastructure, and frontend design system are complete. The dashboard has 6 active pages with a unified design system (shared modules: utils.js, nav.js, filters.js, app.js). Next steps: choropleth layer on the map, and ongoing polish/analysis.
+**Current phase:** ETL, data infrastructure, and frontend design system are complete. The dashboard has 6 active pages with a unified design system (shared modules: utils.js, nav.js, filters.js, app.js). Statistical diagnostics notebook completed (`notebooks/diagnostico_dados.ipynb`) with Mann-Whitney, Mann-Kendall, ranking, and compensation analyses. Next steps: fix distributor names bug in `fato_indicadores_anuais` pipeline, choropleth layer on the map, and thesis writing.
 
 ## Essential Commands
 
@@ -74,17 +74,19 @@ src/analysis/build_analysis_tables.py -> data/processed/analysis/*.csv  (version
 | Layer | Tech |
 |-------|------|
 | ETL/Analysis | Python 3.10+, pandas, numpy |
-| Backend | FastAPI + Uvicorn (`app/backend/main.py`) no **Railway** |
+| Backend | FastAPI + PostgreSQL + Redis (`app/backend/main.py`) no **Railway** |
 | Frontend | HTML5, Vanilla JS, Chart.js 4.4.7 (CDN), CSS pure no **Vercel** |
 | Orchestration | GNU Make + Docker Compose |
-| Data formats | CSV, Parquet (preferred for speed), JSON |
+| Data formats | PostgreSQL DB, Redis Cache, Parquet, JSON |
 
-### Filosofia de Arquitetura (Vercel x Railway)
+### Filosofia de Arquitetura Híbrida (Vercel x Railway x PostgreSQL x Redis)
 
-Nossa configuração de Produção opera de maneira estritamente desacoplada:
+Nossa configuração de Produção opera de maneira estritamente desacoplada e escalável:
 
 1. **Frontend (Vercel)**: Qualquer modificação de roteamento, arquivos estáticos puros ou redirecionamentos de chamadas à API são governados unicamente pelo cliente e por seu arquivo de setup principal, **`vercel.json`**.
-2. **Backend (Railway)**: Todo e qualquer consumo, distribuição JSON ou lógica de agregação via REST devem ser modificadas e concentradas em **`app/backend/main.py`** sob a responsabilidade do contêiner instanciado no **Railway**.
+2. **Backend (Railway)**: Toda a inteligência da API REST está concentrada no `app/backend/main.py`.
+   - Utilizamos um banco de dados **PostgreSQL** para hospedar as tabelas de análise via SQL (substituindo o antigo payload gigante em JSON estático e permitindo filtros infinitos).
+   - Utilizamos um cache em memória **Redis** para servir requests repetidas de forma instantânea.
    - URL Base da API em Produção: `https://tcc-ren1000x414-production.up.railway.app`
 
 *Nota sobre testes locais e mock:* Durante simulações de teste e desenvolvimento local da API, nós mapeamos e testamos internamente as rotas FastAPI via `make dev-serve` / `make backend` rodando em `http://localhost:8051`. No frontend Vercel (Produção), os `fetch()` para `/api/...` são implicitamente reescritos e encaminhados à nossa URL Base do Railway transparentemente por causa das regras de rewrite em `vercel.json`!
