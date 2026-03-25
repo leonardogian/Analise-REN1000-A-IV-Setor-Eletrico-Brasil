@@ -1,66 +1,66 @@
 {
   "services": [
-    "RelNorUb",
-    "LigBUb",
     "RclDano",
-    "LigBRr",
-    "ObraSec",
-    "ObraPrim"
+    "LigBUb",
+    "RelNorUb",
+    "EstProj",
+    "ObraPrim",
+    "ObraSec"
   ],
   "data": [
     {
+      "distributor_label": "Enel SP — ELETROPAULO METROPOLITANA ELETRICIDADE DE SÃO PAULO S.A.",
+      "metrics": {
+        "EstProj": 0.13694350946057304,
+        "LigBUb": 6.411122152447647e-05,
+        "ObraPrim": 0.1651682718437452,
+        "ObraSec": 0.3955248151429107,
+        "RclDano": 0.09747583680581964,
+        "RelNorUb": 0.003069029200723429
+      }
+    },
+    {
+      "distributor_label": "Neoenergia Coelba — COMPANHIA DE ELETRICIDADE DO ESTADO DA BAHIA",
+      "metrics": {
+        "EstProj": 0.14682959281934982,
+        "LigBUb": 0.03214379814941784,
+        "ObraPrim": 0.9380321817456039,
+        "ObraSec": 1.0,
+        "RclDano": 0.030754038612191486,
+        "RelNorUb": 0.006483434210017839
+      }
+    },
+    {
       "distributor_label": "CPFL Paulista — COMPANHIA PAULISTA DE FORÇA E LUZ",
       "metrics": {
-        "LigBRr": 0.0906057660631022,
-        "LigBUb": 0.017744643239946394,
-        "ObraPrim": 0.027653473146900486,
-        "ObraSec": 0.057826429645819,
-        "RclDano": 0.0006107006291016536,
-        "RelNorUb": 0.010476141001315985
+        "EstProj": 0.0024753120565907762,
+        "LigBUb": 0.012497789413056822,
+        "ObraPrim": 0.021388249998261378,
+        "ObraSec": 0.039103750121818805,
+        "RclDano": 0.0006973056076497404,
+        "RelNorUb": 0.007302297522559847
       }
     },
     {
       "distributor_label": "Neoenergia Pernambuco — COMPANHIA ENERGÉTICA DE PERNAMBUCO",
       "metrics": {
-        "LigBRr": 0.05333973270646942,
-        "LigBUb": 0.04024629744899208,
-        "ObraPrim": 0.8169433702999744,
-        "ObraSec": 1.0,
-        "RclDano": 0.04324401261575506,
-        "RelNorUb": 0.04894786193962944
+        "EstProj": 0.007036090544199876,
+        "LigBUb": 0.027709356961938846,
+        "ObraPrim": 0.647618317221194,
+        "ObraSec": 0.7626800288234066,
+        "RclDano": 0.05186077114770856,
+        "RelNorUb": 0.02044298219150476
       }
     },
     {
-      "distributor_label": "EDP SP — EDP SÃO PAULO DISTRIBUIÇÃO DE ENERGIA S.A.",
+      "distributor_label": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "metrics": {
-        "LigBRr": 0.12704165784594476,
-        "LigBUb": 0.05486311640238019,
-        "ObraPrim": 0.030983922515796746,
-        "ObraSec": 0.0651448434290909,
-        "RclDano": 0.2347991686520265,
-        "RelNorUb": 0.03480523946741727
-      }
-    },
-    {
-      "distributor_label": "CPFL Piratininga — COMPANHIA PIRATININGA DE FORÇA E LUZ",
-      "metrics": {
-        "LigBRr": 0.04347467356690689,
-        "LigBUb": 0.017883285311041944,
-        "ObraPrim": 0.01693980810443091,
-        "ObraSec": 0.04341459801614652,
-        "RclDano": 0.004414147865264182,
-        "RelNorUb": 0.00685914562590547
-      }
-    },
-    {
-      "distributor_label": "EDP ES — EDP ESPÍRITO SANTO DISTRIBUIÇÃO DE ENERGIA S.A.",
-      "metrics": {
-        "LigBRr": 0.0859727238497986,
-        "LigBUb": 0.025647990444981304,
-        "ObraPrim": 0.4536530489756289,
-        "ObraSec": 0.3198634353836682,
-        "RclDano": 0.06115674758353621,
-        "RelNorUb": 0.0242934091905281
+        "EstProj": 0.5185835403504774,
+        "LigBUb": 0.02039592992019873,
+        "ObraPrim": 0.5066355721700639,
+        "ObraSec": 0.7625391812743766,
+        "RclDano": 0.10195701647807871,
+        "RelNorUb": 0.0016323523082167701
       }
     }
   ]

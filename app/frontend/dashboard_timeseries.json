@@ -13,7 +13,7 @@
       "tipo": "nacional",
       "date": "2023-02",
       "fora_prazo_por_100k_uc_mes": 49.007096911195006,
-      "compensacao_rs_por_uc_mes": 0.06280158290222902,
+      "compensacao_rs_por_uc_mes": 0.06280158290222901,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21,7 +21,7 @@
       "tipo": "nacional",
       "date": "2023-03",
       "fora_prazo_por_100k_uc_mes": 54.8402465866306,
-      "compensacao_rs_por_uc_mes": 0.09942951510657186,
+      "compensacao_rs_por_uc_mes": 0.09942951510657187,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -53,7 +53,7 @@
       "tipo": "nacional",
       "date": "2023-07",
       "fora_prazo_por_100k_uc_mes": 30.483447687868438,
-      "compensacao_rs_por_uc_mes": 0.05647655010881935,
+      "compensacao_rs_por_uc_mes": 0.056476550108819336,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -189,7 +189,7 @@
       "tipo": "nacional",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 43.492733868505056,
-      "compensacao_rs_por_uc_mes": 0.22210844631383783,
+      "compensacao_rs_por_uc_mes": 0.2221084463138379,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -197,7 +197,7 @@
       "tipo": "nacional",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 36.84046530067416,
-      "compensacao_rs_por_uc_mes": 0.08844162189592175,
+      "compensacao_rs_por_uc_mes": 0.08844162189592174,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -221,7 +221,7 @@
       "tipo": "nacional",
       "date": "2025-04",
       "fora_prazo_por_100k_uc_mes": 49.76395186617992,
-      "compensacao_rs_por_uc_mes": 0.10792178759852157,
+      "compensacao_rs_por_uc_mes": 0.10792178759852158,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -269,7 +269,7 @@
       "tipo": "nacional",
       "date": "2025-10",
       "fora_prazo_por_100k_uc_mes": 41.81487896508926,
-      "compensacao_rs_por_uc_mes": 0.12121912669401208,
+      "compensacao_rs_por_uc_mes": 0.1212191266940121,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -301,7 +301,7 @@
       "tipo": "holding",
       "date": "2023-02",
       "fora_prazo_por_100k_uc_mes": 36.90462100552683,
-      "compensacao_rs_por_uc_mes": 0.14834217240942124,
+      "compensacao_rs_por_uc_mes": 0.14834217240942132,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -325,7 +325,7 @@
       "tipo": "holding",
       "date": "2023-05",
       "fora_prazo_por_100k_uc_mes": 28.92928508896309,
-      "compensacao_rs_por_uc_mes": 0.08337761684366905,
+      "compensacao_rs_por_uc_mes": 0.08337761684366904,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -333,7 +333,7 @@
       "tipo": "holding",
       "date": "2023-06",
       "fora_prazo_por_100k_uc_mes": 26.57123577817826,
-      "compensacao_rs_por_uc_mes": 0.07516212828448751,
+      "compensacao_rs_por_uc_mes": 0.07516212828448754,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -357,7 +357,7 @@
       "tipo": "holding",
       "date": "2023-09",
       "fora_prazo_por_100k_uc_mes": 29.77763660573704,
-      "compensacao_rs_por_uc_mes": 0.07411991935943107,
+      "compensacao_rs_por_uc_mes": 0.0741199193594311,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -365,7 +365,7 @@
       "tipo": "holding",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 27.153988300091594,
-      "compensacao_rs_por_uc_mes": 0.259911298252683,
+      "compensacao_rs_por_uc_mes": 0.25991129825268294,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -373,7 +373,7 @@
       "tipo": "holding",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 34.41020056972511,
-      "compensacao_rs_por_uc_mes": 0.43834997623239697,
+      "compensacao_rs_por_uc_mes": 0.43834997623239663,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -397,7 +397,7 @@
       "tipo": "holding",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 24.506167466391375,
-      "compensacao_rs_por_uc_mes": 0.08824372502257462,
+      "compensacao_rs_por_uc_mes": 0.08824372502257463,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -421,7 +421,7 @@
       "tipo": "holding",
       "date": "2024-05",
       "fora_prazo_por_100k_uc_mes": 17.10554244439287,
-      "compensacao_rs_por_uc_mes": 0.0316587663344133,
+      "compensacao_rs_por_uc_mes": 0.03165876633441328,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -437,7 +437,7 @@
       "tipo": "holding",
       "date": "2024-07",
       "fora_prazo_por_100k_uc_mes": 22.236309105652815,
-      "compensacao_rs_por_uc_mes": 0.059634632295614456,
+      "compensacao_rs_por_uc_mes": 0.05963463229561443,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -453,7 +453,7 @@
       "tipo": "holding",
       "date": "2024-09",
       "fora_prazo_por_100k_uc_mes": 15.871062133490671,
-      "compensacao_rs_por_uc_mes": 0.10015739322109207,
+      "compensacao_rs_por_uc_mes": 0.10015739322109204,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -469,7 +469,7 @@
       "tipo": "holding",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 16.764681677077157,
-      "compensacao_rs_por_uc_mes": 0.09435651500746293,
+      "compensacao_rs_por_uc_mes": 0.09435651500746292,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -477,7 +477,7 @@
       "tipo": "holding",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 17.89573749449432,
-      "compensacao_rs_por_uc_mes": 2.509029600861408,
+      "compensacao_rs_por_uc_mes": 2.5090296008614086,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -493,7 +493,7 @@
       "tipo": "holding",
       "date": "2025-02",
       "fora_prazo_por_100k_uc_mes": 24.079262037948858,
-      "compensacao_rs_por_uc_mes": 0.16124267623043764,
+      "compensacao_rs_por_uc_mes": 0.1612426762304377,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -501,7 +501,7 @@
       "tipo": "holding",
       "date": "2025-03",
       "fora_prazo_por_100k_uc_mes": 15.421545918106677,
-      "compensacao_rs_por_uc_mes": 0.124770800244506,
+      "compensacao_rs_por_uc_mes": 0.12477080024450596,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -517,7 +517,7 @@
       "tipo": "holding",
       "date": "2025-05",
       "fora_prazo_por_100k_uc_mes": 12.160444555568024,
-      "compensacao_rs_por_uc_mes": 0.19161598173921301,
+      "compensacao_rs_por_uc_mes": 0.191615981739213,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -525,7 +525,7 @@
       "tipo": "holding",
       "date": "2025-06",
       "fora_prazo_por_100k_uc_mes": 14.823224050845877,
-      "compensacao_rs_por_uc_mes": 0.2658473734200214,
+      "compensacao_rs_por_uc_mes": 0.26584737342002146,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -541,7 +541,7 @@
       "tipo": "holding",
       "date": "2025-08",
       "fora_prazo_por_100k_uc_mes": 14.585145949341813,
-      "compensacao_rs_por_uc_mes": 0.24960541157585675,
+      "compensacao_rs_por_uc_mes": 0.2496054115758568,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -549,7 +549,7 @@
       "tipo": "holding",
       "date": "2025-09",
       "fora_prazo_por_100k_uc_mes": 11.719021032490641,
-      "compensacao_rs_por_uc_mes": 0.15793244781466315,
+      "compensacao_rs_por_uc_mes": 0.15793244781466312,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -581,7 +581,7 @@
       "tipo": "holding",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 19.295809047421557,
-      "compensacao_rs_por_uc_mes": 0.0933986591467974,
+      "compensacao_rs_por_uc_mes": 0.09339865914679736,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -597,7 +597,7 @@
       "tipo": "holding",
       "date": "2023-03",
       "fora_prazo_por_100k_uc_mes": 19.726303057179393,
-      "compensacao_rs_por_uc_mes": 0.07511759220834817,
+      "compensacao_rs_por_uc_mes": 0.07511759220834814,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -661,7 +661,7 @@
       "tipo": "holding",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 83.52896040956351,
-      "compensacao_rs_por_uc_mes": 0.09021532926977206,
+      "compensacao_rs_por_uc_mes": 0.09021532926977203,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -669,7 +669,7 @@
       "tipo": "holding",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 33.55996574930118,
-      "compensacao_rs_por_uc_mes": 0.25752268088518715,
+      "compensacao_rs_por_uc_mes": 0.2575226808851871,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -677,7 +677,7 @@
       "tipo": "holding",
       "date": "2024-01",
       "fora_prazo_por_100k_uc_mes": 14.644552208040759,
-      "compensacao_rs_por_uc_mes": 0.10429255697133498,
+      "compensacao_rs_por_uc_mes": 0.10429255697133494,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -685,7 +685,7 @@
       "tipo": "holding",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 10.116776970531882,
-      "compensacao_rs_por_uc_mes": 0.0567293426791381,
+      "compensacao_rs_por_uc_mes": 0.05672934267913807,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -709,7 +709,7 @@
       "tipo": "holding",
       "date": "2024-05",
       "fora_prazo_por_100k_uc_mes": 15.285545655056781,
-      "compensacao_rs_por_uc_mes": 0.08941237860652494,
+      "compensacao_rs_por_uc_mes": 0.0894123786065249,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -717,7 +717,7 @@
       "tipo": "holding",
       "date": "2024-06",
       "fora_prazo_por_100k_uc_mes": 9.532319164711062,
-      "compensacao_rs_por_uc_mes": 0.10372486193007197,
+      "compensacao_rs_por_uc_mes": 0.10372486193007201,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -733,7 +733,7 @@
       "tipo": "holding",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 17.86592701630316,
-      "compensacao_rs_por_uc_mes": 0.0705262838744119,
+      "compensacao_rs_por_uc_mes": 0.07052628387441186,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -757,7 +757,7 @@
       "tipo": "holding",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 17.80747851036704,
-      "compensacao_rs_por_uc_mes": 0.09356053562861637,
+      "compensacao_rs_por_uc_mes": 0.09356053562861633,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -765,7 +765,7 @@
       "tipo": "holding",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 15.73343882589345,
-      "compensacao_rs_por_uc_mes": 0.09313066828721812,
+      "compensacao_rs_por_uc_mes": 0.0931306682872181,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -773,7 +773,7 @@
       "tipo": "holding",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 17.221619397020536,
-      "compensacao_rs_por_uc_mes": 0.06547065970215622,
+      "compensacao_rs_por_uc_mes": 0.06547065970215626,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -797,7 +797,7 @@
       "tipo": "holding",
       "date": "2025-04",
       "fora_prazo_por_100k_uc_mes": 15.180964206703464,
-      "compensacao_rs_por_uc_mes": 0.07009184447923954,
+      "compensacao_rs_por_uc_mes": 0.07009184447923957,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -829,7 +829,7 @@
       "tipo": "holding",
       "date": "2025-08",
       "fora_prazo_por_100k_uc_mes": 18.671795137901743,
-      "compensacao_rs_por_uc_mes": 0.07158751023777643,
+      "compensacao_rs_por_uc_mes": 0.07158751023777639,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -853,7 +853,7 @@
       "tipo": "holding",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 30.043491313983278,
-      "compensacao_rs_por_uc_mes": 0.1516791901170747,
+      "compensacao_rs_por_uc_mes": 0.15167919011707467,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -861,7 +861,7 @@
       "tipo": "holding",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 36.927002697202376,
-      "compensacao_rs_por_uc_mes": 0.1348638659302086,
+      "compensacao_rs_por_uc_mes": 0.13486386593020863,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -893,7 +893,7 @@
       "tipo": "holding",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 32.418377581872825,
-      "compensacao_rs_por_uc_mes": 0.1085930382545019,
+      "compensacao_rs_por_uc_mes": 0.10859303825450188,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -909,7 +909,7 @@
       "tipo": "holding",
       "date": "2023-06",
       "fora_prazo_por_100k_uc_mes": 33.43183399046754,
-      "compensacao_rs_por_uc_mes": 0.08038745564599059,
+      "compensacao_rs_por_uc_mes": 0.08038745564599058,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -933,7 +933,7 @@
       "tipo": "holding",
       "date": "2023-09",
       "fora_prazo_por_100k_uc_mes": 60.19291869436919,
-      "compensacao_rs_por_uc_mes": 0.14600351291862051,
+      "compensacao_rs_por_uc_mes": 0.14600351291862054,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -965,7 +965,7 @@
       "tipo": "holding",
       "date": "2024-01",
       "fora_prazo_por_100k_uc_mes": 91.11790333051583,
-      "compensacao_rs_por_uc_mes": 0.28626984419578566,
+      "compensacao_rs_por_uc_mes": 0.2862698441957856,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -981,7 +981,7 @@
       "tipo": "holding",
       "date": "2024-03",
       "fora_prazo_por_100k_uc_mes": 70.82926386690158,
-      "compensacao_rs_por_uc_mes": 0.20027458796393272,
+      "compensacao_rs_por_uc_mes": 0.2002745879639327,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -989,7 +989,7 @@
       "tipo": "holding",
       "date": "2024-04",
       "fora_prazo_por_100k_uc_mes": 70.61352426393346,
-      "compensacao_rs_por_uc_mes": 0.20149527626296662,
+      "compensacao_rs_por_uc_mes": 0.20149527626296668,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1021,7 +1021,7 @@
       "tipo": "holding",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 33.67521310541306,
-      "compensacao_rs_por_uc_mes": 0.13274240682436564,
+      "compensacao_rs_por_uc_mes": 0.1327424068243656,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1053,7 +1053,7 @@
       "tipo": "holding",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 141.504952839996,
-      "compensacao_rs_por_uc_mes": 0.452566991558368,
+      "compensacao_rs_por_uc_mes": 0.4525669915583679,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1101,7 +1101,7 @@
       "tipo": "holding",
       "date": "2025-06",
       "fora_prazo_por_100k_uc_mes": 56.879332445682095,
-      "compensacao_rs_por_uc_mes": 0.16556328570490209,
+      "compensacao_rs_por_uc_mes": 0.1655632857049021,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1133,7 +1133,7 @@
       "tipo": "holding",
       "date": "2025-10",
       "fora_prazo_por_100k_uc_mes": 61.213397045274,
-      "compensacao_rs_por_uc_mes": 0.16925419059258276,
+      "compensacao_rs_por_uc_mes": 0.16925419059258273,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1156,288 +1156,288 @@
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2023-01",
-      "fora_prazo_por_100k_uc_mes": 89.89354854644162,
-      "compensacao_rs_por_uc_mes": 0.03184533500338958,
+      "fora_prazo_por_100k_uc_mes": 95.83510234691146,
+      "compensacao_rs_por_uc_mes": 0.03636541835172386,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2023-02",
-      "fora_prazo_por_100k_uc_mes": 69.61873006896137,
-      "compensacao_rs_por_uc_mes": 0.08260228032783626,
+      "fora_prazo_por_100k_uc_mes": 75.05240321106471,
+      "compensacao_rs_por_uc_mes": 0.09634206025478975,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2023-03",
-      "fora_prazo_por_100k_uc_mes": 69.24426345056938,
-      "compensacao_rs_por_uc_mes": 0.6720643827008281,
+      "fora_prazo_por_100k_uc_mes": 70.71524706670412,
+      "compensacao_rs_por_uc_mes": 0.767074453111832,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2023-04",
-      "fora_prazo_por_100k_uc_mes": 64.4226789986043,
-      "compensacao_rs_por_uc_mes": 0.3924855747346662,
+      "fora_prazo_por_100k_uc_mes": 65.01322330972538,
+      "compensacao_rs_por_uc_mes": 0.4578472217356888,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2023-05",
-      "fora_prazo_por_100k_uc_mes": 43.53031706133493,
-      "compensacao_rs_por_uc_mes": 0.824402053252222,
+      "fora_prazo_por_100k_uc_mes": 40.03468418150766,
+      "compensacao_rs_por_uc_mes": 0.5972854561791929,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2023-06",
-      "fora_prazo_por_100k_uc_mes": 30.51614555347803,
-      "compensacao_rs_por_uc_mes": 0.12745754587858457,
+      "fora_prazo_por_100k_uc_mes": 31.30213361390449,
+      "compensacao_rs_por_uc_mes": 0.13660763475563095,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2023-07",
-      "fora_prazo_por_100k_uc_mes": 27.14409466948933,
-      "compensacao_rs_por_uc_mes": 0.19987312104729593,
+      "fora_prazo_por_100k_uc_mes": 28.570920530588115,
+      "compensacao_rs_por_uc_mes": 0.17241036495355963,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2023-08",
-      "fora_prazo_por_100k_uc_mes": 24.464063050595634,
-      "compensacao_rs_por_uc_mes": 0.17024754805175604,
+      "fora_prazo_por_100k_uc_mes": 23.269459087273518,
+      "compensacao_rs_por_uc_mes": 0.06693960911738549,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2023-09",
-      "fora_prazo_por_100k_uc_mes": 31.024724517475043,
-      "compensacao_rs_por_uc_mes": 0.2328944310197534,
+      "fora_prazo_por_100k_uc_mes": 30.80629951723758,
+      "compensacao_rs_por_uc_mes": 0.26550905500087246,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2023-10",
-      "fora_prazo_por_100k_uc_mes": 55.384898533762964,
-      "compensacao_rs_por_uc_mes": 0.21731792959605714,
+      "fora_prazo_por_100k_uc_mes": 55.57738983775079,
+      "compensacao_rs_por_uc_mes": 0.2489940602145714,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2023-11",
-      "fora_prazo_por_100k_uc_mes": 27.313981977716455,
-      "compensacao_rs_por_uc_mes": 0.5297568673331459,
+      "fora_prazo_por_100k_uc_mes": 24.129689615884487,
+      "compensacao_rs_por_uc_mes": 0.33759244528079596,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2023-12",
-      "fora_prazo_por_100k_uc_mes": 32.61447062601421,
-      "compensacao_rs_por_uc_mes": 0.2562362382227877,
+      "fora_prazo_por_100k_uc_mes": 28.244171259381897,
+      "compensacao_rs_por_uc_mes": 0.15960688037262385,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2024-01",
-      "fora_prazo_por_100k_uc_mes": 27.938808149820943,
-      "compensacao_rs_por_uc_mes": 0.0412374214910649,
+      "fora_prazo_por_100k_uc_mes": 24.039212373594626,
+      "compensacao_rs_por_uc_mes": 0.03596510742489762,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2024-02",
-      "fora_prazo_por_100k_uc_mes": 58.666073380038156,
-      "compensacao_rs_por_uc_mes": 0.2598969497839715,
+      "fora_prazo_por_100k_uc_mes": 62.03918111049568,
+      "compensacao_rs_por_uc_mes": 0.22336189331066136,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2024-03",
-      "fora_prazo_por_100k_uc_mes": 130.0853900349544,
-      "compensacao_rs_por_uc_mes": 0.1407000808850288,
+      "fora_prazo_por_100k_uc_mes": 143.86487033680837,
+      "compensacao_rs_por_uc_mes": 0.16412754860120035,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2024-04",
-      "fora_prazo_por_100k_uc_mes": 35.19121933061654,
-      "compensacao_rs_por_uc_mes": 0.4315920943623775,
+      "fora_prazo_por_100k_uc_mes": 36.980530989558396,
+      "compensacao_rs_por_uc_mes": 0.4008118883171043,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2024-05",
-      "fora_prazo_por_100k_uc_mes": 81.84591570335702,
-      "compensacao_rs_por_uc_mes": 0.16076023270998432,
+      "fora_prazo_por_100k_uc_mes": 90.21612391065057,
+      "compensacao_rs_por_uc_mes": 0.15196844800789303,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2024-06",
-      "fora_prazo_por_100k_uc_mes": 27.973291682585522,
-      "compensacao_rs_por_uc_mes": 0.17306218569491744,
+      "fora_prazo_por_100k_uc_mes": 22.22004102135053,
+      "compensacao_rs_por_uc_mes": 0.1775987752966061,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2024-07",
-      "fora_prazo_por_100k_uc_mes": 24.64189389285865,
-      "compensacao_rs_por_uc_mes": 0.10982836099245219,
+      "fora_prazo_por_100k_uc_mes": 23.975911504743852,
+      "compensacao_rs_por_uc_mes": 0.12086721178655123,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2024-08",
-      "fora_prazo_por_100k_uc_mes": 28.243087434238557,
-      "compensacao_rs_por_uc_mes": 0.15111061108709278,
+      "fora_prazo_por_100k_uc_mes": 28.211658438873787,
+      "compensacao_rs_por_uc_mes": 0.13840815528344266,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2024-09",
-      "fora_prazo_por_100k_uc_mes": 29.99354342704891,
-      "compensacao_rs_por_uc_mes": 0.21373885927863198,
+      "fora_prazo_por_100k_uc_mes": 29.497054427125438,
+      "compensacao_rs_por_uc_mes": 0.1557246611992143,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2024-10",
-      "fora_prazo_por_100k_uc_mes": 58.3963384653041,
-      "compensacao_rs_por_uc_mes": 0.16127192344163657,
+      "fora_prazo_por_100k_uc_mes": 62.79018682905133,
+      "compensacao_rs_por_uc_mes": 0.16294773916277228,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2024-11",
-      "fora_prazo_por_100k_uc_mes": 29.7395716369033,
-      "compensacao_rs_por_uc_mes": 0.21551321290532627,
+      "fora_prazo_por_100k_uc_mes": 29.0003378839471,
+      "compensacao_rs_por_uc_mes": 0.2514320817228806,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2024-12",
-      "fora_prazo_por_100k_uc_mes": 57.49868253853895,
-      "compensacao_rs_por_uc_mes": 0.2770296633326163,
+      "fora_prazo_por_100k_uc_mes": 62.4973387687697,
+      "compensacao_rs_por_uc_mes": 0.28729716406008105,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2025-01",
-      "fora_prazo_por_100k_uc_mes": 32.72350039394093,
-      "compensacao_rs_por_uc_mes": 0.2353064897091648,
+      "fora_prazo_por_100k_uc_mes": 33.02932380018219,
+      "compensacao_rs_por_uc_mes": 0.26377957105234984,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2025-02",
-      "fora_prazo_por_100k_uc_mes": 31.58606302673842,
-      "compensacao_rs_por_uc_mes": 0.20477799410251288,
+      "fora_prazo_por_100k_uc_mes": 32.53888026407096,
+      "compensacao_rs_por_uc_mes": 0.18777495004782752,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2025-03",
-      "fora_prazo_por_100k_uc_mes": 48.86935058193694,
-      "compensacao_rs_por_uc_mes": 0.1693445650522442,
+      "fora_prazo_por_100k_uc_mes": 49.21366121651633,
+      "compensacao_rs_por_uc_mes": 0.18364242059390856,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2025-04",
-      "fora_prazo_por_100k_uc_mes": 55.11694629592143,
-      "compensacao_rs_por_uc_mes": 0.6443354462295018,
+      "fora_prazo_por_100k_uc_mes": 55.06247209266596,
+      "compensacao_rs_por_uc_mes": 0.6796320742875491,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2025-05",
-      "fora_prazo_por_100k_uc_mes": 38.08078177939855,
-      "compensacao_rs_por_uc_mes": 0.2925163081998165,
+      "fora_prazo_por_100k_uc_mes": 36.4675369257528,
+      "compensacao_rs_por_uc_mes": 0.3181901212215676,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2025-06",
-      "fora_prazo_por_100k_uc_mes": 35.6538870079006,
-      "compensacao_rs_por_uc_mes": 0.2357487672144861,
+      "fora_prazo_por_100k_uc_mes": 33.29196597227058,
+      "compensacao_rs_por_uc_mes": 0.2530063807673571,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2025-07",
-      "fora_prazo_por_100k_uc_mes": 25.46953679389369,
-      "compensacao_rs_por_uc_mes": 0.17810678135979738,
+      "fora_prazo_por_100k_uc_mes": 19.251199455358833,
+      "compensacao_rs_por_uc_mes": 0.18346930366067524,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2025-08",
-      "fora_prazo_por_100k_uc_mes": 17.192202753138236,
-      "compensacao_rs_por_uc_mes": 0.12936451171501423,
+      "fora_prazo_por_100k_uc_mes": 15.715527608926669,
+      "compensacao_rs_por_uc_mes": 0.13128295416993216,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2025-09",
-      "fora_prazo_por_100k_uc_mes": 27.994485414281435,
-      "compensacao_rs_por_uc_mes": 0.13523461570619458,
+      "fora_prazo_por_100k_uc_mes": 25.488631290998754,
+      "compensacao_rs_por_uc_mes": 0.11234054001504627,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2025-10",
-      "fora_prazo_por_100k_uc_mes": 26.367790163932757,
-      "compensacao_rs_por_uc_mes": 0.1509819586836054,
+      "fora_prazo_por_100k_uc_mes": 22.585403982736448,
+      "compensacao_rs_por_uc_mes": 0.14162821233749165,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2025-11",
-      "fora_prazo_por_100k_uc_mes": 22.465710235570523,
-      "compensacao_rs_por_uc_mes": 0.14754976766698394,
+      "fora_prazo_por_100k_uc_mes": 18.06092459038023,
+      "compensacao_rs_por_uc_mes": 0.1475297778042942,
       "periodo_regulatorio": "pos_2022"
     },
     {
       "grupo": "Equatorial",
       "tipo": "holding",
       "date": "2025-12",
-      "fora_prazo_por_100k_uc_mes": 27.835190070552134,
-      "compensacao_rs_por_uc_mes": 0.1090562656809581,
+      "fora_prazo_por_100k_uc_mes": 17.49128028105422,
+      "compensacao_rs_por_uc_mes": 0.08950777513353371,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1445,7 +1445,7 @@
       "tipo": "holding",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 119.29587267611939,
-      "compensacao_rs_por_uc_mes": 0.11992519505849093,
+      "compensacao_rs_por_uc_mes": 0.11992519505849088,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1469,7 +1469,7 @@
       "tipo": "holding",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 42.06192738034464,
-      "compensacao_rs_por_uc_mes": 0.0042370166330421,
+      "compensacao_rs_por_uc_mes": 0.004237016633042075,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1485,7 +1485,7 @@
       "tipo": "holding",
       "date": "2023-06",
       "fora_prazo_por_100k_uc_mes": 35.00791231122581,
-      "compensacao_rs_por_uc_mes": 0.11529039867860037,
+      "compensacao_rs_por_uc_mes": 0.11529039867860041,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1493,7 +1493,7 @@
       "tipo": "holding",
       "date": "2023-07",
       "fora_prazo_por_100k_uc_mes": 37.317500619784575,
-      "compensacao_rs_por_uc_mes": 0.4789671473189196,
+      "compensacao_rs_por_uc_mes": 0.47896714731891954,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1501,7 +1501,7 @@
       "tipo": "holding",
       "date": "2023-08",
       "fora_prazo_por_100k_uc_mes": 30.498302730360937,
-      "compensacao_rs_por_uc_mes": 0.4092287149025846,
+      "compensacao_rs_por_uc_mes": 0.4092287149025845,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1517,7 +1517,7 @@
       "tipo": "holding",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 28.739415107099465,
-      "compensacao_rs_por_uc_mes": 0.07552172950275607,
+      "compensacao_rs_por_uc_mes": 0.07552172950275605,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1525,7 +1525,7 @@
       "tipo": "holding",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 56.90951314974081,
-      "compensacao_rs_por_uc_mes": 0.6229037809096016,
+      "compensacao_rs_por_uc_mes": 0.6229037809096014,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1533,7 +1533,7 @@
       "tipo": "holding",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 41.61053971390941,
-      "compensacao_rs_por_uc_mes": 0.29671385528174504,
+      "compensacao_rs_por_uc_mes": 0.29671385528174493,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1557,7 +1557,7 @@
       "tipo": "holding",
       "date": "2024-03",
       "fora_prazo_por_100k_uc_mes": 33.549185792278415,
-      "compensacao_rs_por_uc_mes": 0.3186843359369407,
+      "compensacao_rs_por_uc_mes": 0.31868433593694073,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1573,7 +1573,7 @@
       "tipo": "holding",
       "date": "2024-05",
       "fora_prazo_por_100k_uc_mes": 28.90743278539517,
-      "compensacao_rs_por_uc_mes": 0.1753719221504223,
+      "compensacao_rs_por_uc_mes": 0.17537192215042235,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1581,7 +1581,7 @@
       "tipo": "holding",
       "date": "2024-06",
       "fora_prazo_por_100k_uc_mes": 29.637541871267164,
-      "compensacao_rs_por_uc_mes": 0.2912156835875563,
+      "compensacao_rs_por_uc_mes": 0.29121568358755634,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1589,7 +1589,7 @@
       "tipo": "holding",
       "date": "2024-07",
       "fora_prazo_por_100k_uc_mes": 25.39258647727309,
-      "compensacao_rs_por_uc_mes": 0.26074750819389025,
+      "compensacao_rs_por_uc_mes": 0.2607475081938901,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1597,7 +1597,7 @@
       "tipo": "holding",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 24.21016563900457,
-      "compensacao_rs_por_uc_mes": 0.23402432931429867,
+      "compensacao_rs_por_uc_mes": 0.2340243293142986,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1605,7 +1605,7 @@
       "tipo": "holding",
       "date": "2024-09",
       "fora_prazo_por_100k_uc_mes": 22.39167690102784,
-      "compensacao_rs_por_uc_mes": 0.31939255527463023,
+      "compensacao_rs_por_uc_mes": 0.3193925552746302,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1621,7 +1621,7 @@
       "tipo": "holding",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 24.32776158437836,
-      "compensacao_rs_por_uc_mes": 0.1689069248875411,
+      "compensacao_rs_por_uc_mes": 0.16890692488754114,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1629,7 +1629,7 @@
       "tipo": "holding",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 22.495664466478402,
-      "compensacao_rs_por_uc_mes": 0.2224711065938278,
+      "compensacao_rs_por_uc_mes": 0.22247110659382785,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1637,7 +1637,7 @@
       "tipo": "holding",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 26.866434059134257,
-      "compensacao_rs_por_uc_mes": 0.18119114618859905,
+      "compensacao_rs_por_uc_mes": 0.181191146188599,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1645,7 +1645,7 @@
       "tipo": "holding",
       "date": "2025-02",
       "fora_prazo_por_100k_uc_mes": 32.14544600272049,
-      "compensacao_rs_por_uc_mes": 0.22950503050990623,
+      "compensacao_rs_por_uc_mes": 0.2295050305099061,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1653,7 +1653,7 @@
       "tipo": "holding",
       "date": "2025-03",
       "fora_prazo_por_100k_uc_mes": 33.39637590433583,
-      "compensacao_rs_por_uc_mes": 0.3624978932728595,
+      "compensacao_rs_por_uc_mes": 0.36249789327285953,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1661,7 +1661,7 @@
       "tipo": "holding",
       "date": "2025-04",
       "fora_prazo_por_100k_uc_mes": 31.486787021589723,
-      "compensacao_rs_por_uc_mes": 0.26188590274937246,
+      "compensacao_rs_por_uc_mes": 0.2618859027493725,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1669,7 +1669,7 @@
       "tipo": "holding",
       "date": "2025-05",
       "fora_prazo_por_100k_uc_mes": 33.571434191303865,
-      "compensacao_rs_por_uc_mes": 0.23491252796683476,
+      "compensacao_rs_por_uc_mes": 0.2349125279668348,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1685,7 +1685,7 @@
       "tipo": "holding",
       "date": "2025-07",
       "fora_prazo_por_100k_uc_mes": 44.651972544116546,
-      "compensacao_rs_por_uc_mes": 0.14705022474798995,
+      "compensacao_rs_por_uc_mes": 0.1470502247479899,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1693,7 +1693,7 @@
       "tipo": "holding",
       "date": "2025-08",
       "fora_prazo_por_100k_uc_mes": 26.856980647268912,
-      "compensacao_rs_por_uc_mes": 0.24926268768319917,
+      "compensacao_rs_por_uc_mes": 0.24926268768319926,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1701,7 +1701,7 @@
       "tipo": "holding",
       "date": "2025-09",
       "fora_prazo_por_100k_uc_mes": 46.89908835531761,
-      "compensacao_rs_por_uc_mes": 0.20338693655124834,
+      "compensacao_rs_por_uc_mes": 0.20338693655124832,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1709,7 +1709,7 @@
       "tipo": "holding",
       "date": "2025-10",
       "fora_prazo_por_100k_uc_mes": 35.7563992700533,
-      "compensacao_rs_por_uc_mes": 0.31119373520483656,
+      "compensacao_rs_por_uc_mes": 0.3111937352048367,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1717,7 +1717,7 @@
       "tipo": "holding",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 38.916786141107515,
-      "compensacao_rs_por_uc_mes": 0.17017169617593486,
+      "compensacao_rs_por_uc_mes": 0.1701716961759348,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1725,7 +1725,7 @@
       "tipo": "holding",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 68.35353288469653,
-      "compensacao_rs_por_uc_mes": 0.15611859027405692,
+      "compensacao_rs_por_uc_mes": 0.15611859027405686,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1797,7 +1797,7 @@
       "tipo": "franquia|amazonas",
       "date": "2023-09",
       "fora_prazo_por_100k_uc_mes": 40.38249337461322,
-      "compensacao_rs_por_uc_mes": 0.1348071028604694,
+      "compensacao_rs_por_uc_mes": 0.1348071028604695,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -1805,7 +1805,7 @@
       "tipo": "franquia|amazonas",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 38.44197829783372,
-      "compensacao_rs_por_uc_mes": 0.0800606766815583,
+      "compensacao_rs_por_uc_mes": 0.0800606766815582,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -2013,7 +2013,7 @@
       "tipo": "franquia|amazonas",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 24.91861862512564,
-      "compensacao_rs_por_uc_mes": 0.071358098051014,
+      "compensacao_rs_por_uc_mes": 0.0713580980510139,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -3461,7 +3461,7 @@
       "tipo": "franquia|celesc",
       "date": "2023-02",
       "fora_prazo_por_100k_uc_mes": 25.00419980721313,
-      "compensacao_rs_por_uc_mes": 0.0647471835838295,
+      "compensacao_rs_por_uc_mes": 0.0647471835838294,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -3501,7 +3501,7 @@
       "tipo": "franquia|celesc",
       "date": "2023-07",
       "fora_prazo_por_100k_uc_mes": 24.72158573854996,
-      "compensacao_rs_por_uc_mes": 0.0939641359153656,
+      "compensacao_rs_por_uc_mes": 0.0939641359153655,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -3509,7 +3509,7 @@
       "tipo": "franquia|celesc",
       "date": "2023-08",
       "fora_prazo_por_100k_uc_mes": 32.84196623372474,
-      "compensacao_rs_por_uc_mes": 0.1561182511978441,
+      "compensacao_rs_por_uc_mes": 0.1561182511978442,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -3541,7 +3541,7 @@
       "tipo": "franquia|celesc",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 26.06911316172442,
-      "compensacao_rs_por_uc_mes": 0.1423635181886497,
+      "compensacao_rs_por_uc_mes": 0.1423635181886498,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -3717,7 +3717,7 @@
       "tipo": "franquia|celesc",
       "date": "2025-10",
       "fora_prazo_por_100k_uc_mes": 1118.066488933672,
-      "compensacao_rs_por_uc_mes": 4.428849846407904,
+      "compensacao_rs_por_uc_mes": 4.428849846407905,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4029,7 +4029,7 @@
       "tipo": "franquia|cemig",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 152.4125592870111,
-      "compensacao_rs_por_uc_mes": 0.940476381765486,
+      "compensacao_rs_por_uc_mes": 0.9404763817654868,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4037,7 +4037,7 @@
       "tipo": "franquia|cemig",
       "date": "2023-02",
       "fora_prazo_por_100k_uc_mes": 171.7885427511903,
-      "compensacao_rs_por_uc_mes": 1.163275750734064,
+      "compensacao_rs_por_uc_mes": 1.1632757507340628,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4045,7 +4045,7 @@
       "tipo": "franquia|cemig",
       "date": "2023-03",
       "fora_prazo_por_100k_uc_mes": 127.43201640944837,
-      "compensacao_rs_por_uc_mes": 0.9613026783569436,
+      "compensacao_rs_por_uc_mes": 0.9613026783569444,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4053,7 +4053,7 @@
       "tipo": "franquia|cemig",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 58.59693045746218,
-      "compensacao_rs_por_uc_mes": 1.3018086203459116,
+      "compensacao_rs_por_uc_mes": 1.3018086203459114,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4061,7 +4061,7 @@
       "tipo": "franquia|cemig",
       "date": "2023-05",
       "fora_prazo_por_100k_uc_mes": 63.48587780931553,
-      "compensacao_rs_por_uc_mes": 0.7085162975198921,
+      "compensacao_rs_por_uc_mes": 0.7085162975198923,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4085,7 +4085,7 @@
       "tipo": "franquia|cemig",
       "date": "2023-08",
       "fora_prazo_por_100k_uc_mes": 30.63067164112889,
-      "compensacao_rs_por_uc_mes": 0.6222693209519581,
+      "compensacao_rs_por_uc_mes": 0.6222693209519579,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4093,7 +4093,7 @@
       "tipo": "franquia|cemig",
       "date": "2023-09",
       "fora_prazo_por_100k_uc_mes": 31.9340209997968,
-      "compensacao_rs_por_uc_mes": 0.3428936585544366,
+      "compensacao_rs_por_uc_mes": 0.3428936585544363,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4101,7 +4101,7 @@
       "tipo": "franquia|cemig",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 133.0476909640526,
-      "compensacao_rs_por_uc_mes": 0.4215618395381399,
+      "compensacao_rs_por_uc_mes": 0.4215618395381398,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4109,7 +4109,7 @@
       "tipo": "franquia|cemig",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 115.84577010800945,
-      "compensacao_rs_por_uc_mes": 0.3486360962711081,
+      "compensacao_rs_por_uc_mes": 0.3486360962711078,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4117,7 +4117,7 @@
       "tipo": "franquia|cemig",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 85.02362793252657,
-      "compensacao_rs_por_uc_mes": 0.3576319472266872,
+      "compensacao_rs_por_uc_mes": 0.3576319472266874,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4133,7 +4133,7 @@
       "tipo": "franquia|cemig",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 64.46760709678823,
-      "compensacao_rs_por_uc_mes": 0.4403632804521857,
+      "compensacao_rs_por_uc_mes": 0.4403632804521856,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4141,7 +4141,7 @@
       "tipo": "franquia|cemig",
       "date": "2024-03",
       "fora_prazo_por_100k_uc_mes": 61.952981261433024,
-      "compensacao_rs_por_uc_mes": 0.4376499287607972,
+      "compensacao_rs_por_uc_mes": 0.437649928760797,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4165,7 +4165,7 @@
       "tipo": "franquia|cemig",
       "date": "2024-06",
       "fora_prazo_por_100k_uc_mes": 15.983404010296251,
-      "compensacao_rs_por_uc_mes": 0.1506764495672013,
+      "compensacao_rs_por_uc_mes": 0.1506764495672012,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4205,7 +4205,7 @@
       "tipo": "franquia|cemig",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 68.92674912993715,
-      "compensacao_rs_por_uc_mes": 0.3122413716991467,
+      "compensacao_rs_por_uc_mes": 0.3122413716991464,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4213,7 +4213,7 @@
       "tipo": "franquia|cemig",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 78.61641909822097,
-      "compensacao_rs_por_uc_mes": 0.3449506900611733,
+      "compensacao_rs_por_uc_mes": 0.344950690061173,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4221,7 +4221,7 @@
       "tipo": "franquia|cemig",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 89.51002890003127,
-      "compensacao_rs_por_uc_mes": 0.357228160497147,
+      "compensacao_rs_por_uc_mes": 0.3572281604971468,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4229,7 +4229,7 @@
       "tipo": "franquia|cemig",
       "date": "2025-02",
       "fora_prazo_por_100k_uc_mes": 72.81946854235736,
-      "compensacao_rs_por_uc_mes": 0.5365647769345041,
+      "compensacao_rs_por_uc_mes": 0.5365647769345038,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4245,7 +4245,7 @@
       "tipo": "franquia|cemig",
       "date": "2025-04",
       "fora_prazo_por_100k_uc_mes": 64.06084821078333,
-      "compensacao_rs_por_uc_mes": 0.5002290923170442,
+      "compensacao_rs_por_uc_mes": 0.500229092317044,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4253,7 +4253,7 @@
       "tipo": "franquia|cemig",
       "date": "2025-05",
       "fora_prazo_por_100k_uc_mes": 44.87425490097945,
-      "compensacao_rs_por_uc_mes": 0.4681283660972986,
+      "compensacao_rs_por_uc_mes": 0.4681283660972983,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4269,7 +4269,7 @@
       "tipo": "franquia|cemig",
       "date": "2025-07",
       "fora_prazo_por_100k_uc_mes": 14.78485140382164,
-      "compensacao_rs_por_uc_mes": 0.3707753372583683,
+      "compensacao_rs_por_uc_mes": 0.3707753372583684,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4277,7 +4277,7 @@
       "tipo": "franquia|cemig",
       "date": "2025-08",
       "fora_prazo_por_100k_uc_mes": 14.2826477133098,
-      "compensacao_rs_por_uc_mes": 0.2262353528131585,
+      "compensacao_rs_por_uc_mes": 0.2262353528131584,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4285,7 +4285,7 @@
       "tipo": "franquia|cemig",
       "date": "2025-09",
       "fora_prazo_por_100k_uc_mes": 16.0018426364248,
-      "compensacao_rs_por_uc_mes": 0.1696838880747573,
+      "compensacao_rs_por_uc_mes": 0.1696838880747574,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -4309,7 +4309,7 @@
       "tipo": "franquia|cemig",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 33.333175444232594,
-      "compensacao_rs_por_uc_mes": 0.1488848367115564,
+      "compensacao_rs_por_uc_mes": 0.1488848367115563,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -6421,7 +6421,7 @@
       "tipo": "franquia|cercos",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 0.0,
-      "compensacao_rs_por_uc_mes": 0.6072306143001008,
+      "compensacao_rs_por_uc_mes": 0.6072306143001006,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -6733,7 +6733,7 @@
       "tipo": "franquia|cerej",
       "date": "2024-03",
       "fora_prazo_por_100k_uc_mes": 6.32351081320349,
-      "compensacao_rs_por_uc_mes": 0.1354559251296319,
+      "compensacao_rs_por_uc_mes": 0.135455925129632,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -10205,7 +10205,7 @@
       "tipo": "franquia|cermoful",
       "date": "2024-07",
       "fora_prazo_por_100k_uc_mes": 6.0562015503875966,
-      "compensacao_rs_por_uc_mes": 0.5590655281007751,
+      "compensacao_rs_por_uc_mes": 0.5590655281007753,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -12573,7 +12573,7 @@
       "tipo": "franquia|certel",
       "date": "2025-06",
       "fora_prazo_por_100k_uc_mes": 18.262695834800876,
-      "compensacao_rs_por_uc_mes": 0.4102320666849293,
+      "compensacao_rs_por_uc_mes": 0.4102320666849294,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -13157,7 +13157,7 @@
       "tipo": "franquia|certrel",
       "date": "2025-07",
       "fora_prazo_por_100k_uc_mes": 20.88991017338625,
-      "compensacao_rs_por_uc_mes": 0.145299770210988,
+      "compensacao_rs_por_uc_mes": 0.1452997702109881,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -14445,7 +14445,7 @@
       "tipo": "franquia|coopera",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 65.14422206941478,
-      "compensacao_rs_por_uc_mes": 0.0400228004777242,
+      "compensacao_rs_por_uc_mes": 0.0400228004777243,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -14493,7 +14493,7 @@
       "tipo": "franquia|coopera",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 14.289797084881394,
-      "compensacao_rs_por_uc_mes": 0.8186188911117461,
+      "compensacao_rs_por_uc_mes": 0.8186188911117463,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -16925,7 +16925,7 @@
       "tipo": "franquia|copel",
       "date": "2023-09",
       "fora_prazo_por_100k_uc_mes": 17.97440929598689,
-      "compensacao_rs_por_uc_mes": 0.0463137668755718,
+      "compensacao_rs_por_uc_mes": 0.0463137668755717,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -16965,7 +16965,7 @@
       "tipo": "franquia|copel",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 15.54902398795553,
-      "compensacao_rs_por_uc_mes": 0.1024264926298008,
+      "compensacao_rs_por_uc_mes": 0.1024264926298009,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17341,7 +17341,7 @@
       "tipo": "franquia|coprel",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 58.843308675184936,
-      "compensacao_rs_por_uc_mes": 0.106794384667115,
+      "compensacao_rs_por_uc_mes": 0.1067943846671149,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17429,7 +17429,7 @@
       "tipo": "franquia|cpfl",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 26.74138657475675,
-      "compensacao_rs_por_uc_mes": 0.1607248968055433,
+      "compensacao_rs_por_uc_mes": 0.1607248968055432,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17445,7 +17445,7 @@
       "tipo": "franquia|cpfl",
       "date": "2023-03",
       "fora_prazo_por_100k_uc_mes": 20.870368005971383,
-      "compensacao_rs_por_uc_mes": 0.0960819669380633,
+      "compensacao_rs_por_uc_mes": 0.0960819669380632,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17517,7 +17517,7 @@
       "tipo": "franquia|cpfl",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 36.58925817048855,
-      "compensacao_rs_por_uc_mes": 0.169645929874836,
+      "compensacao_rs_por_uc_mes": 0.1696459298748359,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17581,7 +17581,7 @@
       "tipo": "franquia|cpfl",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 17.520615625399273,
-      "compensacao_rs_por_uc_mes": 0.0759921103412095,
+      "compensacao_rs_por_uc_mes": 0.0759921103412094,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17613,7 +17613,7 @@
       "tipo": "franquia|cpfl",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 13.714801397603573,
-      "compensacao_rs_por_uc_mes": 0.0860698130492476,
+      "compensacao_rs_por_uc_mes": 0.0860698130492475,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17621,7 +17621,7 @@
       "tipo": "franquia|cpfl",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 16.31684020532716,
-      "compensacao_rs_por_uc_mes": 0.1008746187693898,
+      "compensacao_rs_por_uc_mes": 0.1008746187693899,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17645,7 +17645,7 @@
       "tipo": "franquia|cpfl",
       "date": "2025-04",
       "fora_prazo_por_100k_uc_mes": 18.641442387018,
-      "compensacao_rs_por_uc_mes": 0.0654569899405107,
+      "compensacao_rs_por_uc_mes": 0.0654569899405108,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17693,7 +17693,7 @@
       "tipo": "franquia|cpfl",
       "date": "2025-10",
       "fora_prazo_por_100k_uc_mes": 79.05215338221659,
-      "compensacao_rs_por_uc_mes": 0.2627223557853397,
+      "compensacao_rs_por_uc_mes": 0.2627223557853396,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17709,7 +17709,7 @@
       "tipo": "franquia|cpfl",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 56.30129452165278,
-      "compensacao_rs_por_uc_mes": 0.2550260828330609,
+      "compensacao_rs_por_uc_mes": 0.255026082833061,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17805,7 +17805,7 @@
       "tipo": "franquia|cpfl",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 28.328173374613,
-      "compensacao_rs_por_uc_mes": 0.4303273472136222,
+      "compensacao_rs_por_uc_mes": 0.4303273472136221,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17813,7 +17813,7 @@
       "tipo": "franquia|cpfl",
       "date": "2024-01",
       "fora_prazo_por_100k_uc_mes": 14.299036049515813,
-      "compensacao_rs_por_uc_mes": 0.0754920951533983,
+      "compensacao_rs_por_uc_mes": 0.0754920951533982,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17821,7 +17821,7 @@
       "tipo": "franquia|cpfl",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 5.445724874786858,
-      "compensacao_rs_por_uc_mes": 0.0579489036882456,
+      "compensacao_rs_por_uc_mes": 0.0579489036882455,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17845,7 +17845,7 @@
       "tipo": "franquia|cpfl",
       "date": "2024-05",
       "fora_prazo_por_100k_uc_mes": 15.296864040551526,
-      "compensacao_rs_por_uc_mes": 0.0827991912102889,
+      "compensacao_rs_por_uc_mes": 0.0827991912102888,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17853,7 +17853,7 @@
       "tipo": "franquia|cpfl",
       "date": "2024-06",
       "fora_prazo_por_100k_uc_mes": 10.3139631658761,
-      "compensacao_rs_por_uc_mes": 0.1266151911402035,
+      "compensacao_rs_por_uc_mes": 0.1266151911402036,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17893,7 +17893,7 @@
       "tipo": "franquia|cpfl",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 10.120335853465631,
-      "compensacao_rs_por_uc_mes": 0.068949458536731,
+      "compensacao_rs_por_uc_mes": 0.0689494585367309,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17965,7 +17965,7 @@
       "tipo": "franquia|cpfl",
       "date": "2025-08",
       "fora_prazo_por_100k_uc_mes": 12.883515541864185,
-      "compensacao_rs_por_uc_mes": 0.0622113106280514,
+      "compensacao_rs_por_uc_mes": 0.0622113106280513,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -17981,7 +17981,7 @@
       "tipo": "franquia|cpfl",
       "date": "2025-10",
       "fora_prazo_por_100k_uc_mes": 13.7324637433104,
-      "compensacao_rs_por_uc_mes": 0.2803963119378894,
+      "compensacao_rs_por_uc_mes": 0.2803963119378895,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -18085,7 +18085,7 @@
       "tipo": "franquia|cpfl",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 65.36584009012141,
-      "compensacao_rs_por_uc_mes": 0.0874536727058875,
+      "compensacao_rs_por_uc_mes": 0.0874536727058874,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -18277,7 +18277,7 @@
       "tipo": "franquia|cpfl",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 7.250137371023872,
-      "compensacao_rs_por_uc_mes": 0.0868589543012394,
+      "compensacao_rs_por_uc_mes": 0.0868589543012393,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19661,7 +19661,7 @@
       "tipo": "franquia|dmed",
       "date": "2025-06",
       "fora_prazo_por_100k_uc_mes": 1627.7671494943977,
-      "compensacao_rs_por_uc_mes": 0.3710763596611096,
+      "compensacao_rs_por_uc_mes": 0.3710763596611095,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19701,7 +19701,7 @@
       "tipo": "franquia|dmed",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 23.26895588870791,
-      "compensacao_rs_por_uc_mes": 0.1127082848563419,
+      "compensacao_rs_por_uc_mes": 0.1127082848563418,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19749,7 +19749,7 @@
       "tipo": "franquia|edp",
       "date": "2023-05",
       "fora_prazo_por_100k_uc_mes": 42.582912761355445,
-      "compensacao_rs_por_uc_mes": 0.1995208070475847,
+      "compensacao_rs_por_uc_mes": 0.1995208070475846,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19813,7 +19813,7 @@
       "tipo": "franquia|edp",
       "date": "2024-01",
       "fora_prazo_por_100k_uc_mes": 88.79765858689473,
-      "compensacao_rs_por_uc_mes": 0.3731769501727331,
+      "compensacao_rs_por_uc_mes": 0.3731769501727332,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19837,7 +19837,7 @@
       "tipo": "franquia|edp",
       "date": "2024-04",
       "fora_prazo_por_100k_uc_mes": 134.64193711729013,
-      "compensacao_rs_por_uc_mes": 0.4472726789761014,
+      "compensacao_rs_por_uc_mes": 0.4472726789761015,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19845,7 +19845,7 @@
       "tipo": "franquia|edp",
       "date": "2024-05",
       "fora_prazo_por_100k_uc_mes": 101.73086215799908,
-      "compensacao_rs_por_uc_mes": 0.8390327108952648,
+      "compensacao_rs_por_uc_mes": 0.8390327108952651,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19877,7 +19877,7 @@
       "tipo": "franquia|edp",
       "date": "2024-09",
       "fora_prazo_por_100k_uc_mes": 38.68189253357056,
-      "compensacao_rs_por_uc_mes": 0.2881249502053052,
+      "compensacao_rs_por_uc_mes": 0.2881249502053053,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19885,7 +19885,7 @@
       "tipo": "franquia|edp",
       "date": "2024-10",
       "fora_prazo_por_100k_uc_mes": 51.95546204425815,
-      "compensacao_rs_por_uc_mes": 0.471965112483301,
+      "compensacao_rs_por_uc_mes": 0.4719651124833011,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19893,7 +19893,7 @@
       "tipo": "franquia|edp",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 43.06231105452258,
-      "compensacao_rs_por_uc_mes": 0.4800105902604667,
+      "compensacao_rs_por_uc_mes": 0.4800105902604665,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19901,7 +19901,7 @@
       "tipo": "franquia|edp",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 75.3584860053604,
-      "compensacao_rs_por_uc_mes": 0.4030349399784424,
+      "compensacao_rs_por_uc_mes": 0.4030349399784426,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19909,7 +19909,7 @@
       "tipo": "franquia|edp",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 96.85230024213077,
-      "compensacao_rs_por_uc_mes": 0.7789894548918873,
+      "compensacao_rs_por_uc_mes": 0.7789894548918871,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19925,7 +19925,7 @@
       "tipo": "franquia|edp",
       "date": "2025-03",
       "fora_prazo_por_100k_uc_mes": 71.6326139589974,
-      "compensacao_rs_por_uc_mes": 0.4533809396282943,
+      "compensacao_rs_por_uc_mes": 0.4533809396282944,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19933,7 +19933,7 @@
       "tipo": "franquia|edp",
       "date": "2025-04",
       "fora_prazo_por_100k_uc_mes": 54.95031100462865,
-      "compensacao_rs_por_uc_mes": 0.2507312848263222,
+      "compensacao_rs_por_uc_mes": 0.2507312848263223,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19941,7 +19941,7 @@
       "tipo": "franquia|edp",
       "date": "2025-05",
       "fora_prazo_por_100k_uc_mes": 48.21114420392501,
-      "compensacao_rs_por_uc_mes": 0.3964567032471208,
+      "compensacao_rs_por_uc_mes": 0.3964567032471209,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19957,7 +19957,7 @@
       "tipo": "franquia|edp",
       "date": "2025-07",
       "fora_prazo_por_100k_uc_mes": 33.91533930755371,
-      "compensacao_rs_por_uc_mes": 0.2893415501852362,
+      "compensacao_rs_por_uc_mes": 0.289341550185236,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19965,7 +19965,7 @@
       "tipo": "franquia|edp",
       "date": "2025-08",
       "fora_prazo_por_100k_uc_mes": 22.139304825828468,
-      "compensacao_rs_por_uc_mes": 0.2504870917053204,
+      "compensacao_rs_por_uc_mes": 0.2504870917053205,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19973,7 +19973,7 @@
       "tipo": "franquia|edp",
       "date": "2025-09",
       "fora_prazo_por_100k_uc_mes": 26.7293224978983,
-      "compensacao_rs_por_uc_mes": 0.1538473895798754,
+      "compensacao_rs_por_uc_mes": 0.1538473895798753,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -19989,7 +19989,7 @@
       "tipo": "franquia|edp",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 12.997105727158525,
-      "compensacao_rs_por_uc_mes": 0.4266704046772394,
+      "compensacao_rs_por_uc_mes": 0.4266704046772391,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20061,7 +20061,7 @@
       "tipo": "franquia|edp",
       "date": "2023-08",
       "fora_prazo_por_100k_uc_mes": 22.55647812244512,
-      "compensacao_rs_por_uc_mes": 0.0571992120389183,
+      "compensacao_rs_por_uc_mes": 0.0571992120389184,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20085,7 +20085,7 @@
       "tipo": "franquia|edp",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 42.972833098217095,
-      "compensacao_rs_por_uc_mes": 0.1267335103394233,
+      "compensacao_rs_por_uc_mes": 0.1267335103394232,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20093,7 +20093,7 @@
       "tipo": "franquia|edp",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 16.287315323752438,
-      "compensacao_rs_por_uc_mes": 0.0916992095783577,
+      "compensacao_rs_por_uc_mes": 0.0916992095783576,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20109,7 +20109,7 @@
       "tipo": "franquia|edp",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 72.5389836330331,
-      "compensacao_rs_por_uc_mes": 0.1938348707212264,
+      "compensacao_rs_por_uc_mes": 0.1938348707212263,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20125,7 +20125,7 @@
       "tipo": "franquia|edp",
       "date": "2024-04",
       "fora_prazo_por_100k_uc_mes": 59.103163405504034,
-      "compensacao_rs_por_uc_mes": 0.2084618390721639,
+      "compensacao_rs_por_uc_mes": 0.208461839072164,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20141,7 +20141,7 @@
       "tipo": "franquia|edp",
       "date": "2024-06",
       "fora_prazo_por_100k_uc_mes": 53.82348883415248,
-      "compensacao_rs_por_uc_mes": 0.2432925343965046,
+      "compensacao_rs_por_uc_mes": 0.2432925343965047,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20157,7 +20157,7 @@
       "tipo": "franquia|edp",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 48.649025332117255,
-      "compensacao_rs_por_uc_mes": 0.1720759634807983,
+      "compensacao_rs_por_uc_mes": 0.1720759634807982,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20173,7 +20173,7 @@
       "tipo": "franquia|edp",
       "date": "2024-10",
       "fora_prazo_por_100k_uc_mes": 37.98490307730168,
-      "compensacao_rs_por_uc_mes": 0.3376985738395481,
+      "compensacao_rs_por_uc_mes": 0.337698573839548,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20181,7 +20181,7 @@
       "tipo": "franquia|edp",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 19.209796297573718,
-      "compensacao_rs_por_uc_mes": 0.8333964709857856,
+      "compensacao_rs_por_uc_mes": 0.8333964709857854,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20205,7 +20205,7 @@
       "tipo": "franquia|edp",
       "date": "2025-02",
       "fora_prazo_por_100k_uc_mes": 37.23498888387686,
-      "compensacao_rs_por_uc_mes": 0.1675351568328162,
+      "compensacao_rs_por_uc_mes": 0.1675351568328163,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20261,7 +20261,7 @@
       "tipo": "franquia|edp",
       "date": "2025-09",
       "fora_prazo_por_100k_uc_mes": 78.33625026166034,
-      "compensacao_rs_por_uc_mes": 0.2917979291348268,
+      "compensacao_rs_por_uc_mes": 0.2917979291348267,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20269,7 +20269,7 @@
       "tipo": "franquia|edp",
       "date": "2025-10",
       "fora_prazo_por_100k_uc_mes": 68.36930799662419,
-      "compensacao_rs_por_uc_mes": 0.2936368750629519,
+      "compensacao_rs_por_uc_mes": 0.2936368750629518,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20277,7 +20277,7 @@
       "tipo": "franquia|edp",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 37.245629767257824,
-      "compensacao_rs_por_uc_mes": 0.3406210343188802,
+      "compensacao_rs_por_uc_mes": 0.3406210343188801,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20861,7 +20861,7 @@
       "tipo": "franquia|eletrocar",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 54.38947810823507,
-      "compensacao_rs_por_uc_mes": 0.2073883161512027,
+      "compensacao_rs_por_uc_mes": 0.2073883161512028,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20869,7 +20869,7 @@
       "tipo": "franquia|enel",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 272.3550419745328,
-      "compensacao_rs_por_uc_mes": 0.2035625731708706,
+      "compensacao_rs_por_uc_mes": 0.2035625731708705,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20909,7 +20909,7 @@
       "tipo": "franquia|enel",
       "date": "2023-06",
       "fora_prazo_por_100k_uc_mes": 48.70591915492218,
-      "compensacao_rs_por_uc_mes": 0.3022629333977283,
+      "compensacao_rs_por_uc_mes": 0.3022629333977286,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -20997,7 +20997,7 @@
       "tipo": "franquia|enel",
       "date": "2024-05",
       "fora_prazo_por_100k_uc_mes": 41.95687831316709,
-      "compensacao_rs_por_uc_mes": 0.2275068842560677,
+      "compensacao_rs_por_uc_mes": 0.2275068842560678,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21005,7 +21005,7 @@
       "tipo": "franquia|enel",
       "date": "2024-06",
       "fora_prazo_por_100k_uc_mes": 28.582244756996364,
-      "compensacao_rs_por_uc_mes": 0.8395771250958276,
+      "compensacao_rs_por_uc_mes": 0.8395771250958277,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21013,7 +21013,7 @@
       "tipo": "franquia|enel",
       "date": "2024-07",
       "fora_prazo_por_100k_uc_mes": 29.366941113362312,
-      "compensacao_rs_por_uc_mes": 0.6128050046951581,
+      "compensacao_rs_por_uc_mes": 0.6128050046951576,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21021,7 +21021,7 @@
       "tipo": "franquia|enel",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 34.145209533437026,
-      "compensacao_rs_por_uc_mes": 0.4544519563905417,
+      "compensacao_rs_por_uc_mes": 0.4544519563905416,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21029,7 +21029,7 @@
       "tipo": "franquia|enel",
       "date": "2024-09",
       "fora_prazo_por_100k_uc_mes": 34.47158164701763,
-      "compensacao_rs_por_uc_mes": 0.4925335571501915,
+      "compensacao_rs_por_uc_mes": 0.4925335571501912,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21037,7 +21037,7 @@
       "tipo": "franquia|enel",
       "date": "2024-10",
       "fora_prazo_por_100k_uc_mes": 34.2548032912015,
-      "compensacao_rs_por_uc_mes": 0.5673002230342055,
+      "compensacao_rs_por_uc_mes": 0.5673002230342057,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21045,7 +21045,7 @@
       "tipo": "franquia|enel",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 31.209579996428477,
-      "compensacao_rs_por_uc_mes": 0.5518227928068405,
+      "compensacao_rs_por_uc_mes": 0.5518227928068407,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21053,7 +21053,7 @@
       "tipo": "franquia|enel",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 33.446446703676024,
-      "compensacao_rs_por_uc_mes": 0.3488318757827234,
+      "compensacao_rs_por_uc_mes": 0.3488318757827236,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21061,7 +21061,7 @@
       "tipo": "franquia|enel",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 45.58871091049886,
-      "compensacao_rs_por_uc_mes": 0.4085331192237565,
+      "compensacao_rs_por_uc_mes": 0.4085331192237563,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21069,7 +21069,7 @@
       "tipo": "franquia|enel",
       "date": "2025-02",
       "fora_prazo_por_100k_uc_mes": 31.67909266579799,
-      "compensacao_rs_por_uc_mes": 0.5500861474497745,
+      "compensacao_rs_por_uc_mes": 0.5500861474497741,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21077,7 +21077,7 @@
       "tipo": "franquia|enel",
       "date": "2025-03",
       "fora_prazo_por_100k_uc_mes": 33.3109153759955,
-      "compensacao_rs_por_uc_mes": 0.4728747366787355,
+      "compensacao_rs_por_uc_mes": 0.4728747366787354,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21093,7 +21093,7 @@
       "tipo": "franquia|enel",
       "date": "2025-05",
       "fora_prazo_por_100k_uc_mes": 55.35375551788069,
-      "compensacao_rs_por_uc_mes": 0.6563219633811463,
+      "compensacao_rs_por_uc_mes": 0.6563219633811466,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21109,7 +21109,7 @@
       "tipo": "franquia|enel",
       "date": "2025-07",
       "fora_prazo_por_100k_uc_mes": 81.7733582166289,
-      "compensacao_rs_por_uc_mes": 0.3358248663593012,
+      "compensacao_rs_por_uc_mes": 0.335824866359301,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21117,7 +21117,7 @@
       "tipo": "franquia|enel",
       "date": "2025-08",
       "fora_prazo_por_100k_uc_mes": 46.57920204976339,
-      "compensacao_rs_por_uc_mes": 0.4395137467247185,
+      "compensacao_rs_por_uc_mes": 0.4395137467247188,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21125,7 +21125,7 @@
       "tipo": "franquia|enel",
       "date": "2025-09",
       "fora_prazo_por_100k_uc_mes": 102.05209779293506,
-      "compensacao_rs_por_uc_mes": 0.3732746534620879,
+      "compensacao_rs_por_uc_mes": 0.373274653462088,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21133,7 +21133,7 @@
       "tipo": "franquia|enel",
       "date": "2025-10",
       "fora_prazo_por_100k_uc_mes": 52.46088285626018,
-      "compensacao_rs_por_uc_mes": 0.2596476783409679,
+      "compensacao_rs_por_uc_mes": 0.2596476783409682,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21141,7 +21141,7 @@
       "tipo": "franquia|enel",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 48.51172224233603,
-      "compensacao_rs_por_uc_mes": 0.2881740429267554,
+      "compensacao_rs_por_uc_mes": 0.2881740429267553,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21149,11 +21149,11 @@
       "tipo": "franquia|enel",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 59.67764391094408,
-      "compensacao_rs_por_uc_mes": 0.3433654746043849,
+      "compensacao_rs_por_uc_mes": 0.3433654746043847,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 54.24422574362261,
@@ -21161,7 +21161,7 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2023-02",
       "fora_prazo_por_100k_uc_mes": 37.01669121634127,
@@ -21169,7 +21169,7 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2023-03",
       "fora_prazo_por_100k_uc_mes": 60.41836175376096,
@@ -21177,7 +21177,7 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 60.87941313187782,
@@ -21185,7 +21185,7 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2023-05",
       "fora_prazo_por_100k_uc_mes": 64.50411434029856,
@@ -21193,31 +21193,31 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2023-06",
       "fora_prazo_por_100k_uc_mes": 25.800217190919263,
-      "compensacao_rs_por_uc_mes": 0.0725570126163062,
+      "compensacao_rs_por_uc_mes": 0.0725570126163061,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2023-07",
       "fora_prazo_por_100k_uc_mes": 18.58313950289663,
-      "compensacao_rs_por_uc_mes": 0.3646496576097137,
+      "compensacao_rs_por_uc_mes": 0.3646496576097136,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2023-08",
       "fora_prazo_por_100k_uc_mes": 31.631686830528345,
-      "compensacao_rs_por_uc_mes": 0.7900951816579794,
+      "compensacao_rs_por_uc_mes": 0.790095181657979,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2023-09",
       "fora_prazo_por_100k_uc_mes": 32.33527451889981,
@@ -21225,7 +21225,7 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 54.229950709836,
@@ -21233,23 +21233,23 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 46.41973614870826,
-      "compensacao_rs_por_uc_mes": 1.682743399647245,
+      "compensacao_rs_por_uc_mes": 1.682743399647244,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 58.83626682580808,
-      "compensacao_rs_por_uc_mes": 0.8360123853237708,
+      "compensacao_rs_por_uc_mes": 0.8360123853237704,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2024-01",
       "fora_prazo_por_100k_uc_mes": 51.33638280717887,
@@ -21257,7 +21257,7 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 38.42742699729301,
@@ -21265,7 +21265,7 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2024-03",
       "fora_prazo_por_100k_uc_mes": 47.40850822383056,
@@ -21273,7 +21273,7 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2024-04",
       "fora_prazo_por_100k_uc_mes": 24.45534937696537,
@@ -21281,23 +21281,23 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2024-05",
       "fora_prazo_por_100k_uc_mes": 39.99487466688934,
-      "compensacao_rs_por_uc_mes": 0.2047191562204411,
+      "compensacao_rs_por_uc_mes": 0.2047191562204412,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2024-06",
       "fora_prazo_por_100k_uc_mes": 62.4927956499955,
-      "compensacao_rs_por_uc_mes": 0.1458426480847855,
+      "compensacao_rs_por_uc_mes": 0.1458426480847856,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2024-07",
       "fora_prazo_por_100k_uc_mes": 28.63778822154744,
@@ -21305,31 +21305,31 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 28.43166140642716,
-      "compensacao_rs_por_uc_mes": 0.2273253459089934,
+      "compensacao_rs_por_uc_mes": 0.2273253459089932,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2024-09",
       "fora_prazo_por_100k_uc_mes": 32.97247742658973,
-      "compensacao_rs_por_uc_mes": 0.5618240477551382,
+      "compensacao_rs_por_uc_mes": 0.5618240477551381,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2024-10",
       "fora_prazo_por_100k_uc_mes": 32.03324828282072,
-      "compensacao_rs_por_uc_mes": 0.1512170291148222,
+      "compensacao_rs_por_uc_mes": 0.1512170291148221,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 34.17497415464047,
@@ -21337,15 +21337,15 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 27.50674515715444,
-      "compensacao_rs_por_uc_mes": 0.2154246589678279,
+      "compensacao_rs_por_uc_mes": 0.215424658967828,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 30.888559956493378,
@@ -21353,39 +21353,39 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2025-02",
       "fora_prazo_por_100k_uc_mes": 25.86915960274316,
-      "compensacao_rs_por_uc_mes": 0.3067962584306252,
+      "compensacao_rs_por_uc_mes": 0.306796258430625,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2025-03",
       "fora_prazo_por_100k_uc_mes": 46.80348677446065,
-      "compensacao_rs_por_uc_mes": 0.0835574318022584,
+      "compensacao_rs_por_uc_mes": 0.0835574318022583,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2025-04",
       "fora_prazo_por_100k_uc_mes": 55.44379151545417,
-      "compensacao_rs_por_uc_mes": 0.4325556778812186,
+      "compensacao_rs_por_uc_mes": 0.4325556778812187,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2025-05",
       "fora_prazo_por_100k_uc_mes": 47.76025090127303,
-      "compensacao_rs_por_uc_mes": 0.1384734300693104,
+      "compensacao_rs_por_uc_mes": 0.1384734300693103,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2025-06",
       "fora_prazo_por_100k_uc_mes": 49.8254132216807,
@@ -21393,7 +21393,7 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2025-07",
       "fora_prazo_por_100k_uc_mes": 62.7795608251028,
@@ -21401,7 +21401,7 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2025-08",
       "fora_prazo_por_100k_uc_mes": 26.052253618407637,
@@ -21409,15 +21409,15 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2025-09",
       "fora_prazo_por_100k_uc_mes": 43.02961015397752,
-      "compensacao_rs_por_uc_mes": 0.2725990698530846,
+      "compensacao_rs_por_uc_mes": 0.2725990698530844,
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2025-10",
       "fora_prazo_por_100k_uc_mes": 49.06210725111062,
@@ -21425,7 +21425,7 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 48.89442410671229,
@@ -21433,11 +21433,11 @@
       "periodo_regulatorio": "pos_2022"
     },
     {
-      "grupo": "Enel GO — EQUATORIAL GOIÁS DISTRIBUIDORA DE ENERGIA S.A.",
+      "grupo": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "tipo": "franquia|enel",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 79.55473901804172,
-      "compensacao_rs_por_uc_mes": 0.2067987184180801,
+      "compensacao_rs_por_uc_mes": 0.20679871841808,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21445,7 +21445,7 @@
       "tipo": "franquia|enel",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 131.71575765606,
-      "compensacao_rs_por_uc_mes": 0.22793171340792,
+      "compensacao_rs_por_uc_mes": 0.2279317134079199,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21581,7 +21581,7 @@
       "tipo": "franquia|enel",
       "date": "2024-06",
       "fora_prazo_por_100k_uc_mes": 18.375151360456737,
-      "compensacao_rs_por_uc_mes": 0.1166076300227974,
+      "compensacao_rs_por_uc_mes": 0.1166076300227975,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21589,7 +21589,7 @@
       "tipo": "franquia|enel",
       "date": "2024-07",
       "fora_prazo_por_100k_uc_mes": 30.680846455133707,
-      "compensacao_rs_por_uc_mes": 0.1405550226550086,
+      "compensacao_rs_por_uc_mes": 0.1405550226550085,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21605,7 +21605,7 @@
       "tipo": "franquia|enel",
       "date": "2024-09",
       "fora_prazo_por_100k_uc_mes": 14.814057699784389,
-      "compensacao_rs_por_uc_mes": 0.1083255780555287,
+      "compensacao_rs_por_uc_mes": 0.1083255780555288,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21629,7 +21629,7 @@
       "tipo": "franquia|enel",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 19.360953023551637,
-      "compensacao_rs_por_uc_mes": 0.1627279518273674,
+      "compensacao_rs_por_uc_mes": 0.1627279518273673,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21653,7 +21653,7 @@
       "tipo": "franquia|enel",
       "date": "2025-03",
       "fora_prazo_por_100k_uc_mes": 43.69880302579644,
-      "compensacao_rs_por_uc_mes": 0.7947913213341159,
+      "compensacao_rs_por_uc_mes": 0.7947913213341162,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21661,7 +21661,7 @@
       "tipo": "franquia|enel",
       "date": "2025-04",
       "fora_prazo_por_100k_uc_mes": 15.230217265154227,
-      "compensacao_rs_por_uc_mes": 0.526708647228968,
+      "compensacao_rs_por_uc_mes": 0.5267086472289682,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21757,7 +21757,7 @@
       "tipo": "franquia|enel",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 27.238804342505183,
-      "compensacao_rs_por_uc_mes": 0.0166323738036373,
+      "compensacao_rs_por_uc_mes": 0.0166323738036372,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21805,7 +21805,7 @@
       "tipo": "franquia|enel",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 5.758377061882082,
-      "compensacao_rs_por_uc_mes": 0.1374306265210017,
+      "compensacao_rs_por_uc_mes": 0.1374306265210016,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21813,7 +21813,7 @@
       "tipo": "franquia|enel",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 93.53570210796428,
-      "compensacao_rs_por_uc_mes": 0.4107598291339638,
+      "compensacao_rs_por_uc_mes": 0.4107598291339639,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -21845,7 +21845,7 @@
       "tipo": "franquia|enel",
       "date": "2024-03",
       "fora_prazo_por_100k_uc_mes": 12.370266679658814,
-      "compensacao_rs_por_uc_mes": 0.1995282757440578,
+      "compensacao_rs_por_uc_mes": 0.1995282757440579,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22021,7 +22021,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 286.6487177433118,
-      "compensacao_rs_por_uc_mes": 1.2193132969478704,
+      "compensacao_rs_por_uc_mes": 1.2193132969478702,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22037,7 +22037,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-03",
       "fora_prazo_por_100k_uc_mes": 67.91041397491841,
-      "compensacao_rs_por_uc_mes": 0.6825677101653185,
+      "compensacao_rs_por_uc_mes": 0.6825677101653184,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22045,7 +22045,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 43.06826667592866,
-      "compensacao_rs_por_uc_mes": 0.1430223850789296,
+      "compensacao_rs_por_uc_mes": 0.1430223850789295,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22085,7 +22085,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-09",
       "fora_prazo_por_100k_uc_mes": 58.55446253892149,
-      "compensacao_rs_por_uc_mes": 0.3087121807059602,
+      "compensacao_rs_por_uc_mes": 0.3087121807059601,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22197,7 +22197,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 160.3193081656411,
-      "compensacao_rs_por_uc_mes": 0.3643137535340096,
+      "compensacao_rs_por_uc_mes": 0.3643137535340097,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22293,7 +22293,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 170.63342824907323,
-      "compensacao_rs_por_uc_mes": 0.3219378069091495,
+      "compensacao_rs_por_uc_mes": 0.3219378069091496,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22485,7 +22485,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 37.29342167143835,
-      "compensacao_rs_por_uc_mes": 0.082138808306103,
+      "compensacao_rs_por_uc_mes": 0.0821388083061031,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22565,7 +22565,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-10",
       "fora_prazo_por_100k_uc_mes": 55.22201458744737,
-      "compensacao_rs_por_uc_mes": 0.1576458928810724,
+      "compensacao_rs_por_uc_mes": 0.1576458928810723,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22573,7 +22573,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 54.78201323898653,
-      "compensacao_rs_por_uc_mes": 0.1852010661875695,
+      "compensacao_rs_por_uc_mes": 0.1852010661875694,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22589,7 +22589,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 46.795975000954094,
-      "compensacao_rs_por_uc_mes": 0.3419310926996461,
+      "compensacao_rs_por_uc_mes": 0.341931092699646,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22613,7 +22613,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 28.62333497067237,
-      "compensacao_rs_por_uc_mes": 0.1038196531249097,
+      "compensacao_rs_por_uc_mes": 0.1038196531249096,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22669,7 +22669,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 69.79714144511362,
-      "compensacao_rs_por_uc_mes": 0.2760686961161153,
+      "compensacao_rs_por_uc_mes": 0.2760686961161152,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22709,7 +22709,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-04",
       "fora_prazo_por_100k_uc_mes": 37.95133874013999,
-      "compensacao_rs_por_uc_mes": 0.1651574447283635,
+      "compensacao_rs_por_uc_mes": 0.1651574447283634,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22789,7 +22789,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-02",
       "fora_prazo_por_100k_uc_mes": 46.92397964464076,
-      "compensacao_rs_por_uc_mes": 0.100651980191941,
+      "compensacao_rs_por_uc_mes": 0.1006519801919409,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22813,7 +22813,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-05",
       "fora_prazo_por_100k_uc_mes": 56.49973273624114,
-      "compensacao_rs_por_uc_mes": 0.1587953543116521,
+      "compensacao_rs_por_uc_mes": 0.1587953543116522,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22861,7 +22861,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 103.00509397356484,
-      "compensacao_rs_por_uc_mes": 0.298194564941526,
+      "compensacao_rs_por_uc_mes": 0.2981945649415261,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22885,7 +22885,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-02",
       "fora_prazo_por_100k_uc_mes": 141.76899770640037,
-      "compensacao_rs_por_uc_mes": 0.4938716339301726,
+      "compensacao_rs_por_uc_mes": 0.4938716339301724,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22893,7 +22893,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-03",
       "fora_prazo_por_100k_uc_mes": 132.37060757418467,
-      "compensacao_rs_por_uc_mes": 0.6521330434444225,
+      "compensacao_rs_por_uc_mes": 0.6521330434444227,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22909,7 +22909,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-05",
       "fora_prazo_por_100k_uc_mes": 44.93404569523718,
-      "compensacao_rs_por_uc_mes": 0.2516967570618009,
+      "compensacao_rs_por_uc_mes": 0.2516967570618008,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22933,7 +22933,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-08",
       "fora_prazo_por_100k_uc_mes": 31.16405828051377,
-      "compensacao_rs_por_uc_mes": 0.1519607966079598,
+      "compensacao_rs_por_uc_mes": 0.1519607966079599,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22949,7 +22949,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 129.24967099521007,
-      "compensacao_rs_por_uc_mes": 0.3774467247464837,
+      "compensacao_rs_por_uc_mes": 0.3774467247464838,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22957,7 +22957,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 189.6428310930177,
-      "compensacao_rs_por_uc_mes": 0.7181659102794079,
+      "compensacao_rs_por_uc_mes": 0.7181659102794082,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22965,7 +22965,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 301.29185054936374,
-      "compensacao_rs_por_uc_mes": 1.325322363758048,
+      "compensacao_rs_por_uc_mes": 1.3253223637580478,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22973,7 +22973,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-01",
       "fora_prazo_por_100k_uc_mes": 151.62324429347206,
-      "compensacao_rs_por_uc_mes": 0.500255860370962,
+      "compensacao_rs_por_uc_mes": 0.5002558603709618,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -22981,7 +22981,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 36.58437440719764,
-      "compensacao_rs_por_uc_mes": 0.3862416946079313,
+      "compensacao_rs_por_uc_mes": 0.3862416946079312,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23013,7 +23013,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-06",
       "fora_prazo_por_100k_uc_mes": 37.4407366190527,
-      "compensacao_rs_por_uc_mes": 0.2609372928640029,
+      "compensacao_rs_por_uc_mes": 0.2609372928640028,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23021,7 +23021,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-07",
       "fora_prazo_por_100k_uc_mes": 84.17344595383598,
-      "compensacao_rs_por_uc_mes": 0.3824763718325484,
+      "compensacao_rs_por_uc_mes": 0.3824763718325483,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23029,7 +23029,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 67.05594684997716,
-      "compensacao_rs_por_uc_mes": 0.4278948858624116,
+      "compensacao_rs_por_uc_mes": 0.4278948858624115,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23045,7 +23045,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-10",
       "fora_prazo_por_100k_uc_mes": 210.38253179418837,
-      "compensacao_rs_por_uc_mes": 0.7659506038467363,
+      "compensacao_rs_por_uc_mes": 0.7659506038467365,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23061,7 +23061,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 90.26907752570236,
-      "compensacao_rs_por_uc_mes": 0.4453424639434193,
+      "compensacao_rs_por_uc_mes": 0.4453424639434196,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23101,7 +23101,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-05",
       "fora_prazo_por_100k_uc_mes": 42.32001921686506,
-      "compensacao_rs_por_uc_mes": 0.2802558572992794,
+      "compensacao_rs_por_uc_mes": 0.2802558572992793,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23109,7 +23109,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-06",
       "fora_prazo_por_100k_uc_mes": 34.97653657338202,
-      "compensacao_rs_por_uc_mes": 0.2111668838820624,
+      "compensacao_rs_por_uc_mes": 0.2111668838820625,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23189,7 +23189,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 64.38005317523206,
-      "compensacao_rs_por_uc_mes": 0.1113644084858293,
+      "compensacao_rs_por_uc_mes": 0.1113644084858294,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23229,7 +23229,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-09",
       "fora_prazo_por_100k_uc_mes": 65.2584177805029,
-      "compensacao_rs_por_uc_mes": 0.0881254394529622,
+      "compensacao_rs_por_uc_mes": 0.0881254394529623,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23237,7 +23237,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 61.750088412379725,
-      "compensacao_rs_por_uc_mes": 0.0871218693980087,
+      "compensacao_rs_por_uc_mes": 0.0871218693980086,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23285,7 +23285,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-04",
       "fora_prazo_por_100k_uc_mes": 188.05525998886125,
-      "compensacao_rs_por_uc_mes": 0.3548027637661214,
+      "compensacao_rs_por_uc_mes": 0.3548027637661215,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23309,7 +23309,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-07",
       "fora_prazo_por_100k_uc_mes": 46.27976060841007,
-      "compensacao_rs_por_uc_mes": 0.084229305868927,
+      "compensacao_rs_por_uc_mes": 0.0842293058689269,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23357,7 +23357,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 55.33942138605372,
-      "compensacao_rs_por_uc_mes": 0.1318331371380707,
+      "compensacao_rs_por_uc_mes": 0.1318331371380708,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23381,7 +23381,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-04",
       "fora_prazo_por_100k_uc_mes": 62.39823620985647,
-      "compensacao_rs_por_uc_mes": 0.1465771634188473,
+      "compensacao_rs_por_uc_mes": 0.1465771634188474,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23429,7 +23429,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-10",
       "fora_prazo_por_100k_uc_mes": 83.57586027811222,
-      "compensacao_rs_por_uc_mes": 0.1766139204894579,
+      "compensacao_rs_por_uc_mes": 0.1766139204894578,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23525,7 +23525,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 289.2402900477405,
-      "compensacao_rs_por_uc_mes": 0.6181004583723241,
+      "compensacao_rs_por_uc_mes": 0.6181004583723239,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23533,7 +23533,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 116.32734254726608,
-      "compensacao_rs_por_uc_mes": 0.3403698978856389,
+      "compensacao_rs_por_uc_mes": 0.3403698978856387,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23541,7 +23541,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 281.75668667965016,
-      "compensacao_rs_por_uc_mes": 0.5040603789022436,
+      "compensacao_rs_por_uc_mes": 0.5040603789022439,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23557,7 +23557,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 189.1832058215525,
-      "compensacao_rs_por_uc_mes": 1.954559487767782,
+      "compensacao_rs_por_uc_mes": 1.9545594877677823,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23565,7 +23565,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-03",
       "fora_prazo_por_100k_uc_mes": 114.00889699618824,
-      "compensacao_rs_por_uc_mes": 0.5347316130179517,
+      "compensacao_rs_por_uc_mes": 0.5347316130179516,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23573,7 +23573,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-04",
       "fora_prazo_por_100k_uc_mes": 94.8523636550922,
-      "compensacao_rs_por_uc_mes": 0.5043109469356105,
+      "compensacao_rs_por_uc_mes": 0.5043109469356107,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23597,7 +23597,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-07",
       "fora_prazo_por_100k_uc_mes": 64.73007558481133,
-      "compensacao_rs_por_uc_mes": 0.2738575568450987,
+      "compensacao_rs_por_uc_mes": 0.2738575568450989,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23605,7 +23605,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 64.51347622713848,
-      "compensacao_rs_por_uc_mes": 0.4479057507738073,
+      "compensacao_rs_por_uc_mes": 0.4479057507738071,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23637,7 +23637,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 581.012997643207,
-      "compensacao_rs_por_uc_mes": 2.4369721559717186,
+      "compensacao_rs_por_uc_mes": 2.436972155971718,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23645,7 +23645,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 227.07911379907588,
-      "compensacao_rs_por_uc_mes": 1.5436619116394266,
+      "compensacao_rs_por_uc_mes": 1.5436619116394268,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23669,7 +23669,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-04",
       "fora_prazo_por_100k_uc_mes": 79.75142267832797,
-      "compensacao_rs_por_uc_mes": 0.5773783966313448,
+      "compensacao_rs_por_uc_mes": 0.5773783966313447,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23709,7 +23709,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-09",
       "fora_prazo_por_100k_uc_mes": 34.73010605060693,
-      "compensacao_rs_por_uc_mes": 0.2114543992292887,
+      "compensacao_rs_por_uc_mes": 0.2114543992292886,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23733,7 +23733,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 32.809232306298526,
-      "compensacao_rs_por_uc_mes": 0.2441137979402858,
+      "compensacao_rs_por_uc_mes": 0.2441137979402857,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23749,7 +23749,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-02",
       "fora_prazo_por_100k_uc_mes": 101.00926568035943,
-      "compensacao_rs_por_uc_mes": 0.1325430588913553,
+      "compensacao_rs_por_uc_mes": 0.1325430588913554,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23773,7 +23773,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-05",
       "fora_prazo_por_100k_uc_mes": 13.033813940544674,
-      "compensacao_rs_por_uc_mes": 0.0943583664756214,
+      "compensacao_rs_por_uc_mes": 0.0943583664756215,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23781,7 +23781,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-06",
       "fora_prazo_por_100k_uc_mes": 30.9415369036429,
-      "compensacao_rs_por_uc_mes": 0.0711335385163533,
+      "compensacao_rs_por_uc_mes": 0.0711335385163532,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -23797,7 +23797,7 @@
       "tipo": "franquia|energisa",
       "date": "2023-08",
       "fora_prazo_por_100k_uc_mes": 119.88490115624144,
-      "compensacao_rs_por_uc_mes": 0.1680298369822157,
+      "compensacao_rs_por_uc_mes": 0.1680298369822156,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -24125,7 +24125,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-01",
       "fora_prazo_por_100k_uc_mes": 78.56603128314504,
-      "compensacao_rs_por_uc_mes": 0.1755016441097429,
+      "compensacao_rs_por_uc_mes": 0.1755016441097428,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -24133,7 +24133,7 @@
       "tipo": "franquia|energisa",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 41.44448459338805,
-      "compensacao_rs_por_uc_mes": 0.7453117514162122,
+      "compensacao_rs_por_uc_mes": 0.7453117514162124,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -24229,7 +24229,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-02",
       "fora_prazo_por_100k_uc_mes": 36.78946095491361,
-      "compensacao_rs_por_uc_mes": 0.0930174965680201,
+      "compensacao_rs_por_uc_mes": 0.0930174965680202,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -24597,7 +24597,7 @@
       "tipo": "franquia|energisa",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 206.51263019274515,
-      "compensacao_rs_por_uc_mes": 0.3582458108541261,
+      "compensacao_rs_por_uc_mes": 0.3582458108541262,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -24629,7 +24629,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 95.52591357510074,
-      "compensacao_rs_por_uc_mes": 0.3475978706405446,
+      "compensacao_rs_por_uc_mes": 0.3475978706405447,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -24637,7 +24637,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-05",
       "fora_prazo_por_100k_uc_mes": 32.15462027131547,
-      "compensacao_rs_por_uc_mes": 1.1021983766261982,
+      "compensacao_rs_por_uc_mes": 1.1021983766261985,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -24653,7 +24653,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-07",
       "fora_prazo_por_100k_uc_mes": 40.7752502906321,
-      "compensacao_rs_por_uc_mes": 0.1662578297156143,
+      "compensacao_rs_por_uc_mes": 0.1662578297156142,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -24813,7 +24813,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-04",
       "fora_prazo_por_100k_uc_mes": 215.2710492484364,
-      "compensacao_rs_por_uc_mes": 2.893163164899132,
+      "compensacao_rs_por_uc_mes": 2.8931631648991325,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -24909,7 +24909,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 34.39064278227708,
-      "compensacao_rs_por_uc_mes": 0.3710741996636065,
+      "compensacao_rs_por_uc_mes": 0.3710741996636068,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -24917,7 +24917,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-05",
       "fora_prazo_por_100k_uc_mes": 49.80124344841958,
-      "compensacao_rs_por_uc_mes": 0.3519386769434486,
+      "compensacao_rs_por_uc_mes": 0.3519386769434485,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -24949,7 +24949,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-09",
       "fora_prazo_por_100k_uc_mes": 8.570793974313748,
-      "compensacao_rs_por_uc_mes": 0.1908420700557885,
+      "compensacao_rs_por_uc_mes": 0.1908420700557886,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25021,7 +25021,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-06",
       "fora_prazo_por_100k_uc_mes": 18.810130745826825,
-      "compensacao_rs_por_uc_mes": 0.3135360733081161,
+      "compensacao_rs_por_uc_mes": 0.313536073308116,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25061,7 +25061,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 46.449657128188825,
-      "compensacao_rs_por_uc_mes": 0.481583831444788,
+      "compensacao_rs_por_uc_mes": 0.4815838314447881,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25069,7 +25069,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 238.4841222593661,
-      "compensacao_rs_por_uc_mes": 0.8818636513969664,
+      "compensacao_rs_por_uc_mes": 0.8818636513969665,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25077,7 +25077,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 54.56981557536351,
-      "compensacao_rs_por_uc_mes": 0.6675884409545958,
+      "compensacao_rs_por_uc_mes": 0.6675884409545956,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25085,7 +25085,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-02",
       "fora_prazo_por_100k_uc_mes": 66.62660957263137,
-      "compensacao_rs_por_uc_mes": 0.4940503299639739,
+      "compensacao_rs_por_uc_mes": 0.4940503299639741,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25093,7 +25093,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-03",
       "fora_prazo_por_100k_uc_mes": 31.401048016298205,
-      "compensacao_rs_por_uc_mes": 0.5183453164654251,
+      "compensacao_rs_por_uc_mes": 0.5183453164654253,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25189,7 +25189,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-03",
       "fora_prazo_por_100k_uc_mes": 75.42215350927324,
-      "compensacao_rs_por_uc_mes": 0.6588556812507895,
+      "compensacao_rs_por_uc_mes": 0.6588556812507892,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25197,7 +25197,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 87.44001164866079,
-      "compensacao_rs_por_uc_mes": 0.3700438626118519,
+      "compensacao_rs_por_uc_mes": 0.370043862611852,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25205,7 +25205,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-05",
       "fora_prazo_por_100k_uc_mes": 74.28958710117088,
-      "compensacao_rs_por_uc_mes": 0.6361819196219619,
+      "compensacao_rs_por_uc_mes": 0.6361819196219615,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25213,7 +25213,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-06",
       "fora_prazo_por_100k_uc_mes": 43.52315050872814,
-      "compensacao_rs_por_uc_mes": 0.1738846390154063,
+      "compensacao_rs_por_uc_mes": 0.1738846390154061,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25245,7 +25245,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 19.17957338408392,
-      "compensacao_rs_por_uc_mes": 0.175732219091451,
+      "compensacao_rs_por_uc_mes": 0.1757322190914509,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25253,7 +25253,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 28.18472653437061,
-      "compensacao_rs_por_uc_mes": 0.3026272370704411,
+      "compensacao_rs_por_uc_mes": 0.302627237070441,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25293,7 +25293,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-04",
       "fora_prazo_por_100k_uc_mes": 27.60648162311544,
-      "compensacao_rs_por_uc_mes": 0.3383448785241968,
+      "compensacao_rs_por_uc_mes": 0.338344878524197,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25341,7 +25341,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-10",
       "fora_prazo_por_100k_uc_mes": 29.81585468875921,
-      "compensacao_rs_por_uc_mes": 0.1755268439917812,
+      "compensacao_rs_por_uc_mes": 0.1755268439917811,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25357,7 +25357,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 17.42815012020403,
-      "compensacao_rs_por_uc_mes": 0.2804565529844452,
+      "compensacao_rs_por_uc_mes": 0.2804565529844453,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25429,7 +25429,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-09",
       "fora_prazo_por_100k_uc_mes": 13.470245567513434,
-      "compensacao_rs_por_uc_mes": 0.1216679549205184,
+      "compensacao_rs_por_uc_mes": 0.1216679549205185,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25445,7 +25445,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 11.814969143942193,
-      "compensacao_rs_por_uc_mes": 0.1151909770205882,
+      "compensacao_rs_por_uc_mes": 0.1151909770205883,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25477,7 +25477,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-03",
       "fora_prazo_por_100k_uc_mes": 19.49502012584955,
-      "compensacao_rs_por_uc_mes": 0.4147434216261569,
+      "compensacao_rs_por_uc_mes": 0.4147434216261571,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25549,7 +25549,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 17.629820823823064,
-      "compensacao_rs_por_uc_mes": 0.2263362336258966,
+      "compensacao_rs_por_uc_mes": 0.2263362336258967,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25589,7 +25589,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-05",
       "fora_prazo_por_100k_uc_mes": 20.62982311810269,
-      "compensacao_rs_por_uc_mes": 0.1728353234236034,
+      "compensacao_rs_por_uc_mes": 0.1728353234236035,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25605,7 +25605,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-07",
       "fora_prazo_por_100k_uc_mes": 22.33827003144156,
-      "compensacao_rs_por_uc_mes": 0.1625075941182798,
+      "compensacao_rs_por_uc_mes": 0.1625075941182799,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25613,7 +25613,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 33.1662065598477,
-      "compensacao_rs_por_uc_mes": 0.1865639703016234,
+      "compensacao_rs_por_uc_mes": 0.1865639703016235,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25621,7 +25621,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-09",
       "fora_prazo_por_100k_uc_mes": 25.11166867394028,
-      "compensacao_rs_por_uc_mes": 0.1556249141899423,
+      "compensacao_rs_por_uc_mes": 0.1556249141899424,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25629,7 +25629,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-10",
       "fora_prazo_por_100k_uc_mes": 27.10714534403693,
-      "compensacao_rs_por_uc_mes": 0.2210689558881835,
+      "compensacao_rs_por_uc_mes": 0.2210689558881836,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25661,7 +25661,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-02",
       "fora_prazo_por_100k_uc_mes": 23.647856899712934,
-      "compensacao_rs_por_uc_mes": 0.1927470644313962,
+      "compensacao_rs_por_uc_mes": 0.1927470644313963,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25685,7 +25685,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-05",
       "fora_prazo_por_100k_uc_mes": 17.68362759756845,
-      "compensacao_rs_por_uc_mes": 0.1021233958611873,
+      "compensacao_rs_por_uc_mes": 0.1021233958611874,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25693,7 +25693,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-06",
       "fora_prazo_por_100k_uc_mes": 19.753228495032047,
-      "compensacao_rs_por_uc_mes": 0.1360874292629169,
+      "compensacao_rs_por_uc_mes": 0.1360874292629168,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25733,7 +25733,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 30.40488535273316,
-      "compensacao_rs_por_uc_mes": 0.3367206784841479,
+      "compensacao_rs_por_uc_mes": 0.336720678484148,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25741,7 +25741,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 6.245376686425187,
-      "compensacao_rs_por_uc_mes": 0.2293635579494624,
+      "compensacao_rs_por_uc_mes": 0.2293635579494625,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25773,7 +25773,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 61.1415956302159,
-      "compensacao_rs_por_uc_mes": 0.4795103810731818,
+      "compensacao_rs_por_uc_mes": 0.4795103810731817,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25781,7 +25781,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-05",
       "fora_prazo_por_100k_uc_mes": 22.303672929776116,
-      "compensacao_rs_por_uc_mes": 0.4729351161896701,
+      "compensacao_rs_por_uc_mes": 0.47293511618967,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25909,7 +25909,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-09",
       "fora_prazo_por_100k_uc_mes": 11.04324567486411,
-      "compensacao_rs_por_uc_mes": 0.1822634853457753,
+      "compensacao_rs_por_uc_mes": 0.1822634853457754,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25917,7 +25917,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-10",
       "fora_prazo_por_100k_uc_mes": 17.429380233268606,
-      "compensacao_rs_por_uc_mes": 0.1052886927381686,
+      "compensacao_rs_por_uc_mes": 0.1052886927381685,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25941,7 +25941,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-01",
       "fora_prazo_por_100k_uc_mes": 5.838278398144137,
-      "compensacao_rs_por_uc_mes": 0.2716103842651623,
+      "compensacao_rs_por_uc_mes": 0.2716103842651624,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -25965,7 +25965,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-04",
       "fora_prazo_por_100k_uc_mes": 8.57066917987363,
-      "compensacao_rs_por_uc_mes": 0.5439445365354466,
+      "compensacao_rs_por_uc_mes": 0.5439445365354468,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26093,7 +26093,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-09",
       "fora_prazo_por_100k_uc_mes": 42.84647905710967,
-      "compensacao_rs_por_uc_mes": 0.8328336920610161,
+      "compensacao_rs_por_uc_mes": 0.8328336920610158,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26101,7 +26101,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 68.40808898930389,
-      "compensacao_rs_por_uc_mes": 0.4592103608860718,
+      "compensacao_rs_por_uc_mes": 0.4592103608860719,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26117,7 +26117,7 @@
       "tipo": "franquia|equatorial",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 46.54199617291815,
-      "compensacao_rs_por_uc_mes": 0.3851989337893562,
+      "compensacao_rs_por_uc_mes": 0.3851989337893564,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26125,7 +26125,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-01",
       "fora_prazo_por_100k_uc_mes": 34.5781236622547,
-      "compensacao_rs_por_uc_mes": 0.0446914815033585,
+      "compensacao_rs_por_uc_mes": 0.0446914815033586,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26133,7 +26133,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 115.3107492150254,
-      "compensacao_rs_por_uc_mes": 0.5612092982877016,
+      "compensacao_rs_por_uc_mes": 0.5612092982877018,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26149,7 +26149,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-04",
       "fora_prazo_por_100k_uc_mes": 125.85705885186948,
-      "compensacao_rs_por_uc_mes": 0.7712274462104618,
+      "compensacao_rs_por_uc_mes": 0.7712274462104615,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26165,7 +26165,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-06",
       "fora_prazo_por_100k_uc_mes": 47.88727020852669,
-      "compensacao_rs_por_uc_mes": 0.254353788258015,
+      "compensacao_rs_por_uc_mes": 0.2543537882580151,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26181,7 +26181,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 35.69814435150555,
-      "compensacao_rs_por_uc_mes": 0.2117240173185126,
+      "compensacao_rs_por_uc_mes": 0.2117240173185125,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26189,7 +26189,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-09",
       "fora_prazo_por_100k_uc_mes": 31.48347248331441,
-      "compensacao_rs_por_uc_mes": 0.2784281974340317,
+      "compensacao_rs_por_uc_mes": 0.2784281974340316,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26197,7 +26197,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-10",
       "fora_prazo_por_100k_uc_mes": 52.36237108292948,
-      "compensacao_rs_por_uc_mes": 0.126032979816686,
+      "compensacao_rs_por_uc_mes": 0.1260329798166861,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26205,7 +26205,7 @@
       "tipo": "franquia|equatorial",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 52.0509643434608,
-      "compensacao_rs_por_uc_mes": 0.3119962163704517,
+      "compensacao_rs_por_uc_mes": 0.3119962163704516,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26229,7 +26229,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-02",
       "fora_prazo_por_100k_uc_mes": 39.07594448628072,
-      "compensacao_rs_por_uc_mes": 0.20008372215192,
+      "compensacao_rs_por_uc_mes": 0.2000837221519201,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -26237,7 +26237,7 @@
       "tipo": "franquia|equatorial",
       "date": "2025-03",
       "fora_prazo_por_100k_uc_mes": 28.75288094175054,
-      "compensacao_rs_por_uc_mes": 0.2294407790803083,
+      "compensacao_rs_por_uc_mes": 0.2294407790803085,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -27189,7 +27189,7 @@
       "tipo": "franquia|light",
       "date": "2023-03",
       "fora_prazo_por_100k_uc_mes": 20.979976883093517,
-      "compensacao_rs_por_uc_mes": 0.1198231907040966,
+      "compensacao_rs_por_uc_mes": 0.1198231907040967,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -27197,7 +27197,7 @@
       "tipo": "franquia|light",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 15.18617340014096,
-      "compensacao_rs_por_uc_mes": 0.347275459879298,
+      "compensacao_rs_por_uc_mes": 0.3472754598792981,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -27949,7 +27949,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2025-02",
       "fora_prazo_por_100k_uc_mes": 78.68266547531331,
-      "compensacao_rs_por_uc_mes": 0.6026996405935873,
+      "compensacao_rs_por_uc_mes": 0.6026996405935876,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -27957,7 +27957,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2025-03",
       "fora_prazo_por_100k_uc_mes": 17.950128559485563,
-      "compensacao_rs_por_uc_mes": 0.202786732528126,
+      "compensacao_rs_por_uc_mes": 0.2027867325281259,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28037,7 +28037,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 61.34521600447524,
-      "compensacao_rs_por_uc_mes": 0.408444862132047,
+      "compensacao_rs_por_uc_mes": 0.4084448621320473,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28045,7 +28045,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-02",
       "fora_prazo_por_100k_uc_mes": 93.532529814733,
-      "compensacao_rs_por_uc_mes": 0.4079926940006957,
+      "compensacao_rs_por_uc_mes": 0.407992694000696,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28101,7 +28101,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-09",
       "fora_prazo_por_100k_uc_mes": 35.96439479790296,
-      "compensacao_rs_por_uc_mes": 0.0446897630982747,
+      "compensacao_rs_por_uc_mes": 0.0446897630982746,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28117,7 +28117,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 21.88608956998253,
-      "compensacao_rs_por_uc_mes": 1.073047957800144,
+      "compensacao_rs_por_uc_mes": 1.0730479578001433,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28125,7 +28125,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-12",
       "fora_prazo_por_100k_uc_mes": 35.06713000140269,
-      "compensacao_rs_por_uc_mes": 0.3268812849792752,
+      "compensacao_rs_por_uc_mes": 0.3268812849792754,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28165,7 +28165,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2024-05",
       "fora_prazo_por_100k_uc_mes": 32.96538782504036,
-      "compensacao_rs_por_uc_mes": 0.0531190444780752,
+      "compensacao_rs_por_uc_mes": 0.0531190444780751,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28181,7 +28181,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2024-07",
       "fora_prazo_por_100k_uc_mes": 45.56600244318877,
-      "compensacao_rs_por_uc_mes": 0.2020282987924123,
+      "compensacao_rs_por_uc_mes": 0.2020282987924122,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28197,7 +28197,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2024-09",
       "fora_prazo_por_100k_uc_mes": 26.52650382152509,
-      "compensacao_rs_por_uc_mes": 0.3771809293143053,
+      "compensacao_rs_por_uc_mes": 0.3771809293143052,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28245,7 +28245,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2025-03",
       "fora_prazo_por_100k_uc_mes": 20.147439046348723,
-      "compensacao_rs_por_uc_mes": 0.1229940769734147,
+      "compensacao_rs_por_uc_mes": 0.1229940769734146,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28269,7 +28269,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2025-06",
       "fora_prazo_por_100k_uc_mes": 41.4241984258225,
-      "compensacao_rs_por_uc_mes": 0.8276951671623612,
+      "compensacao_rs_por_uc_mes": 0.8276951671623614,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28285,7 +28285,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2025-08",
       "fora_prazo_por_100k_uc_mes": 28.5527971502578,
-      "compensacao_rs_por_uc_mes": 0.620825402241135,
+      "compensacao_rs_por_uc_mes": 0.6208254022411351,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28397,7 +28397,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 28.67106458062569,
-      "compensacao_rs_por_uc_mes": 0.1505030571943532,
+      "compensacao_rs_por_uc_mes": 0.1505030571943531,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28405,7 +28405,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 74.81925508512502,
-      "compensacao_rs_por_uc_mes": 0.4699179572515427,
+      "compensacao_rs_por_uc_mes": 0.4699179572515425,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28429,7 +28429,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2024-02",
       "fora_prazo_por_100k_uc_mes": 18.31712079952978,
-      "compensacao_rs_por_uc_mes": 0.0544283409882964,
+      "compensacao_rs_por_uc_mes": 0.0544283409882965,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28509,7 +28509,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 21.624948022892788,
-      "compensacao_rs_por_uc_mes": 1.6540586382090583,
+      "compensacao_rs_por_uc_mes": 1.6540586382090592,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28613,7 +28613,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 17.754772448690417,
-      "compensacao_rs_por_uc_mes": 0.0769594030299202,
+      "compensacao_rs_por_uc_mes": 0.0769594030299201,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28629,7 +28629,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-03",
       "fora_prazo_por_100k_uc_mes": 11.537589739645268,
-      "compensacao_rs_por_uc_mes": 0.0951624451794316,
+      "compensacao_rs_por_uc_mes": 0.0951624451794317,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28645,7 +28645,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-05",
       "fora_prazo_por_100k_uc_mes": 6.108567571447334,
-      "compensacao_rs_por_uc_mes": 0.0551540258344897,
+      "compensacao_rs_por_uc_mes": 0.0551540258344896,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28693,7 +28693,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 10.570173327278487,
-      "compensacao_rs_por_uc_mes": 0.0217288494702963,
+      "compensacao_rs_por_uc_mes": 0.0217288494702962,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28901,7 +28901,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 92.66294406856656,
-      "compensacao_rs_por_uc_mes": 0.2541717596110167,
+      "compensacao_rs_por_uc_mes": 0.2541717596110166,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28917,7 +28917,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-03",
       "fora_prazo_por_100k_uc_mes": 59.98879908388033,
-      "compensacao_rs_por_uc_mes": 0.2254714270142542,
+      "compensacao_rs_por_uc_mes": 0.2254714270142541,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28941,7 +28941,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-06",
       "fora_prazo_por_100k_uc_mes": 33.37552597587298,
-      "compensacao_rs_por_uc_mes": 0.0878583124238153,
+      "compensacao_rs_por_uc_mes": 0.0878583124238154,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28965,7 +28965,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-09",
       "fora_prazo_por_100k_uc_mes": 45.921768032653496,
-      "compensacao_rs_por_uc_mes": 0.1764959783776339,
+      "compensacao_rs_por_uc_mes": 0.1764959783776341,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28973,7 +28973,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 29.79509382363777,
-      "compensacao_rs_por_uc_mes": 0.5677507844392958,
+      "compensacao_rs_por_uc_mes": 0.5677507844392957,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -28981,7 +28981,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2023-11",
       "fora_prazo_por_100k_uc_mes": 35.882860365293936,
-      "compensacao_rs_por_uc_mes": 0.6114131920014562,
+      "compensacao_rs_por_uc_mes": 0.6114131920014558,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29077,7 +29077,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 26.18978980636257,
-      "compensacao_rs_por_uc_mes": 0.051524892039732,
+      "compensacao_rs_por_uc_mes": 0.0515248920397319,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29085,7 +29085,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2024-12",
       "fora_prazo_por_100k_uc_mes": 28.89603135376577,
-      "compensacao_rs_por_uc_mes": 2.056402475531469,
+      "compensacao_rs_por_uc_mes": 2.0564024755314696,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29125,7 +29125,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2025-05",
       "fora_prazo_por_100k_uc_mes": 17.050163451355953,
-      "compensacao_rs_por_uc_mes": 0.1849648133546664,
+      "compensacao_rs_por_uc_mes": 0.1849648133546663,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29157,7 +29157,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2025-09",
       "fora_prazo_por_100k_uc_mes": 13.424400665850277,
-      "compensacao_rs_por_uc_mes": 0.0800737439156577,
+      "compensacao_rs_por_uc_mes": 0.0800737439156576,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29181,7 +29181,7 @@
       "tipo": "franquia|neoenergia",
       "date": "2025-12",
       "fora_prazo_por_100k_uc_mes": 12.2947050252006,
-      "compensacao_rs_por_uc_mes": 0.1207906322859426,
+      "compensacao_rs_por_uc_mes": 0.1207906322859427,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29469,7 +29469,7 @@
       "tipo": "franquia|rge",
       "date": "2023-01",
       "fora_prazo_por_100k_uc_mes": 14.285519039440398,
-      "compensacao_rs_por_uc_mes": 0.0581192251846867,
+      "compensacao_rs_por_uc_mes": 0.0581192251846866,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29477,7 +29477,7 @@
       "tipo": "franquia|rge",
       "date": "2023-02",
       "fora_prazo_por_100k_uc_mes": 8.90936380639237,
-      "compensacao_rs_por_uc_mes": 0.025259974585552,
+      "compensacao_rs_por_uc_mes": 0.0252599745855519,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29525,7 +29525,7 @@
       "tipo": "franquia|rge",
       "date": "2023-08",
       "fora_prazo_por_100k_uc_mes": 4.823818917075315,
-      "compensacao_rs_por_uc_mes": 0.2254120625905072,
+      "compensacao_rs_por_uc_mes": 0.2254120625905071,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29541,7 +29541,7 @@
       "tipo": "franquia|rge",
       "date": "2023-10",
       "fora_prazo_por_100k_uc_mes": 4.390899860040067,
-      "compensacao_rs_por_uc_mes": 0.0242538682697755,
+      "compensacao_rs_por_uc_mes": 0.0242538682697756,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29589,7 +29589,7 @@
       "tipo": "franquia|rge",
       "date": "2024-04",
       "fora_prazo_por_100k_uc_mes": 5.332911840542081,
-      "compensacao_rs_por_uc_mes": 0.0957574308986342,
+      "compensacao_rs_por_uc_mes": 0.0957574308986341,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29621,7 +29621,7 @@
       "tipo": "franquia|rge",
       "date": "2024-08",
       "fora_prazo_por_100k_uc_mes": 14.580744316554048,
-      "compensacao_rs_por_uc_mes": 0.1596100532149099,
+      "compensacao_rs_por_uc_mes": 0.1596100532149098,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29645,7 +29645,7 @@
       "tipo": "franquia|rge",
       "date": "2024-11",
       "fora_prazo_por_100k_uc_mes": 9.296604822414082,
-      "compensacao_rs_por_uc_mes": 0.0938712964610604,
+      "compensacao_rs_por_uc_mes": 0.0938712964610605,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29733,7 +29733,7 @@
       "tipo": "franquia|rge",
       "date": "2025-10",
       "fora_prazo_por_100k_uc_mes": 6.36766587533182,
-      "compensacao_rs_por_uc_mes": 0.073111788094167,
+      "compensacao_rs_por_uc_mes": 0.0731117880941671,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29741,7 +29741,7 @@
       "tipo": "franquia|rge",
       "date": "2025-11",
       "fora_prazo_por_100k_uc_mes": 6.64264610279731,
-      "compensacao_rs_por_uc_mes": 0.0354827267590025,
+      "compensacao_rs_por_uc_mes": 0.0354827267590026,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29781,7 +29781,7 @@
       "tipo": "franquia|roraima",
       "date": "2023-04",
       "fora_prazo_por_100k_uc_mes": 170.9191863869006,
-      "compensacao_rs_por_uc_mes": 0.8323456533645582,
+      "compensacao_rs_por_uc_mes": 0.8323456533645581,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29917,7 +29917,7 @@
       "tipo": "franquia|roraima",
       "date": "2024-09",
       "fora_prazo_por_100k_uc_mes": 63.54184974380467,
-      "compensacao_rs_por_uc_mes": 0.2168884772939283,
+      "compensacao_rs_por_uc_mes": 0.2168884772939284,
       "periodo_regulatorio": "pos_2022"
     },
     {
@@ -29925,7 +29925,7 @@
       "tipo": "franquia|roraima",
       "date": "2024-10",
       "fora_prazo_por_100k_uc_mes": 140.24804124730855,
-      "compensacao_rs_por_uc_mes": 0.5876489573547061,
+      "compensacao_rs_por_uc_mes": 0.587648957354706,
       "periodo_regulatorio": "pos_2022"
     },
     {

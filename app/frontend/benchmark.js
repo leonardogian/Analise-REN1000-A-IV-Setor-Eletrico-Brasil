@@ -154,6 +154,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
                 plugins: {
                     legend: {
                         position: 'top',
@@ -176,11 +177,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                         callbacks: {
                             title: ctx => {
                                 const idx = ctx[0]?.dataIndex;
-                                return sorted[idx]?.label || '';
+                                const d = sorted[idx];
+                                if (!d) return '';
+                                const porte = d.porte ? ` (${d.porte})` : '';
+                                return d.label + porte;
                             },
                             label: ctx => {
-                                if (ctx.datasetIndex === 0) return `Volume: ${fmtNum(ctx.parsed.x)} fora do prazo`;
-                                return `Compensação: ${fmtMoney(ctx.parsed.x)}/UC-mês`;
+                                if (ctx.datasetIndex === 0) {
+                                    return ` 📊 Volume: ${fmtNum(ctx.parsed.x)} fora do prazo`;
+                                }
+                                return ` 💰 Compensação: ${fmtMoney(ctx.parsed.x)}/UC-mês`;
                             }
                         }
                     }
@@ -207,10 +213,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                             display: true,
                             text: 'R$/UC-mês',
                             color: '#FF6B1A',
-                            font: { family: "'Inter', sans-serif", size: 11 }
+                            font: { family: "'Outfit', sans-serif", size: 13, weight: '600' }
                         },
                         grid: { drawOnChartArea: false },
-                        ticks: { font: { size: 11 }, color: '#FF6B1A' }
+                        ticks: {
+                            font: { size: 11, family: "'Inter', sans-serif" },
+                            color: '#FF6B1A',
+                            callback: v => v.toFixed(4)
+                        }
                     }
                 }
             }

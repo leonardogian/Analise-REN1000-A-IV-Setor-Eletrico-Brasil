@@ -125,7 +125,21 @@
       "Bash(git merge:*)",
       "Bash(.venv/bin/pip list:*)",
       "Bash(.venv/bin/python3 -c \"import pandas; import matplotlib; import seaborn; import scipy; print\\(''OK: pandas, matplotlib, seaborn, scipy''\\)\")",
-      "Bash(.venv/bin/jupyter nbconvert:*)"
+      "Bash(.venv/bin/jupyter nbconvert:*)",
+      "Bash(grep -r \"duckdb\\\\|polars\\\\|DuckDB\\\\|Polars\" /home/gianmarinolc/Documents/Estudos/TCC_leo_main/src --include=*.py)",
+      "Bash(du -sh /home/gianmarinolc/Documents/Estudos/TCC_leo_main/app/frontend/*.json)",
+      "Bash(find /home/gianmarinolc/Documents/Estudos/TCC_leo_main -name .env* -type f)",
+      "Bash(cut -d';' -f1-3 /home/gianmarinolc/Documents/Estudos/TCC_leo_main/data/raw/qualidade-atendimento-comercial.csv)",
+      "Bash(cut -d';' -f1 /home/gianmarinolc/Documents/Estudos/TCC_leo_main/data/raw/qualidade-atendimento-comercial.csv)",
+      "Bash(grep -E \"^[0-9]{4}$\")",
+      "Bash(tr ';' '\\\\n')",
+      "Bash(cut -d';' -f6 /home/gianmarinolc/Documents/Estudos/TCC_leo_main/data/raw/indger-dados-comerciais.csv)",
+      "Bash(curl -s http://localhost:8051/transgressoes.html)",
+      "Bash(make install:*)",
+      "Bash(fuser -k 8051/tcp)",
+      "Bash(__NEW_LINE_212197a035e981f1__ echo:*)",
+      "WebFetch(domain:dadosabertos.aneel.gov.br)",
+      "Bash(curl -s --max-time 10 -r 0-2000 \"https://dadosabertos.aneel.gov.br/dataset/364859a2-7cb8-45ea-9c88-b4392516a6ba/resource/426f4fb2-6a89-452a-8236-cc48153ee607/download/reclamacoes-n1e2-distribuidoras-2023.csv\")"
     ]
   }
 }

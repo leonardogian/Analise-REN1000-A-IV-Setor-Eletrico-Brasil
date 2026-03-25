@@ -53,11 +53,46 @@
             <div class="page-header">
                 <div class="breadcrumb">Dashboard / <span class="active">Dados & Qualidade</span></div>
                 <h1 class="page-title">Procedência e Qualidade dos Dados</h1>
-                <p class="page-subtitle">Fontes primárias, limitações conhecidas e matriz de cobertura temporal</p>
+                <p class="page-subtitle">Fontes primárias, limitações conhecidas, cobertura temporal e metodologia</p>
             </div>
 
-            <!-- SECTION 1: PROVENANCE TABLE -->
-            <div class="chart-card">
+            <!-- SECTION 1: AUDIT KPIs (dynamic) -->
+            <div class="kpi-grid" id="audit-kpis">
+                <div class="kpi-card green">
+                    <div class="kpi-label">Total de Registros</div>
+                    <div class="kpi-val" id="audit-total-rows">—</div>
+                    <div class="kpi-note">Soma de todos os datasets auditados</div>
+                </div>
+                <div class="kpi-card green">
+                    <div class="kpi-label">Datasets Disponíveis</div>
+                    <div class="kpi-val" id="audit-datasets-found">—</div>
+                    <div class="kpi-note">Encontrados / total registrado</div>
+                </div>
+                <div class="kpi-card blue">
+                    <div class="kpi-label">Cobertura Média</div>
+                    <div class="kpi-val" id="audit-avg-coverage">—</div>
+                    <div class="kpi-note">Média de cobertura temporal</div>
+                </div>
+                <div class="kpi-card blue">
+                    <div class="kpi-label">Distribuidoras Cobertas</div>
+                    <div class="kpi-val" id="audit-max-distributors">—</div>
+                    <div class="kpi-note">Máximo entre os datasets</div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: COVERAGE CHART (dynamic) -->
+            <div class="chart-card" id="audit-chart-card">
+                <div class="chart-header">
+                    <h2 class="chart-title">Cobertura Temporal por Dataset</h2>
+                    <p class="chart-subtitle" style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Faixas de anos com dados presentes em cada fonte (2010–2025)</p>
+                </div>
+                <div style="position:relative;height:320px;">
+                    <canvas id="audit-coverage-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- SECTION 3: PROVENANCE TABLE -->
+            <div class="chart-card" style="margin-top:28px;">
                 <div class="chart-header">
                     <h2 class="chart-title">Mapa de Procedência</h2>
                     <p class="chart-subtitle" style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Origem, granularidade e arquivos processados de cada métrica do dashboard</p>
@@ -139,20 +174,36 @@
                                 <td>Por distribuidora</td>
                                 <td><code>dim_distributor_group.csv</code></td>
                             </tr>
+                            <tr>
+                                <td>Autos de Infração</td>
+                                <td>ANEEL Autos de Infração</td>
+                                <td><code>auto-de-infracao</code></td>
+                                <td>Histórico completo</td>
+                                <td>Por evento (lavratura)</td>
+                                <td><code>autos_infracao.csv</code></td>
+                            </tr>
+                            <tr>
+                                <td>Reclamações 1º/2º Nível</td>
+                                <td>ANEEL Reclamações da Distribuidora</td>
+                                <td><code>reclamacoes-n1e2-distribuidoras</code></td>
+                                <td>2010–2025</td>
+                                <td>Mensal × Município × Tipo</td>
+                                <td><code>reclamacoes.csv</code></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- SECTION 2: QUALITY ALERTS -->
+            <!-- SECTION 4: QUALITY ALERTS -->
             <div style="margin-top:28px;">
-                <h2 class="chart-title" style="margin-bottom:16px;">⚠️ Limitações & Gaps Conhecidos</h2>
+                <h2 class="chart-title" style="margin-bottom:16px;">Limitações & Gaps Conhecidos</h2>
                 <div class="kpi-grid" id="quality-alerts">
 
                     <div class="kpi-card orange">
                         <div class="kpi-label">Granularidade mensal pré-2022 ausente</div>
                         <div class="kpi-val" style="font-size:14px;color:var(--orange);">Apenas Anual</div>
-                        <div class="kpi-note">Dados ANEEL Qualidade Comercial disponíveis apenas anualmente para 2011–2021. Análise de transição REN 414→REN 1000 usa apenas agregados anuais.</div>
+                        <div class="kpi-note">Dados ANEEL Qualidade Comercial disponíveis apenas anualmente para 2011–2021. Análise de transição REN 414 → REN 1000 usa apenas agregados anuais.</div>
                     </div>
 
                     <div class="kpi-card orange">
@@ -194,7 +245,7 @@
                 </div>
             </div>
 
-            <!-- SECTION 3: COVERAGE MATRIX -->
+            <!-- SECTION 5: COVERAGE MATRIX -->
             <div class="chart-card" style="margin-top:28px;">
                 <div class="chart-header">
                     <h2 class="chart-title">Matriz de Cobertura Temporal</h2>
@@ -240,14 +291,130 @@
                                 <td><span class="coverage-badge warn">Impreciso</span></td>
                                 <td><span class="coverage-badge ok">Confiável</span></td>
                             </tr>
+                            <tr>
+                                <td>Autos de Infração</td>
+                                <td><span class="coverage-badge ok">Disponível</span></td>
+                                <td><span class="coverage-badge ok">Disponível</span></td>
+                            </tr>
+                            <tr>
+                                <td>Reclamações Distribuidora</td>
+                                <td><span class="coverage-badge ok">Mensal</span></td>
+                                <td><span class="coverage-badge ok">Mensal</span></td>
+                            </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- SECTION 6: METHODOLOGY -->
+            <div class="chart-card" style="margin-top:28px;">
+                <div class="chart-header">
+                    <h2 class="chart-title">Metodologia & Pipeline de Dados</h2>
+                    <p class="chart-subtitle" style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Como os dados são extraídos, tratados e disponibilizados neste dashboard</p>
+                </div>
+
+                <div class="methodology-flow">
+                    <div class="flow-step">
+                        <div class="flow-step-icon">🌐</div>
+                        <div class="flow-step-label">ANEEL API</div>
+                        <div class="flow-step-sub">dadosabertos.aneel.gov.br</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-icon">📥</div>
+                        <div class="flow-step-label">Extract</div>
+                        <div class="flow-step-sub">CSVs brutos (~8 GB)</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-icon">🧹</div>
+                        <div class="flow-step-label">Transform</div>
+                        <div class="flow-step-sub">Limpeza + Parquet</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-icon">📊</div>
+                        <div class="flow-step-label">Analysis</div>
+                        <div class="flow-step-sub">Tabelas analíticas</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-icon">📈</div>
+                        <div class="flow-step-label">Dashboard</div>
+                        <div class="flow-step-sub">JSONs + Frontend</div>
+                    </div>
+                </div>
+
+                <div class="methodology-text" style="margin-top:16px;">
+                    <p><strong>Granularidade:</strong> Os dados de Qualidade Comercial (2011–2023) são <strong>anuais</strong>, enquanto os dados INDGER (Jan/2023–Mar/2025) são <strong>mensais</strong>. A análise de longo prazo (séries históricas) utiliza a granularidade anual; a análise de tendências recentes utiliza a mensal.</p>
+
+                    <p style="margin-top:10px;"><strong>Transição REN 414 → REN 1000:</strong> A REN 1.000/2021 entrou em vigor em <strong>1º de abril de 2022</strong>. O ano de 2022 é tratado integralmente como "pós-REN 1000" nas análises comparativas, embora os primeiros 3 meses operassem sob a REN 414. Esta simplificação é documentada nas limitações.</p>
+
+                    <p style="margin-top:10px;"><strong>Normalização per 100k UC:</strong> Para comparar distribuidoras de portes distintos, transgressões e compensações são normalizadas por 100.000 unidades consumidoras (UC). Para o período pré-2022, as UCs são estimativas anuais (proxy da <code>dim_distribuidora_porte</code>); para pós-2022, são valores mensais reais do INDGER.</p>
+
+                    <p style="margin-top:10px;"><strong>Dados complementares:</strong> Os datasets de <strong>Autos de Infração</strong> e <strong>Reclamações</strong> fornecem contexto adicional sobre a atuação fiscalizatória da ANEEL e a percepção dos consumidores. Eles não fazem parte do pipeline analítico principal, mas enriquecem a narrativa do TCC.</p>
+                </div>
+            </div>
+
+            <!-- SECTION 7: COMPLEMENTARY DATA (dynamic) -->
+            <div style="margin-top:28px;">
+                <h2 class="chart-title" style="margin-bottom:16px;">Dados Complementares</h2>
+
+                <!-- Autos de Infração -->
+                <div class="chart-card" id="infractions-section" style="margin-bottom:20px;">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Autos de Infração ANEEL</h2>
+                        <p class="chart-subtitle" style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Penalidades lavradas pela ANEEL contra distribuidoras</p>
+                    </div>
+                    <div class="kpi-grid" id="infractions-kpis">
+                        <div class="kpi-card orange">
+                            <div class="kpi-label">Total de Autos</div>
+                            <div class="kpi-val" id="infractions-total">—</div>
+                        </div>
+                        <div class="kpi-card orange">
+                            <div class="kpi-label">Valor Total Penalidades</div>
+                            <div class="kpi-val" id="infractions-value" style="font-size:22px;">—</div>
+                        </div>
+                        <div class="kpi-card blue">
+                            <div class="kpi-label">Período</div>
+                            <div class="kpi-val" id="infractions-period" style="font-size:16px;">—</div>
+                        </div>
+                    </div>
+                    <div style="position:relative;height:220px;">
+                        <canvas id="infractions-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Reclamações -->
+                <div class="chart-card" id="reclamacoes-section">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Reclamações nos 1º e 2º Níveis</h2>
+                        <p class="chart-subtitle" style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Reclamações registradas nas distribuidoras de energia</p>
+                    </div>
+                    <div class="kpi-grid" id="reclamacoes-kpis">
+                        <div class="kpi-card green">
+                            <div class="kpi-label">Total de Registros</div>
+                            <div class="kpi-val" id="reclamacoes-total">—</div>
+                        </div>
+                        <div class="kpi-card blue">
+                            <div class="kpi-label">Distribuidoras</div>
+                            <div class="kpi-val" id="reclamacoes-distributors">—</div>
+                        </div>
+                        <div class="kpi-card blue">
+                            <div class="kpi-label">Período</div>
+                            <div class="kpi-val" id="reclamacoes-period" style="font-size:16px;">—</div>
+                        </div>
+                    </div>
+                    <div style="position:relative;height:220px;">
+                        <canvas id="reclamacoes-chart"></canvas>
+                    </div>
                 </div>
             </div>
 
         </main>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <script src="utils.js"></script>
     <script src="nav.js"></script>
     <script src="filters.js"></script>

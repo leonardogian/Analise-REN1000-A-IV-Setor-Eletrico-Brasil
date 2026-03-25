@@ -112,7 +112,18 @@ function destroyCharts() {
 function createChart(canvasId, config) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return null;
+    // Ensure no stale Chart.js instance is attached to this canvas
+    try {
+        const existing = Chart.getChart(canvas);
+        if (existing) {
+            existing.destroy();
+            const idx = chartInstances.indexOf(existing);
+            if (idx > -1) chartInstances.splice(idx, 1);
+        }
+    } catch (e) { /* Chart.getChart may fail on edge cases */ }
+    // Clear canvas drawing context
     const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     const chart = new Chart(ctx, config);
     chartInstances.push(chart);
     return chart;
@@ -495,6 +506,15 @@ function renderOverview(data) {
         }
     });
 
+    // rawData (serie_mensal_nacional) only covers 2023-2025 — fall back to
+    // pre-computed kpi_overview for pre-2022 totals when not available.
+    if (pre_serv === 0 && data.kpi_overview) {
+        const ov = data.kpi_overview;
+        pre_serv = ov.pre_servicos_total  || 0;
+        pre_fora = ov.pre_fora_prazo_total || 0;
+        pre_comp = ov.pre_compensacao_total || 0;
+    }
+
     const pre_taxa = pre_serv > 0 ? pre_fora / pre_serv : 0;
     const pos_taxa = pos_serv > 0 ? pos_fora / pos_serv : 0;
     const delta_taxa = pos_taxa - pre_taxa;
@@ -513,153 +533,186 @@ function renderOverview(data) {
     document.getElementById('kpi-serv-total').textContent = fmtNum(pre_serv + pos_serv);
     document.getElementById('kpi-fora-total').textContent = fmtNum(pre_fora + pos_fora);
 
-    // Agregar para série anual
-    const aggAnualItem = {};
-    rawData.forEach(d => {
-        if (!aggAnualItem[d.ano]) {
-            aggAnualItem[d.ano] = { ano: d.ano, serv: 0, fora: 0, comp: 0, periodo_regulatorio: d.ano < 2022 ? 'pre_2022' : 'pos_2022' };
-        }
-        aggAnualItem[d.ano].serv += (d.qtd_serv_realizado || 0);
-        aggAnualItem[d.ano].fora += (d.qtd_fora_prazo || 0);
-        aggAnualItem[d.ano].comp += (d.compensacao_rs || 0);
-    });
+    // Usar serie_anual pré-computada (2011-2023) quando disponível
+    const serieAnual = data.serie_anual || [];
+    let serieClean;
+    if (serieAnual.length > 0) {
+        serieClean = serieAnual
+            .map(r => ({
+                ano: r.ano,
+                serv: r.qtd_serv || 0,
+                fora: r.qtd_fora_prazo || 0,
+                comp: r.compensacao_rs || 0,
+                periodo_regulatorio: r.periodo_regulatorio || (r.ano < 2022 ? 'pre_2022' : 'pos_2022'),
+            }))
+            .sort((a, b) => a.ano - b.ano);
+    } else {
+        // Fallback: agregar da série mensal (comportamento anterior)
+        const aggAnualItem = {};
+        rawData.forEach(d => {
+            if (!aggAnualItem[d.ano]) {
+                aggAnualItem[d.ano] = { ano: d.ano, serv: 0, fora: 0, comp: 0, periodo_regulatorio: d.ano < 2022 ? 'pre_2022' : 'pos_2022' };
+            }
+            aggAnualItem[d.ano].serv += (d.qtd_serv_realizado || 0);
+            aggAnualItem[d.ano].fora += (d.qtd_fora_prazo || 0);
+            aggAnualItem[d.ano].comp += (d.compensacao_rs || 0);
+        });
+        serieClean = Object.values(aggAnualItem).sort((a,b) => a.ano - b.ano);
+    }
 
-    const serieClean = Object.values(aggAnualItem).sort((a,b) => a.ano - b.ano);
+    // Apply period/base filters to the annual chart too
+    if (window.dashboardFilters) {
+        const { period, base } = window.dashboardFilters;
+        if (period === 'pre_2022' || base === 'ren414') {
+            serieClean = serieClean.filter(r => r.ano < 2022);
+        } else if (period === 'pos_2022' || base === 'ren1000') {
+            serieClean = serieClean.filter(r => r.ano >= 2022);
+        }
+    }
     
     const years = serieClean.map(r => r.ano);
     const taxas = serieClean.map(r => r.serv > 0 ? (r.fora / r.serv * 100) : 0);
     const comps = serieClean.map(r => r.comp);
     const bgColors = serieClean.map(r => r.periodo_regulatorio === 'pre_2022' ? COLORS.blue : COLORS.cyan);
 
-    createChart('chart-serie-taxa', {
-        type: 'line',
-        data: {
-            labels: years,
-            datasets: [{
-                label: 'Taxa fora do prazo (%)',
-                data: taxas,
-                borderColor: COLORS.blue,
-                backgroundColor: 'rgba(0, 164, 67, 0.1)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 5,
-                pointHoverRadius: 8,
-                pointBackgroundColor: bgColors,
-                pointBorderColor: bgColors,
-                borderWidth: 3,
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: ctx => `Taxa: ${ctx.parsed.y.toFixed(3)}%`,
-                        afterLabel: ctx => {
-                            const r = serieClean[ctx.dataIndex];
-                            return `Período: ${r.periodo_regulatorio === 'pre_2022' ? 'Pré-REN 1000' : 'Pós-REN 1000'}`;
-                        },
-                    },
-                },
-                annotation: {
-                    annotations: {
-                        line1: {
-                            type: 'line',
-                            xMin: 2021,
-                            xMax: 2021,
-                            borderColor: 'rgba(251, 191, 36, 0.7)',
-                            borderWidth: 2.5,
-                            borderDash: [6, 4],
-                            label: {
-                                display: true,
-                                content: 'REN 1000',
-                                position: 'top',
-                                backgroundColor: 'rgba(251, 191, 36, 0.2)',
-                                color: '#fbbf24',
-                                font: { size: 11, weight: '600' },
-                            },
-                        },
-                        box1: {
-                            type: 'box',
-                            xMin: 2022,
-                            xMax: 2023,
-                            backgroundColor: 'rgba(0, 198, 90, 0.06)',
-                            borderWidth: 0,
-                        },
-                    },
-                },
-            },
-            scales: {
-                x: { grid: { display: false } },
-                y: {
-                    beginAtZero: true,
-                    ticks: { callback: v => v.toFixed(1) + '%' },
-                    grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
-                },
-            },
-        },
-    });
+    /* ---- Combined Chart: Taxa (line, left axis) + Compensações (bar, right axis) ---- */
+    let combinedMode = 'taxa'; // 'taxa' = line front, 'comp' = bars front
+    let combinedChartInstance = null;
 
-    createChart('chart-serie-comp', {
-        type: 'bar',
-        data: {
-            labels: years,
-            datasets: [{
-                label: 'Compensação (R$)',
-                data: comps,
-                backgroundColor: bgColors.map(c => c + '99'),
-                borderColor: bgColors,
-                borderWidth: 1.5,
-                borderRadius: 6,
-                borderSkipped: false,
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: ctx => fmtMoneyFull(ctx.parsed.y) } },
-                annotation: {
-                    annotations: {
-                        line1: {
-                            type: 'line',
-                            xMin: 2021,
-                            xMax: 2021,
-                            borderColor: 'rgba(251, 191, 36, 0.7)',
-                            borderWidth: 2.5,
-                            borderDash: [6, 4],
-                            label: {
-                                display: true,
-                                content: 'REN 1000',
-                                position: 'top',
-                                backgroundColor: 'rgba(251, 191, 36, 0.2)',
-                                color: '#fbbf24',
-                                font: { size: 11, weight: '600' },
+    function buildCombinedChart(mode) {
+        if (combinedChartInstance) {
+            combinedChartInstance.destroy();
+            combinedChartInstance = null;
+        }
+        const isTaxa = mode === 'taxa';
+        combinedChartInstance = createChart('chart-serie-combined', {
+            type: 'bar',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Compensação (R$)',
+                        data: comps,
+                        backgroundColor: isTaxa
+                            ? bgColors.map(c => c + '22')
+                            : bgColors.map(c => c + 'AA'),
+                        borderColor: isTaxa
+                            ? bgColors.map(c => c + '44')
+                            : bgColors,
+                        borderWidth: isTaxa ? 1 : 1.5,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        yAxisID: 'yComp',
+                        order: isTaxa ? 2 : 1,
+                    },
+                    {
+                        type: 'line',
+                        label: 'Taxa fora do prazo (%)',
+                        data: taxas,
+                        borderColor: isTaxa ? COLORS.blue : 'rgba(26,143,227,0.45)',
+                        backgroundColor: 'transparent',
+                        tension: 0.4,
+                        pointRadius: isTaxa ? 5 : 3,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: bgColors,
+                        pointBorderColor: bgColors,
+                        borderWidth: isTaxa ? 3 : 1.5,
+                        yAxisID: 'yTaxa',
+                        order: isTaxa ? 1 : 2,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            boxWidth: 12, padding: 16, font: { size: 11 },
+                            usePointStyle: true,
+                        },
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => {
+                                if (ctx.dataset.yAxisID === 'yTaxa')
+                                    return `Taxa: ${ctx.parsed.y.toFixed(3)}%`;
+                                return `Compensação: ${fmtMoneyFull(ctx.parsed.y)}`;
+                            },
+                            afterLabel: ctx => {
+                                if (ctx.dataset.yAxisID === 'yTaxa') {
+                                    const r = serieClean[ctx.dataIndex];
+                                    return `Período: ${r.periodo_regulatorio === 'pre_2022' ? 'Pré-REN 1000' : 'Pós-REN 1000'}`;
+                                }
+                                return '';
                             },
                         },
-                        box1: {
-                            type: 'box',
-                            xMin: 2022,
-                            xMax: 2023,
-                            backgroundColor: 'rgba(0, 198, 90, 0.06)',
-                            borderWidth: 0,
+                    },
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                xMin: 2022, xMax: 2022,
+                                borderColor: 'rgba(251, 191, 36, 0.7)',
+                                borderWidth: 2.5,
+                                borderDash: [6, 4],
+                                label: {
+                                    display: true,
+                                    content: 'REN 1000',
+                                    position: 'start',
+                                    backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                                    color: '#fbbf24',
+                                    font: { size: 11, weight: '600' },
+                                },
+                            },
+                            box1: {
+                                type: 'box',
+                                xMin: 2022, xMax: 2025,
+                                backgroundColor: 'rgba(0, 198, 90, 0.06)',
+                                borderWidth: 0,
+                            },
                         },
                     },
                 },
-            },
-            scales: {
-                x: { grid: { display: false } },
-                y: {
-                    beginAtZero: true,
-                    ticks: { callback: v => fmtMoney(v) },
-                    grid: { color: 'rgba(0,164,67,0.06)' },
+                scales: {
+                    x: { grid: { display: false } },
+                    yTaxa: {
+                        type: 'linear',
+                        position: 'left',
+                        beginAtZero: true,
+                        title: { display: true, text: 'Taxa fora do prazo (%)', color: '#64b5f6', font: { size: 11 } },
+                        ticks: { callback: v => v.toFixed(1) + '%', color: '#64b5f6' },
+                        grid: { color: isTaxa ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)', drawBorder: false },
+                    },
+                    yComp: {
+                        type: 'linear',
+                        position: 'right',
+                        beginAtZero: true,
+                        title: { display: true, text: 'Compensação (R$)', color: '#4ade80', font: { size: 11 } },
+                        ticks: { callback: v => fmtMoney(v), color: '#4ade80' },
+                        grid: { drawOnChartArea: false },
+                    },
                 },
             },
-        },
-    });
+        });
+    }
+
+    buildCombinedChart(combinedMode);
+
+    const btnToggle = document.getElementById('btn-toggle-metric');
+    const btnLabel = document.getElementById('btn-toggle-label');
+    if (btnToggle) {
+        btnToggle.addEventListener('click', () => {
+            combinedMode = combinedMode === 'taxa' ? 'comp' : 'taxa';
+            btnLabel.textContent = combinedMode === 'taxa' ? 'Destacar Compensações' : 'Destacar Taxa (%)';
+
+            buildCombinedChart(combinedMode);
+        });
+    }
 }
 
 /* ===================== GROUP-BASED TABS ===================== */
@@ -1281,10 +1334,15 @@ async function renderAdvancedAnalytics() {
                 'LigBRb': 'Ligação (Rur)',
                 'ReligUb': 'Religação (Urb)',
                 'ReligRb': 'Religação (Rur)',
+                'RelNorUb': 'Relig. Normal (Urb)',
                 'VistBUb': 'Vistoria (Urb)',
                 'VistBRb': 'Vistoria (Rur)',
                 'Reclama': 'Reclamação',
-                'AteCo': 'Atendimento'
+                'AteCo': 'Atendimento',
+                'RclDano': 'Recl. Dano',
+                'ObraPrim': 'Obra Primária',
+                'ObraSec': 'Obra Secundária',
+                'EstProj': 'Estudo/Projeto',
             };
 
             const RADAR_COLORS = ['#FF6D00', '#AA00FF', '#00E676', '#2979FF', '#FF4081', '#FFD600', '#00E5FF', '#F50057'];
@@ -1295,20 +1353,30 @@ async function renderAdvancedAnalytics() {
                 return `rgba(${r}, ${g}, ${b}, ${alpha})`;
             };
 
+            // Compute dynamic max for radar scale
+            const allVals = radarRes.data.flatMap(d => services.map(s => d.metrics[s] || 0));
+            const radarMax = Math.max(0.5, Math.ceil(Math.max(...allVals) * 10) / 10);
+
+            // Shorten long distributor names for legend
+            const shortenName = (name) => {
+                const parts = name.split(' — ');
+                return parts[0]; // keep only "Enel SP", "Neoenergia Coelba", etc.
+            };
+
             createChart('chart-advanced-radar', {
                 type: 'radar',
                 data: {
                     labels: services.map(s => serviceMap[s] || s),
                     datasets: radarRes.data.map((d, i) => ({
-                        label: d.distributor_label,
+                        label: shortenName(d.distributor_label),
                         data: services.map(s => d.metrics[s] || 0),
-                        backgroundColor: hexToRgba(RADAR_COLORS[i % RADAR_COLORS.length], 0.25),
+                        backgroundColor: hexToRgba(RADAR_COLORS[i % RADAR_COLORS.length], 0.18),
                         borderColor: RADAR_COLORS[i % RADAR_COLORS.length],
-                        borderWidth: 2.5,
+                        borderWidth: 2,
                         pointBackgroundColor: RADAR_COLORS[i % RADAR_COLORS.length],
                         pointBorderColor: '#fff',
                         pointHoverRadius: 7,
-                        pointRadius: 4,
+                        pointRadius: 3,
                         fill: true
                     }))
                 },
@@ -1316,16 +1384,35 @@ async function renderAdvancedAnalytics() {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } }
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 10, padding: 12, font: { size: 11 }, usePointStyle: true }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.dataset.label}: ${ctx.parsed.r.toFixed(2)} /100k UC`
+                            }
+                        }
                     },
                     scales: {
                         r: {
                             beginAtZero: true,
-                            suggestedMax: 0.5,
-                            ticks: { display: false },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
-                            pointLabels: { color: '#94a3b8', font: { size: 11 } }
+                            suggestedMax: radarMax,
+                            ticks: {
+                                display: true,
+                                stepSize: radarMax > 1 ? 0.2 : 0.1,
+                                color: '#64748b',
+                                backdropColor: 'transparent',
+                                font: { size: 9 },
+                                callback: v => v.toFixed(1),
+                            },
+                            grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                            angleLines: { color: 'rgba(255, 255, 255, 0.08)' },
+                            pointLabels: {
+                                color: '#cbd5e1',
+                                font: { size: 12, weight: '600' },
+                                padding: 8,
+                            }
                         }
                     }
                 }

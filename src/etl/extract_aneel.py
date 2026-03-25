@@ -8,9 +8,11 @@ OBJETIVO:
 
 FONTES:
     1. Qualidade do Atendimento Comercial (prazos, transgressões, compensações)
-    2. INDGER - Serviços Comerciais (quantidades, prazos, estoques, compensações)
-    3. INDGER - Dados Comerciais (faturamento, danos elétricos, atendimento)
-    4. Dicionários de dados e domínios (PDFs e CSVs auxiliares)
+    2. Autos de Infração (penalidades e multas ANEEL)
+    3. Reclamações nos 1º e 2º Níveis da Distribuidora
+    4. INDGER - Serviços Comerciais (quantidades, prazos, estoques, compensações)
+    5. INDGER - Dados Comerciais (faturamento, danos elétricos, atendimento)
+    6. Dicionários de dados e domínios (PDFs e CSVs auxiliares)
 
 COMO RODAR:
     python -m src.etl.extract_aneel
@@ -63,7 +65,63 @@ CATALOGO = {
         ],
     },
 
-    # ---- Fonte 2: INDGER — Indicadores Gerenciais da Distribuição ----
+    # ---- Fonte 2: Autos de Infração ----
+    "autos_infracao": {
+        "descricao": "Autos de Infração (penalidades e multas ANEEL)",
+        "recursos": [
+            {
+                "nome": "auto-infracao.csv",
+                "url": "https://dadosabertos.aneel.gov.br/dataset/4d690c9d-8158-4b04-ae44-7d3de8616271/resource/f221158a-93a3-423f-b794-4312b6985a24/download/auto-infracao.csv",
+                "tipo": "csv",
+                "destino": "data/raw",
+            },
+            {
+                "nome": "dm-auto-de-infracao.pdf",
+                "url": "https://dadosabertos.aneel.gov.br/dataset/4d690c9d-8158-4b04-ae44-7d3de8616271/resource/3e8feb4d-5d33-4b1f-8c19-a1e89f127c12/download/dm-auto-de-infracao.pdf",
+                "tipo": "pdf",
+                "destino": "data/docs",
+            },
+        ],
+    },
+
+    # ---- Fonte 3: Reclamações 1º e 2º Níveis ----
+    "reclamacoes": {
+        "descricao": "Reclamações nos 1º e 2º Níveis da Distribuidora",
+        "recursos": [
+            {
+                "nome": "reclamacoes-n1e2-distribuidoras-2010-2022.csv",
+                "url": "https://dadosabertos.aneel.gov.br/dataset/364859a2-7cb8-45ea-9c88-b4392516a6ba/resource/6c3e074c-d9ab-4840-8c6c-7993faa36ddb/download/reclamacoes-n1e2-distribuidoras-2010-2022.csv",
+                "tipo": "csv",
+                "destino": "data/raw",
+            },
+            {
+                "nome": "reclamacoes-n1e2-distribuidoras-2023.csv",
+                "url": "https://dadosabertos.aneel.gov.br/dataset/364859a2-7cb8-45ea-9c88-b4392516a6ba/resource/426f4fb2-6a89-452a-8236-cc48153ee607/download/reclamacoes-n1e2-distribuidoras-2023.csv",
+                "tipo": "csv",
+                "destino": "data/raw",
+            },
+            {
+                "nome": "reclamacoes-n1e2-distribuidoras-2024.csv",
+                "url": "https://dadosabertos.aneel.gov.br/dataset/364859a2-7cb8-45ea-9c88-b4392516a6ba/resource/4af32411-da8b-492c-ae15-8f615e35d2e2/download/reclamacoes-n1e2-distribuidoras-2024.csv",
+                "tipo": "csv",
+                "destino": "data/raw",
+            },
+            {
+                "nome": "reclamacoes-n1e2-distribuidoras-2025.csv",
+                "url": "https://dadosabertos.aneel.gov.br/dataset/364859a2-7cb8-45ea-9c88-b4392516a6ba/resource/83839c4e-78f9-4f68-bcb7-51dcfcf05c9c/download/reclamacoes-n1e2-distribuidoras-2025.csv",
+                "tipo": "csv",
+                "destino": "data/raw",
+            },
+            {
+                "nome": "dm-reclamacoes-nos-1o-e-2o-niveis-da-distribuidora.pdf",
+                "url": "https://dadosabertos.aneel.gov.br/dataset/364859a2-7cb8-45ea-9c88-b4392516a6ba/resource/928f6910-1a40-41a2-8bf1-7965a5fe4ca7/download/dm-reclamacoes-nos-1o-e-2o-niveis-da-distribuidora.pdf",
+                "tipo": "pdf",
+                "destino": "data/docs",
+            },
+        ],
+    },
+
+    # ---- Fonte 4: INDGER — Indicadores Gerenciais da Distribuição ----
     "indger": {
         "descricao": "INDGER - Indicadores Gerenciais da Distribuição",
         "recursos": [

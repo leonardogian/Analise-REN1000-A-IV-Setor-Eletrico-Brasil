@@ -25,6 +25,24 @@ RAW_REQUIRED_COLUMNS: dict[str, set[str]] = {
         "nomagente",
         "qtducativa",
     },
+    "auto-infracao.csv": {
+        "numautoinfracao",
+        "datlavraturautoinfracao",
+        "nomnaturezafiscalizacao",
+        "nomagentefiscalizado",
+        "numcpfcnpjagentefiscalizado",
+        "dsctipopenalidade",
+        "vlrpenalidade",
+    },
+    "reclamacoes-n1e2-distribuidoras-2023.csv": {
+        "datreferencia",
+        "sigagente",
+        "codmunicipio",
+        "codtiporeclamacao",
+        "qtdreclamacoesrecebidas",
+        "qtdreclamacoesimprocedentes",
+        "qtdreclamacoesprocedentes",
+    },
 }
 
 RAW_SERVICOS_REQUIRED_COLUMNS: set[str] = {

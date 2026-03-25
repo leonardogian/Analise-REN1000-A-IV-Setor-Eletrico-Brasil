@@ -36,7 +36,7 @@
     </div>
     <div class="top-context">ANEEL · REN 1.000/2021</div>
     <div class="topbar-right">
-      <span class="pill green" id="data-range-pill">● Dados 2011–2023</span>
+      <span class="pill green" id="data-range-pill">● Dados 2011–2025</span>
       <span class="pill ghost" id="gen-time-pill">Atualizado: <span id="gen-time">—</span></span>
     </div>
   </header>
@@ -158,7 +158,7 @@
             <div class="kpi-card amber">
               <div class="kpi-label">Compensação Total (Pré-2022)</div>
               <div class="kpi-value amber" id="kpi-comp-pre">—</div>
-              <div class="kpi-note">2011–2021</div>
+              <div class="kpi-note">2011–2021 (histórico)</div>
             </div>
             <div class="kpi-card green">
               <div class="kpi-label">Compensação Total (Pós-2022)</div>
@@ -168,7 +168,7 @@
             <div class="kpi-card purple">
               <div class="kpi-label">Total de Serviços Analisados</div>
               <div class="kpi-value purple" id="kpi-serv-total">—</div>
-              <div class="kpi-note">2011–2023</div>
+              <div class="kpi-note">2011–2025</div>
             </div>
             <div class="kpi-card red">
               <div class="kpi-label">Total Fora do Prazo</div>
@@ -195,32 +195,23 @@
             </div>
           </div>
 
-          <!-- Charts -->
-          <div class="chart-grid two-col">
-            <div class="chart-card">
-              <div class="chart-header">
-                <div>
-                  <div class="chart-title">Taxa Fora do Prazo — Série Anual</div>
-                  <div class="chart-subtitle">Linha tracejada marca a vigência da REN 1000 (2021)</div>
-                </div>
-                <span class="chart-tag">2011–2023</span>
+          <!-- Chart: Combined Taxa + Compensações -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Taxa Fora do Prazo & Compensações — Série Anual</div>
+                <div class="chart-subtitle">Linha tracejada marca a vigência da REN 1000 (2022)</div>
               </div>
-              <div class="chart-canvas-wrapper">
-                <canvas id="chart-serie-taxa"></canvas>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <button id="btn-toggle-metric" class="btn-toggle-chart" title="Alternar métrica em destaque">
+                  <span id="btn-toggle-label">Destacar Compensações</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+                </button>
+                <span class="chart-tag">2011–2025</span>
               </div>
             </div>
-
-            <div class="chart-card">
-              <div class="chart-header">
-                <div>
-                  <div class="chart-title">Compensações Financeiras — Série Anual</div>
-                  <div class="chart-subtitle">Valor total pago em compensações aos consumidores</div>
-                </div>
-                <span class="chart-tag">R$</span>
-              </div>
-              <div class="chart-canvas-wrapper">
-                <canvas id="chart-serie-comp"></canvas>
-              </div>
+            <div class="chart-canvas-wrapper" style="height:340px;">
+              <canvas id="chart-serie-combined"></canvas>
             </div>
           </div>
         </section>
@@ -236,8 +227,8 @@
             <div class="chart-card">
               <div class="chart-header">
                 <div>
-                  <div class="chart-title">1. Intensidade de Transgressões (Top 5)</div>
-                  <div class="chart-subtitle">Heatmap: Grupo Econômico vs Classe/Local (Fora/100k UC)</div>
+                  <div class="chart-title adv-title">1. Intensidade de Transgressões (Top 5)</div>
+                  <div class="chart-subtitle adv-subtitle">Heatmap: Grupo Econômico vs Classe/Local — unidade: infrações a cada 100 mil consumidores</div>
                 </div>
               </div>
               <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
@@ -248,8 +239,8 @@
             <div class="chart-card">
               <div class="chart-header">
                 <div>
-                  <div class="chart-title">2. Eficiência: Absoluto vs Normalizado</div>
-                  <div class="chart-subtitle">Volume de Falhas Absoluto (X) vs Compensação R$/UC (Y)</div>
+                  <div class="chart-title adv-title">2. Eficiência: Volume Absoluto vs Custo por Consumidor</div>
+                  <div class="chart-subtitle adv-subtitle">Eixo X: total de infrações (log) · Eixo Y: compensação em R$ por unidade consumidora</div>
                 </div>
               </div>
               <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
@@ -262,8 +253,8 @@
             <div class="chart-card">
               <div class="chart-header">
                 <div>
-                  <div class="chart-title">3. SLA Comercial Top 5 (Radar)</div>
-                  <div class="chart-subtitle">Perfil multivariado de transgressões por serviço INDGER</div>
+                  <div class="chart-title adv-title">3. Perfil de Infrações por Tipo de Serviço (Top 5)</div>
+                  <div class="chart-subtitle adv-subtitle">Radar: infrações a cada 100 mil UC por serviço comercial — quanto maior a área, mais infrações</div>
                 </div>
               </div>
               <div class="chart-canvas-wrapper chart-canvas-wrapper-tall">
@@ -274,8 +265,8 @@
             <div class="chart-card">
               <div class="chart-header">
                 <div>
-                  <div class="chart-title">4. Impacto Regulatório (REN 414 vs 1000)</div>
-                  <div class="chart-subtitle">Evolução de infrações com marco de implantação</div>
+                  <div class="chart-title adv-title">4. Impacto Regulatório: Antes e Depois da REN 1000</div>
+                  <div class="chart-subtitle adv-subtitle">Evolução mensal de infrações por holding — eixo esq: total a cada 1000 UC · eixo dir: taxa R$/UC</div>
                 </div>
                 <div class="chart-controls" style="max-width: 320px; flex-shrink: 0;">
                   <label for="adv-timeseries-filter"
@@ -309,8 +300,12 @@
 
   <script src="utils.js"></script>
   <script src="nav.js"></script>
-  <script src="filters.js"></script>
-  <script src="app.js"></script>
+  <!-- Filtros / Estado Global -->
+  <script src="filters.js?v=2"></script>
+  
+  <!-- Lógica Principal -->
+  <script src="app.js?v=2"></script>
+  <script src="inspector.js"></script>
 </body>
 
 </html>

@@ -271,6 +271,134 @@ def transformar_indger_comercial() -> pd.DataFrame | None:
 
 
 # ==============================================================================
+# 4. AUTOS DE INFRAÇÃO
+# ==============================================================================
+
+def transformar_autos_infracao() -> pd.DataFrame | None:
+    """
+    Lê, limpa e salva o dataset de Autos de Infração da ANEEL.
+    Contém: penalidades, multas, natureza da fiscalização por agente.
+    """
+    arquivo = DIR_RAW / "auto-infracao.csv"
+
+    if not arquivo.exists():
+        print(f"\n⚠️  Arquivo não encontrado: {arquivo.name}")
+        return None
+
+    print(f"\n🔹 Processando: {arquivo.name}")
+    print("-" * 50)
+
+    for encoding in ["utf-8", "latin-1", "cp1252"]:
+        try:
+            df = pd.read_csv(arquivo, sep=";", encoding=encoding, low_memory=False)
+            print(f"  Encoding detectado: {encoding}")
+            break
+        except UnicodeDecodeError:
+            continue
+    else:
+        print("  ❌ Não foi possível ler o arquivo")
+        return None
+
+    print(f"  Linhas brutas: {len(df):,}")
+
+    # Limpeza
+    antes = len(df)
+    df = df.drop_duplicates()
+    removidas = antes - len(df)
+    if removidas > 0:
+        print(f"  🗑️  Removidas {removidas:,} duplicatas")
+
+    df = df.dropna(how="all")
+    df.columns = df.columns.str.strip().str.lower()
+
+    if not validar_colunas_obrigatorias(
+        df,
+        RAW_REQUIRED_COLUMNS["auto-infracao.csv"],
+        arquivo.name,
+    ):
+        return None
+
+    print(f"  Linhas após limpeza: {len(df):,}")
+    print(f"  Colunas: {list(df.columns)}")
+
+    # Salvamento (CSV apenas — dataset complementar, não precisa de parquet)
+    DIR_PROCESSED.mkdir(parents=True, exist_ok=True)
+
+    csv_path = DIR_PROCESSED / "autos_infracao.csv"
+    df.to_csv(csv_path, index=False, sep=";", encoding="utf-8")
+    print(f"\n  💾 Salvo: {csv_path.name} ({csv_path.stat().st_size / 1024:.0f} KB)")
+
+    return df
+
+
+# ==============================================================================
+# 5. RECLAMAÇÕES NOS 1º E 2º NÍVEIS DA DISTRIBUIDORA
+# ==============================================================================
+
+def transformar_reclamacoes() -> pd.DataFrame | None:
+    """
+    Lê, limpa e concatena os CSVs de Reclamações da ANEEL (2010–2025).
+    Múltiplos arquivos por período são concatenados em um único CSV.
+    """
+    padrao = "reclamacoes-n1e2-distribuidoras-*.csv"
+    csvs = sorted(DIR_RAW.glob(padrao))
+
+    if not csvs:
+        print(f"\n⚠️  Nenhum CSV de reclamações encontrado em {DIR_RAW}")
+        return None
+
+    print(f"\n🔹 Processando Reclamações ({len(csvs)} arquivos)")
+    print(f"  Arquivos: {[f.name for f in csvs]}")
+    print("-" * 50)
+
+    dfs = []
+    for csv_file in csvs:
+        for encoding in ["utf-8", "latin-1", "cp1252"]:
+            try:
+                df_temp = pd.read_csv(csv_file, sep=";", encoding=encoding, low_memory=False)
+                print(f"  📄 {csv_file.name}: {len(df_temp):,} linhas ({encoding})")
+                dfs.append(df_temp)
+                break
+            except UnicodeDecodeError:
+                continue
+
+    if not dfs:
+        print("  ❌ Não foi possível ler nenhum CSV")
+        return None
+
+    df = pd.concat(dfs, ignore_index=True)
+
+    # Limpeza
+    antes = len(df)
+    df = df.drop_duplicates()
+    removidas = antes - len(df)
+    if removidas > 0:
+        print(f"  🗑️  Removidas {removidas:,} duplicatas")
+
+    df = df.dropna(how="all")
+    df.columns = df.columns.str.strip().str.lower()
+
+    if not validar_colunas_obrigatorias(
+        df,
+        RAW_REQUIRED_COLUMNS["reclamacoes-n1e2-distribuidoras-2023.csv"],
+        "reclamacoes",
+    ):
+        return None
+
+    print(f"  Linhas totais: {len(df):,}")
+    print(f"  Colunas: {list(df.columns)}")
+
+    # Salvamento
+    DIR_PROCESSED.mkdir(parents=True, exist_ok=True)
+
+    csv_path = DIR_PROCESSED / "reclamacoes.csv"
+    df.to_csv(csv_path, index=False, sep=";", encoding="utf-8")
+    print(f"\n  💾 Salvo: {csv_path.name} ({csv_path.stat().st_size / 1024:.0f} KB)")
+
+    return df
+
+
+# ==============================================================================
 # FUNÇÃO PRINCIPAL
 # ==============================================================================
 
@@ -304,6 +432,14 @@ def executar_transformacao():
     df_dc = transformar_indger_comercial()
     resultados["INDGER Dados Comerciais"] = "✅" if df_dc is not None else "❌"
 
+    # 4. Autos de Infração (complementar — falha não bloqueia)
+    df_ai = transformar_autos_infracao()
+    resultados["Autos de Infração"] = "✅" if df_ai is not None else "⚠️"
+
+    # 5. Reclamações (complementar — falha não bloqueia)
+    df_rec = transformar_reclamacoes()
+    resultados["Reclamações"] = "✅" if df_rec is not None else "⚠️"
+
     # Resumo
     print("\n" + "=" * 70)
     print("📊 RESUMO DA TRANSFORMAÇÃO")
@@ -311,9 +447,10 @@ def executar_transformacao():
     for nome, status in resultados.items():
         print(f"  {status} {nome}")
 
-    sucesso = all(status == "✅" for status in resultados.values())
+    # Datasets core (❌) bloqueiam; complementares (⚠️) apenas alertam
+    sucesso = all(status != "❌" for status in resultados.values())
     if not sucesso:
-        print("\n❌ Transformação interrompida: nem todos os datasets foram processados.")
+        print("\n❌ Transformação interrompida: datasets obrigatórios falharam.")
         return False
 
     erros_processed = validate_processed_contracts(DIR_PROCESSED)

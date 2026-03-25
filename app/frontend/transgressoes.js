@@ -131,8 +131,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         // 3. Rural Toggle
         UI.ruralToggle.addEventListener('change', (e) => {
             state.ruralOnly = e.target.checked;
-            updateChart();
+            if (state.viewMode === 'monthly') updateChart();
         });
+
+        // 4. View Mode Toggle (Mensal vs Histórico Anual)
+        const viewModeSelect = document.getElementById('view-mode');
+        if (viewModeSelect) {
+            viewModeSelect.addEventListener('change', (e) => {
+                state.viewMode = e.target.value;
+                if (state.viewMode === 'annual') {
+                    renderAnnualView();
+                } else {
+                    updateChart();
+                }
+            });
+        }
     }
 
     function updateDistributorList() {
@@ -207,9 +220,188 @@ document.addEventListener("DOMContentLoaded", async () => {
         UI.insightContainer.innerHTML = html;
     }
 
-    // --- Renderização do Gráfico ---
+    // --- Renderização do Histórico Anual (2011-2023) ---
+
+    async function renderAnnualView() {
+        const ctx = document.getElementById('transgressionsChart').getContext('2d');
+        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+        try {
+            const resp = await fetch('./dashboard_data.json');
+            const fullData = await resp.json();
+            const ha = fullData.historical_annual || {};
+            const serie = ha.annual_series || fullData.serie_anual || [];
+
+            if (serie.length === 0) {
+                console.warn('Sem dados históricos anuais disponíveis');
+                return;
+            }
+
+            const sorted = [...serie].sort((a, b) => a.ano - b.ano);
+            const years = sorted.map(r => String(r.ano));
+            const taxas = sorted.map(r => {
+                const serv = r.qtd_serv || 0;
+                const fora = r.qtd_fora_prazo || 0;
+                return serv > 0 ? (fora / serv * 100) : 0;
+            });
+            const comps = sorted.map(r => r.compensacao_rs || 0);
+            const bgColors = sorted.map(r => {
+                const periodo = r.periodo_regulatorio || (r.ano < 2022 ? 'pre_2022' : 'pos_2022');
+                return periodo === 'pre_2022' ? 'rgba(59, 130, 246, 0.6)' : 'rgba(0, 198, 90, 0.6)';
+            });
+            const borderColors = sorted.map(r => {
+                const periodo = r.periodo_regulatorio || (r.ano < 2022 ? 'pre_2022' : 'pos_2022');
+                return periodo === 'pre_2022' ? '#3b82f6' : '#00C65A';
+            });
+
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.color = '#4a6656';
+            const gridColor = 'rgba(19, 42, 26, 0.4)';
+
+            chartInstance = new Chart(ctx, {
+                data: {
+                    labels: years,
+                    datasets: [
+                        {
+                            label: 'Taxa Fora do Prazo (%)',
+                            data: taxas,
+                            type: 'line',
+                            borderColor: '#fbbf24',
+                            backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            yAxisID: 'y',
+                            order: 1,
+                            pointRadius: 5,
+                            pointHoverRadius: 8,
+                            pointBackgroundColor: borderColors,
+                            pointBorderColor: borderColors,
+                            fill: true,
+                        },
+                        {
+                            label: 'Compensações (R$)',
+                            data: comps,
+                            type: 'bar',
+                            backgroundColor: bgColors,
+                            borderColor: borderColors,
+                            borderWidth: 1.5,
+                            borderRadius: 4,
+                            yAxisID: 'y1',
+                            order: 2,
+                            barPercentage: 0.7,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: { family: "'Outfit', sans-serif", size: 13, weight: '500' },
+                                generateLabels: function(chart) {
+                                    const defaults = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                                    defaults.push(
+                                        { text: 'Pré-REN 1000 (≤2021)', fillStyle: 'rgba(59, 130, 246, 0.6)', strokeStyle: '#3b82f6', lineWidth: 1, pointStyle: 'rect' },
+                                        { text: 'Pós-REN 1000 (≥2022)', fillStyle: 'rgba(0, 198, 90, 0.6)', strokeStyle: '#00C65A', lineWidth: 1, pointStyle: 'rect' }
+                                    );
+                                    return defaults;
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 26, 16, 0.95)',
+                            titleFont: { size: 14, family: "'Inter', sans-serif", weight: '600' },
+                            titleColor: '#F0FDF4',
+                            bodyFont: { size: 13, family: "'Inter', sans-serif" },
+                            bodyColor: '#94a3b8',
+                            padding: 16,
+                            cornerRadius: 12,
+                            borderColor: 'rgba(0, 198, 90, 0.3)',
+                            borderWidth: 1,
+                            callbacks: {
+                                afterTitle: function(items) {
+                                    const idx = items[0].dataIndex;
+                                    const r = sorted[idx];
+                                    const periodo = r.periodo_regulatorio || (r.ano < 2022 ? 'pre_2022' : 'pos_2022');
+                                    return periodo === 'pre_2022' ? 'Período: Pré-REN 1000 (REN 414)' : 'Período: Pós-REN 1000';
+                                },
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    if (context.dataset.type === 'line') {
+                                        return label + ': ' + context.parsed.y.toFixed(3) + '%';
+                                    }
+                                    return label + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                ren1000Line: {
+                                    type: 'line',
+                                    xMin: '2021', xMax: '2021',
+                                    borderColor: 'rgba(251, 191, 36, 0.7)',
+                                    borderWidth: 2.5,
+                                    borderDash: [6, 4],
+                                    label: {
+                                        display: true,
+                                        content: 'REN 1000/2021',
+                                        position: 'start',
+                                        backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                                        color: '#fbbf24',
+                                        font: { size: 11, weight: '600' },
+                                        padding: 4,
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: gridColor, drawBorder: false },
+                            ticks: { font: { size: 12, family: "'Inter', sans-serif" } }
+                        },
+                        y: {
+                            type: 'linear', display: true, position: 'left',
+                            title: { display: true, text: 'Taxa Fora do Prazo (%)', color: '#fbbf24', font: { family: "'Outfit', sans-serif", size: 14 } },
+                            grid: { color: gridColor, drawBorder: false },
+                            ticks: {
+                                callback: v => v.toFixed(1) + '%',
+                                font: { family: "'Inter', sans-serif", size: 11 }
+                            }
+                        },
+                        y1: {
+                            type: 'linear', display: true, position: 'right',
+                            title: { display: true, text: 'Compensações (R$)', color: '#94a3b8', font: { family: "'Outfit', sans-serif", size: 14 } },
+                            grid: { drawOnChartArea: false },
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1e9) return 'R$ ' + (value / 1e9).toFixed(1) + 'B';
+                                    if (value >= 1e6) return 'R$ ' + (value / 1e6).toFixed(1) + 'M';
+                                    if (value >= 1e3) return 'R$ ' + (value / 1e3).toFixed(0) + 'k';
+                                    return 'R$ ' + value;
+                                },
+                                font: { family: "'Inter', sans-serif", size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (err) {
+            console.error('Erro ao carregar histórico anual:', err);
+        }
+    }
+
+    // --- Renderização do Gráfico Mensal ---
 
     function updateChart() {
+        if (state.viewMode === 'annual') return;
+        // Destroy previous chart to ensure clean recreation (e.g. switching from annual view)
+        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
         const ctx = document.getElementById('transgressionsChart').getContext('2d');
 
         // Filtrar Séries Temporais

@@ -558,6 +558,37 @@ h1, h2, h3, h4 {
 .coverage-badge.warn { background: rgba(255, 107, 26, 0.12); color: var(--orange); }
 .coverage-badge.fail { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
 
+/* ==================== METHODOLOGY FLOW (qualidade.html) ==================== */
+.methodology-flow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  padding: 16px 0;
+}
+.flow-step {
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  text-align: center;
+  min-width: 120px;
+}
+.flow-step-icon { font-size: 20px; margin-bottom: 4px; }
+.flow-step-label { font-size: 11px; font-weight: 700; color: var(--text-primary); }
+.flow-step-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.flow-arrow {
+  flex-shrink: 0;
+  color: var(--green);
+  font-size: 18px;
+  padding: 0 6px;
+  opacity: 0.6;
+}
+.methodology-text { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+.methodology-text code { font-size: 12px; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+.methodology-text strong { color: var(--text-primary); font-weight: 600; }
+
 /* ==================== CHART CARDS ==================== */
 .chart-grid {
   display: grid;
@@ -611,6 +642,40 @@ h1, h2, h3, h4 {
   font-size: 11px;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+/* Advanced Analytics: larger, more legible titles */
+.adv-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e2e8f0;
+  letter-spacing: 0.01em;
+}
+.adv-subtitle {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+/* Toggle button for combined chart */
+.btn-toggle-chart {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e2e8f0;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.btn-toggle-chart:hover {
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.22);
 }
 
 .chart-tag {
@@ -1631,4 +1696,217 @@ td.num {
 }
 .pequenos-table-card tr:hover td {
   background: rgba(0, 198, 90, 0.05);
+}
+
+/* ==================== INSPECTOR / LUPA TOOL ==================== */
+
+/* Cursor mode when inspector active */
+body.inspector-active,
+body.inspector-active * {
+  cursor: crosshair !important;
+}
+body.inspector-active .inspector-fab,
+body.inspector-active .inspector-panel,
+body.inspector-active .inspector-panel * {
+  cursor: default !important;
+}
+
+/* FAB Button */
+.inspector-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-pill);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-md), 0 0 0 0 rgba(0, 198, 90, 0);
+  transition: all 0.25s ease;
+  backdrop-filter: blur(12px);
+}
+.inspector-fab:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--green-mid);
+  box-shadow: var(--shadow-md), var(--green-glow);
+  transform: translateY(-2px);
+}
+.inspector-fab.on {
+  background: var(--green-dim);
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: var(--shadow-md), 0 0 20px rgba(0, 198, 90, 0.25);
+}
+.inspector-fab-icon {
+  font-size: 18px;
+}
+.inspector-fab-label {
+  letter-spacing: 0.02em;
+}
+
+/* Floating Panel */
+.inspector-panel {
+  position: fixed;
+  z-index: 99999;
+  width: 340px;
+  max-height: 480px;
+  overflow-y: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-mid);
+  background: rgba(17, 17, 19, 0.94);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255,255,255,0.08) inset;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-mid) transparent;
+  animation: inspector-fade-in 0.2s ease;
+}
+
+@keyframes inspector-fade-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.inspector-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0, 198, 90, 0.06);
+}
+.inspector-header-icon {
+  font-size: 16px;
+}
+.inspector-header-title {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.inspector-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  pointer-events: auto;
+  transition: color 0.15s;
+}
+.inspector-close:hover {
+  color: #ef4444;
+}
+
+.inspector-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inspector-hint {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+  padding: 16px 8px;
+  font-style: italic;
+}
+
+.inspector-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.inspector-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+.inspector-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+.inspector-value {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: right;
+  word-break: break-word;
+  line-height: 1.4;
+}
+.inspector-value.highlight {
+  color: var(--green);
+  font-weight: 700;
+  font-size: 13px;
+}
+.inspector-value.positive {
+  color: var(--green);
+  font-weight: 600;
+}
+.inspector-value.negative {
+  color: #ef4444;
+  font-weight: 600;
+}
+.inspector-value.dim {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.inspector-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0;
+}
+
+.inspector-dataset-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 2px 0;
+}
+.inspector-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Highlight overlay on inspected elements */
+.inspector-highlight {
+  pointer-events: none;
+  z-index: 99998;
 }

@@ -1,0 +1,12 @@
+{
+  "summary": {
+    "total_infractions": 0,
+    "total_agents": 0,
+    "total_value_brl": 0,
+    "period": "Dados ainda não disponíveis",
+    "note": "A extração de autos de infração da ANEEL está pendente de implementação."
+  },
+  "by_agent": [],
+  "by_year": [],
+  "top_infractions": []
+}

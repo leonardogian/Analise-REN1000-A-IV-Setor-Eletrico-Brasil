@@ -1,0 +1,12 @@
+{
+  "summary": {
+    "total_reclamacoes": 0,
+    "total_agents": 0,
+    "period": "Dados ainda não disponíveis",
+    "note": "A extração de reclamações N1/N2 da ANEEL está pendente de implementação."
+  },
+  "by_agent": [],
+  "by_year": [],
+  "by_category": [],
+  "top_distributors": []
+}

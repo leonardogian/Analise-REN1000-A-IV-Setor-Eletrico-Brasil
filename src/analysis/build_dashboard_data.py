@@ -145,6 +145,38 @@ def ensure_label_columns(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def build_historical_annual(indicadores: pd.DataFrame) -> dict:
+    """Build national annual aggregates 2011-2023 with pre/post REN 1000 breakdown."""
+    if indicadores.empty:
+        return {}
+    df = indicadores[indicadores["ano"] <= 2023].copy()
+    national = (
+        df.groupby("ano", as_index=False)
+        .agg(
+            qtd_serv=("qtd_serv", "sum"),
+            qtd_fora_prazo=("qtd_fora_prazo", "sum"),
+            compensacao_rs=("compensacao_rs", "sum"),
+        )
+    )
+    national["taxa_fora_prazo"] = np.where(
+        national["qtd_serv"] > 0,
+        national["qtd_fora_prazo"] / national["qtd_serv"],
+        np.nan,
+    )
+    national["periodo_regulatorio"] = national["ano"].map(
+        lambda a: "pre_2022" if a <= 2021 else "pos_2022"
+    )
+    pre = national[national["periodo_regulatorio"] == "pre_2022"]
+    pos = national[national["periodo_regulatorio"] == "pos_2022"]
+    return {
+        "annual_series": _df_to_records(national.sort_values("ano")),
+        "pre_avg_taxa": _safe(pre["taxa_fora_prazo"].mean()) if not pre.empty else None,
+        "pos_avg_taxa": _safe(pos["taxa_fora_prazo"].mean()) if not pos.empty else None,
+        "pre_total_comp": _safe(pre["compensacao_rs"].sum()) if not pre.empty else None,
+        "pos_total_comp": _safe(pos["compensacao_rs"].sum()) if not pos.empty else None,
+    }
+
+
 def build_kpi_overview(kpi: pd.DataFrame) -> dict:
     if kpi.empty:
         return {}
@@ -688,7 +720,13 @@ def build_regulatory_long_summary(indicadores: pd.DataFrame, class_id: str) -> p
         return pd.DataFrame()
     long_base = indicadores.copy()
     long_base["regulatory_class"] = long_base["classe_local"].map(normalize_regulatory_class)
-    long_base = long_base[(long_base["regulatory_class"] == class_id) & (long_base["ano"] <= 2023)].copy()
+    class_filtered = long_base[(long_base["regulatory_class"] == class_id) & (long_base["ano"] <= 2023)].copy()
+    if class_filtered.empty or class_filtered["ano"].nunique() < 5:
+        # Fallback: use all classes when class-specific data spans too few years
+        # (classe_local is 'nao_classificado' for many pre-2018 rows)
+        long_base = long_base[long_base["ano"] <= 2023].copy()
+    else:
+        long_base = class_filtered
     if long_base.empty:
         return pd.DataFrame()
 
@@ -1293,6 +1331,7 @@ def main() -> None:
         },
         "kpi_overview": build_kpi_overview(kpi),
         "serie_anual": build_serie_anual(kpi),
+        "historical_annual": build_historical_annual(fato_indicadores),
         "serie_mensal_nacional": build_fato_mensal_distribuidora(fato_mensal),
         "distributor_groups": distributor_groups,
         "group_views": group_views,

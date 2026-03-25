@@ -177,7 +177,26 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 return text;
                             }
                         }
-                    }
+                    },
+                    annotation: isVariation ? {
+                        annotations: {
+                            zeroLine: {
+                                type: 'line',
+                                xMin: 0, xMax: 0,
+                                borderColor: 'rgba(251, 191, 36, 0.5)',
+                                borderWidth: 2,
+                                borderDash: [4, 4],
+                                label: {
+                                    display: true,
+                                    content: 'Sem mudança',
+                                    position: 'start',
+                                    backgroundColor: 'rgba(251, 191, 36, 0.15)',
+                                    color: '#fbbf24',
+                                    font: { size: 10 },
+                                }
+                            }
+                        }
+                    } : {}
                 },
                 scales: {
                     x: { type: scaleType, grid: { color: gridColor } },

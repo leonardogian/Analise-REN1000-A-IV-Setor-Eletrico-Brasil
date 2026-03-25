@@ -9,7 +9,7 @@ PIP ?= $(PYTHON) -m pip
 ANALYSIS_DIR := data/processed/analysis
 
 .PHONY: help venv install extract transform update-data analysis report grupos-diagnostico neoenergia-diagnostico \
-	dashboard dashboard-full serve backend dev-serve preflight-backend pipeline \
+	dashboard dashboard-full serve backend dev-serve preflight-backend pipeline data-audit \
 	check-artifacts check-artifacts-full validate-contracts validate-contracts-processed \
 	test-fast test-smoke test clean-analysis venv-recreate doctor extract-ibge inspect-tables \
 	docker-up docker-down docker-build docker-ps logs logs-backend logs-nginx health \
@@ -29,6 +29,7 @@ help:
 	@echo "  make report          - gera relatório markdown"
 	@echo "  make grupos-diagnostico - gera diagnóstico por grupos econômicos"
 	@echo "  make neoenergia-diagnostico - alias de compatibilidade (exporta artefatos legados neo)"
+	@echo "  make data-audit      - audita cobertura e qualidade dos dados → dashboard_audit.json"
 	@echo "  make dashboard       - gera JSON + abre dashboard/relatorio interativo"
 	@echo "  make dashboard-full  - analysis + grupos + dashboard JSON"
 	@echo "  make serve           - servidor local para visualizar o dashboard (PORT=8051 por padrão)"
@@ -99,6 +100,9 @@ grupos-diagnostico:
 neoenergia-diagnostico:
 	$(PYTHON) -m src.analysis.neoenergia_diagnostico
 
+data-audit:
+	$(PYTHON) -m src.etl.data_audit
+
 dashboard:
 	$(PYTHON) -m src.analysis.build_dashboard_data
 	@echo ""
@@ -145,7 +149,7 @@ validate-contracts-processed:
 	$(PYTHON) scripts/validate_schema_contracts.py --processed-only
 
 test-fast:
-	$(PYTHON) -m py_compile src/etl/extract_aneel.py src/etl/transform_aneel.py src/etl/schema_contracts.py src/analysis/build_analysis_tables.py src/analysis/build_report.py src/analysis/distributor_groups.py src/analysis/grupos_diagnostico.py src/analysis/neoenergia_diagnostico.py src/analysis/build_dashboard_data.py app/backend/main.py
+	$(PYTHON) -m py_compile src/etl/extract_aneel.py src/etl/transform_aneel.py src/etl/schema_contracts.py src/etl/data_audit.py src/analysis/build_analysis_tables.py src/analysis/build_report.py src/analysis/distributor_groups.py src/analysis/grupos_diagnostico.py src/analysis/neoenergia_diagnostico.py src/analysis/build_dashboard_data.py app/backend/main.py
 	$(PYTHON) scripts/smoke_imports.py
 	@$(MAKE) validate-contracts-processed
 	@$(MAKE) check-artifacts
