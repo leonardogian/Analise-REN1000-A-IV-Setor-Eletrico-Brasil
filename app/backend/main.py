@@ -8,16 +8,13 @@ from pathlib import Path
 from typing import Any
 
 import os
-import pandas as pd
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-from contextlib import asynccontextmanager
 
-from app.backend.core.database import db_manager, get_db_pool, get_redis
-from app.backend.core.cache import fetch_with_cache
+from app.backend.core.database import db_manager
 
 load_dotenv()
 
@@ -214,60 +211,6 @@ def api_dashboard_section(section: str) -> dict[str, Any]:
         "section": section,
         "data": payload[section],
     }
-
-
-@app.get("/api/artifacts")
-def api_artifacts() -> dict[str, Any]:
-    return _artifact_status()
-
-
-@app.get("/api/v1/heatmap-transgressoes")
-def api_heatmap_transgressoes() -> dict[str, Any]:
-    payload = _load_dashboard_payload()
-    return {"data": payload.get("franquias_insights", {}).get("heatmap_transgressoes", [])}
-
-@app.get("/api/v1/scatter-eficiencia")
-def api_scatter_eficiencia() -> dict[str, Any]:
-    payload = _load_dashboard_payload()
-    return {"data": payload.get("franquias_insights", {}).get("scatter_eficiencia", [])}
-
-@app.get("/api/v1/radar-slas")
-def api_radar_slas() -> dict[str, Any]:
-    payload = _load_dashboard_payload()
-    return payload.get("franquias_insights", {}).get("radar_slas", {"services": [], "data": []})
-
-@app.get("/api/v1/timeseries-tendencia")
-def api_timeseries_tendencia() -> dict[str, Any]:
-    payload = _load_dashboard_payload()
-    return {"data": payload.get("franquias_insights", {}).get("timeseries_tendencia", [])}
-
-@app.get("/api/v1/kpi-regulatorio")
-async def api_kpi_regulatorio(ano: int = None) -> dict[str, Any]:
-    """
-    Rota viva usando Postgres + Redis.
-    Busca os dados de `kpi_regulatorio_anual`, com cache de 1 hora.
-    """
-    cache_key = f"db_kpi_ano_{ano}" if ano else "db_kpi_all"
-    query = "SELECT * FROM kpi_regulatorio_anual"
-    params = []
-    
-    if ano:
-        query += " WHERE ano = $1"
-        params.append(ano)
-        
-    try:
-        dados = await fetch_with_cache(
-            redis=db_manager.redis,
-            pool=db_manager.pool,
-            cache_key=cache_key,
-            query=query,
-            *params,
-            expire=3600
-        )
-        return {"meta": {"fonte": "PostgreSQL+Redis", "table": "kpi_regulatorio_anual"}, "data": dados}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro interno no BD: {str(e)}")
-
 
 
 

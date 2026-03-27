@@ -8,57 +8,81 @@ PIP ?= $(PYTHON) -m pip
 
 ANALYSIS_DIR := data/processed/analysis
 
-.PHONY: help venv install extract transform update-data analysis report grupos-diagnostico neoenergia-diagnostico \
-	dashboard dashboard-full serve backend dev-serve preflight-backend pipeline data-audit \
+.PHONY: help venv venv-recreate install doctor \
+	extract transform update-data \
+	analysis report grupos-diagnostico neoenergia-diagnostico \
+	load-postgres qa-audit pipeline \
+	dashboard dashboard-transgressoes dashboard-full \
+	serve preflight-backend backend dev-serve \
+	screenshots check-visual \
 	check-artifacts check-artifacts-full validate-contracts validate-contracts-processed \
-	test-fast test-smoke test clean-analysis venv-recreate doctor extract-ibge inspect-tables \
-	docker-up docker-down docker-build docker-ps logs logs-backend logs-nginx health \
+	test-fast test-smoke test clean-analysis \
+	docker-up docker-down docker-build docker-ps \
+	logs logs-backend logs-nginx health \
 	docker-full-up docker-full-down docker-full-ps
+
+# ── Help ───────────────────────────────────────────────────────────────────────
 
 help:
 	@echo "Targets disponíveis:"
-	@echo "  make venv            - cria ambiente virtual .venv"
-	@echo "  make venv-recreate   - recria .venv do zero (remove + cria)"
-	@echo "  make install         - instala dependências em requirements.txt"
-	@echo "  make doctor          - verifica saúde da .venv e imports críticos"
-	@echo "  make extract         - baixa dados da ANEEL"
-	@echo "  make transform       - transforma dados brutos"
-	@echo "  make extract-ibge    - baixa/processa dados geográficos do IBGE"
-	@echo "  make update-data     - extract + transform"
-	@echo "  make analysis        - gera tabelas analíticas"
-	@echo "  make report          - gera relatório markdown"
-	@echo "  make grupos-diagnostico - gera diagnóstico por grupos econômicos"
-	@echo "  make neoenergia-diagnostico - alias de compatibilidade (exporta artefatos legados neo)"
-	@echo "  make data-audit      - audita cobertura e qualidade dos dados → dashboard_audit.json"
-	@echo "  make dashboard       - gera JSON + abre dashboard/relatorio interativo"
-	@echo "  make dashboard-full  - analysis + grupos + dashboard JSON"
-	@echo "  make serve           - servidor local para visualizar o dashboard (PORT=8051 por padrão)"
-	@echo "  make backend         - sobe backend FastAPI local em http://localhost:\$${PORT}"
-	@echo "  make dev-serve       - dashboard-full + preflight + backend em modo reload (PORT=8051)"
-	@echo "  make pipeline        - update-data + analysis + report + grupos + dashboard"
-	@echo "  make inspect-tables  - imprime relatório sobre as tabelas parquet existentes"
-	@echo "  make validate-contracts - valida contratos de schema (raw + processed)"
-	@echo "  make check-artifacts - valida artefatos core"
-	@echo "  make check-artifacts-full - valida artefatos completos + dashboard JSON"
-	@echo "  make test-fast       - compilação + imports + contratos + artefatos core"
-	@echo "  make test-smoke      - smoke completo com grupos + dashboard"
-	@echo "  make test            - alias para test-fast"
-	@echo "  make clean-analysis  - remove saídas em data/processed/analysis"
+	@echo ""
+	@echo "Setup:"
+	@echo "  make venv                   - cria ambiente virtual .venv"
+	@echo "  make venv-recreate          - recria .venv do zero (remove + cria)"
+	@echo "  make install                - instala dependências em requirements.txt"
+	@echo "  make doctor                 - verifica saúde da .venv e imports críticos"
+	@echo ""
+	@echo "Pipeline de dados:"
+	@echo "  make extract                - baixa dados da ANEEL"
+	@echo "  make transform              - transforma dados brutos"
+	@echo "  make update-data            - extract + transform"
+	@echo "  make analysis               - gera tabelas analíticas"
+	@echo "  make report                 - gera relatório markdown"
+	@echo "  make grupos-diagnostico     - diagnóstico por grupos econômicos"
+	@echo "  make neoenergia-diagnostico - alias de compatibilidade (artefatos legados neo)"
+	@echo "  make load-postgres          - carrega dados no PostgreSQL"
+	@echo "  make qa-audit               - executa auditoria de qualidade QA"
+	@echo "  make pipeline               - update-data + analysis + report + grupos + dashboards"
+	@echo ""
+	@echo "Dashboard:"
+	@echo "  make dashboard              - gera JSON do dashboard principal"
+	@echo "  make dashboard-transgressoes - gera JSON para a página transgressoes.html"
+	@echo "  make dashboard-full         - analysis + grupos + dashboard + dashboard-transgressoes"
+	@echo ""
+	@echo "Serving / Backend:"
+	@echo "  make serve                  - servidor local para o dashboard (PORT=$(PORT))"
+	@echo "  make backend                - sobe backend FastAPI em http://localhost:$(PORT)"
+	@echo "  make dev-serve              - dashboard-full + preflight + backend com reload"
+	@echo ""
+	@echo "Extras:"
+	@echo "  make screenshots            - tira screenshots de todas as páginas (requer: make serve)"
+	@echo "  make check-visual           - verifica erros de console/charts (requer: make serve)"
+	@echo ""
+	@echo "Qualidade / Testes:"
+	@echo "  make validate-contracts     - valida contratos de schema (raw + processed)"
+	@echo "  make check-artifacts        - valida artefatos core"
+	@echo "  make check-artifacts-full   - valida artefatos completos + dashboard JSON"
+	@echo "  make test-fast              - compilação + imports + contratos + artefatos core"
+	@echo "  make test-smoke             - smoke completo com grupos + dashboards"
+	@echo "  make test                   - alias para test-fast"
+	@echo "  make clean-analysis         - remove saídas em $(ANALYSIS_DIR)"
 	@echo ""
 	@echo "Docker:"
-	@echo "  make docker-up       - sobe nginx + backend em background (requer make dashboard-full)"
-	@echo "  make docker-down     - para e remove os containers"
-	@echo "  make docker-build    - reconstrói a imagem do backend"
-	@echo "  make docker-ps       - status dos containers"
-	@echo "  make logs            - segue logs de todos os containers"
-	@echo "  make logs-backend    - segue logs do backend FastAPI"
-	@echo "  make logs-nginx      - segue logs do nginx"
-	@echo "  make health          - checa /health e exibe JSON formatado"
+	@echo "  make docker-up              - sobe nginx + backend em background"
+	@echo "  make docker-down            - para e remove os containers"
+	@echo "  make docker-build           - reconstrói a imagem do backend"
+	@echo "  make docker-ps              - status dos containers"
+	@echo "  make logs                   - segue logs de todos os containers"
+	@echo "  make logs-backend           - segue logs do backend FastAPI"
+	@echo "  make logs-nginx             - segue logs do nginx"
+	@echo "  make health                 - checa /health e exibe JSON formatado"
 	@echo ""
 	@echo "Docker (stack completa):"
-	@echo "  make docker-full-up  - sobe app + banco + kestra em background"
-	@echo "  make docker-full-down - para e remove todos os containers"
-	@echo "  make docker-full-ps  - status de todos os containers"
+	@echo "  make docker-full-up         - sobe app + banco + kestra em background"
+	@echo "  make docker-full-down       - para e remove todos os containers"
+	@echo "  make docker-full-ps         - status de todos os containers"
+
+# ── Setup ─────────────────────────────────────────────────────────────────────
 
 venv:
 	python3 -m venv .venv
@@ -74,17 +98,13 @@ install:
 doctor:
 	python3 scripts/doctor_env.py
 
+# ── Pipeline de dados ─────────────────────────────────────────────────────────
+
 extract:
 	$(PYTHON) -m src.etl.extract_aneel
 
 transform:
 	$(PYTHON) -m src.etl.transform_aneel
-
-extract-ibge:
-	$(PYTHON) scripts/extract_ibge_dtb.py
-
-inspect-tables:
-	$(PYTHON) scripts/inspect_tables.py
 
 update-data: extract transform
 
@@ -100,8 +120,15 @@ grupos-diagnostico:
 neoenergia-diagnostico:
 	$(PYTHON) -m src.analysis.neoenergia_diagnostico
 
-data-audit:
-	$(PYTHON) -m src.etl.data_audit
+load-postgres:
+	$(PYTHON) scripts/load_to_postgres.py
+
+qa-audit:
+	$(PYTHON) scripts/qa_audit.py
+
+pipeline: update-data analysis report grupos-diagnostico neoenergia-diagnostico dashboard dashboard-transgressoes
+
+# ── Dashboard ─────────────────────────────────────────────────────────────────
 
 dashboard:
 	$(PYTHON) -m src.analysis.build_dashboard_data
@@ -110,7 +137,12 @@ dashboard:
 	@echo "   app/frontend/index.html      (interativo)"
 	@echo "   app/frontend/relatorio.html  (relatório imprimível)"
 
-dashboard-full: analysis grupos-diagnostico neoenergia-diagnostico dashboard
+dashboard-transgressoes:
+	$(PYTHON) -m src.analysis.dashboard_transgressoes
+
+dashboard-full: analysis grupos-diagnostico neoenergia-diagnostico dashboard dashboard-transgressoes
+
+# ── Serving / Backend ─────────────────────────────────────────────────────────
 
 serve: dashboard
 	@echo "🌐 Abrindo http://localhost:$(PORT)"
@@ -124,17 +156,19 @@ backend: preflight-backend
 	@echo "🚀 Backend FastAPI em http://localhost:$(PORT)"
 	$(PYTHON) -m uvicorn app.backend.main:app --host 0.0.0.0 --port $(PORT)
 
-screenshots:  ## Tirar screenshots de todas as páginas (requer: make serve)
-	node scripts/playwright/screenshot-all.js
-
-check-visual:  ## Verificar erros de console e charts em todas as páginas (requer: make serve)
-	node scripts/playwright/check-charts.js
-
 dev-serve: dashboard-full preflight-backend
 	@echo "🚀 Backend FastAPI (reload) em http://localhost:$(PORT)"
 	$(PYTHON) -m uvicorn app.backend.main:app --host 0.0.0.0 --port $(PORT) --reload
 
-pipeline: update-data analysis report grupos-diagnostico neoenergia-diagnostico dashboard
+# ── Extras ────────────────────────────────────────────────────────────────────
+
+screenshots:
+	node scripts/playwright/screenshot-all.js
+
+check-visual:
+	node scripts/playwright/check-charts.js
+
+# ── Qualidade / Testes ────────────────────────────────────────────────────────
 
 check-artifacts:
 	$(PYTHON) scripts/check_artifacts.py --profile core
@@ -149,12 +183,23 @@ validate-contracts-processed:
 	$(PYTHON) scripts/validate_schema_contracts.py --processed-only
 
 test-fast:
-	$(PYTHON) -m py_compile src/etl/extract_aneel.py src/etl/transform_aneel.py src/etl/schema_contracts.py src/etl/data_audit.py src/analysis/build_analysis_tables.py src/analysis/build_report.py src/analysis/distributor_groups.py src/analysis/grupos_diagnostico.py src/analysis/neoenergia_diagnostico.py src/analysis/build_dashboard_data.py app/backend/main.py
+	$(PYTHON) -m py_compile \
+	  src/etl/extract_aneel.py \
+	  src/etl/transform_aneel.py \
+	  src/etl/schema_contracts.py \
+	  src/analysis/build_analysis_tables.py \
+	  src/analysis/build_report.py \
+	  src/analysis/distributor_groups.py \
+	  src/analysis/grupos_diagnostico.py \
+	  src/analysis/neoenergia_diagnostico.py \
+	  src/analysis/build_dashboard_data.py \
+	  src/analysis/dashboard_transgressoes.py \
+	  app/backend/main.py
 	$(PYTHON) scripts/smoke_imports.py
 	@$(MAKE) validate-contracts-processed
 	@$(MAKE) check-artifacts
 
-test-smoke: analysis report grupos-diagnostico neoenergia-diagnostico dashboard
+test-smoke: analysis report grupos-diagnostico neoenergia-diagnostico dashboard dashboard-transgressoes
 	@$(MAKE) validate-contracts
 	@$(MAKE) check-artifacts-full
 
@@ -163,36 +208,34 @@ test: test-fast
 clean-analysis:
 	rm -rf $(ANALYSIS_DIR)
 
-## Docker ──────────────────────────────────────────────────────────────────────
+# ── Docker ────────────────────────────────────────────────────────────────────
 
-docker-up: ## Inicia os containers em background (rode make dashboard-full antes)
+docker-up:
 	@echo "🐳 Subindo nginx + backend em http://localhost:$(PORT)"
 	docker compose -f docker/docker-compose.yml up -d
 
-docker-down: ## Para e remove os containers
+docker-down:
 	docker compose -f docker/docker-compose.yml down
 
-docker-build: ## Reconstrói a imagem do backend
+docker-build:
 	docker compose -f docker/docker-compose.yml build backend
 
-docker-ps: ## Status dos containers
+docker-ps:
 	docker compose -f docker/docker-compose.yml ps
 
-## Rastreamento / Logs ─────────────────────────────────────────────────────────
-
-logs: ## Segue os logs de todos os containers (Ctrl+C para sair)
+logs:
 	docker compose -f docker/docker-compose.yml logs -f
 
-logs-backend: ## Segue apenas os logs do backend FastAPI
+logs-backend:
 	docker compose -f docker/docker-compose.yml logs -f backend
 
-logs-nginx: ## Segue apenas os logs do nginx
+logs-nginx:
 	docker compose -f docker/docker-compose.yml logs -f nginx
 
-health: ## Verifica o endpoint /health e exibe o status formatado
+health:
 	@curl -s http://localhost:$(PORT)/health | $(PYTHON) -m json.tool
 
-docker-full-up: ## Sobe app + banco + kestra (stack completa)
+docker-full-up:
 	@echo "🐳 Subindo stack completa em http://localhost:$(PORT)"
 	docker compose \
 	  -f docker/docker-compose.yml \
@@ -200,14 +243,14 @@ docker-full-up: ## Sobe app + banco + kestra (stack completa)
 	  -f docker/docker-compose.kestra.yml \
 	  up -d
 
-docker-full-down: ## Para e remove todos os containers (app + banco + kestra)
+docker-full-down:
 	docker compose \
 	  -f docker/docker-compose.yml \
 	  -f docker/docker-compose.db.yml \
 	  -f docker/docker-compose.kestra.yml \
 	  down
 
-docker-full-ps: ## Status de todos os containers (app + banco + kestra)
+docker-full-ps:
 	docker compose \
 	  -f docker/docker-compose.yml \
 	  -f docker/docker-compose.db.yml \

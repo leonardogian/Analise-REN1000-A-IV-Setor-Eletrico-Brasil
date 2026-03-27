@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality of Brazilian energy distributors. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units). Special focus on 5 Neoenergia distributors.
 
-**Current phase:** ETL, data infrastructure, and frontend design system are complete. The dashboard has 6 active pages with a unified design system (shared modules: utils.js, nav.js, filters.js, app.js). Statistical diagnostics notebook completed (`notebooks/diagnostico_dados.ipynb`) with Mann-Whitney, Mann-Kendall, ranking, and compensation analyses. Next steps: fix distributor names bug in `fato_indicadores_anuais` pipeline, choropleth layer on the map, and thesis writing.
+**Current phase:** ETL, data infrastructure, and frontend design system are complete. The dashboard has 6 active pages (index, transgressoes, benchmark, evolucao, ranking, mapa) + relatorio.html (print). Dead scripts, stub pages, and orphaned API endpoints were cleaned up (March 2026). Backend exposes 3 endpoints: `/health`, `/api/dashboard`, `/api/dashboard/{section}`. Statistical diagnostics notebook completed (`notebooks/diagnostico_dados.ipynb`). Next steps: fix distributor names bug in `fato_indicadores_anuais` pipeline, choropleth layer on the map, and thesis writing.
 
 ## Essential Commands
 
@@ -45,8 +45,6 @@ make test-fast         # compile + imports + schema contracts + core artifacts
 make test-smoke        # full smoke (neoenergia + dashboard + full validation)
 make validate-contracts  # validate raw/processed schema contracts
 
-# Generate PowerPoint presentation
-.venv/bin/python scripts/generate_tcc_investigacao_pptx.py
 ```
 
 ## Architecture
@@ -105,7 +103,7 @@ Nossa configuração de Produção opera de maneira estritamente desacoplada e e
 - `data/processed/analysis/` — versioned analytical CSVs/Parquets consumed by the app
 - `docker/` — Docker Compose files (app stack, PostgreSQL, Kestra)
 - `scripts/playwright/` — browser automation: `screenshot-all.js`, `check-charts.js`, `aneel-fetch.js`
-- `scripts/` — utilities (PostgreSQL loaders, artifact checkers, pptx generator)
+- `scripts/` — utilities (PostgreSQL loader, artifact checkers, QA automation)
 - `notebooks/` — Jupyter notebooks for exploratory analysis
 
 ### Frontend Data Flow

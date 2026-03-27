@@ -193,18 +193,6 @@ python3 -m src.analysis.build_report
 python3 -m src.analysis.build_dashboard_data
 ```
 
-### Comandos Auxiliares e Testes
-
-Opcionalmente, o repositório conta com scripts de ferramentas e extração de dados geográficos complementares:
-
-```bash
-# Para extrair e processar os dados de municípios do IBGE:
-make extract-ibge
-
-# Para inspecionar e listar as tabelas e schemas disponíveis na camada 'processed':
-make inspect-tables
-```
-
 ---
 
 ## 🐘 Integração em Nuvem: PostgreSQL + Redis
@@ -214,13 +202,11 @@ O projeto evoluiu de arquivos `.json` estáticos para uma arquitetura "Hybrid Da
 - **PostgreSQL**: Todas as tabelas analíticas (`kpi_regulatorio_anual`, `fato_transgressao_mensal_distribuidora`, etc) agora residem num banco relacional, sendo consultadas via SQL (`asyncpg`).
 - **Redis**: As agregações retornadas pelo PostgreSQL são cacheadas em memória pelo Redis (`redis.asyncio`), economizando recursos da API e entregando respostas ultrarrápidas para o front-end (Vercel).
 
-### Scripts Automáticos de Carga
+### Scripts de Carga
 
 Disponíveis na pasta `scripts/`:
 
-- `load_to_postgres.py`: Carga relacional do pipeline completo.
-- `load_chunked.py`: Carga em lote (chunks) com otimização de memória, ideal para grandes tabelas como `indger_servicos_comerciais`.
-- `load_focused_tables.py`: Carga direcionada somente às tabelas necessárias para o benchmark Neoenergia.
+- `load_to_postgres.py`: Carga relacional do pipeline completo no PostgreSQL.
 
 ### DBeaver & SQL Legado
 
@@ -237,8 +223,6 @@ Para as queries de diagnóstico e migração manual:
 make help                       # lista todos os targets
 make venv-recreate             # recria .venv do zero
 make update-data                # extract + transform
-make extract-ibge               # baixa/processa dados geográficos complementares do IBGE
-make inspect-tables             # imprime colunas e schemas das bases .parquet geradas
 make analysis                   # gera tabelas analíticas
 make report                     # gera relatório markdown
 make neoenergia-diagnostico     # benchmark detalhado das 5 Neoenergias
@@ -285,16 +269,6 @@ Após rodar o pipeline, o projeto gera:
 
 - `reports/relatorio_aneel.md` — relatório consolidado geral
 - `reports/neoenergia_diagnostico.md` — diagnóstico das 5 Neoenergias
-
-### Apresentação (.pptx)
-
-- `output/apresentacao_tcc_investigacao_dados_analises.pptx` — deck consolidado da investigação de dados e análises.
-- Script reprodutível: `scripts/generate_tcc_investigacao_pptx.py`
-- Como gerar novamente:
-
-```bash
-.venv/bin/python scripts/generate_tcc_investigacao_pptx.py
-```
 
 ### Dashboard e Relatório Visual
 
