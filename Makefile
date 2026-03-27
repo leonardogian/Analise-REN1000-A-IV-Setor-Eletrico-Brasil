@@ -154,6 +154,7 @@ preflight-backend:
 
 backend: preflight-backend
 	@echo "🚀 Backend FastAPI em http://localhost:$(PORT)"
+	@(sleep 2 && xdg-open http://localhost:$(PORT) 2>/dev/null || true) &
 	$(PYTHON) -m uvicorn app.backend.main:app --host 0.0.0.0 --port $(PORT)
 
 dev-serve: dashboard-full preflight-backend
