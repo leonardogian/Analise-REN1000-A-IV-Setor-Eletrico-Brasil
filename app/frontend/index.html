@@ -89,13 +89,6 @@
           <option value="pos_2022">Pós-2022 (REN 1000)</option>
         </select>
         <div class="filter-sep"></div>
-        <span class="filter-label">Base</span>
-        <select class="select-styled" id="filter-base">
-          <option value="all">Ambas</option>
-          <option value="ren1000">REN 1000</option>
-          <option value="ren414">REN 414</option>
-        </select>
-        <div class="filter-sep"></div>
         <span class="filter-label">Grupo</span>
         <div class="filter-group-tabs" id="group-tabs"></div>
         <select class="select-styled" id="filter-grupo" multiple size="3">
@@ -122,18 +115,8 @@
       <!-- DASHBOARD CONTENT -->
       <div id="dashboard-content" class="dashboard-content">
 
-        <!-- Navigation tabs -->
-        <nav class="nav-tabs">
-          <button class="nav-tab" data-tab="tab-overview">
-            <span class="tab-icon">📊</span> Visão Geral
-          </button>
-          <button class="nav-tab" data-tab="tab-advanced">
-            <span class="tab-icon">🧪</span> Análises Avançadas
-          </button>
-        </nav>
-
         <!-- ============ TAB 1: VISÃO GERAL ============ -->
-        <section id="tab-overview" class="tab-panel">
+        <section id="tab-overview" class="tab-panel active">
 
           <h2 class="section-title"><span class="icon">📊</span> Impacto da REN 1000 — Pré vs Pós 2022</h2>
           <p class="section-description">
@@ -215,7 +198,7 @@
         </section>
 
         <!-- ============ TAB 2: ANÁLISES AVANÇADAS ============ -->
-        <section id="tab-advanced" class="tab-panel">
+        <section id="tab-advanced" class="tab-panel active">
           <h2 class="section-title"><span class="icon">🧪</span> Análises Avançadas (REN 1000)</h2>
           <p class="section-description">
             Visões analíticas avançadas explorando padrões estruturais do Setor Elétrico.
@@ -299,10 +282,10 @@
   <script src="utils.js"></script>
   <script src="nav.js"></script>
   <!-- Filtros / Estado Global -->
-  <script src="filters.js?v=2"></script>
-  
+  <script src="filters.js?v=3"></script>
+
   <!-- Lógica Principal -->
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 
 </html>

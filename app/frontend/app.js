@@ -460,31 +460,65 @@ function initRegulatorySelector(data) {
 function renderOverview(data) {
     // Aplicação dos Filtros Globais no nível de Visão Geral (Série Mensal)
     let rawData = data.serie_mensal_nacional || [];
-    
+
+    // Mapear grupo econômico → distributor_ids individuais
+    // (serie_mensal_nacional usa distributor_id, não o group_id do grupo econômico)
+    const groupToDistributorIds = {};
+    (data.distributor_groups || []).forEach(g => {
+        if (g.group_id && Array.isArray(g.distributor_ids)) {
+            groupToDistributorIds[g.group_id] = g.distributor_ids;
+        }
+    });
+
+    // Determinar quais group_ids da aba atual estão disponíveis nos dados
+    const allGroupIdsInData = new Set(Object.keys(groupToDistributorIds));
+    const category = (window.dashboardFilters && window.dashboardFilters.category) || 'holdings';
+    let visibleGroupIds;
+    if (category === 'holdings') {
+        visibleGroupIds = [...allGroupIdsInData].filter(id => window.MAJOR_HOLDINGS && window.MAJOR_HOLDINGS.has(id));
+    } else if (category === 'all') {
+        visibleGroupIds = [...allGroupIdsInData];
+    } else { // 'pequenos'
+        visibleGroupIds = [...allGroupIdsInData].filter(id => !window.MAJOR_HOLDINGS || !window.MAJOR_HOLDINGS.has(id));
+    }
+
+    const selectedGroups = (window.dashboardFilters && window.dashboardFilters.grupos) || new Set();
+    // "Todos visíveis selecionados" = sem filtro real → usar serie_anual nacional (2011–2025)
+    const allVisibleSelected = visibleGroupIds.length === 0 ||
+        visibleGroupIds.every(id => selectedGroups.has(id));
+
+    // Expandir grupos econômicos selecionados → Set de distributor_ids
+    let allowedDistributors = null; // null = sem filtro de grupo
+    if (!allVisibleSelected && selectedGroups.size > 0) {
+        allowedDistributors = new Set();
+        selectedGroups.forEach(gid => {
+            (groupToDistributorIds[gid] || []).forEach(did => allowedDistributors.add(did));
+        });
+    }
+
     // Filtrar dados antes de agregar
     if (window.dashboardFilters) {
-        const { period, base, grupos, porte } = window.dashboardFilters;
-        
+        const { period, base, porte } = window.dashboardFilters;
+
         let filtered = rawData.filter(d => {
-            if (grupos.size > 0 && !grupos.has(d.group_id)) return false;
-            // Porte
+            if (allowedDistributors && !allowedDistributors.has(d.distributor_id)) return false;
             if (porte.size > 0 && !porte.has(d.bucket_porte)) return false;
             return true;
         });
-        
+
         // Base / Period filters
         if (base === 'ren1000') {
             filtered = filtered.filter(d => d.ano >= 2022);
         } else if (base === 'ren414') {
             filtered = filtered.filter(d => d.ano < 2022);
         }
-        
+
         if (period === 'pre_2022') {
             filtered = filtered.filter(d => d.ano < 2022);
         } else if (period === 'pos_2022') {
             filtered = filtered.filter(d => d.ano >= 2022);
         }
-        
+
         rawData = filtered;
     }
     
@@ -533,10 +567,13 @@ function renderOverview(data) {
     document.getElementById('kpi-serv-total').textContent = fmtNum(pre_serv + pos_serv);
     document.getElementById('kpi-fora-total').textContent = fmtNum(pre_fora + pos_fora);
 
-    // Usar serie_anual pré-computada (2011-2023) quando disponível
+    // Usar serie_anual (dados nacionais) quando nenhum grupo estiver filtrado.
+    // Quando subconjunto de distribuidoras está selecionado, agregar de rawData.
     const serieAnual = data.serie_anual || [];
+    // isGroupFiltered = true somente quando usuário selecionou subconjunto dos grupos visíveis
+    const isGroupFiltered = allowedDistributors !== null;
     let serieClean;
-    if (serieAnual.length > 0) {
+    if (serieAnual.length > 0 && !isGroupFiltered) {
         serieClean = serieAnual
             .map(r => ({
                 ano: r.ano,
@@ -547,7 +584,7 @@ function renderOverview(data) {
             }))
             .sort((a, b) => a.ano - b.ano);
     } else {
-        // Fallback: agregar da série mensal (comportamento anterior)
+        // Agregar da série mensal filtrada (respeita filtro de grupo/empresa)
         const aggAnualItem = {};
         rawData.forEach(d => {
             if (!aggAnualItem[d.ano]) {
@@ -1546,12 +1583,6 @@ async function renderAdvancedAnalytics() {
 
 /* ===================== RENDER ALL ===================== */
 function renderAll(data) {
-    // Activate the first tab
-    const firstTab = document.querySelector('.nav-tab[data-tab]');
-    const firstPanel = firstTab ? document.getElementById(firstTab.dataset.tab) : null;
-    if (firstTab) firstTab.classList.add('active');
-    if (firstPanel) firstPanel.classList.add('active');
-
     // Tab 1: Overview KPIs & charts
     try { renderOverview(data); } catch (e) { console.error('renderOverview failed:', e); }
 

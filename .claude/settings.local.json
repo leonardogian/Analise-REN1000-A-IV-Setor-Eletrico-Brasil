@@ -139,7 +139,14 @@
       "Bash(fuser -k 8051/tcp)",
       "Bash(__NEW_LINE_212197a035e981f1__ echo:*)",
       "WebFetch(domain:dadosabertos.aneel.gov.br)",
-      "Bash(curl -s --max-time 10 -r 0-2000 \"https://dadosabertos.aneel.gov.br/dataset/364859a2-7cb8-45ea-9c88-b4392516a6ba/resource/426f4fb2-6a89-452a-8236-cc48153ee607/download/reclamacoes-n1e2-distribuidoras-2023.csv\")"
+      "Bash(curl -s --max-time 10 -r 0-2000 \"https://dadosabertos.aneel.gov.br/dataset/364859a2-7cb8-45ea-9c88-b4392516a6ba/resource/426f4fb2-6a89-452a-8236-cc48153ee607/download/reclamacoes-n1e2-distribuidoras-2023.csv\")",
+      "Bash(grep -E \"\\\\.\\(html|js\\)$\")",
+      "Bash(head:*)",
+      "Bash(done)",
+      "Bash(find /home/gianmarinolc/Documents/Estudos/TCC_leo_main -maxdepth 3 -type f \\\\\\(-name *.bak -o -name *.tmp -o -name *.log -o -name *.pyc \\\\\\))",
+      "Bash(grep -h \"^\\\\s*<script\" /home/gianmarinolc/Documents/Estudos/TCC_leo_main/app/frontend/*.html)",
+      "Bash(grep -r \"audit_distributor_naming\\\\|audit_veracity\\\\|load_chunked\\\\|load_focused\\\\|qa_screenshots\" /home/gianmarinolc/Documents/Estudos/TCC_leo_main --include=*.py --include=*.md --include=*.json)",
+      "Bash(grep -E \"\\(Makefile|vercel|railway|\\\\.py$|\\\\.json$\\)\")"
     ]
   }
 }
