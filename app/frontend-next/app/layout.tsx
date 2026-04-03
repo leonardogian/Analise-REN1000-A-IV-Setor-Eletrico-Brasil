@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from '@/providers';
-import { Sidebar } from '@/components/Sidebar';
+import { Sidebar, Breadcrumb } from '@/components/Sidebar';
 
 export const metadata: Metadata = {
   title: 'TCC REN 1000/2021 — Dashboard',
@@ -21,7 +21,12 @@ export default function RootLayout({
           <div className="flex min-h-screen">
             <Sidebar />
             {/* Conteúdo principal — deslocado pela sidebar */}
-            <main className="flex-1 ml-56 p-6 min-h-screen">{children}</main>
+            <div className="flex-1 md:ml-56 flex flex-col min-h-screen">
+              <Breadcrumb />
+              <main className="flex-1 p-4 md:p-6 pt-16 md:pt-6">
+                {children}
+              </main>
+            </div>
           </div>
         </Providers>
       </body>

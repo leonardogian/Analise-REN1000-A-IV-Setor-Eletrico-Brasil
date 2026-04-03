@@ -144,6 +144,7 @@ app = FastAPI(
 
 _CORS_ORIGINS_PROD = [
     "https://analise-ren-1000-a-iv-setor-eletric.vercel.app",
+    "https://tcc-frontend-react.vercel.app",
     "https://tcc-ren1000x414-production.up.railway.app",
 ]
 _allowed_origins = (

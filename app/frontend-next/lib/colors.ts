@@ -25,6 +25,5 @@ export const DISTRIBUTOR_PALETTE = [
   '#f59e0b',
 ] as const;
 
-/** URL base da API — alterna entre local e produção */
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8051';
+/** URL base da API — vazio porque Next.js rewrites proxyam /api/* para Railway */
+export const API_BASE = '';

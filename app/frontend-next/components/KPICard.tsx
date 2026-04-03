@@ -16,7 +16,7 @@ const variants = {
 export function KPICard({ title, value, sub, variant = 'blue' }: KPICardProps) {
   return (
     <div
-      className={`rounded-xl border p-4 ${variants[variant]} bg-[#18181b]`}
+      className={`rounded-xl border p-4 bg-[#18181b] animate-fade-in-up ${variants[variant]}`}
     >
       <p className="text-xs text-zinc-500 uppercase tracking-wider mb-2">
         {title}

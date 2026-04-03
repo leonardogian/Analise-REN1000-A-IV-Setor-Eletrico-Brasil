@@ -79,3 +79,57 @@ export function useRanking() {
       fetchJson<{ data: RankingItem[] }>('/dashboard_groups_ranking.json'),
   });
 }
+
+// ── Scatter (Benchmark) ──────────────────────────────────────────────────────
+
+export interface ScatterItem {
+  x: number; // volume fora do prazo
+  y: number; // compensação R$/UC-mês
+  label: string;
+  regra: string;
+  porte: string;
+  holding: string;
+}
+
+export function useScatter() {
+  return useQuery<{ data: ScatterItem[] }>({
+    queryKey: ['scatter'],
+    queryFn: () =>
+      fetchJson<{ data: ScatterItem[] }>('/dashboard_scatter.json'),
+  });
+}
+
+// ── Transgressões Geográficas (Mapa) ─────────────────────────────────────────
+
+export interface MapGroup {
+  id: string;
+  label: string;
+  enabled: boolean;
+  distribuidoras: { id: string; label: string }[];
+}
+
+export interface MapSeriesItem {
+  mes: string;
+  ano: number;
+  mes_num: number;
+  holding: string;
+  distribuidora: string;
+  distribuidora_label: string;
+  valor_pago: number;
+  qtd_transgressoes: number;
+  is_rural: boolean;
+}
+
+export interface TransgressoesPayload {
+  series: MapSeriesItem[];
+  groups: MapGroup[];
+  insights: unknown;
+}
+
+export function useTransgressoes() {
+  return useQuery<TransgressoesPayload>({
+    queryKey: ['transgressoes-map'],
+    queryFn: () =>
+      fetchJson<TransgressoesPayload>('/dashboard_transgressoes.json'),
+  });
+}
