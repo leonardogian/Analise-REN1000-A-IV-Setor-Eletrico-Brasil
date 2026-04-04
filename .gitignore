@@ -60,6 +60,12 @@ playwright-cli.json
 # Output and logs
 output/
 
+# Test runner artifacts
+test-results/
+
+# QA reports temporários que caem na raiz
+.qa-report-*.txt
+
 # Playwright MCP screenshots/logs (gerados automaticamente)
 .playwright-mcp/
 
