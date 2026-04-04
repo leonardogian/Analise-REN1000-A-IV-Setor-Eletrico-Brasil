@@ -1,75 +1,102 @@
-# ⚡ TCC — Análise de Eficácia da REN 1000/2021 (ANEEL)
+# README da Branch `frontend-react`
 
-**Tema:** Avaliação do impacto da Resolução Normativa ANEEL nº 1.000/2021 na qualidade comercial das distribuidoras de energia elétrica do Brasil.
+## 📌 Objetivo desta branch
 
-**Foco:** Prazos de serviços comerciais, transgressões (fora do prazo) e compensações financeiras (R$) — **não** DEC/FEC.
+Esta branch entrega o novo frontend em **Next.js 14 + Tailwind CSS + TanStack Query**, com foco em um dashboard moderno e responsivo para a análise da REN 1000/2021.
 
----
+Ela adiciona ou atualiza:
+- páginas `benchmark`, `mapa`, `ranking` e `transgressoes` no diretório `app/frontend-next/`
+- carregamento de dados via `useDashboardData` e hooks React/TanStack Query
+- design responsivo e navegação lateral atualizada em `Sidebar.tsx`
+- integração com a API local `http://localhost:8051/api/dashboard`
+- dados de análise recentemente gerados e JSONs atualizados consumidos pelo frontend
 
-> **🤖 Nota para Agentes de IA:** Sempre inicie analisando commits recentes (`git log -n 5 --stat`), lendo gradualmente arquivos correlatos, e invariavelmente atualizando este `README.md` e o `AGENTS.md` com as últimas melhorias. Para comandos e arquitetura técnica, veja `CLAUDE.md`. Para contexto de IA, veja `.ai/CONTEXT.md`.
+## 🚀 Como usar
 
-## 📊 Dashboard Interativo
+### 1. Branch ativa
 
-O projeto conta com um **dashboard web interativo** com 6 páginas, design dark mode e gráficos Chart.js/Leaflet.
-
-### 🌐 Acessando o Projeto (Produção)
-
-A arquitetura de produção do TCC foi desacoplada em duas plataformas distintas para escalabilidade e adequação de build:
-
-- **Front-End (Vercel)**: O dashboard web (`app/frontend/`) pode ser acessado em Produção através da URL do Vercel. O Vercel serve os arquivos estáticos e realiza URL Rewrites para a API (`framework: null`).
-- **Back-End (Railway)**: A API dinâmica em FastAPI (`app/backend/`) roda nativamente em container Docker no Railway, centralizando todos os dados de resposta JSON consumidos via `fetch()`.
-  - **URL da API (Back-End)**: `https://tcc-ren1000x414-production.up.railway.app`
-
-*(Qualquer menção antiga a Hospedagem Integrada local, Hostinger, ou problemas de porta relacionadas à Produção foram resolvidos com esse split/desacoplamento Frontend x Backend).*
-
-### 💻 Como executar localmente:
+Certifique-se de estar na branch:
 
 ```bash
-# Para usar backend local (API + arquivos estáticos) na mesma porta:
-make dev-serve
-# Health: http://localhost:8051/health
-# API:    http://localhost:8051/api/dashboard
-
-# Somente para simulação de arquivos estáticos localmente:
-make serve
-# Acesse http://localhost:8051
+git checkout frontend-react
 ```
 
-### Visão Geral — KPIs e Tendências (`index.html`)
+### 2. Rodar o backend local
 
-KPIs comparando os períodos regulatórios (pré/pós REN 1000), série anual de taxa fora do prazo (2011–2023) e visão consolidada por grupos econômicos:
+Use o backend FastAPI local para servir API e arquivos estáticos:
 
-![Visão Geral — KPIs e tendências](docs/images/dashboard_visao_geral.png)
+```bash
+make dev-serve
+```
 
-### Transgressões — Séries Temporais (`transgressoes.html`)
+- API local: `http://localhost:8051/api/dashboard`
+- Frontend Vanilla JS: `http://localhost:8051`
 
-Gráfico bi-eixo com volume de transgressões e compensações financeiras mensais por distribuidora, com filtros por holding e período:
+### 3. Rodar o novo frontend Next.js
 
-![Transgressões — séries temporais](docs/images/dashboard_transgressoes.png)
+```bash
+make frontend-next
+```
 
-### Benchmark — Volume × Compensação (`benchmark.html`)
+- Novo frontend Next.js local: `http://localhost:3051`
 
-Scatter plot interativo: volume de serviços versus compensação financeira por porte de distribuidora (normalizado por 100k UC-mês):
+### 4. Rodar o stack completo (backend + Next.js)
 
-![Benchmark — volume × compensação por porte](docs/images/dashboard_benchmark.png)
+```bash
+make stack-next
+```
 
-### Evolução — Heatmap Mensal por Holding (`evolucao.html`)
+Isso inicia o backend local e o frontend Next.js juntos.
 
-Heatmap de sazonalidade mensal da taxa de transgressão por holding/grupo econômico (2023–2025):
+## 📷 Prints e evidências de funcionamento
 
-![Evolução — heatmap mensal](docs/images/dashboard_evolucao.png)
+Os screenshots já existentes para o dashboard estão em `docs/images/` e conferem as páginas principais:
 
-### Ranking — Grupos Econômicos por Métrica (`ranking.html`)
+- `docs/images/dashboard_visao_geral.png`
+- `docs/images/dashboard_transgressoes.png`
+- `docs/images/dashboard_benchmark.png`
+- `docs/images/dashboard_evolucao.png`
+- `docs/images/dashboard_ranking.png`
+- `docs/images/dashboard_mapa.png`
 
-Ranking horizontal de grupos econômicos por métrica selecionável (taxa de transgressão, compensação R$/UC-mês, volume):
+### Páginas principais do novo frontend
 
-![Ranking — grupos econômicos](docs/images/dashboard_ranking.png)
+| Página | O que mostra | Screenshot |
+|---|---|---|
+| `benchmark` | Benchmark de serviços por porte e compensação | `docs/images/dashboard_benchmark.png` |
+| `transgressoes` | Séries temporais de transgressão e compensação | `docs/images/dashboard_transgressoes.png` |
+| `ranking` | Ranking de grupos econômicos por métrica | `docs/images/dashboard_ranking.png` |
+| `mapa` | Mapa geográfico interativo com distribuidoras | `docs/images/dashboard_mapa.png` |
+| `evolucao` | Heatmap mensal de transgressões | `docs/images/dashboard_evolucao.png` |
+| `index` | Visão geral de KPIs e tendências | `docs/images/dashboard_visao_geral.png` |
 
-### Mapa Geográfico Interativo (`mapa.html`)
+## 📈 Análises mais atualizadas nesta branch
 
-Mapa choropleth Leaflet com distribuidoras por estado, colorido por taxa de transgressão ou compensação financeira:
+### Conteúdo de dados atualizado
 
-![Mapa geográfico interativo](docs/images/dashboard_mapa.png)
+Nesta branch, os dados e scripts estão alinhados com as últimas análises de transgressões e compensações:
+
+- `data/processed/analysis/` contém CSVs atualizados usados para gerar os dashboards
+- `src/analysis/build_analysis_tables.py` e `src/analysis/build_dashboard_data.py` foram revisados para a nova lógica de consumo
+- `reports/neoenergia_diagnostico.md` reflete a análise mais recente do grupo Neoenergia
+
+### Temas de análise prioritários
+
+- evolução de transgressões em `2023-2025`
+- comparação entre grupos econômicos e holdings
+- normalização por UC ativa para avaliar R$/UC-mês
+- análise de benchmark por porte de distribuidora
+- identificação de padrões regionais no mapa geográfico
+
+## 🧠 Nota de implementação
+
+Esta branch é voltada para a evolução do dashboard visual e para a migração de conteúdo estático para um frontend Next.js com rotas modernas.
+
+Use este README como guia principal para entender o novo fluxo de desenvolvimento e testar localmente a interface.
+
+## ✅ Commit desta branch
+
+Este arquivo foi criado e será commitado na branch `frontend-react` como documentação da implementação e dos recursos visuais.
 
 > 📖 Documentação técnica completa (como alterar gráficos, arquitetura, módulos compartilhados):
 >
@@ -145,11 +172,17 @@ make preflight-backend
 # Subir unicamente o backend/API (porta 8051):
 make backend
 
+# Subir servidor estático do frontend clássico:
+make serve
+
+# Subir frontend Next.js em porta separada (3051) usando backend local:
+make frontend-next
+
+# Subir backend local + frontend Next.js juntos:
+make stack-next
+
 # Subir servidor estático + API localmente integrados:
 make dev-serve
-
-# Apenas visualização de arquivos do frontend:
-cd app/frontend && python3 -m http.server 8051
 ```
 
 ### 🐳 Docker (Dashboard e Orquestração)
