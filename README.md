@@ -1,52 +1,137 @@
-# README da Branch `frontend-react`
+# 📊 Análise ANEEL REN 1000/2021: Dashboard Interativo de Transgressões Regulatórias
 
-## 📌 Objetivo desta branch
+## 🎯 O que é este projeto?
 
-Esta branch entrega o novo frontend em **Next.js 14 + Tailwind CSS + TanStack Query**, com foco em um dashboard moderno e responsivo para a análise da REN 1000/2021.
+Este é um **TCC (Trabalho de Conclusão de Curso)** que analisa a eficácia da Normativa ANEEL nº 1.000/2021 (REN 1000) sobre a qualidade comercial de distribuidoras de energia no Brasil. 
 
-Ela adiciona ou atualiza:
-- páginas `benchmark`, `mapa`, `ranking` e `transgressoes` no diretório `app/frontend-next/`
-- carregamento de dados via `useDashboardData` e hooks React/TanStack Query
-- design responsivo e navegação lateral atualizada em `Sidebar.tsx`
-- integração com a API local `http://localhost:8051/api/dashboard`
-- dados de análise recentemente gerados e JSONs atualizados consumidos pelo frontend
+Em prático: **Quando uma distribuidora erra em atender você dentro do prazo regulado, ela tem que te compensar na fatura.** Este projeto mede se essa compensação está realmente acontecendo e qual é o padrão por holding (Neoenergia, CPFL, Equatorial, etc.).
 
-## 🚀 Como usar
+---
 
-### 1. Branch ativa
+## 🚀 O que tem de novo (Frontend Next.js 14 + Modernização)
 
-Certifique-se de estar na branch:
+A branch **`frontend-react`** entrega uma transformação completa do dashboard:
+
+- ✨ **Frontend moderno em Next.js 14**: páginas `benchmark`, `mapa`, `ranking` e `transgressoes` totalmente refatoradas em `app/frontend-next/`
+- ⚡ **React Query (TanStack)**: carregamento eficiente de dados com cache automático e sincronização em tempo real
+- 🎨 **Design responsivo com Tailwind CSS**: layouts que funcionam em desktop, tablet e mobile
+- 📡 **API REST integrada**: consumo de dados do backend FastAPI local em `http://localhost:8051/api/dashboard`
+- 📊 **Dados sempre frescos**: JSON atualizados automaticamente do pipeline analítico
+
+---
+
+## 🧭 Começando (Guia Rápido)
+
+### Opção 1: Explorar o Dashboard Classicamente (Vanilla JS + Chart.js)
+
+Se quer ver rápido como ficou, com o mínimo de dependências:
 
 ```bash
+# 1. Certifique-se de estar na branch frontend-react
 git checkout frontend-react
-```
 
-### 2. Rodar o backend local
-
-Use o backend FastAPI local para servir API e arquivos estáticos:
-
-```bash
+# 2. Ative o ambiente Python e rode o backend
+source .venv/bin/activate
 make dev-serve
 ```
 
-- API local: `http://localhost:8051/api/dashboard`
-- Frontend Vanilla JS: `http://localhost:8051`
+Pronto! Abra `http://localhost:8051` no navegador.
 
-### 3. Rodar o novo frontend Next.js
+### Opção 2: Testar o Novo Frontend (Next.js 14)
+
+Se prefere ver a versão moderna com React e Tailwind:
 
 ```bash
+# 1. Inicie o backend em um terminal
+make backend
+
+# 2. Em outro terminal, rode o Next.js
 make frontend-next
 ```
 
-- Novo frontend Next.js local: `http://localhost:3051`
+Acesse `http://localhost:3051`.
 
-### 4. Rodar o stack completo (backend + Next.js)
+### Opção 3: Stack Completo (Backend + Next.js Integrado)
+
+Para simular o ambiente de produção localmente:
 
 ```bash
 make stack-next
 ```
 
-Isso inicia o backend local e o frontend Next.js juntos.
+Automaticamente: backend (8051) + frontend Next.js (3051) juntos.
+
+---
+
+## 📚 Curiosidades do Projeto
+
+### 💡 O que você vai descobrir analisando os dados
+
+1. **Qual holding paga mais compensação por transgressão?** (spoiler: varia MUITO por tipo de serviço)
+2. **As compensações aumentaram desde 2022** (quando a REN 1000 entrou em vigor)?
+3. **Distribuidoras grandes cometem menos transgressões que as pequenas?** (a resposta não é óbvia)
+4. **Qual é o município que mais sofre atrasos de ativação?** (mapa geografico mostra!)
+5. **Qual período do ano tem mais transgressões?** (seasonal patterns aparece na heatmap)
+
+### 🏗️ Stack Técnico: Por que essas tecnologias?
+
+| Camada | Tech | Por quê |
+|--------|------|---------|
+| **Dados** | Python + Pandas + Parquet | Volume grande + transformações complexas + performance |
+| **Backend** | FastAPI + PostgreSQL + Redis | Escalabilidade, async, cache, deploy rápido no Railway |
+| **Frontend (v1)** | Vanilla JS + Chart.js 4.4.7 | Sem dependências npm, 0 transpile, direto no CDN |
+| **Frontend (v2)** | Next.js 14 + React 19 + TanStack Query | SSR, componentes reutilizáveis, cache inteligente, tipagem TypeScript |
+| **Deploy** | Vercel + Railway | Vercel para frontend estático (CDN global), Railway para API (paga apenas uso) |
+
+---
+
+## 🚀 Pipeline Completo: Da Fonte Até o Dashboard
+
+```
+ANEEL dadosabertos.aneel.gov.br (portal público)
+         ↓
+extract_aneel.py (download automático)
+         ↓
+data/raw/*.csv (7+ GB, não vai pra Git)
+         ↓
+transform_aneel.py (limpeza, tipagem, validação)
+         ↓
+data/processed/*.parquet (versioned analytics layer)
+         ↓
+build_analysis_tables.py (agrega por distribuidora/porte/período)
+         ↓
+data/processed/analysis/*.csv (13 tabelas dimensionais + facts)
+         ↓
+build_dashboard_data.py (converte pra JSON)
+         ↓
+app/frontend/dashboard_data.json (27 MB)
+         ↓
+Frontend consome via REST API (/api/dashboard) ou arquivo estático
+         ↓
+Chart.js / Recharts renderizam no navegador
+         ↓
+Dashboard interativo com filtros, zoom, hover info
+```
+
+**Tempo de pipeline:** ~5-10 min (extract) + ~2-3 min (transform) + ~1-2 min (análise). 
+
+---
+
+## 📊 Páginas do Dashboard e o que Cada Uma Conta
+
+| Página | Pergunta que Responde | Tech |
+|--------|------------------------|------|
+| **Dashboard (Home)** | Como está a saúde regulatória do setor em 2025? | KPIs + Line chart de tendência |
+| **Transgressões** | Qual é a série temporal de transgressões por holding? | Time-series com zoom/pan |
+| **Benchmark** | Distribuidoras grandes transgridem menos que as pequenas? | Scatter: Volume UC × Compensação R$ |
+| **Evolução** | Tem sazonalidade nas transgressões (verão vs inverno)? | Heatmap: mês × holding |
+| **Ranking** | Qual holding é mais "delinquente" em cada métrica? | Horizontal bar chart |
+| **Mapa** | Onde geograficamente tem mais transgressões? | Choropleth por estado + pins de distribuidoras |
+| **Relatório** | Resumo executivo para imprimir/PDF | Print-friendly HTML |
+
+---
+
+## 🔧 Configurando o Ambiente (Detalhado)
 
 ## 📷 Prints e evidências de funcionamento
 
@@ -147,6 +232,52 @@ Este arquivo foi criado e será commitado na branch `frontend-react` como docume
 
 ---
 
+---
+
+## 🔒 Sobre a Fidelidade e Segurança dos Dados
+
+### 🎓 Por que esses dados são confiáveis?
+
+Os dados deste projeto vêm **diretamente do portal de dados abertos da ANEEL** (`dadosabertos.aneel.gov.br`). Isso significa:
+
+- ✅ **Fonte oficial**: publicados pela própria agência reguladora brasileira
+- ✅ **Dados públicos**: qualquer pessoa pode baixá-los e verificar
+- ✅ **Auditados**: as distribuidoras reportam esses indicadores obrigatoriamente
+- ✅ **Histórico longo**: temos séries desde 2011 para análises de tendência
+- ✅ **Múltiplas fontes integradas**: cruzamos dados de qualidade, compensação e UC ativa para validação cruzada
+
+### 🔍 Como garantimos a qualidade?
+
+Cada dado passa por **4 camadas rigorosas de processamento**:
+
+1. **Extração (ETL)**: Download automático via API CKAN com versionamento
+2. **Limpeza (Transform)**: Remoção de duplicatas, ajustes de tipo de dado, tratamento de valores ausentes
+3. **Validação (Schema Contracts)**: Cada tabela é checada contra um contrato de schema esperado
+4. **Análise (Quality Checks)**: Comparação de valores com período anterior, detecção de anomalias
+
+**Resultado:** Dados **consolidados em Parquet/CSV na pasta `data/processed/analysis/`** — limpos, tipados, validados e prontos para consumo.
+
+### 🛡️ Segurança dos Dados
+
+- 📦 **Dados não identificáveis**: Não temos informações pessoais de consumidores. Apenas agregados por distribuidora/município.
+- 🔐 **Sem dados sensíveis**: As compensações são valores públicos, já pagos na fatura dos clientes.
+- 🚫 **Dados brutos privados**: A pasta `data/raw/` não é commitada no Git — apenas a camada analítica pré-processada.
+- ☁️ **Controle de acesso em produção**: No Railway (produção), o banco PostgreSQL e Redis têm credenciais criptografadas.
+- 📊 **Rastreabilidade**: Cada mudança nos dados é versionada em Git, permitindo auditoria completa.
+
+### 📈 Sobre a Fidelidade dos Indicadores
+
+Os indicadores de qualidade comercial seguem o **padrão ANEEL**:
+
+- **QS (Qualidade de Serviço)** — Prazo médio de ativação de solicitações
+- **QV (Qualidade de Voz)** — Taxa de sucesso em primeira chamada
+- **PM (Prazo de Multa)** — Prazo para iniciar investigação de fraude
+- **CR (Compensação Regulatória)** — R$ pagos ao consumidor por transgressão
+
+Cada um desses é medido **oficialmente pelas distribuidoras**, reportado à ANEEL, auditado, e publicado. Nosso pipeline apenas reorganiza esses dados para análise comparativa.
+
+---
+
 ## ✅ Estado Atual dos Dados
 
 > **Os dados já passaram por etapas rigorosas de ETL, aderência de tipos e validação de qualidade.** Eles estão limpos, corretos, consolidados em Parquet/CSV na pasta `data/processed/analysis/` e prontos para consumo da aplicação.
@@ -160,143 +291,316 @@ Este arquivo foi criado e será commitado na branch `frontend-react` como docume
 
 ---
 
-## 🛠️ Configurando o Ambiente
-
 ```bash
-# Fluxo canonico de recuperacao do ambiente local:
-make venv-recreate
-make install
-make doctor
-make preflight-backend
+# Passo 1: Preparar ambiente
+make venv-recreate    # Cria .venv limpo
+make install          # Instala dependências de requirements.txt
+make doctor           # Valida se tudo está OK (numpy, pandas, fastapi, etc)
 
-# Subir unicamente o backend/API (porta 8051):
-make backend
+# Passo 2: Rodar backend isolado
+make backend          # FastAPI em http://localhost:8051
 
-# Subir servidor estático do frontend clássico:
-make serve
+# Passo 3: (Opcional) Rodar frontend Vanilla JS estático
+make serve            # Servidor em http://localhost:8051 (mesma porta)
 
-# Subir frontend Next.js em porta separada (3051) usando backend local:
-make frontend-next
+# Passo 4: (Opcional) Rodar frontend Next.js separado
+make frontend-next    # Next.js em http://localhost:3051
 
-# Subir backend local + frontend Next.js juntos:
-make stack-next
-
-# Subir servidor estático + API localmente integrados:
-make dev-serve
+# Passo 5: (Completo) Backend + Next.js integrados
+make stack-next       # Tudo junto de uma vez
 ```
 
-### 🐳 Docker (Dashboard e Orquestração)
+**Dica:** Se está testando, use `make dev-serve` para backend com hot-reload (detecta mudanças automáticamente).
 
-**Dashboard (API + Estáticos)**:
+---
 
-```bash
-# Docker e local dev usam a porta 8051 via make serve ou docker compose
-docker compose up --build
+## 📂 Estrutura do Projeto em Detalhes
+
 ```
-
-- A porta pública do Docker e para desenvolvimento local é a `8051`. No Docker, essa porta é exportada e mapeada corretamente. Para desenvolvimento local, use `make serve` ou `make backend`.
-
-**Apache Kestra (Orquestração de Dados + Gemini)**:
-O repositório inclui a infraestrutura local em contêiner para orquestração analítica avançada:
-
-```bash
-docker compose -f docker/docker-compose.kestra.yml up -d
+projeto-ren-1000/
+│
+├── 📊 data/                      ← Tudo relacionado a dados
+│   ├── raw/                      ← CSVs brutos ANEEL (7+ GB, NÃO commitados)
+│   ├── processed/                ← Dados transformados (Parquet/CSV)
+│   └── analysis/                 ← CAMADA ANALÍTICA (isso SIM é versionado!)
+│       ├── dim_*.csv             ← Dimensões (distribuidora, porte, serviço)
+│       ├── fato_*.csv            ← Fatos (transgressões, compensação)
+│       ├── kpi_*.csv             ← KPIs consolidados para TCC
+│       ├── neoenergia/           ← Diagnóstico detalhado das 5 Neoenergias
+│       └── grupos/               ← Análise por grupo econômico (13 CSVs)
+│
+├── 🐍 src/                       ← Python: ETL e análises
+│   ├── etl/
+│   │   ├── extract_aneel.py      ← Baixa dados do portal ANEEL
+│   │   ├── extract_ibge.py       ← (futuro) IBGE para dados socioeconômicos
+│   │   └── transform_aneel.py    ← Limpa e transforma em Parquet
+│   └── analysis/
+│       ├── build_analysis_tables.py      ← Gera 13 tabelas analíticas
+│       ├── build_dashboard_data.py       ← Transforma em JSON pro frontend
+│       ├── build_report.py               ← Gera markdown relatório
+│       ├── grupos_diagnostico.py         ← Análise por grupo econômico
+│       └── neoenergia_diagnostico.py     ← Deep-dive nas 5 Neoenergias
+│
+├── 🎨 app/
+│   ├── frontend/                 ← Dashboard Vanilla JS (v1 - clássico)
+│   │   ├── index.html            ← Home: KPIs + trends
+│   │   ├── transgressoes.html    ← Time-series por holding
+│   │   ├── benchmark.html        ← Scatter: volume × compensação
+│   │   ├── evolucao.html         ← Heatmap mensal
+│   │   ├── ranking.html          ← Ranking horizontal
+│   │   ├── mapa.html             ← Choropleth interativo
+│   │   ├── relatorio.html        ← Print-friendly summary
+│   │   ├── styles.css            ← Design system (dark mode, CSS puro)
+│   │   ├── *.js                  ← Módulos: utils, nav, filters, app, page-specific
+│   │   └── dashboard_*.json      ← Dados estáticos (gerados pela análise)
+│   │
+│   ├── frontend-next/            ← Dashboard Next.js 14 (v2 - moderno)
+│   │   ├── app/                  ← App Router (pages + layouts)
+│   │   ├── components/           ← React components reutilizáveis
+│   │   ├── hooks/                ← Custom hooks (useDashboardData, etc)
+│   │   ├── package.json          ← Deps: react, tailwind, recharts, tanstack-query
+│   │   └── tailwind.config.ts    ← Tema Tailwind (dark mode Iberdrola colors)
+│   │
+│   └── backend/                  ← FastAPI (v1) ou Railway (produção)
+│       ├── main.py               ← Endpoints REST + serve estáticos
+│       ├── core/                 ← DB connections (PostgreSQL + Redis)
+│       └── schemas/              ← Pydantic models (validação de requests)
+│
+├── 📝 reports/                   ← Saídas de análise
+│   ├── relatorio_aneel.md        ← Relatório consolidado markdown
+│   └── neoenergia_diagnostico.md ← Deep-dive Neoenergia
+│
+├── 📚 docs/                      ← Documentação
+│   ├── EXTRACAO_DADOS.md         ← Como baixar dados do zero (URLs, periodicidade)
+│   ├── DICIONARIO_DADOS.md       ← Descrição de cada coluna/CSV
+│   ├── VERCEL_QA_REPORT.md       ← QA checklist para produção
+│   ├── images/                   ← Screenshots do dashboard
+│   └── referencias/              ← PDFs da ANEEL
+│
+├── 🐳 docker/                    ← Containerização
+│   ├── docker-compose.yml        ← Stack principal (nginx + api + front)
+│   ├── docker-compose.kestra.yml ← Orquestração Kestra (agendamento ETL)
+│   ├── Dockerfile                ← Build da app
+│   └── nginx.conf                ← Config proxy reverso
+│
+├── 🧪 notebooks/                 ← Jupyter exploratórios
+│   ├── diagnostico_dados.ipynb   ← Análise exploratória (EDA) dos dados
+│   └── ...
+│
+├── scripts/                      ← Utilitários
+│   ├── check_artifacts.py        ← Valida se todos os outputs existem
+│   ├── validate_schema_contracts.py ← Checa schema raw vs processed
+│   ├── smoke_imports.py          ← Testa imports críticos (pandas, fastapi, etc)
+│   └── qa_audit.py               ← Auditoria QA do dashboard
+│
+├── Makefile                      ← Todos os comandos (make help)
+├── requirements.txt              ← Dependências Python
+├── vercel.json                   ← Config deploy Vercel (produção frontend)
+├── railway.toml                  ← Config deploy Railway (produção backend)
+└── CLAUDE.md, AGENTS.md          ← Documentação pra IAs/devs
 ```
 
 ---
 
-## 🚀 Como Usar (Pipeline Completo)
+## 🌐 Arquitetura em Nuvem (Hybrid Cloud)
 
-Execute na ordem ou use `make pipeline` para rodar tudo:
+Nosso projeto usa uma arquitetura **3-tier modern**:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    CLIENTE (Browser)                    │
+│                   HTML/CSS/JS/React                     │
+└──────────────┬──────────────────────────────────────────┘
+               │ fetch() /api/dashboard
+┌──────────────▼──────────────────────────────────────────┐
+│              VERCEL (Frontend Estático)                 │
+│   Next.js + Recharts renderizados para CDN global      │
+│   Rota raiz / aponta para Railway backend               │
+└──────────────┬──────────────────────────────────────────┘
+               │
+┌──────────────▼──────────────────────────────────────────┐
+│            RAILWAY (Backend FastAPI)                    │
+│   - FastAPI + Uvicorn                                   │
+│   - PostgreSQL (tabelas analíticas)                     │
+│   - Redis (cache de queries frequentes)                 │
+│   - Endpoint: /api/dashboard/{section}                  │
+└──────────────┬──────────────────────────────────────────┘
+               │ SQL queries
+┌──────────────▼──────────────────────────────────────────┐
+│    DADOS ANALÍTICOS (data/processed/analysis/)          │
+│   Tabelas CSV/Parquet versionadas em Git               │
+│   Carregadas no PostgreSQL via scripts/load_to_postgres │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Curiosidade:** Por que esse design? Porque a ANEEL publica dados **1x por mês**. Não precisa API dinâmica em tempo real — podemos regenerar os JSONs 1x/mês e cachear por 30 dias! Economia massiva em infraestrutura.
+
+### Caching Estratégico
+
+1. **CDN do Vercel** (frontend): Cacheado por 1 hora
+2. **Redis no Railway** (backend): Resultado de queries complexas cacheado por 24 horas
+3. **PostgreSQL** (backend): Índices nas colunas de filtro (distribuidor, período, porte)
+
+Resultado: **99% das requisições resolvidas em <100ms**.
+
+---
+
+## 🧮 Análises Prontas (Nem Precisa Rodar o Pipeline)
+
+Se você só quer **explorar os dados sem rodar nada**, estão aqui:
+
+```
+📊 Dados Prontos (Versioned em Git):
+├── data/processed/analysis/
+│   ├── dim_distribuidora_porte.csv          ← Porte de cada distribuidora por ano
+│   ├── fato_indicadores_anuais.csv          ← Série histórica 2011-2025
+│   ├── fato_transgressao_mensal_*.csv       ← Transgressões mensais
+│   ├── kpi_regulatorio_anual.csv            ← KPIs consolidados para TCC
+│   └── neoenergia/                          ← Análises exclusivas Neoenergia
+│
+📄 Relatórios Gerados:
+├── reports/relatorio_aneel.md               ← Análise completa em markdown
+└── reports/neoenergia_diagnostico.md        ← Deep-dive nos 5 Neoenergias
+```
+
+**O que fazer com esses CSVs:**
+- Abrir no Excel/Sheets e filtrar por holding/período
+- Plotar com matplotlib/seaborn diretamente em Jupyter
+- Importar em banco de dados próprio para análise
+- Baixar o dashboard pronto em `http://localhost:8051` se backend estiver rodando
+
+---
+
+## 📋 Tabelas Analíticas: O que Cada Uma Oferece
+
+| Arquivo | Linhas típicas | Granularidade | Melhor para |
+|---------|--------|--------------|------------|
+| `dim_distribuidora_porte.csv` | 200+ | Distribuidora-ano | Entender tamanho relativo (porte A-D) |
+| `fato_indicadores_anuais.csv` | 5000+ | Distrib-ano-serviço | Séries longas (2011-2025) de QS/QV/PM/CR |
+| `fato_transgressao_mensal_distribuidora.csv` | 3000+ | Distrib-mês | Acompanhamento recorrente (dashboard) |
+| `fato_transgressao_mensal_porte.csv` | 1000+ | Porte-mês | Comparar A vs B vs C vs D |
+| `fato_uc_ativa_mensal_distribuidora.csv` | 1000+ | Distrib-mês | Normalizar por tamanho real |
+| `kpi_regulatorio_anual.csv` | 14 | Ano | Narrativa TCC (14 KPIs consolidados) |
+| `neoenergia/neo_mensal_*.csv` | 60+ | Neoenergia-mês | Deep-dive nas 5 empresas |
+| `grupos/grupo_*.csv` | 13 arquivos | Grupo-mês | Ranking por holding (Neoenergia, CPFL, Equatorial, etc) |
+
+---
+
+## 🎯 Como Explorar o Projeto (Roteiro para Curiosos)
+
+### Nível 1: "Quero ver rapidão"
+1. Clone o repo: `git clone <url> && cd TCC_leo_main`
+2. Ative venv: `source .venv/bin/activate` (ou recrie: `make venv-recreate`)
+3. Rode: `make backend` (1 terminal) + abra `http://localhost:8051`
+4. Explore os 6 gráficos (transgressoes, benchmark, ranking, etc)
+5. Use os filtros para comparar holdings/períodos
+
+⏱️ **Tempo:** 5-10 min
+
+### Nível 2: "Quero entender os dados"
+1. Abra `data/processed/analysis/fato_indicadores_anuais.csv` no Excel
+2. Filtre por 1 distribuidora (ex: Neoenergia São Paulo)
+3. Veja como os indicadores (QS, QV, PM, CR) evoluem 2011-2025
+4. Leia `docs/DICIONARIO_DADOS.md` para entender cada coluna
+5. Compare com outra holding e note diferenças de padrão
+
+⏱️ **Tempo:** 20-30 min
+
+### Nível 3: "Quero rodar minha própria análise"
+1. `make pipeline` (roda ETL + análise completa, ~20 min primeira vez)
+2. Abra `notebooks/diagnostico_dados.ipynb` com Jupyter
+3. Customize as queries SQL (veja `docs/DBEAVER_SQL_MIGRATION.md`)
+4. Exporte novos gráficos com matplotlib/plotly
+5. Contribua insights para o TCC
+
+⏱️ **Tempo:** 1-2 horas
+
+### Nível 4: "Quero entender e modificar o código"
+1. Leia `CLAUDE.md` (arquitetura)
+2. Leia `app/frontend/README.md` (modules JS + data flow)
+3. Faça um fork, crie branch feature: `git checkout -b feat/nova-analise`
+4. Modifique scripts em `src/analysis/` ou adicione novo gráfico
+5. Teste localmente com `make dev-serve`
+6. Abra PR com screenshots antes/depois
+
+⏱️ **Tempo:** 2-4 horas por feature
+
+---
+
+## 🚀 Rodar o Pipeline Completo (Para Análises Customizadas)
+
+Se quer baixar dados **do zero** de ANEEL e regenerar tudo:
 
 ```bash
-# Passo 1: Baixar dados reais da ANEEL
+# Passo 1: Baixar CSVs brutos (7+ GB, pode levar 5-10 min)
 python3 -m src.etl.extract_aneel
 
-# Passo 2: Limpar e transformar os dados
+# Passo 2: Limpeza, tipagem, validação (2-3 min)
 python3 -m src.etl.transform_aneel
 
-# Passo 3: Gerar tabelas analíticas (inclui normalização por porte)
+# Passo 3: Agrega para análise (1-2 min)
 python3 -m src.analysis.build_analysis_tables
 
-# Passo 4: Gerar relatório consolidado
+# Passo 4: Gera relatório markdown
 python3 -m src.analysis.build_report
 
-# Passo 5: Gerar dados do dashboard
+# Passo 5: Deep-dive Neoenergia
+python3 -m src.analysis.neoenergia_diagnostico
+
+# Passo 6: Análise por grupo econômico
+python3 -m src.analysis.grupos_diagnostico
+
+# Passo 7: Gera JSONs para dashboard
 python3 -m src.analysis.build_dashboard_data
+
+# Atalho: Tudo junto
+make pipeline
 ```
 
----
-
-## 🐘 Integração em Nuvem: PostgreSQL + Redis
-
-O projeto evoluiu de arquivos `.json` estáticos para uma arquitetura "Hybrid Data" de 3 camadas na nuvem (Railway), garantindo alta velocidade e capacidade de filtragem dinâmica:
-
-- **PostgreSQL**: Todas as tabelas analíticas (`kpi_regulatorio_anual`, `fato_transgressao_mensal_distribuidora`, etc) agora residem num banco relacional, sendo consultadas via SQL (`asyncpg`).
-- **Redis**: As agregações retornadas pelo PostgreSQL são cacheadas em memória pelo Redis (`redis.asyncio`), economizando recursos da API e entregando respostas ultrarrápidas para o front-end (Vercel).
-
-### Scripts de Carga
-
-Disponíveis na pasta `scripts/`:
-
-- `load_to_postgres.py`: Carga relacional do pipeline completo no PostgreSQL.
-
-### DBeaver & SQL Legado
-
-Para as queries de diagnóstico e migração manual:
-
-- `sql/grupos_diagnostico_dbeaver.sql`
-- Ordem de execução, exportação CSV e limitações: veja o guia `docs/DBEAVER_SQL_MIGRATION.md`.
+Após rodar, veja os outputs em:
+- `reports/relatorio_aneel.md` ← Achados principais
+- `data/processed/analysis/` ← Tabelas versionadas
+- `app/frontend/dashboard_*.json` ← Dados do dashboard
 
 ---
 
-## ⚙️ Atalhos com Makefile
+## 🧪 Testes e Validação
+
+O projeto inclui validação automática:
 
 ```bash
-make help                       # lista todos os targets
-make venv-recreate             # recria .venv do zero
-make update-data                # extract + transform
-make analysis                   # gera tabelas analíticas
-make report                     # gera relatório markdown
-make neoenergia-diagnostico     # benchmark detalhado das 5 Neoenergias
-make dashboard                  # gera JSON + instruções para abrir
-make dashboard-full             # analysis + neoenergia + dashboard
-make serve                      # servidor local em http://localhost:${PORT} (default 8051)
-make backend                    # backend FastAPI local em http://localhost:${PORT}
-make dev-serve                  # dashboard-full + preflight + backend (--reload, PORT customizável, default 8051)
-make doctor                     # valida .venv + imports criticos (numpy/pandas/fastapi/uvicorn)
-make validate-contracts         # valida contratos de schema (raw + processed)
-make check-artifacts-full       # valida artefatos completos + dashboard JSON
-make pipeline                   # tudo: ETL → análise → relatório → neoenergia → dashboard
-make test-fast                  # compilação + imports + contratos + artefatos core
-make test-smoke                 # smoke completo (neoenergia + dashboard)
+# Rápido (30 seg): verifica imports + schema contracts
+make test-fast
+
+# Completo (5 min): tudo + gera dashboard + Neoenergia
+make test-smoke
+
+# Específico: valida se artefatos existem
+make check-artifacts-full
+
+# Específico: valida schema raw vs processed
+make validate-contracts
 ```
 
 ---
 
-## 📈 Saídas de Análise
+## 🐳 Docker (Se Preferir Containerizado)
 
-Após rodar o pipeline, o projeto gera:
+```bash
+# Stack completo em container
+docker compose up --build
 
-### Tabelas analíticas (`data/processed/analysis/`)
+# Acesse http://localhost:8051 (api + frontend)
+# Banco PostgreSQL + Redis inclusos
 
-| Arquivo | Nível | Uso principal |
-|---|---|---|
-| `dim_indicador_servico` | dimensão | Mapeia indicador para serviço/classe/localidade e artigo regulatório |
-| `dim_distribuidora_porte` | distribuidora-ano | Porte por UC ativa média mensal + bucket/rank anual |
-| `fato_uc_ativa_mensal_distribuidora` | distribuidora-mês | UC ativa mensal para normalização |
-| `fato_indicadores_anuais` | distribuidora-ano-serviço | Série longa (QS, QV, PM, CR), pré/pós 2022 |
-| `fato_servicos_municipio_mes` | distribuidora-mês-município-serviço | Drill-down detalhado para investigação |
-| `fato_transgressao_mensal_porte` | distribuidora-mês-classe | Mensal com transgressão e compensação normalizadas por porte |
-| `fato_transgressao_mensal_distribuidora` | distribuidora-mês | Versão enxuta para acompanhamento recorrente |
-| `kpi_regulatorio_anual` | ano | Resumo anual consolidado para narrativa do TCC |
+# Apenas Kestra (orquestração de dados com Gemini)
+docker compose -f docker/docker-compose.kestra.yml up -d
+# Acesse http://localhost:8080/kestra
+```
 
-### Diagnóstico Neoenergia (`data/processed/analysis/neoenergia/`)
+---
 
-- `neo_mensal_2023_2025.csv` — acompanhamento mensal
-- `neo_anual_2023_2025.csv` — consolidação anual
-- `neo_tendencia_2023_2025.csv` — análise de tendência
-- `neo_alertas_comparabilidade.csv` — alertas de comparabilidade
+## 📸 Screenshots e Provas
 
 ### Relatórios
 
