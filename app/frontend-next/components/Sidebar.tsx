@@ -120,7 +120,7 @@ export function Breadcrumb() {
       <div className="ml-auto flex items-center gap-3">
         <span className="text-zinc-600">ANEEL · REN 1.000/2021</span>
         <span className="px-2 py-0.5 rounded bg-[#00C65A]/10 text-[#00C65A] text-[10px] font-semibold">
-          Dados 2011–2025
+          KPI 2011-2023 · Ops 2023-2025
         </span>
       </div>
     </div>

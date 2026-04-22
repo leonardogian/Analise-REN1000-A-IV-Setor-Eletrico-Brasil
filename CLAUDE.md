@@ -36,7 +36,10 @@ make clean-analysis        # remove data/processed/analysis/ outputs
 
 # Serving the dashboard & Testing Local API
 # URL Base (Local): http://localhost:8051 | URL Base (Produção Railway): https://tcc-ren1000x414-production.up.railway.app
-make serve             # Frontend HTTP server apenas (mock/static-testing) at http://localhost:8051
+make serve             # Frontend classico (Vanilla JS) em http://localhost:8051
+make frontend-next     # Frontend Next.js em http://localhost:3051 apontando para backend local
+make frontend-next-railway # Frontend Next.js em http://localhost:3051 usando Railway
+make stack-next        # Backend local + frontend Next.js com um unico comando
 make backend           # FastAPI backend at http://localhost:8051
 make dev-serve         # Backend with --reload (also serves static files locally as a fallback)
 
@@ -143,7 +146,7 @@ Key files consumed by backend and dashboard:
 
 ## Critical Constraints
 
-1. **Port 8051 for local dev and Docker** — `make serve`, `make backend`, Playwright scripts, and Docker all use port 8051. Ports 3000/5433/6379/8000/8050/8080/8090 are occupied by other local services.
+1. **Port 8051 for local dev and Docker** — `make serve`, `make backend`, Playwright scripts, and Docker all use port 8051. The Next.js comparison frontend uses port `3051` locally via `make frontend-next` because ports 3000/5433/6379/8000/8050/8080/8090 are occupied by other local services.
 2. **Use `python3`, not `python`** — `python` binary does not exist on this machine. Makefile handles this automatically.
 3. **No JS/CSS frameworks** — dashboard is pure Vanilla JS, pure CSS. No Tailwind, Bootstrap, or npm packages for the frontend. Chart.js is loaded via CDN only.
 4. **Never open dashboard via `file://`** — CORS issues. Always use `make serve` or `make backend`.
@@ -178,6 +181,7 @@ After making structural changes, update these files to keep AI context current:
 - `.ai/CONVENTIONS.md` — coding and commit conventions
 - `.ai/DASHBOARD.md` — dashboard-specific AI context
 - `.ai/DATA_OVERVIEW.md` — data sources, schemas and column reference
+- `docs/EXTRACAO_DADOS.md` — canonical guide for extraction + transformation (ANEEL + IBGE), URLs, periodicity, troubleshooting
 
 ## Testing
 

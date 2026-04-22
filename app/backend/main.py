@@ -24,6 +24,14 @@ DASHBOARD_DIR = APP_DIR / "frontend"
 DASHBOARD_JSON_PATH = DASHBOARD_DIR / "dashboard_data.json"
 ANALYSIS_DIR = ROOT / "data" / "processed" / "analysis"
 GROUPS_DIR = ANALYSIS_DIR / "grupos"
+CHART_JSON_FILES = {
+    "timeseries_tendencia": "dashboard_timeseries.json",
+    "scatter_eficiencia": "dashboard_scatter.json",
+    "heatmap_transgressoes": "dashboard_heatmap.json",
+    "radar_slas": "dashboard_radar.json",
+    "groups_ranking": "dashboard_groups_ranking.json",
+    "transgressoes": "dashboard_transgressoes.json",
+}
 
 REQUIRED_JSON_KEYS = {
     "meta",
@@ -102,6 +110,29 @@ def _load_dashboard_payload() -> dict[str, Any]:
                 status_code=500,
                 detail=f"Dashboard JSON missing legacy keys for neoenergia: {', '.join(missing_legacy)}",
             )
+
+    return payload
+
+
+def _load_chart_payload(key: str) -> dict[str, Any]:
+    file_name = CHART_JSON_FILES.get(key)
+    if not file_name:
+        raise HTTPException(status_code=404, detail="Chart data source not found.")
+
+    path = DASHBOARD_DIR / file_name
+    if not path.exists():
+        raise HTTPException(
+            status_code=503,
+            detail=f"{file_name} not found. Run `make dashboard-full` first.",
+        )
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=500, detail=f"Invalid JSON in {file_name}: {exc}") from exc
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=500, detail=f"Invalid payload format in {file_name}.")
 
     return payload
 
@@ -212,6 +243,36 @@ def api_dashboard_section(section: str) -> dict[str, Any]:
         "section": section,
         "data": payload[section],
     }
+
+
+@app.get("/api/v1/timeseries-tendencia")
+def api_timeseries_tendencia() -> dict[str, Any]:
+    return _load_chart_payload("timeseries_tendencia")
+
+
+@app.get("/api/v1/scatter-eficiencia")
+def api_scatter_eficiencia() -> dict[str, Any]:
+    return _load_chart_payload("scatter_eficiencia")
+
+
+@app.get("/api/v1/heatmap-transgressoes")
+def api_heatmap_transgressoes() -> dict[str, Any]:
+    return _load_chart_payload("heatmap_transgressoes")
+
+
+@app.get("/api/v1/radar-slas")
+def api_radar_slas() -> dict[str, Any]:
+    return _load_chart_payload("radar_slas")
+
+
+@app.get("/api/v1/groups-ranking")
+def api_groups_ranking() -> dict[str, Any]:
+    return _load_chart_payload("groups_ranking")
+
+
+@app.get("/api/v1/transgressoes")
+def api_transgressoes() -> dict[str, Any]:
+    return _load_chart_payload("transgressoes")
 
 
 

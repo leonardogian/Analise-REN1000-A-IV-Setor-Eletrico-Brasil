@@ -82,7 +82,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <input type="checkbox" value="${escapeHtml(seg)}" ${isSelected ? 'checked' : ''} style="display:none;">
                 <span style="color:${colors.border}">${escapeHtml(PORTE_LABELS[seg] || seg)}</span>
             `;
-            label.addEventListener('click', function () {
+            label.addEventListener('click', function (e) {
+                e.preventDefault();
                 const cb = this.querySelector('input');
                 cb.checked = !cb.checked;
                 this.classList.toggle('on', cb.checked);
@@ -146,7 +147,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         pointBorderWidth: 2,
                         tension: 0.3,
                         fill: true,
-                        yAxisID: 'y1',
+                        xAxisID: 'x1',
                     }
                 ]
             },
@@ -206,8 +207,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                         },
                         grid: { color: 'rgba(19, 42, 26, 0.3)' },
                     },
-                    y1: {
-                        position: 'right',
+                    x1: {
+                        position: 'bottom',
                         display: true,
                         title: {
                             display: true,

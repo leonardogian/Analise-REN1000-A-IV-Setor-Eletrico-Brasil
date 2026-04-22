@@ -483,7 +483,7 @@ function renderOverview(data) {
     }
 
     const selectedGroups = (window.dashboardFilters && window.dashboardFilters.grupos) || new Set();
-    // "Todos visíveis selecionados" = sem filtro real → usar serie_anual nacional (2011–2025)
+    // "Todos visíveis selecionados" = sem filtro real → usar serie_anual nacional (2011–2023)
     const allVisibleSelected = visibleGroupIds.length === 0 ||
         visibleGroupIds.every(id => selectedGroups.has(id));
 
@@ -495,6 +495,7 @@ function renderOverview(data) {
             (groupToDistributorIds[gid] || []).forEach(did => allowedDistributors.add(did));
         });
     }
+    const isGroupFiltered = allowedDistributors !== null;
 
     // Filtrar dados antes de agregar
     if (window.dashboardFilters) {
@@ -540,9 +541,16 @@ function renderOverview(data) {
         }
     });
 
-    // rawData (serie_mensal_nacional) only covers 2023-2025 — fall back to
-    // pre-computed kpi_overview for pre-2022 totals when not available.
-    if (pre_serv === 0 && data.kpi_overview) {
+    const hasTemporalFilter = !!window.dashboardFilters && (
+        window.dashboardFilters.period === 'pre_2022' ||
+        window.dashboardFilters.period === 'pos_2022' ||
+        window.dashboardFilters.base === 'ren414' ||
+        window.dashboardFilters.base === 'ren1000'
+    );
+
+    // serie_mensal_nacional covers only 2023+; backfill pre-2022 only when
+    // rendering the unfiltered national overview to avoid mixed-scope KPIs.
+    if (pre_serv === 0 && data.kpi_overview && !isGroupFiltered && !hasTemporalFilter) {
         const ov = data.kpi_overview;
         pre_serv = ov.pre_servicos_total  || 0;
         pre_fora = ov.pre_fora_prazo_total || 0;
@@ -571,7 +579,6 @@ function renderOverview(data) {
     // Quando subconjunto de distribuidoras está selecionado, agregar de rawData.
     const serieAnual = data.serie_anual || [];
     // isGroupFiltered = true somente quando usuário selecionou subconjunto dos grupos visíveis
-    const isGroupFiltered = allowedDistributors !== null;
     let serieClean;
     if (serieAnual.length > 0 && !isGroupFiltered) {
         serieClean = serieAnual

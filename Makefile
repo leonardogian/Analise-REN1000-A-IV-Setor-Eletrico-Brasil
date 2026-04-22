@@ -1,19 +1,22 @@
 SHELL := /bin/bash
 
 PORT ?= 8051
+NEXT_PORT ?= 3051
 PROJECT_ROOT := $(CURDIR)
 PYTHON_VENV := $(PROJECT_ROOT)/.venv/bin/python
 PYTHON ?= $(if $(shell test -x $(PYTHON_VENV) && echo ok),$(PYTHON_VENV),python3)
 PIP ?= $(PYTHON) -m pip
+NPM ?= npm
+FRONTEND_NEXT_DIR := app/frontend-next
 
 ANALYSIS_DIR := data/processed/analysis
 
 .PHONY: help venv venv-recreate install doctor \
-	extract transform update-data \
+	extract extract-aneel extract-aneel-full extract-ibge transform update-data \
 	analysis report grupos-diagnostico neoenergia-diagnostico \
 	load-postgres qa-audit pipeline \
 	dashboard dashboard-transgressoes dashboard-full \
-	serve preflight-backend backend dev-serve \
+	serve frontend frontend-next frontend-next-railway frontend-next-install stack-next preflight-backend backend dev-serve \
 	screenshots check-visual \
 	check-artifacts check-artifacts-full validate-contracts validate-contracts-processed \
 	test-fast test-smoke test clean-analysis \
@@ -33,7 +36,10 @@ help:
 	@echo "  make doctor                 - verifica saúde da .venv e imports críticos"
 	@echo ""
 	@echo "Pipeline de dados:"
-	@echo "  make extract                - baixa dados da ANEEL"
+	@echo "  make extract                - extract-aneel + extract-ibge (nuclear)"
+	@echo "  make extract-aneel          - baixa fontes nucleares da ANEEL (qualidade + INDGER)"
+	@echo "  make extract-aneel-full     - + fontes complementares (autos_infracao + reclamacoes)"
+	@echo "  make extract-ibge           - baixa DTB 2024 do IBGE (idempotente)"
 	@echo "  make transform              - transforma dados brutos"
 	@echo "  make update-data            - extract + transform"
 	@echo "  make analysis               - gera tabelas analíticas"
@@ -50,9 +56,14 @@ help:
 	@echo "  make dashboard-full         - analysis + grupos + dashboard + dashboard-transgressoes"
 	@echo ""
 	@echo "Serving / Backend:"
-	@echo "  make serve                  - servidor local para o dashboard (PORT=$(PORT))"
+	@echo "  make serve                  - frontend classico em http://localhost:$(PORT)"
+	@echo "  make frontend               - alias de make serve"
 	@echo "  make backend                - sobe backend FastAPI em http://localhost:$(PORT)"
 	@echo "  make dev-serve              - dashboard-full + preflight + backend com reload"
+	@echo "  make frontend-next          - frontend Next.js em http://localhost:$(NEXT_PORT) usando backend local"
+	@echo "  make frontend-next-railway  - frontend Next.js em http://localhost:$(NEXT_PORT) usando Railway"
+	@echo "  make stack-next             - sobe backend local em background + frontend Next.js"
+	@echo "  make frontend-next-install  - instala dependencias do frontend Next.js"
 	@echo ""
 	@echo "Extras:"
 	@echo "  make screenshots            - tira screenshots de todas as páginas (requer: make serve)"
@@ -100,8 +111,16 @@ doctor:
 
 # ── Pipeline de dados ─────────────────────────────────────────────────────────
 
-extract:
+extract-aneel:
 	$(PYTHON) -m src.etl.extract_aneel
+
+extract-aneel-full:
+	$(PYTHON) -m src.etl.extract_aneel --with-complementares
+
+extract-ibge:
+	$(PYTHON) -m src.etl.extract_ibge
+
+extract: extract-aneel extract-ibge
 
 transform:
 	$(PYTHON) -m src.etl.transform_aneel
@@ -145,8 +164,24 @@ dashboard-full: analysis grupos-diagnostico neoenergia-diagnostico dashboard das
 # ── Serving / Backend ─────────────────────────────────────────────────────────
 
 serve: dashboard
-	@echo "🌐 Abrindo http://localhost:$(PORT)"
+	@echo "🌐 Frontend classico em http://localhost:$(PORT)"
+	@(sleep 2 && xdg-open http://localhost:$(PORT) 2>/dev/null || true) &
 	cd app/frontend && $(PYTHON) -m http.server $(PORT)
+
+frontend: serve
+
+frontend-next-install:
+	cd $(FRONTEND_NEXT_DIR) && $(NPM) install
+
+frontend-next:
+	@echo "⚛️ Frontend Next.js em http://localhost:$(NEXT_PORT) com API local em http://localhost:$(PORT)"
+	@(sleep 2 && xdg-open http://localhost:$(NEXT_PORT) 2>/dev/null || true) &
+	cd $(FRONTEND_NEXT_DIR) && API_REWRITE_URL=http://localhost:$(PORT) $(NPM) run dev -- --hostname 0.0.0.0 --port $(NEXT_PORT)
+
+frontend-next-railway:
+	@echo "⚛️ Frontend Next.js em http://localhost:$(NEXT_PORT) com dados da Railway"
+	@(sleep 2 && xdg-open http://localhost:$(NEXT_PORT) 2>/dev/null || true) &
+	cd $(FRONTEND_NEXT_DIR) && $(NPM) run dev -- --hostname 0.0.0.0 --port $(NEXT_PORT)
 
 preflight-backend:
 	@$(MAKE) validate-contracts-processed
@@ -159,7 +194,19 @@ backend: preflight-backend
 
 dev-serve: dashboard-full preflight-backend
 	@echo "🚀 Backend FastAPI (reload) em http://localhost:$(PORT)"
+	@(sleep 2 && xdg-open http://localhost:$(PORT) 2>/dev/null || true) &
 	$(PYTHON) -m uvicorn app.backend.main:app --host 0.0.0.0 --port $(PORT) --reload
+
+stack-next:
+	@echo "🚀 Backend local + frontend Next.js (http://localhost:$(PORT) + http://localhost:$(NEXT_PORT))"
+	@if curl -sf http://localhost:$(PORT)/health >/dev/null 2>&1; then \
+		echo "ℹ️ Backend ja esta ativo em http://localhost:$(PORT)"; \
+	else \
+		echo "ℹ️ Iniciando backend local em background (log: /tmp/tcc-backend-$(PORT).log)"; \
+		($(MAKE) backend > /tmp/tcc-backend-$(PORT).log 2>&1 &) ; \
+		sleep 5; \
+	fi
+	@$(MAKE) frontend-next
 
 # ── Extras ────────────────────────────────────────────────────────────────────
 

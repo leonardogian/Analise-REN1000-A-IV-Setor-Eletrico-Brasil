@@ -22,17 +22,15 @@ ANEEL API (CSVs)
 
 ## Etapa 1: Extração (`make extract`)
 
-**Script**: `src/etl/extract_aneel.py`
+**Scripts**: `src/etl/extract_aneel.py` + `src/etl/extract_ibge.py`
 
-- Fonte: `dadosabertos.aneel.gov.br`
-- Datasets baixados:
-  - Qualidade do Atendimento Comercial
-  - INDGER — Dados Comerciais
-  - INDGER — Serviços Comerciais
-- Saída: `data/raw/*.csv`
-- **ALERTA**: Os CSVs brutos são grandes (7+ GB para serviços comerciais).
-  Não tente baixá-los se o espaço for limitado.
-- **Fail-fast**: a etapa valida contrato mínimo de schema dos CSVs brutos.
+- Portais: `dadosabertos.aneel.gov.br` (CKAN) + `geoftp.ibge.gov.br` (IBGE DTB)
+- Duas camadas: **nuclear** (default) e **complementar** (via `--with-complementares`)
+- Saída: `data/raw/*.csv` + `data/raw/DTB_2024.zip` e conteúdo extraído
+- **ALERTA**: CSVs brutos nucleares ocupam ≈ 7.7 GB. Exige ≥ 12 GB livres.
+- **Fail-fast**: valida contratos mínimos de schema raw após download.
+
+📖 **Doc canônico com URLs, periodicidades, tamanhos, troubleshooting e tratamento:** [`docs/EXTRACAO_DADOS.md`](../docs/EXTRACAO_DADOS.md)
 
 ## Etapa 2: Transformação (`make transform`)
 

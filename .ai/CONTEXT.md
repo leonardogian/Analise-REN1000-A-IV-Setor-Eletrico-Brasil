@@ -31,6 +31,8 @@ do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 | Dados         | PostgreSQL DB, Redis Cache, Parquet              |
 | Versionamento | Git (branch: main)                               |
 
+> **Frontend duplo em desenvolvimento local:** o dashboard classico (Vanilla JS) segue na porta `8051` via `make serve`/`make backend`; o frontend comparativo em Next.js (`app/frontend-next/`) roda na porta `3051` via `make frontend-next` ou `make stack-next`.
+
 ## Estrutura do Repositório
 
 ```
@@ -117,9 +119,11 @@ make dashboard       # gera dashboard_data.json
 make dashboard-full  # analysis + neoenergia + dashboard
 
 # Dashboard local
-make serve           # HTTP server em http://localhost:8051
+make serve           # frontend classico em http://localhost:8051
 make backend         # FastAPI em http://localhost:8051
 make dev-serve       # dashboard-full + preflight + backend (--reload)
+make frontend-next   # frontend Next.js em http://localhost:3051 usando API local
+make stack-next      # backend local + frontend Next.js juntos
 
 # Testes
 make validate-contracts  # valida contratos de schema (raw + processed)
@@ -137,6 +141,7 @@ make clean-analysis  # remove data/processed/analysis/
 | Porta | Serviço                    | Conflito? |
 |-------|----------------------------|-----------|
 | 3000  | AgentCycle Frontend        | ⚠️ Ocupada |
+| 3051  | Frontend Next.js do TCC    | ✅ Local dev |
 | 5433  | PostgreSQL (AgentCycle)    | ⚠️ Ocupada |
 | 6379  | Redis (AgentCycle)         | ⚠️ Ocupada |
 | 8000  | AgentCycle Backend         | ⚠️ Ocupada |

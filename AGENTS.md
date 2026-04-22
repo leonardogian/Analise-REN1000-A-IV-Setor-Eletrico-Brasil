@@ -25,10 +25,12 @@ Sempre que iniciar uma nova interação ou tarefa neste repositório, você DEVE
 ## 💾 Acesso aos Dados Importantes & Portas Padrão
 
 - **Localização dos Dados Prontos:** Os CSVs validados pós-ETL/processamento estão exclusivamente na pasta `data/processed/analysis/`, caso necessário mais dados a busca deve ser feita indicando as fontes e de lugares confiaveis como balanços de empresas e registrado de onde pegamos os dados.
+- **Extração e Tratamento (fontes brutas):** Toda documentação canônica de "como baixar os dados do zero", URLs CKAN, periodicidade, limitações e troubleshooting mora em [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md). Antes de mexer em `src/etl/`, leia esse doc. Para checar/adicionar fonte nova: atualizar `CATALOGO` em `extract_aneel.py` (ou criar novo `extract_<portal>.py`) e refletir no doc.
 - **Interface Web:** A aplicação frontend consome `app/frontend/dashboard_data.json` e `app/frontend/dashboard_transgressoes.json`.
 - **Apresentação do TCC (.pptx):** O script gerador foi removido. Apresentações devem ser criadas manualmente ou exportadas do Canva/Google Slides.
 - **Logos das Holdings:** Manter os logos em `logos/` (raiz) e espelhar em `app/frontend/assets/logos/` com nomes padronizados (`neoenergia.png`, `cpfl.png`, `equatorial.png`, etc.).
 - **Porta Padronizada:** Desenvolvimento local e via Docker usam a **porta `8051`** (`http://localhost:8051/`). Não usar porta 8000 ou outras para o dashboard.
+- **Frontend Next local:** quando precisar comparar com o frontend React em `app/frontend-next/`, use a **porta `3051`** (`http://localhost:3051/`) para evitar conflito com a 3000, que ja esta ocupada nesta maquina.
 
 ---
 

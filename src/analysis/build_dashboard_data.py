@@ -183,19 +183,16 @@ def build_kpi_overview(kpi: pd.DataFrame) -> dict:
     pre = kpi[kpi["periodo_regulatorio"] == "pre_2022"]
     pos = kpi[kpi["periodo_regulatorio"] == "pos_2022"]
 
-    pre_taxa = pre["taxa_fora_prazo"].mean() if len(pre) > 0 else 0
-    pos_taxa = pos["taxa_fora_prazo"].mean() if len(pos) > 0 else 0
-    # Guard all-NaN .mean() results (NaN propagates to delta calculations)
-    if pd.isna(pre_taxa):
-        pre_taxa = 0
-    if pd.isna(pos_taxa):
-        pos_taxa = 0
-    pre_comp = pre["compensacao_rs"].sum() if len(pre) > 0 else 0
-    pos_comp = pos["compensacao_rs"].sum() if len(pos) > 0 else 0
     pre_serv = pre["qtd_serv"].sum() if len(pre) > 0 else 0
     pos_serv = pos["qtd_serv"].sum() if len(pos) > 0 else 0
     pre_fora = pre["qtd_fora_prazo"].sum() if len(pre) > 0 else 0
     pos_fora = pos["qtd_fora_prazo"].sum() if len(pos) > 0 else 0
+
+    # Use weighted rates (sum fora / sum serv) to avoid bias from simple mean across years.
+    pre_taxa = pre_fora / pre_serv if pre_serv > 0 else 0
+    pos_taxa = pos_fora / pos_serv if pos_serv > 0 else 0
+    pre_comp = pre["compensacao_rs"].sum() if len(pre) > 0 else 0
+    pos_comp = pos["compensacao_rs"].sum() if len(pos) > 0 else 0
 
     return {
         "pre_taxa_media": _safe(pre_taxa),

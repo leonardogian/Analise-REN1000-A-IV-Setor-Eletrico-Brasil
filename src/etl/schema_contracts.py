@@ -7,7 +7,8 @@ from pathlib import Path
 import pandas as pd
 from pyarrow import parquet as pq
 
-RAW_REQUIRED_COLUMNS: dict[str, set[str]] = {
+# Fontes nucleares: obrigatórias. Ausência quebra o pipeline.
+RAW_REQUIRED_COLUMNS_NUCLEAR: dict[str, set[str]] = {
     "qualidade-atendimento-comercial.csv": {
         "sigagente",
         "sigindicador",
@@ -25,6 +26,10 @@ RAW_REQUIRED_COLUMNS: dict[str, set[str]] = {
         "nomagente",
         "qtducativa",
     },
+}
+
+# Fontes complementares: validadas apenas se arquivo existir. Silencioso se ausente.
+RAW_REQUIRED_COLUMNS_COMPLEMENTAR: dict[str, set[str]] = {
     "auto-infracao.csv": {
         "numautoinfracao",
         "datlavraturautoinfracao",
@@ -43,6 +48,12 @@ RAW_REQUIRED_COLUMNS: dict[str, set[str]] = {
         "qtdreclamacoesimprocedentes",
         "qtdreclamacoesprocedentes",
     },
+}
+
+# Retrocompatibilidade: código antigo pode importar RAW_REQUIRED_COLUMNS.
+RAW_REQUIRED_COLUMNS: dict[str, set[str]] = {
+    **RAW_REQUIRED_COLUMNS_NUCLEAR,
+    **RAW_REQUIRED_COLUMNS_COMPLEMENTAR,
 }
 
 RAW_SERVICOS_REQUIRED_COLUMNS: set[str] = {
@@ -115,14 +126,38 @@ def read_parquet_columns(path: Path) -> list[str]:
     return list(pq.read_schema(path).names)
 
 
-def validate_raw_contracts(raw_dir: Path) -> list[str]:
-    """Validate expected raw CSV files and required columns."""
+def validate_raw_contracts(raw_dir: Path, incluir_complementares: bool = False) -> list[str]:
+    """Validate expected raw CSV files and required columns.
+
+    Nuclear sources are always required; their absence or schema drift is an error.
+    Complementar sources are optional: if the file does not exist, it is silently
+    skipped. When `incluir_complementares=True`, complementar files are required
+    to validate schema if present (but missing files still do not error out).
+    """
     errors: list[str] = []
 
-    for file_name, required in RAW_REQUIRED_COLUMNS.items():
+    # Nuclear: obrigatório.
+    for file_name, required in RAW_REQUIRED_COLUMNS_NUCLEAR.items():
         path = raw_dir / file_name
         if not path.exists():
-            errors.append(f"raw missing file: {path}")
+            errors.append(f"raw missing file (nuclear): {path}")
+            continue
+
+        try:
+            missing = missing_required_columns(read_csv_header(path), required)
+        except Exception as exc:
+            errors.append(f"raw unreadable file: {path} ({exc})")
+            continue
+
+        if missing:
+            errors.append(
+                f"raw schema mismatch: {path} missing columns {', '.join(missing)}"
+            )
+
+    # Complementar: valida schema apenas se arquivo existir.
+    for file_name, required in RAW_REQUIRED_COLUMNS_COMPLEMENTAR.items():
+        path = raw_dir / file_name
+        if not path.exists():
             continue
 
         try:

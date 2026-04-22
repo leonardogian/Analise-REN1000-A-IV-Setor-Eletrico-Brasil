@@ -1,48 +1,70 @@
 """
 ===============================================================================
-📥 EXTRAÇÃO DE DADOS — ANEEL Dados Abertos
+EXTRAÇÃO DE DADOS — ANEEL Dados Abertos
 ===============================================================================
-OBJETIVO:
-    Baixar os dados públicos de Qualidade Comercial e INDGER do portal
-    dadosabertos.aneel.gov.br para a pasta data/raw/.
+OBJETIVO
+    Baixar os dados públicos do portal dadosabertos.aneel.gov.br para data/raw/
+    e data/docs/, respeitando dois níveis de escopo:
 
-FONTES:
-    1. Qualidade do Atendimento Comercial (prazos, transgressões, compensações)
-    2. Autos de Infração (penalidades e multas ANEEL)
-    3. Reclamações nos 1º e 2º Níveis da Distribuidora
-    4. INDGER - Serviços Comerciais (quantidades, prazos, estoques, compensações)
-    5. INDGER - Dados Comerciais (faturamento, danos elétricos, atendimento)
-    6. Dicionários de dados e domínios (PDFs e CSVs auxiliares)
+      - tier "nuclear":     fontes consumidas pelo pipeline analítico do TCC.
+      - tier "complementar": fontes de contexto (não entram nas métricas
+                              nucleares). Baixadas só com --with-complementares.
 
-COMO RODAR:
-    python -m src.etl.extract_aneel
+FONTES
+    NUCLEAR
+      1. Qualidade do Atendimento Comercial — métrica nuclear pré-2022
+         (CSV anual + CSV domínio de indicadores + PDF dicionário)
+      2. INDGER — Indicadores Gerenciais da Distribuição — métrica nuclear
+         pós-2022 (ZIP com CSVs mensais + CSV consolidado + PDFs)
 
-PAGINAÇÃO:
-    Os CSVs da ANEEL são arquivos únicos (não paginados). O portal CKAN
-    disponibiliza cada recurso como download direto. Caso o arquivo mude de
-    URL no futuro, use a CKAN API (package_show) para resolver dinamicamente.
+    COMPLEMENTAR (baixadas apenas com --with-complementares)
+      3. Autos de Infração — penalidades e multas ANEEL
+      4. Reclamações nos 1º e 2º Níveis da Distribuidora — contexto
+
+USO
+    python3 -m src.etl.extract_aneel                 # só nuclear (padrão)
+    python3 -m src.etl.extract_aneel --with-complementares  # nuclear + comp.
+
+CATÁLOGO E METADADOS
+    Cada fonte declara `tier`, `dataset_url` (landing page CKAN),
+    `periodicidade` e `tamanho_esperado_mb`. Esses campos servem à
+    documentação e à mensageria; a lógica de download usa só `url`,
+    `nome`, `tipo` e `destino`.
+
+    Se a ANEEL substituir um recurso mantendo o dataset, acesse o
+    `dataset_url` da fonte, pegue o novo resource_id, atualize aqui.
+
+VALIDAÇÃO
+    Após extração bem-sucedida, os contratos mínimos de schema dos CSVs
+    brutos nucleares são verificados via src.etl.schema_contracts.
+    Arquivos complementares ausentes são ignorados silenciosamente pelo
+    validador (política: nuclear é obrigatório, complementar é opcional).
 ===============================================================================
 """
 
-import os
+import argparse
 import sys
 import zipfile
-import requests
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+import requests
 
 from src.etl.schema_contracts import validate_raw_contracts
 
 # ==============================================================================
 # CONFIGURAÇÃO — Catálogo de recursos do portal Dados Abertos ANEEL
 # ==============================================================================
-# Cada entrada tem: nome descritivo, nome do arquivo e URL de download direta.
-# Se a ANEEL mudar as URLs, basta atualizar aqui.
 
 CATALOGO = {
-    # ---- Fonte 1: Qualidade do Atendimento Comercial ----
+    # ---- Fonte 1: Qualidade do Atendimento Comercial (NUCLEAR) ----
     "qualidade_comercial": {
         "descricao": "Qualidade do Atendimento Comercial (prazos e compensações)",
+        "tier": "nuclear",
+        "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/qualidade-do-atendimento-comercial",
+        "periodicidade": "anual",
+        "tamanho_esperado_mb": 0.1,
+        "cobertura_temporal": "2011–2023 (anual, pode ser atualizado)",
         "recursos": [
             {
                 "nome": "qualidade-atendimento-comercial.csv",
@@ -65,9 +87,50 @@ CATALOGO = {
         ],
     },
 
-    # ---- Fonte 2: Autos de Infração ----
+    # ---- Fonte 2: INDGER — Indicadores Gerenciais da Distribuição (NUCLEAR) ----
+    "indger": {
+        "descricao": "INDGER — Indicadores Gerenciais da Distribuição",
+        "tier": "nuclear",
+        "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/indicadores-gerenciais-de-distribuicao-indger",
+        "periodicidade": "mensal",
+        "tamanho_esperado_mb": 7500,  # ZIP descompacta em ~36 CSVs ≈ 7.7 GB + dados-comerciais 107 MB
+        "cobertura_temporal": "2023-01 → 2025-12 (mensal). Atualizado continuamente.",
+        "recursos": [
+            {
+                "nome": "indger-dados-servicos-comerciais.zip",
+                "url": "https://dadosabertos.aneel.gov.br/dataset/7cacb2c4-b165-4591-a793-9ed20d1f167d/resource/8dd3acbe-0d0f-40c4-bafc-da270c639ed9/download/indger-dados-servicos-comerciais.zip",
+                "tipo": "zip",
+                "destino": "data/raw",
+            },
+            {
+                "nome": "indger-dados-comerciais.csv",
+                "url": "https://dadosabertos.aneel.gov.br/dataset/7cacb2c4-b165-4591-a793-9ed20d1f167d/resource/fd10c9d4-cb76-4020-a322-e79afb13eaf7/download/indger-dados-comerciais.csv",
+                "tipo": "csv",
+                "destino": "data/raw",
+            },
+            {
+                "nome": "dm-indger-dados-de-servicos-comerciais.pdf",
+                "url": "https://dadosabertos.aneel.gov.br/dataset/7cacb2c4-b165-4591-a793-9ed20d1f167d/resource/86e54795-42be-4938-9cb3-b77797d43980/download/dm-indger-dados-de-servicos-comerciais.pdf",
+                "tipo": "pdf",
+                "destino": "data/docs",
+            },
+            {
+                "nome": "dm-indger-dados-comerciais.pdf",
+                "url": "https://dadosabertos.aneel.gov.br/dataset/7cacb2c4-b165-4591-a793-9ed20d1f167d/resource/756794aa-0828-4a3f-83f5-d36f863dd802/download/dm-indger-dados-comerciais.pdf",
+                "tipo": "pdf",
+                "destino": "data/docs",
+            },
+        ],
+    },
+
+    # ---- Fonte 3: Autos de Infração (COMPLEMENTAR) ----
     "autos_infracao": {
         "descricao": "Autos de Infração (penalidades e multas ANEEL)",
+        "tier": "complementar",
+        "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/autos-de-infracao",
+        "periodicidade": "contínua (acumulativo)",
+        "tamanho_esperado_mb": None,  # não baixado localmente
+        "cobertura_temporal": "contínua desde 2000+ (verificar no portal)",
         "recursos": [
             {
                 "nome": "auto-infracao.csv",
@@ -84,9 +147,14 @@ CATALOGO = {
         ],
     },
 
-    # ---- Fonte 3: Reclamações 1º e 2º Níveis ----
+    # ---- Fonte 4: Reclamações 1º e 2º Níveis (COMPLEMENTAR) ----
     "reclamacoes": {
         "descricao": "Reclamações nos 1º e 2º Níveis da Distribuidora",
+        "tier": "complementar",
+        "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/reclamacoes-nos-1o-e-2o-niveis-da-distribuidora",
+        "periodicidade": "anual (particionado por ano)",
+        "tamanho_esperado_mb": None,  # não baixado localmente
+        "cobertura_temporal": "2010–2025 (consolidado 2010–2022 + um CSV por ano posterior)",
         "recursos": [
             {
                 "nome": "reclamacoes-n1e2-distribuidoras-2010-2022.csv",
@@ -120,37 +188,6 @@ CATALOGO = {
             },
         ],
     },
-
-    # ---- Fonte 4: INDGER — Indicadores Gerenciais da Distribuição ----
-    "indger": {
-        "descricao": "INDGER - Indicadores Gerenciais da Distribuição",
-        "recursos": [
-            {
-                "nome": "indger-dados-servicos-comerciais.zip",
-                "url": "https://dadosabertos.aneel.gov.br/dataset/7cacb2c4-b165-4591-a793-9ed20d1f167d/resource/8dd3acbe-0d0f-40c4-bafc-da270c639ed9/download/indger-dados-servicos-comerciais.zip",
-                "tipo": "zip",
-                "destino": "data/raw",
-            },
-            {
-                "nome": "indger-dados-comerciais.csv",
-                "url": "https://dadosabertos.aneel.gov.br/dataset/7cacb2c4-b165-4591-a793-9ed20d1f167d/resource/fd10c9d4-cb76-4020-a322-e79afb13eaf7/download/indger-dados-comerciais.csv",
-                "tipo": "csv",
-                "destino": "data/raw",
-            },
-            {
-                "nome": "dm-indger-dados-de-servicos-comerciais.pdf",
-                "url": "https://dadosabertos.aneel.gov.br/dataset/7cacb2c4-b165-4591-a793-9ed20d1f167d/resource/86e54795-42be-4938-9cb3-b77797d43980/download/dm-indger-dados-de-servicos-comerciais.pdf",
-                "tipo": "pdf",
-                "destino": "data/docs",
-            },
-            {
-                "nome": "dm-indger-dados-comerciais.pdf",
-                "url": "https://dadosabertos.aneel.gov.br/dataset/7cacb2c4-b165-4591-a793-9ed20d1f167d/resource/756794aa-0828-4a3f-83f5-d36f863dd802/download/dm-indger-dados-comerciais.pdf",
-                "tipo": "pdf",
-                "destino": "data/docs",
-            },
-        ],
-    },
 }
 
 # ==============================================================================
@@ -176,50 +213,41 @@ def baixar_arquivo(url: str, caminho_destino: Path, timeout: int = 120) -> bool:
         response = requests.get(url, stream=True, timeout=timeout)
         response.raise_for_status()
 
-        # Tamanho total (nem sempre disponível)
-        tamanho_total = response.headers.get("Content-Length")
-        tamanho_total = int(tamanho_total) if tamanho_total else None
-
-        # Salvamento com streaming (chunks de 8KB)
         bytes_baixados = 0
         with open(caminho_destino, "wb") as f:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
                 bytes_baixados += len(chunk)
 
-        # Feedback
         tamanho_mb = bytes_baixados / (1024 * 1024)
-        print(f"✅ {tamanho_mb:.1f} MB")
+        print(f"OK {tamanho_mb:.1f} MB")
         return True
 
     except requests.exceptions.ConnectionError:
-        print("❌ ERRO de conexão. Verifique sua internet.")
+        print("ERRO de conexão. Verifique sua internet.")
         return False
     except requests.exceptions.Timeout:
-        print(f"❌ TIMEOUT ({timeout}s). O servidor demorou demais.")
+        print(f"TIMEOUT ({timeout}s). O servidor demorou demais.")
         return False
     except requests.exceptions.HTTPError as e:
-        print(f"❌ ERRO HTTP: {e.response.status_code}")
+        print(f"ERRO HTTP: {e.response.status_code}")
         return False
     except Exception as e:
-        print(f"❌ ERRO inesperado: {e}")
+        print(f"ERRO inesperado: {e}")
         return False
 
 
 def descompactar_zip(caminho_zip: Path, destino: Path) -> list[str]:
-    """
-    Descompacta um arquivo ZIP, extrai CSVs para o destino.
-    Retorna a lista de arquivos extraídos.
-    """
+    """Descompacta ZIP e extrai membros para destino. Retorna lista de arquivos extraídos."""
     arquivos_extraidos = []
     try:
         with zipfile.ZipFile(caminho_zip, "r") as zf:
             for membro in zf.namelist():
                 zf.extract(membro, destino)
                 arquivos_extraidos.append(membro)
-                print(f"    📦 Extraído: {membro}")
+                print(f"    [zip] Extraído: {membro}")
     except zipfile.BadZipFile:
-        print(f"    ❌ Arquivo ZIP corrompido: {caminho_zip.name}")
+        print(f"    ERRO: ZIP corrompido: {caminho_zip.name}")
     return arquivos_extraidos
 
 
@@ -227,72 +255,109 @@ def descompactar_zip(caminho_zip: Path, destino: Path) -> list[str]:
 # FUNÇÃO PRINCIPAL
 # ==============================================================================
 
-def executar_extracao():
+def executar_extracao(incluir_complementares: bool = False) -> bool:
     """
-    Percorre o catálogo de recursos e baixa cada um para a pasta correta.
-    Descompacta ZIPs automaticamente.
+    Percorre o catálogo e baixa os recursos das fontes selecionadas.
+
+    Args:
+        incluir_complementares: Se True, baixa também fontes de tier
+            "complementar" (autos de infração, reclamações). Por padrão,
+            apenas nucleares (qualidade_comercial, indger).
+
+    Returns:
+        True se todos os downloads tentados forem bem-sucedidos e os
+        contratos raw de fontes nucleares validarem.
     """
     print("=" * 70)
-    print("📥 EXTRAÇÃO DE DADOS — ANEEL Dados Abertos")
-    print(f"   Data: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    print("EXTRAÇÃO DE DADOS — ANEEL Dados Abertos")
+    print(f"Data: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    tier_label = "nuclear + complementar" if incluir_complementares else "apenas nuclear"
+    print(f"Escopo: {tier_label}")
     print("=" * 70)
 
     total_sucesso = 0
     total_falha = 0
+    total_pulado = 0
     contrato_ok = False
 
     for fonte_id, fonte in CATALOGO.items():
-        print(f"\n🔹 {fonte['descricao']}")
+        tier = fonte.get("tier", "nuclear")
+
+        if tier == "complementar" and not incluir_complementares:
+            print(f"\n[skip] {fonte['descricao']} (tier=complementar; use --with-complementares)")
+            total_pulado += len(fonte["recursos"])
+            continue
+
+        print(f"\n[{tier}] {fonte['descricao']}")
+        if "periodicidade" in fonte:
+            print(f"  periodicidade: {fonte['periodicidade']}")
+        if "cobertura_temporal" in fonte:
+            print(f"  cobertura:     {fonte['cobertura_temporal']}")
         print("-" * 50)
 
         for recurso in fonte["recursos"]:
-            # Monta o caminho de destino
             pasta_destino = RAIZ_PROJETO / recurso["destino"]
             pasta_destino.mkdir(parents=True, exist_ok=True)
             caminho_arquivo = pasta_destino / recurso["nome"]
 
-            # Baixa o arquivo
             sucesso = baixar_arquivo(recurso["url"], caminho_arquivo)
 
             if sucesso:
                 total_sucesso += 1
-
-                # Se for ZIP, descompacta automaticamente na mesma pasta
                 if recurso["tipo"] == "zip":
                     descompactar_zip(caminho_arquivo, pasta_destino)
             else:
                 total_falha += 1
 
+    # Validação de contratos (apenas nuclear é exigido; complementar é opcional)
     if total_falha == 0:
-        erros_contrato = validate_raw_contracts(RAIZ_PROJETO / "data" / "raw")
+        erros_contrato = validate_raw_contracts(
+            RAIZ_PROJETO / "data" / "raw",
+            incluir_complementares=incluir_complementares,
+        )
         if erros_contrato:
-            print("\n❌ Falha na validação de contratos dos dados brutos:")
+            print("\nFALHA na validação de contratos dos dados brutos:")
             for erro in erros_contrato:
                 print(f"   - {erro}")
             total_falha += len(erros_contrato)
         else:
             contrato_ok = True
 
-    # Resumo final
     print("\n" + "=" * 70)
-    print(f"📊 RESUMO: {total_sucesso} downloads OK | {total_falha} falhas")
-    print(f"🔎 Contratos de schema bruto: {'OK' if contrato_ok else 'FALHOU'}")
+    print(
+        f"RESUMO: {total_sucesso} downloads OK | {total_falha} falhas"
+        + (f" | {total_pulado} pulados (complementar)" if total_pulado else "")
+    )
+    print(f"Contratos de schema bruto: {'OK' if contrato_ok else 'FALHOU'}")
     print("=" * 70)
 
     if total_falha == 0 and contrato_ok:
-        print("\n✅ Todos os arquivos foram baixados com sucesso!")
-        print("   Próximo passo: python -m src.etl.transform_aneel")
+        print("\nTodos os arquivos foram baixados com sucesso.")
+        print("Próximo passo: python3 -m src.etl.transform_aneel")
     else:
-        print("\n⚠️  Extração concluída com falhas.")
-        print("   Verifique downloads e contratos de schema antes de seguir.")
+        print("\nExtração concluída com falhas.")
+        print("Verifique downloads e contratos de schema antes de seguir.")
 
     return total_falha == 0 and contrato_ok
 
 
-# ==============================================================================
-# PONTO DE ENTRADA
-# ==============================================================================
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="python3 -m src.etl.extract_aneel",
+        description=(
+            "Baixa dados públicos da ANEEL para data/raw/ e data/docs/. "
+            "Por padrão apenas fontes nucleares (qualidade_comercial, indger)."
+        ),
+    )
+    parser.add_argument(
+        "--with-complementares",
+        action="store_true",
+        help="Incluir fontes complementares (autos_infracao, reclamacoes).",
+    )
+    return parser.parse_args(argv)
+
 
 if __name__ == "__main__":
-    sucesso = executar_extracao()
+    args = _parse_args()
+    sucesso = executar_extracao(incluir_complementares=args.with_complementares)
     sys.exit(0 if sucesso else 1)

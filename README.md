@@ -382,13 +382,17 @@ python3 -m src.analysis.build_dashboard_data
 
 ## 📊 Fontes de Dados
 
-| Fonte | Conteúdo | Formato |
-|---|---|---|
-| **Qualidade do Atendimento Comercial** | Prazos, transgressões, compensações R$ | CSV |
-| **INDGER — Serviços Comerciais** | Quantidades, prazos, estoques, compensações | ZIP/CSV |
-| **INDGER — Dados Comerciais** | Faturamento, danos elétricos, atendimento | CSV |
+Duas fontes **nucleares** (entram nas métricas do TCC):
 
-Todos disponíveis em: [dadosabertos.aneel.gov.br](https://dadosabertos.aneel.gov.br)
+| Fonte | Conteúdo | Portal |
+|---|---|---|
+| **Qualidade do Atendimento Comercial** (ANEEL) | Prazos, transgressões, compensações R$ — anual 2011–2023 | [dadosabertos.aneel.gov.br](https://dadosabertos.aneel.gov.br) |
+| **INDGER — Indicadores Gerenciais da Distribuição** (ANEEL) | Serviços comerciais mensais 2023–2025 (ZIP + CSV consolidado) | [dadosabertos.aneel.gov.br](https://dadosabertos.aneel.gov.br) |
+| **DTB — Divisão Territorial do Brasil 2024** (IBGE) | Dimensão municipal para mapa e rural/urbano | [geoftp.ibge.gov.br](https://geoftp.ibge.gov.br) |
+
+Duas fontes **complementares** (no catálogo para rastreabilidade, não usadas hoje): `autos_infracao` e `reclamacoes`. Só baixam com `make extract-aneel-full`.
+
+**Documentação canônica de extração e tratamento:** [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md) — mapa completo das fontes (URLs CKAN, periodicidade, limitações), reprodução do zero e troubleshooting.
 
 ## 🎯 Variáveis de Interesse
 

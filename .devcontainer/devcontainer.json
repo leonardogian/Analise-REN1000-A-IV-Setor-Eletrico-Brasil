@@ -1,6 +1,6 @@
 {
   "name": "TCC REN1000 Dashboard",
-  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bullseye",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12-bullseye",
   "forwardPorts": [8051],
   "portsAttributes": {
     "8051": { "label": "Dashboard", "onAutoForward": "notify" }
@@ -24,6 +24,6 @@
       ]
     }
   },
-  "postCreateCommand": "make venv-recreate && make install && npm install -g vercel@latest @railway/cli",
+  "postCreateCommand": "python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && npm install -g vercel@latest @railway/cli",
   "remoteUser": "vscode"
 }

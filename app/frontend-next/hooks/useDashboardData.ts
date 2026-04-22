@@ -9,9 +9,14 @@ export interface KpiOverview {
   delta_taxa: number;
   pre_compensacao_total: number;
   pos_compensacao_total: number;
-  delta_compensacao_pct: number;
-  total_serv_pre: number;
-  total_serv_pos: number;
+  delta_compensacao_pct?: number;
+  delta_compensacao?: number;
+  pre_servicos_total: number;
+  pos_servicos_total: number;
+  pre_fora_prazo_total: number;
+  pos_fora_prazo_total: number;
+  anos_pre: number[];
+  anos_pos: number[];
 }
 
 export interface SerieAnual {
@@ -26,6 +31,12 @@ export interface SerieAnual {
 export interface DashboardPayload {
   kpi_overview: KpiOverview;
   serie_anual: SerieAnual[];
+}
+
+interface DashboardSectionResponse<T> {
+  meta: Record<string, unknown>;
+  section: string;
+  data: T;
 }
 
 export interface TimeseriesPoint {
@@ -47,6 +58,34 @@ export interface RankingItem {
   variacao_taxa_pct: number;
 }
 
+export interface SerieMensalNacionalItem {
+  ano: number;
+  mes: number;
+  group_id: string;
+  distributor_id: string;
+  distributor_label: string;
+  uc_ativa_mes: number;
+  qtd_serv_realizado: number;
+  qtd_fora_prazo: number;
+  compensacao_rs: number;
+  taxa_fora_prazo: number;
+  fora_prazo_por_100k_uc_mes: number;
+  compensacao_rs_por_uc_mes: number;
+  bucket_porte: string;
+}
+
+export interface ClasseLocalItem {
+  distributor_id: string;
+  classe_local_servico: string;
+  qtd_serv_realizado: number;
+  qtd_fora_prazo: number;
+  compensacao_rs: number;
+}
+
+export type GroupViewsPayload = Record<string, {
+  classe_local?: ClasseLocalItem[];
+}>;
+
 // ── Helpers de fetch ──────────────────────────────────────────────────────────
 
 async function fetchJson<T>(path: string): Promise<T> {
@@ -55,12 +94,33 @@ async function fetchJson<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function fetchJsonFirstAvailable<T>(paths: string[]): Promise<T> {
+  let lastError: Error | null = null;
+  for (const path of paths) {
+    try {
+      return await fetchJson<T>(path);
+    } catch (err) {
+      lastError = err as Error;
+    }
+  }
+  throw lastError ?? new Error('Falha ao carregar recurso.');
+}
+
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 
 export function useDashboardData() {
   return useQuery<DashboardPayload>({
     queryKey: ['dashboard'],
-    queryFn: () => fetchJson<DashboardPayload>('/api/dashboard'),
+    queryFn: async () => {
+      const [kpiSection, serieSection] = await Promise.all([
+        fetchJson<DashboardSectionResponse<KpiOverview>>('/api/dashboard/kpi_overview'),
+        fetchJson<DashboardSectionResponse<SerieAnual[]>>('/api/dashboard/serie_anual'),
+      ]);
+      return {
+        kpi_overview: kpiSection.data,
+        serie_anual: serieSection.data,
+      };
+    },
   });
 }
 
@@ -68,7 +128,10 @@ export function useTimeseries() {
   return useQuery<{ data: TimeseriesPoint[] }>({
     queryKey: ['timeseries'],
     queryFn: () =>
-      fetchJson<{ data: TimeseriesPoint[] }>('/dashboard_timeseries.json'),
+      fetchJsonFirstAvailable<{ data: TimeseriesPoint[] }>([
+        '/api/v1/timeseries-tendencia',
+        '/dashboard_timeseries.json',
+      ]),
   });
 }
 
@@ -76,7 +139,34 @@ export function useRanking() {
   return useQuery<{ data: RankingItem[] }>({
     queryKey: ['ranking'],
     queryFn: () =>
-      fetchJson<{ data: RankingItem[] }>('/dashboard_groups_ranking.json'),
+      fetchJsonFirstAvailable<{ data: RankingItem[] }>([
+        '/api/v1/groups-ranking',
+        '/dashboard_groups_ranking.json',
+      ]),
+  });
+}
+
+export function useSerieMensalNacional() {
+  return useQuery<SerieMensalNacionalItem[]>({
+    queryKey: ['serie-mensal-nacional'],
+    queryFn: async () => {
+      const res = await fetchJson<DashboardSectionResponse<SerieMensalNacionalItem[]>>(
+        '/api/dashboard/serie_mensal_nacional'
+      );
+      return res.data;
+    },
+  });
+}
+
+export function useGroupViews() {
+  return useQuery<GroupViewsPayload>({
+    queryKey: ['group-views'],
+    queryFn: async () => {
+      const res = await fetchJson<DashboardSectionResponse<GroupViewsPayload>>(
+        '/api/dashboard/group_views'
+      );
+      return res.data;
+    },
   });
 }
 
@@ -95,7 +185,10 @@ export function useScatter() {
   return useQuery<{ data: ScatterItem[] }>({
     queryKey: ['scatter'],
     queryFn: () =>
-      fetchJson<{ data: ScatterItem[] }>('/dashboard_scatter.json'),
+      fetchJsonFirstAvailable<{ data: ScatterItem[] }>([
+        '/api/v1/scatter-eficiencia',
+        '/dashboard_scatter.json',
+      ]),
   });
 }
 
@@ -130,6 +223,9 @@ export function useTransgressoes() {
   return useQuery<TransgressoesPayload>({
     queryKey: ['transgressoes-map'],
     queryFn: () =>
-      fetchJson<TransgressoesPayload>('/dashboard_transgressoes.json'),
+      fetchJsonFirstAvailable<TransgressoesPayload>([
+        '/api/v1/transgressoes',
+        '/dashboard_transgressoes.json',
+      ]),
   });
 }

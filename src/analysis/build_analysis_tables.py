@@ -28,6 +28,7 @@ from src.analysis.metrics import (
 from src.analysis.distributor_groups import (
     annotate_distributor_group,
     build_group_dimension,
+    default_group_label,
     load_distributor_name_overrides,
     load_group_overrides,
 )
@@ -668,21 +669,32 @@ def build_fato_transgressao_mensal_distribuidora(
 
 
 def merge_fato_with_porte(fato_indicadores: pd.DataFrame, dim_porte: pd.DataFrame) -> pd.DataFrame:
-    merge_cols = [
-        "ano",
-        "group_id",
-        "distributor_id",
+    merge_cols = ["ano", "group_id", "distributor_id", "uc_ativa_media_mensal", "bucket_porte", "rank_porte_ano"]
+
+    # Name fields are optional and only used as fallback completion for annual rows.
+    optional_name_cols = [
         "sigagente",
-        "uc_ativa_media_mensal",
-        "bucket_porte",
-        "rank_porte_ano",
+        "nomagente",
+        "distributor_name_sig",
+        "distributor_name_legal",
+        "distributor_label",
     ]
+    merge_cols.extend([c for c in optional_name_cols if c in dim_porte.columns])
+
     merge_cols = [c for c in merge_cols if c in dim_porte.columns]
     enriched = fato_indicadores.merge(
         dim_porte[merge_cols],
-        on=["ano", "group_id", "distributor_id", "sigagente"],
+        on=["ano", "group_id", "distributor_id"],
         how="left",
+        suffixes=("", "_porte"),
     )
+
+    for col in optional_name_cols:
+        col_porte = f"{col}_porte"
+        if col in enriched.columns and col_porte in enriched.columns:
+            mask = enriched[col].isna() | (enriched[col].astype(str).str.strip() == "")
+            enriched.loc[mask, col] = enriched.loc[mask, col_porte]
+            enriched = enriched.drop(columns=[col_porte])
 
     enriched["fora_prazo_por_100k_uc"] = calc_fora_prazo_por_100k(enriched["qtd_fora_prazo"], enriched["uc_ativa_media_mensal"])
     enriched["compensacao_rs_por_uc"] = calc_compensacao_por_uc(enriched["compensacao_rs"], enriched["uc_ativa_media_mensal"])
@@ -946,6 +958,76 @@ def build_algorithmic_group_snapshot(
     return out.sort_values(["dimension_id", "label", "periodo_regulatorio"]).reset_index(drop=True)
 
 
+def augment_dim_group_with_historical(
+    dim_group: pd.DataFrame,
+    fato_indicadores: pd.DataFrame,
+) -> pd.DataFrame:
+    """Include historical-only distributors not present in recent UC datasets.
+
+    This keeps monthly metrics untouched while exposing consistent IDs for annual facts.
+    """
+    if dim_group.empty or fato_indicadores.empty:
+        return dim_group
+
+    required = ["group_id", "distributor_id", "sigagente", "nomagente", "distributor_name_sig", "distributor_name_legal", "distributor_label"]
+    available = [c for c in required if c in fato_indicadores.columns]
+    if not {"group_id", "distributor_id"}.issubset(set(available)):
+        return dim_group
+
+    fact_dim = (
+        fato_indicadores[available]
+        .dropna(subset=["group_id", "distributor_id"])
+        .drop_duplicates(subset=["group_id", "distributor_id"])
+        .copy()
+    )
+
+    existing = set(zip(dim_group["group_id"].astype(str), dim_group["distributor_id"].astype(str)))
+    fact_dim["_key"] = list(zip(fact_dim["group_id"].astype(str), fact_dim["distributor_id"].astype(str)))
+    missing = fact_dim[~fact_dim["_key"].isin(existing)].drop(columns=["_key"])
+    if missing.empty:
+        return dim_group
+
+    for col in ["sigagente", "nomagente", "distributor_name_sig", "distributor_name_legal", "distributor_label"]:
+        if col not in missing.columns:
+            missing[col] = ""
+
+    group_labels = (
+        dim_group[["group_id", "group_label"]]
+        .dropna(subset=["group_id"])
+        .drop_duplicates(subset=["group_id"])
+        .set_index("group_id")["group_label"]
+        .to_dict()
+    )
+
+    missing["group_label"] = missing["group_id"].astype(str).map(lambda gid: group_labels.get(gid, default_group_label(gid)))
+    missing["distributor_count"] = 1
+    missing["selector_enabled"] = False
+
+    missing = missing[
+        [
+            "group_id",
+            "group_label",
+            "distributor_id",
+            "sigagente",
+            "nomagente",
+            "distributor_name_sig",
+            "distributor_name_legal",
+            "distributor_label",
+            "distributor_count",
+            "selector_enabled",
+        ]
+    ]
+
+    out = pd.concat([dim_group, missing], ignore_index=True, sort=False)
+    out = out.drop_duplicates(subset=["group_id", "distributor_id"], keep="first")
+
+    counts = out.groupby("group_id")["distributor_id"].nunique()
+    out["distributor_count"] = out["group_id"].astype(str).map(counts).astype("Int64")
+    out["selector_enabled"] = out["distributor_count"] >= 2
+
+    return out.sort_values(["group_id", "distributor_label"]).reset_index(drop=True)
+
+
 def run_all() -> dict[str, pd.DataFrame]:
     distributor_to_group, group_labels = load_group_overrides()
     distributor_name_overrides = load_distributor_name_overrides()
@@ -977,6 +1059,7 @@ def run_all() -> dict[str, pd.DataFrame]:
     fato_transgressao_mensal_distribuidora = ensure_name_columns(fato_transgressao_mensal_distribuidora)
     kpi_overview = build_kpi_overview(fato_indicadores)
     dim_group = build_group_dimension(dim_porte)
+    dim_group = augment_dim_group_with_historical(dim_group, fato_indicadores)
     algorithmic_group_snapshot = build_algorithmic_group_snapshot(
         fato_transgressao_mensal_distribuidora=fato_transgressao_mensal_distribuidora,
         fato_servicos_municipio_mes=fato_servicos,
