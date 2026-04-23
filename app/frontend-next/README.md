@@ -1,36 +1,119 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend Next.js 14 — Dashboard ANEEL REN 1000
 
-## Getting Started
+Frontend principal do TCC. Consome a API FastAPI no Railway via rewrites do Next.js.
 
-First, run the development server:
+**URL de produção:** [tcc-frontend-react.vercel.app](https://tcc-frontend-react.vercel.app)
+
+---
+
+## Como rodar
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Da raiz do projeto (recomendado — sobe backend junto):
+make stack-next        # backend :8051 + Next.js :3051
+
+# Só o Next.js (precisa de backend separado):
+make backend &         # backend em segundo plano
+make frontend-next     # Next.js em http://localhost:3051
+
+# Direto com npm (dentro desta pasta):
+npm run dev            # http://localhost:3000 (sem rewrite pra Railway)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estrutura
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/frontend-next/
+├── app/                  ← App Router (Next.js 14)
+│   ├── layout.tsx        ← Layout raiz (Sidebar + providers)
+│   ├── page.tsx          ← Rota / → Dashboard home (KPIs + tendências)
+│   ├── benchmark/        ← Rota /benchmark → Scatter volume × compensação
+│   ├── evolucao/         ← Rota /evolucao  → Heatmap mensal por holding
+│   ├── mapa/             ← Rota /mapa      → Choropleth geográfico (Leaflet)
+│   ├── ranking/          ← Rota /ranking   → Ranking horizontal de grupos
+│   └── transgressoes/    ← Rota /transgressoes → Série temporal bi-eixo
+│
+├── components/
+│   ├── Sidebar.tsx       ← Navegação lateral (links para as 6 rotas)
+│   ├── KPICard.tsx       ← Card de KPI com variação pré/pós REN 1000
+│   ├── ChartCard.tsx     ← Wrapper de gráfico com skeleton e error state
+│   └── MapView.tsx       ← Componente Leaflet (client-only, dynamic import)
+│
+├── hooks/
+│   └── useDashboardData.ts ← Hooks TanStack Query: useKpiOverview, useScatter,
+│                             useTimeSeries, useHeatmap, useRanking, useGroups
+│
+├── lib/
+│   ├── colors.ts         ← Paleta de cores, API_BASE (Railway URL)
+│   ├── format.ts         ← Formatadores pt-BR (moeda, %, número)
+│   └── store.ts          ← Zustand: estado global de filtros (período, grupo)
+│
+├── next.config.mjs       ← Rewrites: /api/* e /dashboard_*.json → Railway
+├── vercel.json           ← Security headers (CSP, X-Frame-Options…)
+└── tailwind.config.ts    ← Tema Tailwind (dark mode, cores das holdings)
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Como os dados chegam ao frontend
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+O `next.config.mjs` configura rewrites transparentes — o browser faz `fetch('/api/dashboard')` e o Next.js redireciona para o Railway sem expor a URL do backend:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+Browser → /api/dashboard
+  ↓ rewrite (next.config.mjs)
+Railway → https://tcc-ren1000x414-production.up.railway.app/api/dashboard
+```
 
-## Deploy on Vercel
+O mesmo vale para os arquivos `dashboard_*.json` que o backend serve como estáticos.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Localmente, a variável `API_REWRITE_URL=http://localhost:8051` (definida pelo `make frontend-next`) aponta os rewrites pro backend local em vez do Railway.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Como adicionar uma nova página
+
+1. Crie `app/<nome>/page.tsx`
+2. Importe o hook adequado de `hooks/useDashboardData.ts`
+3. Adicione o link no `components/Sidebar.tsx`
+4. Se precisar de novos dados: adicione um hook `useNomeDaPagina()` em `useDashboardData.ts`
+
+Exemplo mínimo:
+
+```tsx
+'use client';
+import { useKpiOverview } from '@/hooks/useDashboardData';
+import { ChartCard, ChartSkeleton } from '@/components/ChartCard';
+
+export default function NovaPagina() {
+  const { data, isLoading, error } = useKpiOverview();
+  if (isLoading) return <ChartSkeleton />;
+  if (error || !data) return null;
+  return <ChartCard title="Minha Análise">{/* Recharts aqui */}</ChartCard>;
+}
+```
+
+---
+
+## Deploy (Vercel)
+
+Este diretório está vinculado ao projeto Vercel **`tcc-frontend-react`** (ID `prj_hanCWL0GVRwXVKHw5ecCuWmJPSyn`).
+
+Deploy automático: qualquer push na branch `main` que modifique `app/frontend-next/**` dispara rebuild no Vercel com este diretório como Root Directory.
+
+O `vercel.json` nesta pasta adiciona security headers (CSP) ao deploy. Os rewrites de API estão no `next.config.mjs` — não duplique no `vercel.json`.
+
+---
+
+## Dependências principais
+
+| Pacote | Versão | Para quê |
+|--------|--------|----------|
+| `next` | 14.2.35 | Framework React (App Router, SSR) |
+| `@tanstack/react-query` | 5.x | Cache e sincronização de dados assíncronos |
+| `zustand` | 5.x | Estado global de filtros |
+| `recharts` | 3.x | Gráficos (line, bar, scatter, heatmap) |
+| `react-leaflet` / `leaflet` | 4.x / 1.9 | Mapa geográfico interativo |
+| `tailwindcss` | 3.4 | Design system utilitário (dark mode) |

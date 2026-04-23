@@ -1,4 +1,5 @@
 {
+  "_comment": "Projeto Vercel: analise-ren-1000-a-iv-setor-eletrico-brasil (frontend Vanilla JS legado). O frontend principal Next.js usa app/frontend-next/ — projeto Vercel: tcc-frontend-react.",
   "outputDirectory": "app/frontend",
   "framework": null,
   "buildCommand": null,

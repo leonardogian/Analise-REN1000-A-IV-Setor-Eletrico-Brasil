@@ -172,7 +172,8 @@
       "Bash(make -n extract-aneel-full)",
       "Bash(.venv/bin/python -c \"from src.etl.extract_aneel import CATALOGO, executar_extracao; from src.etl.extract_ibge import CATALOGO_IBGE, executar_extracao_ibge; from src.etl.schema_contracts import validate_raw_contracts, RAW_REQUIRED_COLUMNS_NUCLEAR; print\\('imports OK'\\); print\\('nuclear fontes:', [k for k,v in CATALOGO.items\\(\\) if v['tier']=='nuclear']\\); print\\('complementar fontes:', [k for k,v in CATALOGO.items\\(\\) if v['tier']=='complementar']\\)\")",
       "Bash(.venv/bin/python scripts/validate_schema_contracts.py)",
-      "Bash(make validate-contracts *)"
+      "Bash(make validate-contracts *)",
+      "Bash(git ls-tree *)"
     ]
   }
 }

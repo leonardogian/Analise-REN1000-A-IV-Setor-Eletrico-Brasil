@@ -162,13 +162,15 @@ dashboard-transgressoes:
 dashboard-full: analysis grupos-diagnostico neoenergia-diagnostico dashboard dashboard-transgressoes
 
 # ── Serving / Backend ─────────────────────────────────────────────────────────
+# Frontend principal: make stack-next (backend + Next.js juntos)
+# Frontend legado (Vanilla JS): make serve
 
 serve: dashboard
-	@echo "🌐 Frontend classico em http://localhost:$(PORT)"
+	@echo "🌐 Frontend Vanilla JS (legado) em http://localhost:$(PORT)"
 	@(sleep 2 && xdg-open http://localhost:$(PORT) 2>/dev/null || true) &
 	cd app/frontend && $(PYTHON) -m http.server $(PORT)
 
-frontend: serve
+frontend: serve  ## legado: use stack-next para o frontend Next.js principal
 
 frontend-next-install:
 	cd $(FRONTEND_NEXT_DIR) && $(NPM) install
