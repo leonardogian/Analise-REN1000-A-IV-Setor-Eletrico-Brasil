@@ -238,4 +238,43 @@ Fonte dos dados: [dadosabertos.aneel.gov.br](https://dadosabertos.aneel.gov.br) 
 
 ---
 
+## 🔬 Abertura, Fidelidade dos Dados e Pesquisas Futuras
+
+Este projeto foi desenhado para ser **aberto por padrão** — tanto nos dados quanto na infraestrutura. Esta seção explica o porquê e como outros pesquisadores podem reutilizá-lo.
+
+### Por que o projeto pode ficar público sem restrições
+
+Todas as fontes são **dados abertos obrigatórios por lei** (Lei de Acesso à Informação + Resolução Normativa ANEEL nº 1.000/2021) e disponíveis no portal oficial [dadosabertos.aneel.gov.br](https://dadosabertos.aneel.gov.br):
+
+- Os indicadores são **agregados por distribuidora (pessoa jurídica), serviço ou município** — sem nenhum identificador de consumidor individual. A LGPD não se aplica, pois não há titular de dado pessoal envolvido.
+- A API pública do backend serve exclusivamente leitura (`GET`) — sem endpoints de escrita, upload ou autenticação, por design: dados abertos não devem exigir login.
+- Nenhum dado sintético, estimado ou preenchido artificialmente: todas as transformações são determinísticas e auditáveis via histórico `git`.
+
+### Fidelidade e rastreabilidade da cadeia de dados
+
+A cadeia completa é reproduzível a partir do zero com `make pipeline`:
+
+| Etapa | Script | Saída |
+|-------|--------|-------|
+| Extração | `src/etl/extract_aneel.py` | `data/raw/*.csv` — CSVs brutos dos endpoints CKAN/ANEEL |
+| Transformação | `src/etl/transform_aneel.py` | `data/processed/*.parquet` — Parquet tipados |
+| Análise | `src/analysis/build_analysis_tables.py` | `data/processed/analysis/*.csv` — **13 tabelas versionadas no Git** |
+| Validação | `scripts/validate_schema_contracts.py` | Contratos de schema contra o raw e o processado |
+
+As 13 tabelas analíticas em `data/processed/analysis/` entram no controle de versão precisamente para permitir **auditoria independente**: qualquer revisor pode verificar coluna a coluna sem precisar re-extrair os 7 GB brutos. A documentação ponta-a-ponta das fontes, URLs, cadência de atualização e troubleshooting está em [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md).
+
+### Caminhos para pesquisas futuras
+
+O pipeline foi estruturado para ser extensível. Alguns ganchos concretos:
+
+- **Ampliar a janela temporal** — o pipeline é idempotente por ano/mês; basta rodar `make pipeline` após novas safras INDGER ou de Qualidade Comercial serem publicadas pela ANEEL.
+- **Cross-análise com outras bases ANEEL** — indicadores de continuidade (DIC/FIC/DEC), tarifas, perdas não-técnicas. As dimensões `dim_distribuidora_porte.csv` e `dim_distributor_group.csv` funcionam como chave de junção.
+- **Estudos longitudinais pós-REN 1.000** — ex.: análise da trajetória de compensação per capita vs. complexidade geográfica municipal com dados IBGE DTB já integrados.
+- **Econometria em painel** — a separação fatos/dimensões facilita modelos com efeitos fixos por distribuidora e ano (`linearmodels`, `statsmodels`).
+- **Comparação setorial** — metodologia análoga pode ser aplicada a indicadores de qualidade de outras agências regulatórias (ANATEL, ANS, ANTT).
+
+Forks, issues e pull requests são bem-vindos. O repositório está aberto justamente para ser uma base reutilizável além do TCC original.
+
+---
+
 > 🤖 **Para agentes IA:** antes de qualquer mudança estrutural, leia `CLAUDE.md` e `AGENTS.md`. Rotas, portas e targets Make estão documentados lá.
