@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality of Brazilian energy distributors. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units). Special focus on 5 Neoenergia distributors.
 
-**Current phase:** ETL, data infrastructure, and frontend design system are complete. The dashboard has 6 active pages (index, transgressoes, benchmark, evolucao, ranking, mapa) + relatorio.html (print). Dead scripts, stub pages, and orphaned API endpoints were cleaned up (March 2026). Backend exposes 3 endpoints: `/health`, `/api/dashboard`, `/api/dashboard/{section}`. Statistical diagnostics notebook completed (`notebooks/diagnostico_dados.ipynb`). Next steps: fix distributor names bug in `fato_indicadores_anuais` pipeline, choropleth layer on the map, and thesis writing.
+**Current phase:** ETL (com integração IBGE + tiers), backend FastAPI+Postgres+Redis e dois frontends (Vanilla JS clássico em `app/frontend/` e Next.js 14 em `app/frontend-next/`) estão operacionais. Backend expõe 9 endpoints: `/health`, `/api/dashboard`, `/api/dashboard/{section}` e seis micro-payloads em `/api/v1/*`. Próximos passos: fix do bug de nomes de distribuidoras em `fato_indicadores_anuais`, camada coroplética no mapa e redação da tese.
 
 ## Essential Commands
 
@@ -19,35 +19,35 @@ make doctor            # validate .venv + critical imports
 # Full pipeline (ETL -> analysis -> report -> dashboard)
 make pipeline
 
-# Individual pipeline steps
-python3 -m src.etl.extract_aneel          # download raw CSVs from ANEEL
-python3 -m src.etl.transform_aneel        # clean and save as Parquet/CSV
-python3 -m src.analysis.build_analysis_tables  # generate analytical tables
-python3 -m src.analysis.build_report      # generate markdown report
-python3 -m src.analysis.build_dashboard_data   # generate dashboard JSON
-python3 -m src.analysis.grupos_diagnostico     # generate group benchmarks (grupos/ CSVs)
-python3 -m src.analysis.dashboard_transgressoes  # generate dashboard_transgressoes.json
+# Individual pipeline steps (equivalentes ao make pipeline)
+python3 -m src.etl.extract_aneel               # raw CSVs from ANEEL
+python3 -m src.etl.extract_ibge                # raw data from IBGE (tiers)
+python3 -m src.etl.transform_aneel             # clean -> Parquet/CSV
+python3 -m src.analysis.build_analysis_tables  # analytical tables
+python3 -m src.analysis.build_report           # markdown report
+python3 -m src.analysis.build_dashboard_data   # dashboard JSON
+python3 -m src.analysis.grupos_diagnostico     # grupos/*.csv
+python3 -m src.analysis.dashboard_transgressoes  # dashboard_transgressoes.json
 
 # Generating dashboard data
-make grupos-diagnostico    # generate data/processed/analysis/grupos/ analytics CSVs
-make neoenergia-diagnostico # generate data/processed/analysis/neoenergia/ CSVs
-make dashboard-full        # analysis + grupos + neoenergia + all dashboard JSONs
-make clean-analysis        # remove data/processed/analysis/ outputs
+make grupos-diagnostico     # data/processed/analysis/grupos/
+make neoenergia-diagnostico # data/processed/analysis/neoenergia/
+make dashboard-full         # analysis + grupos + neoenergia + all JSONs
+make clean-analysis         # remove data/processed/analysis/ outputs
 
 # Serving the dashboard & Testing Local API
 # URL Base (Local): http://localhost:8051 | URL Base (Produção Railway): https://tcc-ren1000x414-production.up.railway.app
-make serve             # Frontend classico (Vanilla JS) em http://localhost:8051
-make frontend-next     # Frontend Next.js em http://localhost:3051 apontando para backend local
-make frontend-next-railway # Frontend Next.js em http://localhost:3051 usando Railway
-make stack-next        # Backend local + frontend Next.js com um unico comando
-make backend           # FastAPI backend at http://localhost:8051
-make dev-serve         # Backend with --reload (also serves static files locally as a fallback)
+make serve                  # Frontend clássico (Vanilla JS) em http://localhost:8051
+make frontend-next          # Frontend Next.js em http://localhost:3051 (backend local)
+make frontend-next-railway  # Frontend Next.js em http://localhost:3051 (backend Railway)
+make stack-next             # Backend local + frontend Next.js num único comando
+make backend                # FastAPI em http://localhost:8051
+make dev-serve              # Backend com --reload (também serve estáticos como fallback)
 
 # Tests
-make test-fast         # compile + imports + schema contracts + core artifacts
-make test-smoke        # full smoke (neoenergia + dashboard + full validation)
-make validate-contracts  # validate raw/processed schema contracts
-
+make test-fast          # compile + imports + schema contracts + core artifacts
+make test-smoke         # full smoke (neoenergia + dashboard + full validation)
+make validate-contracts # schema contracts (raw/processed)
 ```
 
 ## Architecture
@@ -55,18 +55,18 @@ make validate-contracts  # validate raw/processed schema contracts
 ### Data Pipeline
 
 ```
-ANEEL API (dadosabertos.aneel.gov.br)
+ANEEL API (dadosabertos.aneel.gov.br)  +  IBGE (via tiers)
     |
-src/etl/extract_aneel.py      -> data/raw/*.csv  (NOT versioned, 7+ GB)
+src/etl/extract_aneel.py + extract_ibge.py  -> data/raw/*.csv  (NOT versioned, 7+ GB)
     |
-src/etl/transform_aneel.py    -> data/processed/*.{csv,parquet}  (NOT versioned)
+src/etl/transform_aneel.py                  -> data/processed/*.{csv,parquet}  (NOT versioned)
     |
-src/analysis/build_analysis_tables.py -> data/processed/analysis/*.csv  (versioned)
+src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (versioned)
     |
-    +-> build_report.py           -> reports/relatorio_aneel.md
-    +-> neoenergia_diagnostico.py -> data/processed/analysis/neoenergia/*.csv
-    +-> grupos_diagnostico.py     -> data/processed/analysis/grupos/*.csv (13 files)
-    +-> build_dashboard_data.py   -> app/frontend/dashboard_data.json
+    +-> build_report.py            -> reports/relatorio_aneel.md
+    +-> neoenergia_diagnostico.py  -> data/processed/analysis/neoenergia/*.csv
+    +-> grupos_diagnostico.py      -> data/processed/analysis/grupos/*.csv (13 files)
+    +-> build_dashboard_data.py    -> app/frontend/dashboard_data.json
     +-> dashboard_transgressoes.py -> app/frontend/dashboard_transgressoes.json
 ```
 
@@ -76,51 +76,52 @@ src/analysis/build_analysis_tables.py -> data/processed/analysis/*.csv  (version
 |-------|------|
 | ETL/Analysis | Python 3.10+, pandas, numpy |
 | Backend | FastAPI + PostgreSQL + Redis (`app/backend/main.py`) no **Railway** |
-| Frontend | HTML5, Vanilla JS, Chart.js 4.4.7 (CDN), CSS pure no **Vercel** |
+| Frontend clássico | HTML5, Vanilla JS, Chart.js 4.4.7 (CDN), CSS puro no **Vercel** |
+| Frontend Next.js | Next.js 14 + React + Tailwind + TanStack Query (`app/frontend-next/`) |
 | Orchestration | GNU Make + Docker Compose |
 | Data formats | PostgreSQL DB, Redis Cache, Parquet, JSON |
 
-### Filosofia de Arquitetura Híbrida (Vercel x Railway x PostgreSQL x Redis)
+### Deploy híbrido (Vercel + Railway)
 
-Nossa configuração de Produção opera de maneira estritamente desacoplada e escalável:
-
-1. **Frontend (Vercel)**: Qualquer modificação de roteamento, arquivos estáticos puros ou redirecionamentos de chamadas à API são governados unicamente pelo cliente e por seu arquivo de setup principal, **`vercel.json`**.
-2. **Backend (Railway)**: Toda a inteligência da API REST está concentrada no `app/backend/main.py`.
-   - Utilizamos um banco de dados **PostgreSQL** para hospedar as tabelas de análise via SQL (substituindo o antigo payload gigante em JSON estático e permitindo filtros infinitos).
-   - Utilizamos um cache em memória **Redis** para servir requests repetidas de forma instantânea.
-   - URL Base da API em Produção: `https://tcc-ren1000x414-production.up.railway.app`
-
-*Nota sobre testes locais e mock:* Durante simulações de teste e desenvolvimento local da API, nós mapeamos e testamos internamente as rotas FastAPI via `make dev-serve` / `make backend` rodando em `http://localhost:8051`. No frontend Vercel (Produção), os `fetch()` para `/api/...` são implicitamente reescritos e encaminhados à nossa URL Base do Railway transparentemente por causa das regras de rewrite em `vercel.json`!
+- **Frontend (Vercel)**: estáticos + rewrites em `vercel.json` encaminham `/api/*` para o Railway transparentemente.
+- **Backend (Railway)**: FastAPI em `app/backend/main.py`, PostgreSQL para tabelas analíticas (substitui o payload JSON gigante) e Redis para cache in-memory. URL base: `https://tcc-ren1000x414-production.up.railway.app`.
+- **Local**: `make backend` / `make dev-serve` rodam FastAPI em `localhost:8051` (mesma API, sem rewrite).
 
 ### Key Directories
 
-- `src/etl/` — extraction and transformation scripts
+- `src/etl/` — extraction and transformation scripts (ANEEL + IBGE)
 - `src/analysis/` — analytical table builders, report generators
-- `app/backend/main.py` — FastAPI serving static files + REST endpoints
-- `app/frontend/` — SPA dashboard (6 active pages + shared JS modules)
-  - Shared modules (load order): `utils.js → nav.js → filters.js → app.js → [page].js`
+- `app/backend/main.py` — FastAPI (9 endpoints + static mount)
+- `app/frontend/` — SPA clássico (6 páginas + shared JS modules)
+  - Load order: `utils.js → nav.js → filters.js → app.js → [page].js`
   - `utils.js` — formatters (fmtNum, fmtMoney, fmtMoneyFull, fmtPct, fmtVar)
   - `nav.js` — sidebar active-link, mobile toggle, toast system
   - `filters.js` — global period/porte/group state + `filters:change` event
   - `app.js` — Chart.js defaults (theme), shared constants
-- `data/processed/analysis/` — versioned analytical CSVs/Parquets consumed by the app
-- `docker/` — Docker Compose files (app stack, PostgreSQL, Kestra)
-- `scripts/playwright/` — browser automation: `screenshot-all.js`, `check-charts.js`, `aneel-fetch.js`
-- `scripts/` — utilities (PostgreSQL loader, artifact checkers, QA automation)
-- `notebooks/` — Jupyter notebooks for exploratory analysis
+- `app/frontend-next/` — frontend alternativo em Next.js 14 (7 páginas, Tailwind, TanStack Query)
+- `data/processed/analysis/` — versioned analytical CSVs/Parquets
+- `docker/` — Docker Compose (app stack, PostgreSQL, Kestra)
+- `docs/` — canonical docs (EXTRACAO_DADOS, DICIONARIO_DADOS, GUIA_ANALISE, PROXIMOS_PASSOS_TCC, ...)
+- `.github/agents/` — specialized AI agents (aneel-data-guardian, backend-fastapi-specialist, frontend-next-specialist)
+- `scripts/playwright/` — browser automation (`screenshot-all.js`, `check-charts.js`, `aneel-fetch.js`)
+- `scripts/` — utilities (Postgres loader, artifact checkers, QA automation)
 
 ### Frontend Data Flow
 
-The frontend consumes static JSON files:
-- `dashboard_data.json` — main payload, 27 MB (generated by `build_dashboard_data.py`)
-- `dashboard_transgressoes.json` — transgressions by distributor/group/rural (generated by `dashboard_transgressoes.py`)
-- `dashboard_timeseries.json` — monthly time-series for heatmap/trends (`evolucao.html`)
-- `dashboard_scatter.json` — volume × compensation scatter data (`benchmark.html`)
-- `dashboard_heatmap.json` — group × dimension matrix
-- `dashboard_radar.json` — multi-dimensional group profiles
-- `dashboard_groups_ranking.json` — top-N group ranking (`ranking.html`)
+Frontend clássico consome JSON estáticos + endpoints REST:
 
-Frontend pages (all under `app/frontend/`):
+- `dashboard_data.json` — payload principal, ~27 MB (gerado por `build_dashboard_data.py`)
+- `dashboard_transgressoes.json`, `dashboard_timeseries.json`, `dashboard_scatter.json`, `dashboard_heatmap.json`, `dashboard_radar.json`, `dashboard_groups_ranking.json` — micro-payloads por visualização
+
+Backend endpoints (`app/backend/main.py`):
+
+- `/health` — liveness
+- `/api/dashboard` — payload completo
+- `/api/dashboard/{section}` — fatia por seção
+- `/api/v1/timeseries-tendencia`, `/scatter-eficiencia`, `/heatmap-transgressoes`, `/radar-slas`, `/groups-ranking`, `/transgressoes` — micro-payloads otimizados (cache Redis)
+
+Páginas (todas em `app/frontend/` e espelhadas em `app/frontend-next/app/`):
+
 - `index.html` / `app.js` — main dashboard (KPIs, trends, groups overview)
 - `transgressoes.html` / `transgressoes.js` — time-series transgression analysis
 - `benchmark.html` / `benchmark.js` — bubble chart: services volume × compensation by porte
@@ -129,11 +130,10 @@ Frontend pages (all under `app/frontend/`):
 - `mapa.html` / `mapa.js` — interactive geographic map
 - `relatorio.html` — print-optimized report (Ctrl+P → PDF)
 
-The backend (`app/backend/main.py`) serves these JSON files via FastAPI endpoints and also mounts the frontend as static files.
-
 ### Analytical Tables (`data/processed/analysis/`)
 
 Key files consumed by backend and dashboard:
+
 - `fato_indicadores_anuais.csv` — annual indicators per distributor/service (2011-2023)
 - `fato_transgressao_mensal_distribuidora.csv` — monthly transgressions per distributor
 - `fato_transgressao_mensal_porte.csv` — monthly transgressions by size class
@@ -142,20 +142,21 @@ Key files consumed by backend and dashboard:
 - `dim_distributor_group.csv` — distributor → economic group/holding mapping
 - `kpi_regulatorio_anual.csv` — annual regulatory KPIs for thesis narrative
 - `fato_grupos_algoritmicos.csv` — algorithmically-classified group assignments
-- `grupos/` subdirectory (13 CSVs) — group-level analytics: annual, monthly, trends, benchmarks, data quality, outliers (generated by `grupos_diagnostico.py`)
+- `grupos/` — 13 CSVs group-level analytics: annual, monthly, trends, benchmarks, data quality, outliers (generated by `grupos_diagnostico.py`)
 
 ## Critical Constraints
 
-1. **Port 8051 for local dev and Docker** — `make serve`, `make backend`, Playwright scripts, and Docker all use port 8051. The Next.js comparison frontend uses port `3051` locally via `make frontend-next` because ports 3000/5433/6379/8000/8050/8080/8090 are occupied by other local services.
-2. **Use `python3`, not `python`** — `python` binary does not exist on this machine. Makefile handles this automatically.
-3. **No JS/CSS frameworks** — dashboard is pure Vanilla JS, pure CSS. No Tailwind, Bootstrap, or npm packages for the frontend. Chart.js is loaded via CDN only.
-4. **Never open dashboard via `file://`** — CORS issues. Always use `make serve` or `make backend`.
-5. **Do not commit raw data** — `data/raw/` and `data/processed/*.{csv,parquet}` are in `.gitignore`. Only `data/processed/analysis/` CSVs are versioned.
-6. **`dashboard_data.json` is generated** — run `make dashboard` to regenerate; do not commit it.
+1. **Port 8051 para local dev e Docker** — `make serve`, `make backend`, scripts Playwright e Docker usam 8051. O frontend Next.js usa `3051` via `make frontend-next` (3000/5433/6379/8000/8050/8080/8090 estão ocupados por outros serviços locais).
+2. **Use `python3`, não `python`** — o binário `python` não existe nesta máquina. O Makefile já trata isso.
+3. **Stacks de frontend divergentes** — `app/frontend/` é Vanilla JS puro + Chart.js via CDN (sem npm, sem frameworks). `app/frontend-next/` é Next.js 14 + React + Tailwind + TanStack Query. Não misturar convenções entre as duas.
+4. **Nunca abrir o dashboard via `file://`** — CORS quebra. Use sempre `make serve` ou `make backend`.
+5. **Não commitar raw data** — `data/raw/` e `data/processed/*.{csv,parquet}` estão no `.gitignore`. Só `data/processed/analysis/` CSVs são versionados.
+6. **`dashboard_data.json` é gerado** — rode `make dashboard` para regenerar; não commitar manualmente.
 
 ## Conventions
 
-### Commits (Conventional Commits in Portuguese)
+### Commits (Conventional Commits em português)
+
 ```
 feat: adicionar endpoint de transgressões por porte
 fix: corrigir porta no Makefile para 8050
@@ -165,59 +166,43 @@ chore: atualizar requirements.txt
 ```
 
 ### Python Scripts
-- All scripts run as modules: `python3 -m src.analysis.build_report`
-- Each script has `if __name__ == "__main__": main()`
-- Files use `snake_case.py`
-- Parquet is the preferred format for large data reading; CSV for human-readable output
+
+- Todos os scripts rodam como módulos: `python3 -m src.analysis.build_report`
+- Cada script tem `if __name__ == "__main__": main()`
+- Arquivos em `snake_case.py`
+- Parquet para leitura de dados grandes; CSV para output human-readable
 
 ### Context Files for AI Agents
-After making structural changes, update these files to keep AI context current:
-- `README.md` — human documentation (directory structure, outputs, workflow)
-- `AGENTS.md` — AI directives, current phase, operational rules
-- `CLAUDE.md` — commands, architecture, constraints (this file)
-- `app/frontend/README.md` — frontend pages, shared modules, JSON data flow
-- `.ai/CONTEXT.md` — AI-focused architecture overview
-- `.ai/PIPELINE.md` — data pipeline details
-- `.ai/CONVENTIONS.md` — coding and commit conventions
-- `.ai/DASHBOARD.md` — dashboard-specific AI context
-- `.ai/DATA_OVERVIEW.md` — data sources, schemas and column reference
-- `docs/EXTRACAO_DADOS.md` — canonical guide for extraction + transformation (ANEEL + IBGE), URLs, periodicity, troubleshooting
+
+Após mudanças estruturais, mantenha sincronizados:
+
+- `README.md`, `AGENTS.md`, `CLAUDE.md` (raiz)
+- `app/frontend/README.md` (dashboard clássico), `app/frontend-next/README.md` (dashboard Next.js)
+- `.ai/CONTEXT.md`, `.ai/PIPELINE.md`, `.ai/CONVENTIONS.md`, `.ai/DASHBOARD.md`, `.ai/DATA_OVERVIEW.md`
+- `docs/EXTRACAO_DADOS.md` — guia canônico de extração ANEEL + IBGE
 
 ## Testing
 
-No pytest framework. Tests are Make targets:
-- `make test-fast` — fast validation (imports, schema contracts, core artifacts)
-- `make test-smoke` — full smoke test including neoenergia and dashboard generation
-- `scripts/check_artifacts.py --profile core|full` — artifact presence check
-- `scripts/smoke_imports.py` — import smoke test
-- `scripts/validate_schema_contracts.py` — schema contract validation
+Não há pytest. Testes são Make targets:
+
+- `make test-fast` — validação rápida (imports, schema contracts, core artifacts)
+- `make test-smoke` — smoke completo (neoenergia + dashboard + validação)
+- `scripts/check_artifacts.py --profile core|full` — presença de artefatos
+- `scripts/smoke_imports.py` — smoke de imports
+- `scripts/validate_schema_contracts.py` — contratos de schema
 
 ## Docker
 
 ```bash
-# Main stack (dashboard + backend), Docker uses port 8051 internally
+# Main stack (dashboard + backend), porta 8051 interna
 docker compose up --build
 
-# Kestra orchestration (data pipelines + Gemini AI flows)
+# Kestra orchestration (pipelines de dados)
 docker compose -f docker/docker-compose.kestra.yml up -d
-# Requires GEMINI_API_KEY in .env for AI flows
 ```
 
-## AI Tooling para este Projeto
+## AI Tooling
 
-### MCP Relevante
-- **context7** — busca de docs de pandas, FastAPI, Chart.js durante desenvolvimento
-
-### Browser Automation
-- Usar **playwright CLI** via Bash: `npx playwright test` ou `npx playwright codegen`
-- Plugin **playwright** (Claude Code) fornece skills e agentes para automação
-
-### MCPs Fora do Escopo
-- firebase, stripe, linear, gitlab, laravel-boost, asana — não se aplicam ao stack Python/Vanilla JS
-
-### Skills Úteis neste Projeto
-- `/commit` (commit-commands) — commits convencionais em português
-- `feature-dev` — ao adicionar novas páginas/análises ao dashboard
-- `code-review` — antes de merges importantes
-- `claude-md-management` — para manter este CLAUDE.md atualizado
-- `systematic-debugging` (superpowers) — ao debugar pipeline ETL ou frontend
+- **MCP context7** — busca de docs de pandas, FastAPI, Chart.js durante desenvolvimento
+- **Playwright** via Bash (`npx playwright test`, `npx playwright codegen`) ou plugin Claude Code para automação de browser
+- **Agentes especializados** em `.github/agents/` — aneel-data-guardian (ETL), backend-fastapi-specialist (API), frontend-next-specialist (Next.js)
