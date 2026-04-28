@@ -10,6 +10,7 @@ import pandas as pd
 
 from src.analysis.distributor_groups import compose_distributor_label, default_group_label
 from src.analysis.metrics import (
+    calc_compensacao_anualizada,
     calc_compensacao_por_uc,
     calc_fora_prazo_por_100k,
     calc_taxa_fora_prazo,
@@ -52,12 +53,26 @@ REQUIRED_NON_EMPTY_SECTIONS = [
     "franquias_insights",
 ]
 
-REGULATORY_ORDER = ["grupo_a", "grupo_b_rural", "grupo_b_urbana", "grupo_b", "rural", "urbana", "nao_classificado"]
+REGULATORY_ORDER = [
+    "grupo_a",
+    "grupo_b_residencial",
+    "grupo_b_rural",
+    "grupo_b_demais",
+    "grupo_b_iluminacao",
+    "grupo_b_urbana",
+    "grupo_b_outros",
+    "rural",
+    "urbana",
+    "nao_classificado",
+]
 REGULATORY_LABELS = {
     "grupo_a": "Grupo A",
+    "grupo_b_residencial": "Grupo B Residencial",
     "grupo_b_rural": "Grupo B Rural",
+    "grupo_b_demais": "Grupo B Demais Classes",
+    "grupo_b_iluminacao": "Grupo B Iluminação Pública",
     "grupo_b_urbana": "Grupo B Urbana",
-    "grupo_b": "Grupo B não classificado",
+    "grupo_b_outros": "Grupo B (outros)",
     "rural": "Rural",
     "urbana": "Urbana",
     "nao_classificado": "Não classificado",
@@ -194,6 +209,8 @@ def build_historical_annual(indicadores: pd.DataFrame) -> dict:
         "n_anos_pos": n_pos,
         "pre_compensacao_media_anual": _safe(pre_total_comp / n_pre) if n_pre else None,
         "pos_compensacao_media_anual": _safe(pos_total_comp / n_pos) if n_pos else None,
+        "pre_compensacao_anualizada": _safe(pre_total_comp / n_pre) if n_pre else None, # C4
+        "pos_compensacao_anualizada": _safe(pos_total_comp / n_pos) if n_pos else None, # C4
     }
 
 
@@ -227,6 +244,8 @@ def build_kpi_overview(kpi: pd.DataFrame) -> dict:
         "delta_compensacao": _safe(pos_comp - pre_comp),
         "pre_compensacao_media_anual": _safe(pre_comp_anual),
         "pos_compensacao_media_anual": _safe(pos_comp_anual),
+        "pre_compensacao_anualizada": _safe(pre_comp_anual), # C4 Alias
+        "pos_compensacao_anualizada": _safe(pos_comp_anual), # C4 Alias
         "delta_compensacao_media_anual": _safe(pos_comp_anual - pre_comp_anual),
         "pre_servicos_total": _safe(pre_serv),
         "pos_servicos_total": _safe(pos_serv),
@@ -630,6 +649,9 @@ def aggregate_regulatory_annual(monthly: pd.DataFrame) -> pd.DataFrame:
         annual["compensacao_rs"] / annual["exposicao_uc_mes"],
         np.nan,
     )
+    annual["compensacao_anualizada"] = calc_compensacao_anualizada(
+        annual["compensacao_rs"], annual["meses_com_dados"]
+    )
     return annual.sort_values(["distributor_label", "ano"]).reset_index(drop=True)
 
 
@@ -648,7 +670,7 @@ def build_regulatory_trend(annual: pd.DataFrame, base_year: int = 2023, last_yea
             "sigagente": first["sigagente"],
             "nomagente": first["nomagente"],
         }
-        for metric in ["taxa_fora_prazo", "fora_prazo_por_100k_uc_mes", "compensacao_rs_por_uc_mes"]:
+        for metric in ["taxa_fora_prazo", "fora_prazo_por_100k_uc_mes", "compensacao_rs_por_uc_mes", "compensacao_anualizada"]:
             base_val = by_year.at[base_year, metric] if base_year in by_year.index else np.nan
             last_val = by_year.at[last_year, metric] if last_year in by_year.index else np.nan
             r[f"{metric}_{base_year}"] = base_val

@@ -19,6 +19,7 @@ from src.analysis.config import (
     SERIES_HISTORICA,
 )
 from src.analysis.metrics import (
+    calc_compensacao_anualizada,
     calc_compensacao_media_por_transgressao,
     calc_compensacao_por_uc,
     calc_fora_prazo_por_100k,
@@ -107,12 +108,26 @@ def classify_segment(text: str) -> str:
     upper = text.upper()
     if "GRUPO A" in upper:
         return "grupo_a"
-    if "GRUPO B" in upper and "RURAL" in upper:
-        return "grupo_b_rural"
-    if "GRUPO B" in upper and ("URBANA" in upper or "URBANO" in upper):
-        return "grupo_b_urbana"
+    
+    # C8: Refinamento Grupo B para evitar agrupamento genérico
     if "GRUPO B" in upper:
-        return "grupo_b"
+        if "B1" in upper or "RESIDENCIAL" in upper:
+            return "grupo_b_residencial"
+        if "B2" in upper or "RURAL" in upper:
+            return "grupo_b_rural"
+        if "B3" in upper or "DEMAIS CLASSES" in upper:
+            return "grupo_b_demais"
+        if "B4" in upper or "ILUMINAÇÃO PÚBLICA" in upper or "ILUMINACAO PUBLICA" in upper:
+            return "grupo_b_iluminacao"
+        
+        # Fallbacks específicos se houver Urbana/Rural sem B1/B2
+        if "RURAL" in upper:
+            return "grupo_b_rural"
+        if "URBANA" in upper or "URBANO" in upper:
+            return "grupo_b_urbana"
+            
+        return "grupo_b_outros"
+        
     if "RURAL" in upper:
         return "rural"
     if "URBANA" in upper or "URBANO" in upper:
@@ -835,6 +850,7 @@ def build_geographic_monthly_base(
         )
     )
     municipal["periodo_regulatorio"] = classify_periodo_regulatorio(municipal["ano"])
+    municipal["regime_regulatorio"] = classify_regime_regulatorio(municipal["ano"])
     return municipal
 
 
@@ -863,8 +879,14 @@ def build_dimension_snapshot(
         return pd.DataFrame()
 
     base["ano_mes"] = base["ano"].astype("Int64").astype("string") + "-" + base["mes"].astype("Int64").astype("string")
+    
+    # D13: Incluir regime_regulatorio na agregação
+    agg_keys = key_cols + ["periodo_regulatorio"]
+    if "regime_regulatorio" in base.columns:
+        agg_keys.append("regime_regulatorio")
+
     period_agg = (
-        base.groupby(key_cols + ["periodo_regulatorio"], as_index=False)
+        base.groupby(agg_keys, as_index=False)
         .agg(
             meses_com_dados=("ano_mes", "nunique"),
             qtd_serv_realizado=("qtd_serv_realizado", "sum"),
@@ -882,9 +904,13 @@ def build_dimension_snapshot(
         0.0,
     )
 
+    operational_agg_keys = list(key_cols)
+    if "regime_regulatorio" in base.columns:
+        operational_agg_keys.append("regime_regulatorio")
+
     operational = (
         base[base["ano"] >= 2023]
-        .groupby(key_cols, as_index=False)
+        .groupby(operational_agg_keys, as_index=False)
         .agg(
             meses_com_dados=("ano_mes", "nunique"),
             qtd_serv_realizado=("qtd_serv_realizado", "sum"),
@@ -946,6 +972,10 @@ def build_dimension_snapshot(
     combined["taxa_fora_prazo"] = calc_taxa_fora_prazo(combined["qtd_fora_prazo"], combined["qtd_serv_realizado"])
     combined["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(combined["qtd_fora_prazo"], combined["exposicao_uc_mes"])
     combined["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(combined["compensacao_rs"], combined["exposicao_uc_mes"])
+    
+    # C4: Compensação Anualizada para comparação justa entre janelas
+    combined["compensacao_anualizada"] = calc_compensacao_anualizada(combined["compensacao_rs"], combined["meses_com_dados"])
+
     combined["dimension_id"] = dimension_id
     combined["dimension_label"] = dimension_label
     combined["id"] = combined[id_col].astype("string")
@@ -956,10 +986,12 @@ def build_dimension_snapshot(
         "id",
         "label",
         "periodo_regulatorio",
+        "regime_regulatorio",
         "meses_com_dados",
         "qtd_serv_realizado",
         "qtd_fora_prazo",
         "compensacao_rs",
+        "compensacao_anualizada",
         "exposicao_uc_mes",
         "taxa_fora_prazo",
         "fora_prazo_por_100k_uc_mes",

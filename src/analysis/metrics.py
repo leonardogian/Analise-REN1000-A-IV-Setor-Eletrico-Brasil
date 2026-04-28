@@ -38,6 +38,23 @@ def calc_compensacao_por_uc(
     return pd.Series(np.where(u > 0, comp / u, np.nan), index=uc.index)
 
 
+def calc_compensacao_anualizada(
+    compensacao_rs: pd.Series, meses_com_dados: pd.Series | int
+) -> pd.Series:
+    """Compensação anualizada: (Soma / Meses) * 12.
+    
+    Permite comparar janelas de vigência diferentes (ex: 10 anos de REN 414 vs 3 anos de REN 1000).
+    """
+    comp = pd.to_numeric(compensacao_rs, errors="coerce").astype(float)
+    m = pd.to_numeric(meses_com_dados, errors="coerce").astype(float) if not isinstance(meses_com_dados, int) else float(meses_com_dados)
+    # Se m for int, transformamos em Series para manter compatibilidade de retorno se comp for Series
+    if isinstance(meses_com_dados, int):
+         m = pd.Series([float(meses_com_dados)] * len(comp), index=comp.index)
+    
+    anualizada = np.where(m > 0, (comp / m) * 12.0, np.nan)
+    return pd.Series(anualizada, index=comp.index)
+
+
 def calc_compensacao_media_por_transgressao(
     compensacao_rs: pd.Series, qtd_fora_prazo: pd.Series
 ) -> pd.Series:

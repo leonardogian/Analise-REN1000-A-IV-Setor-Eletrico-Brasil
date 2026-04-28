@@ -184,8 +184,11 @@ ANALYSIS_REQUIRED_COLUMNS: dict[str, set[str]] = {
         "dimension_id",
         "id",
         "periodo_regulatorio",
+        "regime_regulatorio",
         "qtd_serv_realizado",
         "qtd_fora_prazo",
+        "compensacao_rs",
+        "compensacao_anualizada",
     },
 }
 
@@ -213,6 +216,12 @@ ANALYSIS_DTYPE_CONTRACTS: dict[str, dict[str, str]] = {
         "compensacao_rs": "numeric",
         "taxa_fora_prazo": "numeric",
     },
+    "fato_grupos_algoritmicos.csv": {
+        "qtd_serv_realizado": "numeric",
+        "qtd_fora_prazo": "numeric",
+        "compensacao_rs": "numeric",
+        "compensacao_anualizada": "numeric",
+    },
     "kpi_regulatorio_anual.csv": {
         "ano": "numeric",
         "qtd_serv": "numeric",
@@ -236,6 +245,9 @@ ANALYSIS_RANGE_CONTRACTS: dict[str, dict[str, tuple[float | None, float | None]]
         "ano": (2023, 2025),
         "mes": (1, 12),
         "taxa_fora_prazo": (0.0, 1.0),
+    },
+    "fato_grupos_algoritmicos.csv": {
+        "compensacao_anualizada": (0.0, None),
     },
     "kpi_regulatorio_anual.csv": {
         "ano": (2011, 2025),
