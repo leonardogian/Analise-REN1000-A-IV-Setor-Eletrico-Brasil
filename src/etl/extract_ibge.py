@@ -27,7 +27,7 @@ import zipfile
 from datetime import datetime
 from pathlib import Path
 
-from src.etl.extract_aneel import RAIZ_PROJETO, baixar_arquivo, descompactar_zip
+from src.etl.extract_aneel import RAIZ_PROJETO, baixar_arquivo, descompactar_zip, salvar_provenance
 
 CATALOGO_IBGE = {
     "ibge_dtb_2024": {
@@ -86,7 +86,7 @@ def executar_extracao_ibge() -> bool:
                 print(f"  [cache] {caminho_arquivo.name} já presente ({tamanho_mb:.1f} MB) — pulando download")
                 total_sucesso += 1
             else:
-                if baixar_arquivo(recurso["url"], caminho_arquivo):
+                if baixar_arquivo(recurso["url"], caminho_arquivo, tipo=recurso["tipo"]):
                     total_sucesso += 1
                 else:
                     total_falha += 1
@@ -103,6 +103,7 @@ def executar_extracao_ibge() -> bool:
     print("\n" + "=" * 70)
     print(f"RESUMO: {total_sucesso} OK | {total_falha} falhas")
     print("=" * 70)
+    salvar_provenance()
 
     return total_falha == 0
 

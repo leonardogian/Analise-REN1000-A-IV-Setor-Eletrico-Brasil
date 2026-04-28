@@ -24,10 +24,12 @@ from src.analysis.metrics import (
     calc_fora_prazo_por_100k,
     calc_taxa_fora_prazo,
     classify_periodo_regulatorio,
+    classify_regime_regulatorio,
 )
 from src.analysis.distributor_groups import (
     annotate_distributor_group,
     build_group_dimension,
+    compose_distributor_label,
     default_group_label,
     load_distributor_name_overrides,
     load_group_overrides,
@@ -176,8 +178,27 @@ def ensure_name_columns(frame: pd.DataFrame) -> pd.DataFrame:
     out = frame.copy()
     if "sigagente" in out.columns and "distributor_name_sig" not in out.columns:
         out["distributor_name_sig"] = out["sigagente"].astype("string").fillna("")
+    if "distributor_name_sig" in out.columns:
+        sig = out["distributor_name_sig"].astype("string").fillna("").str.strip()
+        fallback = (
+            out["sigagente"].astype("string").fillna("").str.strip()
+            if "sigagente" in out.columns
+            else pd.Series([""] * len(out), index=out.index, dtype="string")
+        )
+        id_fallback = (
+            out["distributor_id"].astype("string").fillna("").str.strip()
+            if "distributor_id" in out.columns
+            else pd.Series([""] * len(out), index=out.index, dtype="string")
+        )
+        sig = sig.mask(sig == "", fallback)
+        sig = sig.mask(sig == "", id_fallback)
+        out["distributor_name_sig"] = sig
     if "nomagente" in out.columns and "distributor_name_legal" not in out.columns:
         out["distributor_name_legal"] = out["nomagente"].astype("string").fillna(out.get("distributor_name_sig", ""))
+    if "distributor_name_legal" in out.columns:
+        legal = out["distributor_name_legal"].astype("string").fillna("").str.strip()
+        legal = legal.mask(legal == "", out.get("distributor_name_sig", pd.Series([""] * len(out), index=out.index)).astype("string").fillna("").str.strip())
+        out["distributor_name_legal"] = legal
     needs_label = (
         "distributor_label" not in out.columns
         or out["distributor_label"].isna().any()
@@ -191,7 +212,7 @@ def ensure_name_columns(frame: pd.DataFrame) -> pd.DataFrame:
         )
         computed_labels = pd.Series(
             [
-                sig if not legal or sig == legal else f"{sig} — {legal}"
+                compose_distributor_label(sig, legal)
                 for sig, legal in zip(out["distributor_name_sig"].astype(str), legal_series.astype(str))
             ],
             index=out.index,
@@ -202,6 +223,10 @@ def ensure_name_columns(frame: pd.DataFrame) -> pd.DataFrame:
         else:
             mask = out["distributor_label"].isna() | (out["distributor_label"].astype(str).str.strip() == "")
             out.loc[mask, "distributor_label"] = computed_labels[mask]
+    if "distributor_label" in out.columns and "distributor_id" in out.columns:
+        label = out["distributor_label"].astype("string").fillna("").str.strip()
+        id_fallback = out["distributor_id"].astype("string").fillna("").str.strip()
+        out["distributor_label"] = label.mask(label == "", id_fallback)
     return out
 
 
@@ -227,7 +252,7 @@ def load_qualidade_comercial(
     frame["sigindicador"] = frame["sigindicador"].astype("string").str.strip()
     frame["ano"] = pd.to_numeric(frame["anoindice"], errors="coerce").astype("Int64")
     frame["periodo"] = pd.to_numeric(frame["numperiodoindice"], errors="coerce").astype("Int64")
-    frame["valor"] = parse_br_number(frame["vlrindiceenviado"]).fillna(0.0)
+    frame["valor"] = parse_br_number(frame["vlrindiceenviado"])
     frame = annotate_distributor_group(
         frame,
         sig_col="sigagente",
@@ -300,13 +325,13 @@ def build_fato_indicadores_anuais(qualidade: pd.DataFrame, dim_indicador: pd.Dat
     qs = (
         enriched[enriched["familia_indicador"] == "QS"]
         .groupby(keys, dropna=False)["valor"]
-        .sum()
+        .sum(min_count=1)
         .rename("qtd_serv")
     )
     qv = (
         enriched[enriched["familia_indicador"] == "QV"]
         .groupby(keys, dropna=False)["valor"]
-        .sum()
+        .sum(min_count=1)
         .rename("qtd_fora_prazo")
     )
     pm = (
@@ -318,7 +343,7 @@ def build_fato_indicadores_anuais(qualidade: pd.DataFrame, dim_indicador: pd.Dat
     cr = (
         enriched[enriched["familia_indicador"] == "CR"]
         .groupby(keys, dropna=False)["valor"]
-        .sum()
+        .sum(min_count=1)
         .rename("compensacao_rs")
     )
 
@@ -329,11 +354,17 @@ def build_fato_indicadores_anuais(qualidade: pd.DataFrame, dim_indicador: pd.Dat
     fact["has_pm"] = fact["prazo_medio"].notna()
     fact["has_cr"] = fact["compensacao_rs"].notna()
 
-    for col in ["qtd_serv", "qtd_fora_prazo", "prazo_medio", "compensacao_rs"]:
-        fact[col] = fact[col].fillna(0.0)
-
     fact["taxa_fora_prazo"] = calc_taxa_fora_prazo(fact["qtd_fora_prazo"], fact["qtd_serv"])
+    fact["flag_taxa_fora_prazo_invalida"] = (
+        (fact["qtd_serv"] > 0)
+        & (fact["qtd_fora_prazo"] > fact["qtd_serv"])
+    ).fillna(False)
+    fact["flag_codigo_base_multiclasse"] = fact.duplicated(
+        subset=["ano", "distributor_id", "codigo_base"],
+        keep=False,
+    )
     fact["periodo_regulatorio"] = classify_periodo_regulatorio(fact["ano"])
+    fact["regime_regulatorio"] = classify_regime_regulatorio(fact["ano"])
     fact["ano_comparavel_principal"] = fact["ano"].between(*SERIES_HISTORICA, inclusive="both")
 
     return fact.sort_values(["ano", "group_id", "distributor_id", "codigo_base"]).reset_index(drop=True)
@@ -478,6 +509,8 @@ def build_uc_ativa_mensal_distribuidora(
         .reset_index()
         .rename(columns={"uc_ativa": "uc_ativa_mes"})
     )
+    monthly["periodo_regulatorio"] = classify_periodo_regulatorio(monthly["ano"])
+    monthly["regime_regulatorio"] = classify_regime_regulatorio(monthly["ano"])
     return monthly.sort_values(["ano", "mes", "group_id", "distributor_id"]).reset_index(drop=True)
 
 
@@ -559,7 +592,12 @@ def build_fato_servicos_municipio_mes(
     )
 
     fact["taxa_fora_prazo"] = calc_taxa_fora_prazo(fact["qtd_fora_prazo"], fact["qtd_serv_realizado"])
+    fact["flag_taxa_fora_prazo_invalida"] = (
+        (fact["qtd_serv_realizado"] > 0)
+        & (fact["qtd_fora_prazo"] > fact["qtd_serv_realizado"])
+    ).fillna(False)
     fact["periodo_regulatorio"] = classify_periodo_regulatorio(fact["ano"])
+    fact["regime_regulatorio"] = classify_regime_regulatorio(fact["ano"])
     fact["ano_comparavel_principal"] = fact["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")
 
     return fact.sort_values(
@@ -619,10 +657,16 @@ def build_fato_transgressao_mensal_porte(
     )
 
     mensal["taxa_fora_prazo"] = calc_taxa_fora_prazo(mensal["qtd_fora_prazo"], mensal["qtd_serv_realizado"])
+    mensal["flag_uc_ativa_ausente"] = mensal["uc_ativa_mes"].isna() & (mensal["qtd_serv_realizado"] > 0)
+    mensal["flag_taxa_fora_prazo_invalida"] = (
+        (mensal["qtd_serv_realizado"] > 0)
+        & (mensal["qtd_fora_prazo"] > mensal["qtd_serv_realizado"])
+    ).fillna(False)
     mensal["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(mensal["qtd_fora_prazo"], mensal["uc_ativa_mes"])
     mensal["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(mensal["compensacao_rs"], mensal["uc_ativa_mes"])
     mensal["compensacao_media_por_transgressao_rs"] = calc_compensacao_media_por_transgressao(mensal["compensacao_rs"], mensal["qtd_fora_prazo"])
     mensal["periodo_regulatorio"] = classify_periodo_regulatorio(mensal["ano"])
+    mensal["regime_regulatorio"] = classify_regime_regulatorio(mensal["ano"])
     mensal["ano_comparavel_principal"] = mensal["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")
 
     return mensal.sort_values(
@@ -660,10 +704,15 @@ def build_fato_transgressao_mensal_distribuidora(
         )
     )
     fact["taxa_fora_prazo"] = calc_taxa_fora_prazo(fact["qtd_fora_prazo"], fact["qtd_serv_realizado"])
+    fact["flag_taxa_fora_prazo_invalida"] = (
+        (fact["qtd_serv_realizado"] > 0)
+        & (fact["qtd_fora_prazo"] > fact["qtd_serv_realizado"])
+    ).fillna(False)
     fact["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(fact["qtd_fora_prazo"], fact["uc_ativa_mes"])
     fact["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(fact["compensacao_rs"], fact["uc_ativa_mes"])
     fact["compensacao_media_por_transgressao_rs"] = calc_compensacao_media_por_transgressao(fact["compensacao_rs"], fact["qtd_fora_prazo"])
     fact["periodo_regulatorio"] = classify_periodo_regulatorio(fact["ano"])
+    fact["regime_regulatorio"] = classify_regime_regulatorio(fact["ano"])
     fact["ano_comparavel_principal"] = fact["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")
     return fact.sort_values(["ano", "mes", "group_id", "distributor_id"]).reset_index(drop=True)
 
@@ -719,6 +768,7 @@ def build_kpi_overview(fato_indicadores: pd.DataFrame) -> pd.DataFrame:
         )
     )
     yearly["taxa_fora_prazo"] = calc_taxa_fora_prazo(yearly["qtd_fora_prazo"], yearly["qtd_serv"])
+    yearly["regime_regulatorio"] = classify_regime_regulatorio(yearly["ano"])
     return yearly.sort_values("ano").reset_index(drop=True)
 
 
@@ -1071,7 +1121,8 @@ def run_all() -> dict[str, pd.DataFrame]:
     _name_lookup = dim_group.drop_duplicates("distributor_id").set_index("distributor_id")
     for _col in ["sigagente", "nomagente", "distributor_name_sig", "distributor_name_legal", "distributor_label"]:
         if _col in _name_lookup.columns and _col in fato_indicadores.columns:
-            _mapping = _name_lookup[_col]
+            _mapping = _name_lookup[_col].dropna()
+            _mapping = _mapping[_mapping.astype(str).str.strip() != ""]
             _mask = fato_indicadores["distributor_id"].isin(_mapping.index)
             fato_indicadores.loc[_mask, _col] = fato_indicadores.loc[_mask, "distributor_id"].map(_mapping)
 

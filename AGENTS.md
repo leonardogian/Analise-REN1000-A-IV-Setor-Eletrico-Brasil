@@ -24,9 +24,9 @@ Sempre que iniciar uma nova interação ou tarefa neste repositório, você DEVE
 
 ## 💾 Acesso aos Dados Importantes & Portas Padrão
 
-- **Localização dos Dados Prontos:** Os CSVs validados pós-ETL/processamento estão exclusivamente na pasta `data/processed/analysis/`, caso necessário mais dados a busca deve ser feita indicando as fontes e de lugares confiaveis como balanços de empresas e registrado de onde pegamos os dados.
+- **Localização dos Dados Prontos:** Os CSVs validados pós-ETL/processamento estão exclusivamente na pasta `data/processed/analysis/`. CSVs analíticos e `app/frontend/dashboard_*.json` podem estar versionados para auditoria/demo, mas o usuário externo deve regenerar tudo com `make pipeline` para reprodução científica.
 - **Extração e Tratamento (fontes brutas):** Toda documentação canônica de "como baixar os dados do zero", URLs CKAN, periodicidade, limitações e troubleshooting mora em [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md). Antes de mexer em `src/etl/`, leia esse doc. Para checar/adicionar fonte nova: atualizar `CATALOGO` em `extract_aneel.py` (ou criar novo `extract_<portal>.py`) e refletir no doc.
-- **Interface Web:** A aplicação frontend consome `app/frontend/dashboard_data.json` e `app/frontend/dashboard_transgressoes.json`.
+- **Interface Web:** A aplicação frontend consome `app/frontend/dashboard_data.json` e micro-payloads `app/frontend/dashboard_*.json`, todos gerados por scripts em `src/analysis/`.
 - **Apresentação do TCC (.pptx):** O script gerador foi removido. Apresentações devem ser criadas manualmente ou exportadas do Canva/Google Slides.
 - **Logos das Holdings:** Manter os logos em `logos/` (raiz) e espelhar em `app/frontend/assets/logos/` com nomes padronizados (`neoenergia.png`, `cpfl.png`, `equatorial.png`, etc.).
 - **Porta Padronizada:** Desenvolvimento local e via Docker usam a **porta `8051`** (`http://localhost:8051/`). Não usar porta 8000 ou outras para o dashboard.
@@ -105,3 +105,70 @@ Estas regras valem para qualquer execucao bloqueante (comando/app) quando nao fo
   - tempo total
   - gargalo principal
   - ajuste sugerido para melhorar a proxima estimativa
+
+
+<claude-mem-context>
+# Memory Context
+
+# [TCC_leo_main] recent context, 2026-04-27 11:29pm GMT-3
+
+Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
+Format: ID TIME TYPE TITLE
+Fetch details: get_observations([IDs]) | Search: mem-search skill
+
+Stats: 47 obs (24,487t read) | 1,185,763t work | 98% savings
+
+### Apr 23, 2026
+11 5:09p 🔵 User Inquired About ODT File Manipulation Support
+S11 User Inquired About ODT File Manipulation Support (Apr 23, 5:09 PM)
+12 5:12p 🔵 TCC Revision Goals Defined: Focus on Data Processing, Open Source, and Data Quality
+14 " 🔵 TCC ANEEL Project Structure Fully Mapped at /home/gianmarinolc/Documents/Estudos/TCC_leo_main
+15 5:13p 🔵 TCC ANEEL Statistical Results and Key Data Quality Limitations Confirmed
+16 5:14p 🟣 TCC Opus Critical Review Plan Created at ~/.claude/plans/iridescent-swimming-wreath.md
+18 6:04p 🔵 TCC LEO.odt Confirmed Present and Valid for Extraction
+19 6:05p 🔵 TCC ODT Internal Structure Mapped: 23 Annotations, 668 Paragraphs, 0 Headings via text:h
+20 " 🔵 All 23 TCC ODT Inline Comments Extracted with Full Author/Paragraph Context
+21 " 🔵 TCC ODT Paragraph Index Map: Real Content Starts at Block 252 (RESUMO)
+22 " 🟣 Full TCC Thesis Text Extracted to Markdown: 52KB, 155 Paragraphs, Ready for Opus Critique
+23 6:07p 🔵 TCC ANEEL Data Layer Mapped: Star Schema CSVs + 5 Analysis Notebooks in Worktree
+### Apr 27, 2026
+25 4:15p ⚖️ TCC ANEEL — Full Data Pipeline Audit Scope Defined
+26 " 🔵 TCC ANEEL Analysis Pipeline Structure: ETL Architecture and Data Integrity Patterns
+27 " 🔵 Code Redundancy: Duplicate Column Normalization Logic Across Modules
+28 " 🔵 Data Quality Risk: Pre/Post REN Comparison Uses Aggregated Rates Without Distributor-Level Validation
+29 " 🔵 Data Integrity Gap: Missing Validation for Zero-Division and NaN Propagation in Metric Calculations
+30 4:16p 🔵 QA Infrastructure and Validation Framework Established
+31 4:18p 🔵 TCC ANEEL — Senior Data Engineer Audit Request Scoped Across ETL Pipeline
+32 4:19p ⚖️ TCC ANEEL — Senior Data Engineer Audit Scope Defined
+33 4:25p 🔵 TCC ANEEL — Full ETL/Analysis Audit: 70+ Findings Mapped Across 4 Pipeline Layers
+34 4:32p ⚖️ TCC ANEEL — Senior Data Engineer Audit Scope Formally Defined
+S23 TCC ANEEL Full Code Audit — Senior Data Engineer review of ETL pipeline, redundancies, data integrity, and dashboard optimization across the entire codebase (Apr 27, 4:33 PM)
+35 10:35p 🔵 TCC ANEEL — Onboarding Audit Scope Defined for External User Reproducibility
+36 10:36p 🔵 TCC ANEEL — Project Structure and Onboarding Documentation Map Confirmed
+37 " 🔵 TCC ANEEL — All 7 Dashboard JSON Files ARE Versioned Despite README Stating Otherwise
+38 " 🔵 TCC ANEEL — extract_aneel.py CATALOGO Has Hardcoded Direct CKAN Resource URLs
+39 " 🔵 TCC ANEEL — requirements.txt Contains LangChain Dependencies for Removed Gemini Feature
+40 " 🔵 TCC ANEEL — docs/EXTRACAO_DADOS.md is a Complete Onboarding Runbook with Direct URLs, Troubleshooting and Known Gaps
+41 10:37p ⚖️ TCC ANEEL — Reproducibility Audit Scope Defined for External User Onboarding
+42 10:38p 🔵 TCC ANEEL — Reproducibility Audit Scope Defined for External User Onboarding
+43 10:39p ⚖️ TCC ANEEL — Reproducibility Audit Scope: External User Onboarding Focus
+44 " ⚖️ TCC ANEEL — Reproducibility Audit Scope Defined for External-User Onboarding
+45 10:40p ⚖️ TCC ANEEL — Reproducibility Audit Scope Defined for External User Onboarding
+46 10:44p ⚖️ TCC ANEEL — Reproducibility Audit Scope Formally Defined for External-User Clone Workflow
+47 10:51p 🔵 TCC ANEEL — Large Batch of Uncommitted Changes Discovered Pre-Audit Including Critical Analysis Scripts
+48 " ⚖️ TCC ANEEL — 6-Phase Remediation Plan Defined for Reproducibility + Data Integrity Fixes
+49 10:52p 🔵 TCC ANEEL — Data Sizes Confirmed: 8.3GB Raw + 7.6GB Processed + 7 Tracked Dashboard JSONs
+50 " 🔵 TCC ANEEL — Analysis Layer Already Substantially Refactored in Uncommitted Working Tree
+51 " 🔵 TCC ANEEL — B1 Bug Still Active: transform_aneel.py Reads All CSVs Without decimal="," Parameter
+52 " 🔵 TCC ANEEL — build_regulatory_long_summary Silent Fallback (C7) Still Present in build_dashboard_data.py
+54 10:54p 🟣 TCC ANEEL — docs/REPRODUCIBILITY_FIX_TASKS.md Created as Operational Handoff Document
+55 " 🔵 TCC ANEEL — C8 Confirmed Active: normalize_regulatory_class Collapses Rural/Urban Distinction in Dashboard
+57 10:55p 🔄 TCC ANEEL — transform_aneel.py Fully Rewritten: B1/B2/B3/B9 Audit Findings Fixed
+58 10:56p 🔄 TCC ANEEL — schema_contracts.py Massively Extended: B10/B11/B13/D13/D19 Audit Findings Fixed
+60 10:59p ⚖️ TCC ANEEL — Reproducibility Audit Request: External User Git Clone Perspective
+62 11:00p 🔄 build_dashboard_data.py — Hardcoded Labels, Metric Formulas, and Timeseries Aggregation Fully Replaced
+63 " 🔄 check_artifacts.py — Artifact Manifest Updated to CSV-First + Parquet Drift Checker Added
+64 " 🔵 extract_aneel.py — Full CKAN Download Catalog with Direct URLs Confirmed
+
+Access 1186k tokens of past work via get_observations([IDs]) or mem-search skill.
+</claude-mem-context>

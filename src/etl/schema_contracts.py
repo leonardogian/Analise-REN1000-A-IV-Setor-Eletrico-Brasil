@@ -1,4 +1,4 @@
-"""Schema contracts for ANEEL ETL raw and processed datasets."""
+"""Schema contracts for ANEEL ETL raw, processed and analysis datasets."""
 
 from __future__ import annotations
 
@@ -6,6 +6,9 @@ from pathlib import Path
 
 import pandas as pd
 from pyarrow import parquet as pq
+from pyarrow import types as pa_types
+
+CSV_ENCODINGS = ("utf-16", "utf-8", "latin-1", "cp1252")
 
 # Fontes nucleares: obrigatórias. Ausência quebra o pipeline.
 RAW_REQUIRED_COLUMNS_NUCLEAR: dict[str, set[str]] = {
@@ -86,10 +89,176 @@ PROCESSED_REQUIRED_COLUMNS: dict[str, set[str]] = {
     },
 }
 
+PROCESSED_DTYPE_CONTRACTS: dict[str, dict[str, str]] = {
+    "qualidade_comercial.parquet": {
+        "anoindice": "numeric",
+        "numperiodoindice": "numeric",
+        "vlrindiceenviado": "numeric",
+    },
+    "indger_servicos_comerciais.parquet": {
+        "qtdservrealizado": "numeric",
+        "qtdservrealizdescprazo": "numeric",
+        "vlrpagocompensacao": "numeric",
+    },
+    "indger_dados_comerciais.parquet": {
+        "qtducativa": "numeric",
+    },
+}
+
+ANALYSIS_REQUIRED_COLUMNS: dict[str, set[str]] = {
+    "dim_indicador_servico.csv": {
+        "sigindicador",
+        "familia_indicador",
+        "codigo_base",
+        "servico_nome",
+        "classe_local",
+    },
+    "dim_distribuidora_porte.csv": {
+        "ano",
+        "group_id",
+        "distributor_id",
+        "uc_ativa_media_mensal",
+        "bucket_porte",
+    },
+    "dim_distributor_group.csv": {
+        "group_id",
+        "group_label",
+        "distributor_id",
+        "distributor_label",
+    },
+    "fato_uc_ativa_mensal_distribuidora.csv": {
+        "ano",
+        "mes",
+        "group_id",
+        "distributor_id",
+        "uc_ativa_mes",
+        "periodo_regulatorio",
+        "regime_regulatorio",
+    },
+    "fato_indicadores_anuais.csv": {
+        "ano",
+        "group_id",
+        "distributor_id",
+        "codigo_base",
+        "qtd_serv",
+        "qtd_fora_prazo",
+        "compensacao_rs",
+        "taxa_fora_prazo",
+        "periodo_regulatorio",
+        "regime_regulatorio",
+    },
+    "fato_transgressao_mensal_porte.csv": {
+        "ano",
+        "mes",
+        "group_id",
+        "distributor_id",
+        "qtd_serv_realizado",
+        "qtd_fora_prazo",
+        "compensacao_rs",
+        "taxa_fora_prazo",
+        "periodo_regulatorio",
+        "regime_regulatorio",
+    },
+    "fato_transgressao_mensal_distribuidora.csv": {
+        "ano",
+        "mes",
+        "group_id",
+        "distributor_id",
+        "qtd_serv_realizado",
+        "qtd_fora_prazo",
+        "compensacao_rs",
+        "taxa_fora_prazo",
+        "periodo_regulatorio",
+        "regime_regulatorio",
+    },
+    "kpi_regulatorio_anual.csv": {
+        "ano",
+        "periodo_regulatorio",
+        "regime_regulatorio",
+        "qtd_serv",
+        "qtd_fora_prazo",
+        "compensacao_rs",
+        "taxa_fora_prazo",
+    },
+    "fato_grupos_algoritmicos.csv": {
+        "dimension_id",
+        "id",
+        "periodo_regulatorio",
+        "qtd_serv_realizado",
+        "qtd_fora_prazo",
+    },
+}
+
+ANALYSIS_DTYPE_CONTRACTS: dict[str, dict[str, str]] = {
+    "fato_indicadores_anuais.csv": {
+        "ano": "numeric",
+        "qtd_serv": "numeric",
+        "qtd_fora_prazo": "numeric",
+        "compensacao_rs": "numeric",
+        "taxa_fora_prazo": "numeric",
+    },
+    "fato_transgressao_mensal_porte.csv": {
+        "ano": "numeric",
+        "mes": "numeric",
+        "qtd_serv_realizado": "numeric",
+        "qtd_fora_prazo": "numeric",
+        "compensacao_rs": "numeric",
+        "taxa_fora_prazo": "numeric",
+    },
+    "fato_transgressao_mensal_distribuidora.csv": {
+        "ano": "numeric",
+        "mes": "numeric",
+        "qtd_serv_realizado": "numeric",
+        "qtd_fora_prazo": "numeric",
+        "compensacao_rs": "numeric",
+        "taxa_fora_prazo": "numeric",
+    },
+    "kpi_regulatorio_anual.csv": {
+        "ano": "numeric",
+        "qtd_serv": "numeric",
+        "qtd_fora_prazo": "numeric",
+        "compensacao_rs": "numeric",
+        "taxa_fora_prazo": "numeric",
+    },
+}
+
+ANALYSIS_RANGE_CONTRACTS: dict[str, dict[str, tuple[float | None, float | None]]] = {
+    "fato_indicadores_anuais.csv": {
+        "ano": (2011, 2025),
+        "taxa_fora_prazo": (0.0, 1.0),
+    },
+    "fato_transgressao_mensal_porte.csv": {
+        "ano": (2023, 2025),
+        "mes": (1, 12),
+        "taxa_fora_prazo": (0.0, 1.0),
+    },
+    "fato_transgressao_mensal_distribuidora.csv": {
+        "ano": (2023, 2025),
+        "mes": (1, 12),
+        "taxa_fora_prazo": (0.0, 1.0),
+    },
+    "kpi_regulatorio_anual.csv": {
+        "ano": (2011, 2025),
+        "taxa_fora_prazo": (0.0, 1.0),
+    },
+}
+
+EXPECTED_REGIMES = {"REN_414", "REN_1000", "TRANSICAO"}
+
+
+def normalize_column_name(column: object) -> str:
+    """Normalize a single column for robust contract checks."""
+    return str(column).strip().lstrip("\ufeff").lower()
+
+
+def normalize_columns_list(columns: list[str] | pd.Index) -> list[str]:
+    """Normalize columns preserving order."""
+    return [normalize_column_name(col) for col in columns]
+
 
 def normalize_columns(columns: list[str] | pd.Index) -> set[str]:
     """Normalize columns for robust contract checks."""
-    return {str(col).strip().lower() for col in columns}
+    return set(normalize_columns_list(columns))
 
 
 def missing_required_columns(columns: list[str] | pd.Index, required: set[str]) -> list[str]:
@@ -100,30 +269,95 @@ def missing_required_columns(columns: list[str] | pd.Index, required: set[str]) 
 
 def read_csv_header(path: Path, sep: str = ";") -> list[str]:
     """Read only CSV header with encoding fallback."""
-    encodings = ("utf-16", "utf-8", "latin-1", "cp1252")
-    for encoding in encodings:
+    last_error: Exception | None = None
+    for encoding in CSV_ENCODINGS:
         try:
             frame = pd.read_csv(path, sep=sep, encoding=encoding, nrows=0, low_memory=False)
             return [str(col) for col in frame.columns]
-        except UnicodeDecodeError:
+        except UnicodeDecodeError as exc:
+            last_error = exc
             continue
-        except Exception:
+        except Exception as exc:
+            last_error = exc
             continue
 
     # Last attempt with comma separator.
-    for encoding in encodings:
+    for encoding in CSV_ENCODINGS:
         try:
             frame = pd.read_csv(path, sep=",", encoding=encoding, nrows=0, low_memory=False)
             return [str(col) for col in frame.columns]
-        except Exception:
+        except Exception as exc:
+            last_error = exc
             continue
 
-    raise RuntimeError(f"Could not read header: {path}")
+    raise RuntimeError(f"Could not read header: {path}") from last_error
 
 
 def read_parquet_columns(path: Path) -> list[str]:
     """Read parquet schema columns without loading full data."""
     return list(pq.read_schema(path).names)
+
+
+def _is_pa_numeric(field_type: object) -> bool:
+    return (
+        pa_types.is_integer(field_type)
+        or pa_types.is_floating(field_type)
+        or pa_types.is_decimal(field_type)
+    )
+
+
+def _validate_parquet_dtypes(path: Path, expected: dict[str, str]) -> list[str]:
+    errors: list[str] = []
+    schema = pq.read_schema(path)
+    fields = {normalize_column_name(name): schema.field(name).type for name in schema.names}
+    for col, dtype in expected.items():
+        field_type = fields.get(normalize_column_name(col))
+        if field_type is None:
+            continue
+        if dtype == "numeric" and not _is_pa_numeric(field_type):
+            errors.append(f"processed dtype mismatch: {path} column {col} expected numeric, got {field_type}")
+    return errors
+
+
+def _validate_csv_dtypes(frame: pd.DataFrame, path: Path, expected: dict[str, str]) -> list[str]:
+    errors: list[str] = []
+    for col, dtype in expected.items():
+        if col not in frame.columns:
+            continue
+        if dtype == "numeric":
+            numeric = pd.to_numeric(frame[col], errors="coerce")
+            if numeric.notna().sum() == 0 and frame[col].notna().sum() > 0:
+                errors.append(f"analysis dtype mismatch: {path} column {col} expected numeric")
+    return errors
+
+
+def _validate_csv_ranges(
+    frame: pd.DataFrame,
+    path: Path,
+    expected: dict[str, tuple[float | None, float | None]],
+) -> list[str]:
+    errors: list[str] = []
+    for col, (min_value, max_value) in expected.items():
+        if col not in frame.columns:
+            continue
+        values = pd.to_numeric(frame[col], errors="coerce").dropna()
+        if values.empty:
+            continue
+        if min_value is not None and (values < min_value).any():
+            errors.append(f"analysis range mismatch: {path} column {col} has values below {min_value}")
+        if max_value is not None and (values > max_value).any():
+            errors.append(f"analysis range mismatch: {path} column {col} has values above {max_value}")
+    return errors
+
+
+def _validate_regime_values(frame: pd.DataFrame, path: Path) -> list[str]:
+    if "regime_regulatorio" not in frame.columns:
+        return []
+    values = set(frame["regime_regulatorio"].dropna().astype(str).str.strip())
+    invalid = sorted(values - EXPECTED_REGIMES)
+    if invalid:
+        return [f"analysis regime mismatch: {path} invalid values {', '.join(invalid)}"]
+    return []
 
 
 def validate_raw_contracts(raw_dir: Path, incluir_complementares: bool = False) -> list[str]:
@@ -171,9 +405,7 @@ def validate_raw_contracts(raw_dir: Path, incluir_complementares: bool = False) 
                 f"raw schema mismatch: {path} missing columns {', '.join(missing)}"
             )
 
-    servicos_files = sorted(raw_dir.glob("*servico*comercia*.csv"))
-    if not servicos_files:
-        servicos_files = sorted(raw_dir.rglob("*servico*comercia*.csv"))
+    servicos_files = sorted({path.resolve(): path for path in raw_dir.rglob("*servico*comercia*.csv")}.values())
 
     if not servicos_files:
         errors.append(
@@ -196,8 +428,8 @@ def validate_raw_contracts(raw_dir: Path, incluir_complementares: bool = False) 
     return errors
 
 
-def validate_processed_contracts(processed_dir: Path) -> list[str]:
-    """Validate expected processed parquet files and required columns."""
+def validate_processed_base_contracts(processed_dir: Path) -> list[str]:
+    """Validate expected base processed parquet files and required columns."""
     errors: list[str] = []
 
     for file_name, required in PROCESSED_REQUIRED_COLUMNS.items():
@@ -216,5 +448,47 @@ def validate_processed_contracts(processed_dir: Path) -> list[str]:
             errors.append(
                 f"processed schema mismatch: {path} missing columns {', '.join(missing)}"
             )
+        errors.extend(_validate_parquet_dtypes(path, PROCESSED_DTYPE_CONTRACTS.get(file_name, {})))
+
+    return errors
+
+
+def validate_processed_contracts(processed_dir: Path) -> list[str]:
+    """Validate base processed parquet files and analysis CSV contracts."""
+    errors = validate_processed_base_contracts(processed_dir)
+
+    analysis_dir = processed_dir / "analysis"
+    errors.extend(validate_analysis_contracts(analysis_dir))
+
+    return errors
+
+
+def validate_analysis_contracts(analysis_dir: Path) -> list[str]:
+    """Validate generated analysis CSV contracts."""
+    errors: list[str] = []
+    for file_name, required in ANALYSIS_REQUIRED_COLUMNS.items():
+        path = analysis_dir / file_name
+        if not path.exists():
+            errors.append(
+                f"analysis missing file: {path}. Run `make analysis` after `make transform`."
+            )
+            continue
+
+        try:
+            frame = pd.read_csv(path)
+            frame.columns = normalize_columns_list(frame.columns)
+        except Exception as exc:
+            errors.append(f"analysis unreadable file: {path} ({exc})")
+            continue
+
+        missing = missing_required_columns(frame.columns, required)
+        if missing:
+            errors.append(
+                f"analysis schema mismatch: {path} missing columns {', '.join(missing)}"
+            )
+
+        errors.extend(_validate_csv_dtypes(frame, path, ANALYSIS_DTYPE_CONTRACTS.get(file_name, {})))
+        errors.extend(_validate_csv_ranges(frame, path, ANALYSIS_RANGE_CONTRACTS.get(file_name, {})))
+        errors.extend(_validate_regime_values(frame, path))
 
     return errors

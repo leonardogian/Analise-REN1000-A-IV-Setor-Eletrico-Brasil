@@ -4,7 +4,7 @@
 
 > **Público-alvo.** Engenheiro clonando o repositório do zero, quer reproduzir exatamente o mesmo pipeline e diagnosticar falhas quando o portal da ANEEL muda algo.
 
-**Última atualização:** 2026-04-22
+**Última atualização:** 2026-04-28
 
 ---
 
@@ -42,14 +42,14 @@ cd TCC_leo_main
 
 make venv-recreate   # cria .venv limpo
 make install         # pip install -r requirements.txt
-make doctor          # checa .venv + imports críticos (numpy/pandas/fastapi/uvicorn)
+make doctor          # checa .venv + imports críticos do ETL, backend e carga opcional
 ```
 
 `make doctor` deve terminar com `[OK] ambiente saudável`. Se falhar, revise Python version e permissões.
 
 ### Portas locais
 
-A porta `8051` serve o backend FastAPI / dashboard estático. As portas `3000/5433/6379/8000/8050/8080/8090` podem estar ocupadas por outros serviços. Nada disso afeta a extração, mas é pré-requisito do `make serve` posterior.
+A porta `8051` serve o backend FastAPI / dashboard estático. O frontend Next local usa `3051`. Não use `8000` para este dashboard. Nada disso afeta a extração, mas é pré-requisito do `make serve` posterior.
 
 ---
 
@@ -79,7 +79,7 @@ Cada fonte declara um campo `tier`:
 | Granularidade | anual × distribuidora × indicador |
 | Cobertura temporal | 2011–2023 (uma linha por ano e indicador) |
 | Periodicidade na ANEEL | anual |
-| Tamanho esperado | ≈ 80 KB (`qualidade-atendimento-comercial.csv`) |
+| Tamanho esperado | ≈ 85 MB (`qualidade-atendimento-comercial.csv`) |
 | Encoding | utf-8 |
 | Separador | `;` |
 | Papel no TCC | **Métrica nuclear pré-2022** (série longa 2011–2021, regime REN 414/2010) |
@@ -91,13 +91,13 @@ Cada fonte declara um campo `tier`:
 |---|---|
 | Nome oficial | INDGER — Indicadores Gerenciais da Distribuição |
 | Portal | `dadosabertos.aneel.gov.br` (CKAN) |
-| Dataset (landing) | https://dadosabertos.aneel.gov.br/dataset/indicadores-gerenciais-de-distribuicao-indger |
+| Dataset (landing) | https://dadosabertos.aneel.gov.br/dataset/indger-indicadores-gerenciais-da-distribuicao |
 | Dataset UUID | `7cacb2c4-b165-4591-a793-9ed20d1f167d` |
 | Recursos | `indger-dados-servicos-comerciais.zip` (descompacta em 36 CSVs mensais), `indger-dados-comerciais.csv`, 2 PDFs de dicionário |
 | Granularidade | mensal × distribuidora × município × tipo de serviço |
 | Cobertura temporal | 2023-01 → 2025-12 (36 CSVs mensais, verificado em `data/raw/`) |
 | Periodicidade na ANEEL | mensal |
-| Tamanho esperado | ZIP ≈ 800 MB; descompactado ≈ 7.7 GB; `indger-dados-comerciais.csv` ≈ 107 MB |
+| Tamanho esperado | ZIP ≈ 295 MB em 2026-04-28; descompactado ≈ 7.7 GB; `indger-dados-comerciais.csv` ≈ 107 MB |
 | Encoding | misto (usar cascade — ver §4) |
 | Separador | `;` |
 | Papel no TCC | **Métrica nuclear pós-2022** (regime REN 1000/2021). Base do dashboard e diagnósticos por grupo. |
@@ -109,7 +109,7 @@ Cada fonte declara um campo `tier`:
 |---|---|
 | Nome oficial | Autos de Infração |
 | Portal | `dadosabertos.aneel.gov.br` (CKAN) |
-| Dataset (landing) | https://dadosabertos.aneel.gov.br/dataset/autos-de-infracao |
+| Dataset (landing) | https://dadosabertos.aneel.gov.br/dataset/auto-de-infracao |
 | Dataset UUID | `4d690c9d-8158-4b04-ae44-7d3de8616271` |
 | Recursos | `auto-infracao.csv`, `dm-auto-de-infracao.pdf` |
 | Granularidade | 1 linha por auto de infração lavrado |
@@ -125,7 +125,7 @@ Cada fonte declara um campo `tier`:
 |---|---|
 | Nome oficial | Reclamações nos 1º e 2º Níveis da Distribuidora |
 | Portal | `dadosabertos.aneel.gov.br` (CKAN) |
-| Dataset (landing) | https://dadosabertos.aneel.gov.br/dataset/reclamacoes-nos-1o-e-2o-niveis-da-distribuidora |
+| Dataset (landing) | https://dadosabertos.aneel.gov.br/dataset/reclamacoes-no-1o-e-2o-niveis-da-distribuidora |
 | Dataset UUID | `364859a2-7cb8-45ea-9c88-b4392516a6ba` |
 | Recursos | 4 CSVs particionados (2010–2022 consolidado, 2023, 2024, 2025) + 1 PDF de dicionário |
 | Granularidade | mensal × distribuidora × município × tipo de reclamação |
@@ -169,21 +169,17 @@ make extract        # ≡ extract-aneel + extract-ibge
 # 3. Transformação para Parquet/CSV
 make transform
 
-# 4. Validação de schema (raw + processed)
-make validate-contracts
+# 4. Tabelas analíticas + relatórios + dashboards + validações
+make pipeline
+make qa-data
 
-# 5. Tabelas analíticas + relatórios + dashboards
-make analysis
-make report
-make dashboard-full  # analysis + grupos + neoenergia + dashboards JSON
-
-# 6. Servir localmente
+# 5. Servir localmente
 make serve           # http://localhost:8051
 # ou
 make dev-serve       # backend FastAPI com --reload
 ```
 
-`make pipeline` faz os passos 2–5 de uma vez.
+`make pipeline` faz extração, transformação, análise, relatório, grupos, dashboards e validações. Para depurar uma etapa específica, rode `make extract`, `make transform`, `make analysis`, `make dashboard-full`, `make validate-contracts`, `make check-artifacts-full` e `make qa-data` separadamente.
 
 ### 3.2. Para baixar também as fontes complementares
 
@@ -199,8 +195,8 @@ make transform
 |---|---|---|
 | `make extract` | `data/raw/` | Arquivos do catálogo nuclear presentes: `qualidade-atendimento-comercial.csv`, `dominio-indicadores.csv`, `indger-dados-comerciais.csv`, `indger-dados-servicos-comerciais-YYYY-MM.csv` (36 arquivos), `DTB_2024.zip` + conteúdo extraído. PDFs em `data/docs/`. |
 | `make transform` | `data/processed/` | Parquet + CSV espelhados: `qualidade_comercial.*`, `indger_servicos_comerciais.*`, `indger_dados_comerciais.*`. |
-| `make analysis` | `data/processed/analysis/` | ~9 CSVs raiz + `grupos/` (13 CSVs) + `neoenergia/` (13 CSVs). Todos versionados no Git. |
-| `make dashboard` | `app/frontend/dashboard_data.json` | ≈ 27 MB (não versionado). |
+| `make analysis` | `data/processed/analysis/` | CSVs raiz + `grupos/` + `neoenergia/`. CSVs são versionados para auditoria/demo; Parquets são espelhos locais gerados. |
+| `make dashboard` | `app/frontend/dashboard_data.json` | ≈ 27 MB, versionado para demo/deploy estático e regenerado para reprodução científica. |
 
 ### 3.4. Diretórios ignorados pelo Git
 
@@ -208,9 +204,9 @@ make transform
 |---|---|
 | `data/raw/*.csv`, `data/raw/*.zip` | Pesados (até 7.7 GB), regeneráveis pelo script |
 | `data/processed/*.{csv,parquet}` | Gerados pelo transform |
-| `app/frontend/dashboard_*.json` | Gerados pelo pipeline de dashboard |
+| `data/processed/analysis/**/*.parquet` | Espelhos analíticos locais, gerados por `make analysis` |
 
-**Único versionado:** `data/processed/analysis/**/*.csv` (artefatos analíticos). Regra explícita em [`CLAUDE.md §Critical Constraints`](../CLAUDE.md).
+**Versionados intencionalmente:** `data/processed/analysis/**/*.csv` (auditoria) e `app/frontend/dashboard_*.json` (demo/deploy estático). Para reprodução científica, ambos devem ser regenerados após ETL.
 
 ---
 
@@ -226,7 +222,7 @@ CSVs da ANEEL são heterogêneos em encoding entre arquivos (alguns utf-8, outro
 utf-16 → utf-8 → latin-1 → cp1252
 ```
 
-Implementado em [`src/etl/schema_contracts.py:read_csv_header`](../src/etl/schema_contracts.py#L90) e replicado no leitor de `transform_aneel.py`. **Consequência reprodutível:** o mesmo CSV bruto produz sempre o mesmo Parquet determinístico.
+Implementado de forma compartilhada em [`src/etl/schema_contracts.py`](../src/etl/schema_contracts.py) e no helper `_carregar_csv_aneel(...)` de `transform_aneel.py`. **Consequência reprodutível:** o mesmo CSV bruto produz sempre o mesmo Parquet determinístico.
 
 Se um encoding novo aparecer, o sintoma é `UnicodeDecodeError` em cascata. Ver §6.
 
@@ -244,9 +240,9 @@ Dedup é **por linha inteira idêntica**, não por chave de negócio. Consequên
 
 ### 4.4. Normalização de colunas
 
-`df.columns = df.columns.str.strip().str.lower()`
+`df.columns = normalize_columns_list(df.columns)`
 
-Garante que `sigAgente`, `SIGAGENTE`, `sigagente ` todos virem `sigagente`. É isso que permite os contratos de schema em `schema_contracts.py` usarem comparação case-insensitive.
+Garante que `sigAgente`, `SIGAGENTE`, `sigagente ` e cabeçalhos com BOM virem `sigagente`. É isso que permite os contratos de schema em `schema_contracts.py` usarem comparação case-insensitive.
 
 ### 4.5. Datas permanecem string
 
@@ -258,17 +254,25 @@ Se você importar o Parquet e quiser datas, faça:
 df["datreferenciainformada"] = pd.to_datetime(df["datreferenciainformada"], format="%Y-%m", errors="coerce")
 ```
 
-### 4.6. Sem chunking ou streaming
+### 4.6. Deduplicação de arquivos INDGER
+
+O ZIP INDGER gera 36 CSVs mensais de serviços comerciais para 2023-01 a 2025-12. O transform deduplica os caminhos encontrados por `Path.resolve()`, ordena de forma determinística e falha se a contagem esperada deixar de ser 36 sem decisão explícita. Cada linha concatenada recebe `_source_file` para rastreabilidade.
+
+### 4.7. Provenance e download seguro
+
+Downloads usam retry/backoff, validação de `Content-Type`, conferência de `Content-Length`, arquivo temporário `.part` e remoção de parcial em erro. A extração ZIP protege contra zip-slip. Metadados mínimos (`url`, `ETag`, `Last-Modified`, tamanho, timestamp e git SHA) são gravados em `data/raw/provenance_downloads.jsonl`.
+
+### 4.8. Sem chunking ou streaming
 
 O transform carrega cada CSV inteiro em memória. O maior é `indger-dados-servicos-comerciais-*.csv` somados (≈ 7.7 GB). Em máquinas com < 16 GB RAM, o processo pode ser OOM-killed. Workaround atual: rodar em máquina com 16 GB+ de RAM. Solução futura: migrar para `polars` com lazy scan (ver §8).
 
-### 4.7. Cutoff regulatório (`REN1000_CUTOFF_YEAR`)
+### 4.9. Cutoff regulatório (`REN1000_CUTOFF_YEAR`)
 
 A decisão de separar "pré-2022" vs "pós-2022" **não está em transform** — mora em [`src/analysis/build_analysis_tables.py`](../src/analysis/build_analysis_tables.py) com a constante `REN1000_CUTOFF_YEAR = 2021`. O transform preserva todos os anos; o filtro é downstream.
 
 Contexto: REN 1000/2021 entrou em vigor em abril/2022. Todo ano ≤ 2021 é `pre_2022`; todo ano ≥ 2022 é `pos_2022`.
 
-### 4.8. Saída espelhada Parquet + CSV
+### 4.10. Saída espelhada Parquet + CSV
 
 Para cada fonte nuclear, o transform grava:
 
@@ -277,7 +281,7 @@ Para cada fonte nuclear, o transform grava:
 
 Parquet é o formato canônico; CSV é conveniência.
 
-### 4.9. Fail-fast por contrato
+### 4.11. Fail-fast por contrato
 
 Ao final do transform, [`validate_processed_contracts`](../src/etl/schema_contracts.py#L199) roda e retorna `exit 1` se qualquer coluna obrigatória faltar. Regra: **nunca gerar tabelas analíticas em cima de Parquet inválido**.
 
@@ -309,7 +313,8 @@ O script [`scripts/validate_schema_contracts.py`](../scripts/validate_schema_con
 
 - **Raw nuclear** (obrigatório): colunas mínimas presentes em cada CSV bruto esperado
 - **Raw complementar** (opcional): valida apenas se o arquivo existe
-- **Processed**: colunas mínimas nos Parquet gerados pelo transform
+- **Processed base**: colunas e dtypes mínimos nos Parquet gerados pelo transform
+- **Analysis**: presença, dtypes/ranges críticos e regimes regulatórios nos CSVs em `data/processed/analysis/`
 
 ### 5.3. Smoke de imports + artefatos
 
@@ -324,7 +329,7 @@ Se os tamanhos abaixo divergirem > 20 %, desconfie (portal pode ter republicado 
 
 | Arquivo | Tamanho esperado |
 |---|---|
-| `qualidade-atendimento-comercial.csv` | ≈ 80 KB |
+| `qualidade-atendimento-comercial.csv` | ≈ 85 MB |
 | `dominio-indicadores.csv` | ≈ 80 KB |
 | `indger-dados-comerciais.csv` | ≈ 107 MB |
 | `indger-dados-servicos-comerciais-2023-01.csv` | ≈ 235 MB |
@@ -454,6 +459,7 @@ src/analysis/build_analysis_tables.py   → data/processed/analysis/*.csv (9 arq
     ├─▶ grupos_diagnostico.py             → data/processed/analysis/grupos/*.csv (13 arquivos)
     ├─▶ neoenergia_diagnostico.py         → data/processed/analysis/neoenergia/*.csv (13 arquivos)
     └─▶ build_dashboard_data.py           → app/frontend/dashboard_data.json
+                                            app/frontend/dashboard_*.json
 ```
 
 ### 7.2. Onde ler mais

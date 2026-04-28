@@ -85,7 +85,7 @@ def _load_dashboard_payload() -> dict[str, Any]:
     if not DASHBOARD_JSON_PATH.exists():
         raise HTTPException(
             status_code=503,
-            detail="dashboard_data.json not found. Run `make dashboard` first.",
+            detail="dashboard_data.json not found. Run `make pipeline` for scientific reproduction or `make dashboard-full` if analysis tables already exist.",
         )
 
     try:

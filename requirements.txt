@@ -23,6 +23,13 @@ uvicorn
 asyncpg
 redis
 
+# Persistencia opcional (make load-postgres)
+sqlalchemy
+psycopg2-binary
+
+# QA/smoke de frontend via navegador
+playwright
+
 # Integração IA
 langchain
 langchain-openai

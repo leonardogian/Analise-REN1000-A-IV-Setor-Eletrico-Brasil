@@ -19,6 +19,8 @@ make dashboard
 cd app/frontend && python3 -m http.server 8051
 ```
 
+Para reprodução científica, rode `make pipeline` antes de servir: os JSONs podem estar versionados para demo/deploy, mas são derivados dos dados tratados localmente.
+
 > ⚠️ O dashboard **NÃO funciona** abrindo `index.html` diretamente no navegador
 > (`file://`). É necessário servir via HTTP por causa de restrições CORS do
 > `fetch()`.
@@ -26,47 +28,27 @@ cd app/frontend && python3 -m http.server 8051
 ## Arquitetura dos Arquivos
 
 ```
-dashboard/
-├── index.html           ← Página principal (4 abas de navegação)
-├── app.js               ← Lógica: carrega JSON, renderiza gráficos
-├── styles.css           ← Visual: dark mode, glassmorphism, responsivo
-├── relatorio.html       ← Relatório imprimível (Ctrl+P → PDF)
-├── dashboard_data.json  ← Dados (gerado por build_dashboard_data.py)
-└── README.md            ← Documentação técnica para humanos
+app/frontend/
+├── index.html              ← Visão Geral
+├── transgressoes.html      ← Séries temporais de transgressão
+├── benchmark.html          ← Volume de serviços × compensação
+├── evolucao.html           ← Evolução mensal por holding
+├── ranking.html            ← Ranking por métrica
+├── mapa.html               ← Mapa geográfico
+├── relatorio.html          ← Relatório imprimível
+├── dashboard_data.json     ← Payload principal
+└── dashboard_*.json        ← Micro-payloads por visualização
 ```
 
-## As 4 Abas do Dashboard
+## Páginas do Dashboard
 
-### Tab 1: Visão Geral (`#overview`)
-
-- 6 cards KPI (taxa pré/pós 2022, compensações, total serviços, total fora do prazo)
-- 2 insights textuais
-- Gráfico: Taxa Fora do Prazo — Série Anual (2011-2023)
-- Gráfico: Compensações Financeiras — Série Anual (2011-2023)
-- Dados: `kpi_overview`, `serie_anual`
-
-### Tab 2: Neoenergia (`#neoenergia`)
-
-- Gráfico de barras agrupadas: Transgressões por 100k UC-mês (2023-2025)
-- Gráfico de barras agrupadas: Compensação R$/UC-mês (2023-2025)
-- Gráfico Radar: Benchmark multidimensional (último ano)
-- Tabela: Tendência 2023→2025 com variações percentuais
-- Dados: `neo_anual`, `neo_tendencia`, `neo_benchmark`
-
-### Tab 3: Análise Regulatória (`#regulatory`)
-
-- Gráfico: Série mensal — Taxa fora do prazo por distribuidora
-- Gráfico: Série mensal — Compensações financeiras
-- Legendas interativas (toggle ON/OFF distribuidoras)
-- Dados: `serie_mensal_nacional`
-
-### Tab 4: Diagnóstico Detalhado (`#diagnostico`)
-
-- 5 gráficos donut: Distribuição por classe de consumo por distribuidora
-- Gráfico de barras: Série longa 2011-2023 (taxa 2011 vs 2023)
-- Tabela: Resumo da série longa com variações
-- 3 insights automáticos
-- Dados: `neo_classe_local`, `neo_longa_resumo`
+- `index.html`: KPIs, séries anuais e visão geral.
+- `transgressoes.html`: séries temporais mensais por distribuidora/grupo.
+- `benchmark.html`: comparação de volume de serviços e compensação.
+- `evolucao.html`: heatmap mensal por holding.
+- `ranking.html`: ranking horizontal por métrica.
+- `mapa.html`: mapa interativo.
+- `relatorio.html`: saída imprimível.
 
 ## Modificar o Dashboard
 
@@ -125,7 +107,7 @@ Gerado por `src/analysis/build_dashboard_data.py`. Lê estes CSVs:
 
 ## Relatório Imprimível
 
-- **Arquivo**: `dashboard/relatorio.html`
+- **Arquivo**: `app/frontend/relatorio.html`
 - **Serve para**: Gerar PDF via Ctrl+P / botão "Imprimir / Salvar PDF"
 - **Visual**: Fundo branco, layout otimizado para impressão (page breaks)
 - **Dados**: Usa o mesmo `dashboard_data.json`
@@ -135,9 +117,9 @@ Gerado por `src/analysis/build_dashboard_data.py`. Lê estes CSVs:
 
 | Problema | Causa | Solução |
 |----------|-------|---------|
-| "Erro ao carregar dados" | `dashboard_data.json` não existe | `make dashboard` |
+| "Erro ao carregar dados" | `dashboard_data.json` não existe | `make dashboard-full` ou `make pipeline` |
 | "Erro ao carregar dados" | Acessou via `file://` | `make serve` |
 | Backend não sobe | Pré-check falhou em artefatos/schema | `make preflight-backend` |
 | Porta 8051 ocupada | Outro processo na porta | `ss -tlnp \| grep :8051` |
-| Gráficos vazios | JSON desatualizado | `make dashboard` (regenerar) |
+| Gráficos vazios | JSON desatualizado | `make dashboard-full` ou `make pipeline` |
 | Charts não renderizam | CDN Chart.js inacessível | Verificar internet |

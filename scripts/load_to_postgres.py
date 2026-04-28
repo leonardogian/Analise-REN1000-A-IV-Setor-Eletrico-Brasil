@@ -1,9 +1,11 @@
-import pandas as pd
-from sqlalchemy import create_engine
 import os
 import glob
 from pathlib import Path
+import sys
+
+import pandas as pd
 import pyarrow.parquet as pq
+from sqlalchemy import create_engine
 
 def load_in_chunks(file_path, engine, table_name, chunksize=50000):
     print(f"Lendo parquet {file_path}...")
@@ -53,14 +55,26 @@ def main():
         print("Nenhum arquivo parquet encontrado.")
         return
         
+    errors = []
+
     for p_file in parquet_files:
         table_name = Path(p_file).stem
         print(f"\nIniciando carga de {table_name} ...")
-        
+
         try:
             load_in_chunks(p_file, engine, table_name)
         except Exception as e:
-            print(f"Erro ao carregar {table_name}: {e}")
+            message = f"Erro ao carregar {table_name}: {e}"
+            print(message)
+            errors.append(message)
+
+    if errors:
+        print("\nCarga PostgreSQL finalizada com falhas:")
+        for err in errors:
+            print(f" - {err}")
+        raise SystemExit(1)
+
+    print("\nCarga PostgreSQL concluida sem falhas.")
 
 if __name__ == "__main__":
     main()

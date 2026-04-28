@@ -14,7 +14,7 @@ ANALYSIS_DIR := data/processed/analysis
 .PHONY: help venv venv-recreate install doctor \
 	extract extract-aneel extract-aneel-full extract-ibge transform update-data \
 	analysis report grupos-diagnostico neoenergia-diagnostico \
-	load-postgres qa-audit pipeline \
+	load-postgres qa-audit qa-frontend qa-data pipeline \
 	dashboard dashboard-transgressoes dashboard-full \
 	serve frontend frontend-next frontend-next-railway frontend-next-install stack-next preflight-backend backend dev-serve \
 	screenshots check-visual \
@@ -47,8 +47,10 @@ help:
 	@echo "  make grupos-diagnostico     - diagnóstico por grupos econômicos"
 	@echo "  make neoenergia-diagnostico - alias de compatibilidade (artefatos legados neo)"
 	@echo "  make load-postgres          - carrega dados no PostgreSQL"
-	@echo "  make qa-audit               - executa auditoria de qualidade QA"
-	@echo "  make pipeline               - update-data + analysis + report + grupos + dashboards"
+	@echo "  make qa-audit               - smoke visual do frontend legado (alias: qa-frontend)"
+	@echo "  make qa-frontend            - smoke visual do frontend legado via Playwright"
+	@echo "  make qa-data                - auditoria numerica read-only dos artefatos"
+	@echo "  make pipeline               - update-data + analysis + report + grupos + dashboards + validações"
 	@echo ""
 	@echo "Dashboard:"
 	@echo "  make dashboard              - gera JSON do dashboard principal"
@@ -145,7 +147,22 @@ load-postgres:
 qa-audit:
 	$(PYTHON) scripts/qa_audit.py
 
-pipeline: update-data analysis report grupos-diagnostico neoenergia-diagnostico dashboard dashboard-transgressoes
+qa-frontend: qa-audit
+
+qa-data:
+	$(PYTHON) scripts/qa_data_audit.py
+
+pipeline:
+	@$(MAKE) update-data
+	@$(MAKE) analysis
+	@$(MAKE) report
+	@$(MAKE) grupos-diagnostico
+	@$(MAKE) neoenergia-diagnostico
+	@$(MAKE) dashboard
+	@$(MAKE) dashboard-transgressoes
+	@$(MAKE) validate-contracts
+	@$(MAKE) check-artifacts-full
+	@$(MAKE) qa-data
 
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 
@@ -167,6 +184,7 @@ dashboard-full: analysis grupos-diagnostico neoenergia-diagnostico dashboard das
 
 serve: dashboard
 	@echo "🌐 Frontend Vanilla JS (legado) em http://localhost:$(PORT)"
+	@echo "ℹ️ Para reprodução científica, rode make pipeline antes de servir os JSONs."
 	@(sleep 2 && xdg-open http://localhost:$(PORT) 2>/dev/null || true) &
 	cd app/frontend && $(PYTHON) -m http.server $(PORT)
 
@@ -191,6 +209,7 @@ preflight-backend:
 
 backend: preflight-backend
 	@echo "🚀 Backend FastAPI em http://localhost:$(PORT)"
+	@echo "ℹ️ Se o preflight falhou, gere os artefatos locais com make pipeline."
 	@(sleep 2 && xdg-open http://localhost:$(PORT) 2>/dev/null || true) &
 	$(PYTHON) -m uvicorn app.backend.main:app --host 0.0.0.0 --port $(PORT)
 

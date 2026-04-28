@@ -91,13 +91,36 @@ Choropleth Leaflet: distribuidoras por estado, colorido por taxa de transgressã
 
 ## 🚀 Como Usar Localmente
 
-### Padrão — Backend + Frontend Next.js juntos
+Há dois caminhos diferentes:
+
+1. **Ver a demo com dados versionados.** Usa os CSVs analíticos e JSONs já presentes no clone. Serve para explorar o dashboard rapidamente, mas não reproduz cientificamente a base.
+2. **Reproduzir do zero.** Baixa os dados brutos da ANEEL/IBGE, transforma, valida e regenera os JSONs. Este é o caminho obrigatório para conferir os números.
+
+### Demo rápida — Backend + Frontend Next.js
 
 ```bash
 source .venv/bin/activate   # ou: make venv-recreate && make install
 make stack-next              # backend (8051) + Next.js (3051) simultaneamente
 # Abra http://localhost:3051
 ```
+
+### Reprodução científica do zero
+
+Os dados brutos não estão no Git por tamanho. Antes de considerar a visualização válida para auditoria, rode:
+
+```bash
+make venv-recreate
+make install
+make doctor
+make pipeline
+make qa-data
+make serve
+# Abra http://localhost:8051
+```
+
+`make pipeline` executa extração, transformação, análise, geração dos JSONs e validações (`validate-contracts`, `check-artifacts-full`, `qa-data`). Em uma máquina comum, reserve ao menos 12 GB livres, conexão estável e uma janela longa de execução; o gargalo principal é baixar/descompactar e transformar o INDGER.
+
+Guia canônico das URLs, periodicidade, diretórios e troubleshooting: [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md).
 
 ### Só o backend (API + Vanilla JS estático)
 
@@ -167,10 +190,12 @@ build_report.py         → reports/relatorio_aneel.md
 grupos_diagnostico.py   → data/processed/analysis/grupos/
 ```
 
+Política de versionamento: `data/raw/` e `data/processed/` base são gerados localmente e não entram no Git. `data/processed/analysis/**/*.csv` e `app/frontend/dashboard_*.json` podem ficar versionados para auditoria/demo/deploy estático, mas devem ser regenerados após ETL para reprodução científica.
+
 Comandos rápidos:
 
 ```bash
-make pipeline            # tudo: extract → transform → análise → JSONs
+make pipeline            # extract → transform → análise → JSONs → validações
 make dashboard-full      # só a camada analítica → JSONs (sem re-extrair)
 make grupos-diagnostico  # CSVs de grupos econômicos
 ```
@@ -195,7 +220,7 @@ TCC_leo_main/
 │   └── analysis/          ← build_analysis_tables, build_dashboard_data…
 ├── data/processed/analysis/ ← CSVs versionados consumidos pelo app
 ├── docs/images/           ← Screenshots do dashboard
-├── notebooks/             ← Jupyter exploratórios (EDA, estatísticas)
+├── docs/                  ← Documentação, auditorias e imagens
 ├── vercel.json            ← Config do projeto Vercel legado (Vanilla JS)
 ├── railway.toml           ← Config Docker Railway (backend)
 └── Makefile               ← Todos os comandos (make help)
@@ -209,6 +234,7 @@ TCC_leo_main/
 make test-fast        # 30s: imports + schema contracts + artefatos core
 make test-smoke       # 5min: smoke completo (Neoenergia + dashboard)
 make validate-contracts  # valida schema raw vs processed
+make qa-data          # auditoria numerica dos artefatos analiticos
 ```
 
 ---
@@ -218,6 +244,7 @@ make validate-contracts  # valida schema raw vs processed
 | Documento | Conteúdo |
 |-----------|----------|
 | [`CLAUDE.md`](CLAUDE.md) | Comandos, arquitetura, convenções de código (para devs e IAs) |
+| [`docs/DATA_QUALITY_AUDIT.md`](docs/DATA_QUALITY_AUDIT.md) | Backlog e contrato da auditoria numerica dos dados |
 | [`.ai/CONTEXT.md`](.ai/CONTEXT.md) | Visão de arquitetura para agentes IA |
 | [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md) | Como baixar dados do zero (URLs CKAN, periodicidade, troubleshooting) |
 | [`app/frontend-next/README.md`](app/frontend-next/README.md) | Rotas, componentes e padrões do Next.js |
@@ -260,8 +287,9 @@ A cadeia completa é reproduzível a partir do zero com `make pipeline`:
 | Transformação | `src/etl/transform_aneel.py` | `data/processed/*.parquet` — Parquet tipados |
 | Análise | `src/analysis/build_analysis_tables.py` | `data/processed/analysis/*.csv` — **13 tabelas versionadas no Git** |
 | Validação | `scripts/validate_schema_contracts.py` | Contratos de schema contra o raw e o processado |
+| Auditoria numérica | `scripts/qa_data_audit.py` | Unicidade, taxas, labels, cobertura e drift CSV/parquet |
 
-As 13 tabelas analíticas em `data/processed/analysis/` entram no controle de versão precisamente para permitir **auditoria independente**: qualquer revisor pode verificar coluna a coluna sem precisar re-extrair os 7 GB brutos. A documentação ponta-a-ponta das fontes, URLs, cadência de atualização e troubleshooting está em [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md).
+As tabelas analíticas em `data/processed/analysis/` entram no controle de versão para permitir **auditoria independente**. Para reproduzir os dados, porém, o clone deve regenerar raw/processado base e JSONs locais com `make pipeline`. A documentação ponta-a-ponta das fontes, URLs, cadência de atualização e troubleshooting está em [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md).
 
 ### Caminhos para pesquisas futuras
 

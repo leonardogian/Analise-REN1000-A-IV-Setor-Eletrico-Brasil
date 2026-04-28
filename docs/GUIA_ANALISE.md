@@ -103,9 +103,9 @@ Interpretacao recomendada:
 
 ## Notebooks e ordem recomendada
 
-1. `notebooks/01_mapa_dados_e_qualidade.ipynb`
-2. `notebooks/02_tendencia_regulatoria_414_vs_1000.ipynb`
-3. `notebooks/03_porte_e_benchmark_distribuidoras.ipynb`
+1. `make qa-data` para validar os artefatos analiticos antes de interpretar resultados.
+2. `docs/DATA_QUALITY_AUDIT.md` para acompanhar achados confirmados e deferidos.
+3. Scripts em `src/analysis/` para reproduzir as tabelas usadas no dashboard.
 
 ## Testes recomendados
 

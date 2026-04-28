@@ -12,6 +12,7 @@ __pycache__/
 data/raw/*.csv
 data/raw/*.zip
 data/raw/*.xlsx
+data/raw/*.jsonl
 
 # ==========================
 # Dados processados (gerados via script)
@@ -77,5 +78,6 @@ docs/screenshots/
 data/processed/**/*.csv
 data/processed/**/*.parquet
 data/processed/**/*.xlsx
+!data/processed/analysis/**/*.csv
 .vercel
 .env*.local

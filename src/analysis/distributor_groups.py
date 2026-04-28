@@ -83,6 +83,17 @@ def default_group_label(group_id: str) -> str:
     return "Grupo " + " ".join(word.upper() if len(word) <= 4 else word.title() for word in words)
 
 
+def compose_distributor_label(sig: object, legal: object) -> str:
+    """Compose the canonical distributor display label."""
+    sig_text = "" if sig is None or pd.isna(sig) else str(sig).strip()
+    legal_text = "" if legal is None or pd.isna(legal) else str(legal).strip()
+    if not sig_text:
+        return legal_text
+    if not legal_text or sig_text == legal_text:
+        return sig_text
+    return f"{sig_text} — {legal_text}"
+
+
 def load_group_overrides(
     path: Path = DEFAULT_OVERRIDES_PATH,
 ) -> tuple[dict[str, str], dict[str, str]]:
@@ -118,7 +129,12 @@ def load_group_overrides(
 def load_distributor_name_overrides(
     path: Path = DEFAULT_NAMES_OVERRIDES_PATH,
 ) -> dict[str, dict[str, str]]:
-    """Load manual name normalization and aliases by distributor_id."""
+    """Load manual display-name normalization and aliases by distributor_id.
+
+    Aliases are intentionally not identity merges. They may inherit display
+    names and group assignment from a known brand, but the raw distributor id
+    remains the factual key so historical CNPJs/siglas are not collapsed.
+    """
     if not path.exists():
         return {}
 
@@ -162,6 +178,7 @@ def load_distributor_name_overrides(
         normalized[alias_id] = {
             "sigagente": str(target.get("sigagente", "")).strip(),
             "nomagente": str(target.get("nomagente", "")).strip(),
+            "alias_of": canonical_id if alias_id != canonical_id else "",
             "canonical_id": canonical_id,
         }
     return normalized
@@ -239,11 +256,15 @@ def annotate_distributor_group(
         return str(value).strip()
 
     canonical_ids: list[str] = []
+    alias_targets: list[str] = []
     for sig, legal, dist_id in zip(sig_series.tolist(), name_series.tolist(), raw_distributor_ids):
         mapped = name_overrides.get(dist_id, {})
-        canonical_id = slugify(mapped.get("canonical_id", dist_id), fallback=dist_id)
-        canonical_ids.append(canonical_id)
-        sig_name = str(mapped.get("sigagente", "")).strip() or _text(sig)
+        canonical_ids.append(dist_id)
+        alias_target = slugify(mapped.get("canonical_id", ""), fallback="") if mapped else ""
+        alias_targets.append(alias_target if alias_target and alias_target != dist_id else "")
+        # Do not rename factual aliases to the canonical sigla. EBO and EPB,
+        # for example, must stay distinct even if both belong to Energisa.
+        sig_name = _text(sig) if alias_target and alias_target != dist_id else str(mapped.get("sigagente", "")).strip() or _text(sig)
         legal_name = str(mapped.get("nomagente", "")).strip() or _text(legal)
         if not legal_name:
             legal_name = sig_name
@@ -251,21 +272,32 @@ def annotate_distributor_group(
         name_legal_values.append(legal_name)
 
     out["distributor_id"] = pd.Series(canonical_ids, index=out.index, dtype="string")
+    out["distributor_alias_of"] = pd.Series(alias_targets, index=out.index, dtype="string")
 
     out["distributor_name_sig"] = pd.Series(name_sig_values, index=out.index, dtype="string")
     out["distributor_name_legal"] = pd.Series(name_legal_values, index=out.index, dtype="string")
     out[sig_col] = out["distributor_name_sig"]
     out[name_col] = out["distributor_name_legal"]
 
+    overrides = distributor_to_group or {}
     out["group_id"] = [
-        resolve_group_id(sig, dist_id, distributor_to_group)
-        for sig, dist_id in zip(out["distributor_name_sig"].tolist(), out["distributor_id"].tolist())
+        overrides.get(alias_target)
+        or resolve_group_id(
+            str(name_overrides.get(alias_target, {}).get("sigagente", "")).strip() or sig,
+            alias_target or dist_id,
+            distributor_to_group,
+        )
+        for sig, dist_id, alias_target in zip(
+            out["distributor_name_sig"].tolist(),
+            out["distributor_id"].tolist(),
+            out["distributor_alias_of"].tolist(),
+        )
     ]
 
     labels = group_labels or {}
     out["group_label"] = out["group_id"].map(lambda gid: labels.get(gid, default_group_label(gid)))
     out["distributor_label"] = [
-        sig if not legal or sig == legal else f"{sig} — {legal}"
+        compose_distributor_label(sig, legal)
         for sig, legal in zip(out["distributor_name_sig"].tolist(), out["distributor_name_legal"].tolist())
     ]
 
@@ -299,6 +331,8 @@ def build_group_dimension(
     dim = frame[cols].drop_duplicates(subset=["group_id", "distributor_id"]).copy()
     if "group_label" not in dim.columns:
         dim["group_label"] = dim["group_id"].map(default_group_label)
+    dim[sig_col] = dim[sig_col].astype("string").fillna("").str.strip()
+    dim[sig_col] = dim[sig_col].mask(dim[sig_col] == "", dim["distributor_id"].astype("string"))
     if name_col not in dim.columns:
         dim[name_col] = dim[sig_col]
     dim[name_col] = dim[name_col].astype("string").fillna(dim[sig_col].astype("string"))
@@ -308,7 +342,7 @@ def build_group_dimension(
         dim["distributor_name_legal"] = dim[name_col].astype("string")
     if "distributor_label" not in dim.columns:
         dim["distributor_label"] = [
-            sig if sig == legal or not legal else f"{sig} — {legal}"
+            compose_distributor_label(sig, legal)
             for sig, legal in zip(dim["distributor_name_sig"].astype(str), dim["distributor_name_legal"].astype(str))
         ]
 

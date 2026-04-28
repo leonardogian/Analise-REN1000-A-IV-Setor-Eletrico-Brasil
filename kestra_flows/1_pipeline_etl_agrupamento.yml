@@ -10,7 +10,7 @@ tasks:
     docker:
       image: python:3.11-slim
       volumes:
-        - "/home/gianmarinolc/Documents/Estudos/TCC_leo_main:/app"
+        - "${TCC_REPO_ROOT:-.}:/app"
     commands:
       - cd /app
       - pip install -r requirements.txt --quiet
@@ -23,7 +23,7 @@ tasks:
     docker:
       image: python:3.11-slim
       volumes:
-        - "/home/gianmarinolc/Documents/Estudos/TCC_leo_main:/app"
+        - "${TCC_REPO_ROOT:-.}:/app"
     commands:
       - cd /app
       - export PYTHONPATH=/app
@@ -41,7 +41,7 @@ tasks:
       # O networkMode: host permite o contêiner enxergar o localhost:5432 do seu dbeaver-postgres
       networkMode: host 
       volumes:
-        - "/home/gianmarinolc/Documents/Estudos/TCC_leo_main:/app"
+        - "${TCC_REPO_ROOT:-.}:/app"
     commands:
       - cd /app
       - export PYTHONPATH=/app

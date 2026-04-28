@@ -8,19 +8,18 @@ from pathlib import Path
 import csv
 
 CORE_REQUIRED = [
-    "data/processed/analysis/dim_indicador_servico.parquet",
-    "data/processed/analysis/dim_distribuidora_porte.parquet",
-    "data/processed/analysis/fato_uc_ativa_mensal_distribuidora.parquet",
-    "data/processed/analysis/fato_indicadores_anuais.parquet",
-    "data/processed/analysis/fato_servicos_municipio_mes.parquet",
-    "data/processed/analysis/fato_transgressao_mensal_porte.parquet",
-    "data/processed/analysis/fato_transgressao_mensal_distribuidora.parquet",
-    "data/processed/analysis/kpi_regulatorio_anual.parquet",
+    "data/processed/analysis/dim_indicador_servico.csv",
+    "data/processed/analysis/dim_distribuidora_porte.csv",
+    "data/processed/analysis/dim_distributor_group.csv",
+    "data/processed/analysis/fato_uc_ativa_mensal_distribuidora.csv",
+    "data/processed/analysis/fato_indicadores_anuais.csv",
+    "data/processed/analysis/fato_transgressao_mensal_porte.csv",
+    "data/processed/analysis/fato_transgressao_mensal_distribuidora.csv",
+    "data/processed/analysis/kpi_regulatorio_anual.csv",
     "reports/relatorio_aneel.md",
 ]
 
 FULL_REQUIRED = CORE_REQUIRED + [
-    "data/processed/analysis/dim_distributor_group.parquet",
     "data/processed/analysis/grupos/grupos_mensal_2023_2025.csv",
     "data/processed/analysis/grupos/grupos_anual_2023_2025.csv",
     "data/processed/analysis/grupos/grupos_anual_sem_cod_69_93.csv",
@@ -36,6 +35,12 @@ FULL_REQUIRED = CORE_REQUIRED + [
     "data/processed/analysis/grupos/grupos_outliers_taxa.csv",
     "reports/neoenergia_diagnostico.md",
     "app/frontend/dashboard_data.json",
+    "app/frontend/dashboard_transgressoes.json",
+    "app/frontend/dashboard_timeseries.json",
+    "app/frontend/dashboard_scatter.json",
+    "app/frontend/dashboard_heatmap.json",
+    "app/frontend/dashboard_radar.json",
+    "app/frontend/dashboard_groups_ranking.json",
 ]
 
 REQUIRED_DASHBOARD_KEYS = {
@@ -169,6 +174,24 @@ def check_grouping_regression() -> list[str]:
     return errors
 
 
+def check_optional_parquet_mirrors(required: list[str], tolerance_seconds: int = 300) -> list[str]:
+    """If a CSV has a local parquet mirror, ensure it is not stale."""
+    errors: list[str] = []
+    for item in required:
+        csv_path = Path(item)
+        if csv_path.suffix != ".csv":
+            continue
+        parquet_path = csv_path.with_suffix(".parquet")
+        if not parquet_path.exists():
+            continue
+        drift = abs(parquet_path.stat().st_mtime - csv_path.stat().st_mtime)
+        if drift > tolerance_seconds:
+            errors.append(
+                f"CSV/parquet drift: {csv_path} and {parquet_path} differ by {drift:.0f}s; rerun `make analysis`"
+            )
+    return errors
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Check generated artifacts")
     parser.add_argument(
@@ -183,6 +206,7 @@ def main() -> None:
 
     missing = [path for path in required if not Path(path).exists()]
     errors: list[str] = []
+    errors.extend(check_optional_parquet_mirrors(required))
 
     if args.profile == "full":
         errors.extend(check_dashboard_json())

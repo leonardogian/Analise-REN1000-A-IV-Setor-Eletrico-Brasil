@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality of Brazilian energy distributors. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units). Special focus on 5 Neoenergia distributors.
 
-**Current phase:** ETL (com integração IBGE + tiers), backend FastAPI+Postgres+Redis e dois frontends (Vanilla JS clássico em `app/frontend/` e Next.js 14 em `app/frontend-next/`) estão operacionais. Backend expõe 9 endpoints: `/health`, `/api/dashboard`, `/api/dashboard/{section}` e seis micro-payloads em `/api/v1/*`. Próximos passos: fix do bug de nomes de distribuidoras em `fato_indicadores_anuais`, camada coroplética no mapa e redação da tese.
+**Current phase:** ETL, backend FastAPI+Postgres+Redis e dois frontends estão operacionais. A rodada de reprodutibilidade reforçou extração segura, leitura CSV centralizada, contratos de schema com dtypes/ranges, deduplicação INDGER e dashboard com agregações ponderadas. `make pipeline` agora termina com validações.
 
 ## Essential Commands
 
@@ -48,6 +48,7 @@ make dev-serve              # Backend com --reload (também serve estáticos com
 make test-fast          # compile + imports + schema contracts + core artifacts
 make test-smoke         # full smoke (neoenergia + dashboard + full validation)
 make validate-contracts # schema contracts (raw/processed)
+make qa-data            # numeric/data-quality audit for analysis artifacts
 ```
 
 ## Architecture
@@ -99,7 +100,7 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
   - `filters.js` — global period/porte/group state + `filters:change` event
   - `app.js` — Chart.js defaults (theme), shared constants
 - `app/frontend-next/` — frontend alternativo em Next.js 14 (7 páginas, Tailwind, TanStack Query)
-- `data/processed/analysis/` — versioned analytical CSVs/Parquets
+- `data/processed/analysis/` — versioned analytical CSVs; Parquet mirrors are generated locally
 - `docker/` — Docker Compose (app stack, PostgreSQL, Kestra)
 - `docs/` — canonical docs (EXTRACAO_DADOS, DICIONARIO_DADOS, GUIA_ANALISE, PROXIMOS_PASSOS_TCC, ...)
 - `.github/agents/` — specialized AI agents (aneel-data-guardian, backend-fastapi-specialist, frontend-next-specialist)
@@ -146,12 +147,12 @@ Key files consumed by backend and dashboard:
 
 ## Critical Constraints
 
-1. **Port 8051 para local dev e Docker** — `make serve`, `make backend`, scripts Playwright e Docker usam 8051. O frontend Next.js usa `3051` via `make frontend-next` (3000/5433/6379/8000/8050/8080/8090 estão ocupados por outros serviços locais).
+1. **Port 8051 para local dev e Docker** — `make serve`, `make backend`, scripts Playwright e Docker usam 8051. O frontend Next.js usa `3051` via `make frontend-next`.
 2. **Use `python3`, não `python`** — o binário `python` não existe nesta máquina. O Makefile já trata isso.
 3. **Stacks de frontend divergentes** — `app/frontend/` é Vanilla JS puro + Chart.js via CDN (sem npm, sem frameworks). `app/frontend-next/` é Next.js 14 + React + Tailwind + TanStack Query. Não misturar convenções entre as duas.
 4. **Nunca abrir o dashboard via `file://`** — CORS quebra. Use sempre `make serve` ou `make backend`.
-5. **Não commitar raw data** — `data/raw/` e `data/processed/*.{csv,parquet}` estão no `.gitignore`. Só `data/processed/analysis/` CSVs são versionados.
-6. **`dashboard_data.json` é gerado** — rode `make dashboard` para regenerar; não commitar manualmente.
+5. **Não commitar raw/base processed** — `data/raw/` e `data/processed/*.{csv,parquet}` base são gerados localmente. `data/processed/analysis/**/*.csv` é versionado para auditoria/demo.
+6. **Dashboard JSONs são gerados** — `app/frontend/dashboard_*.json` pode ficar versionado para demo/deploy estático, mas deve ser regenerado com `make dashboard-full` ou `make pipeline`.
 
 ## Conventions
 
@@ -159,7 +160,7 @@ Key files consumed by backend and dashboard:
 
 ```
 feat: adicionar endpoint de transgressões por porte
-fix: corrigir porta no Makefile para 8050
+fix: corrigir porta no Makefile para 8051
 docs: atualizar README com novos gráficos
 refactor: separar build_analysis_tables por fonte
 chore: atualizar requirements.txt
@@ -180,6 +181,7 @@ Após mudanças estruturais, mantenha sincronizados:
 - `app/frontend/README.md` (dashboard clássico), `app/frontend-next/README.md` (dashboard Next.js)
 - `.ai/CONTEXT.md`, `.ai/PIPELINE.md`, `.ai/CONVENTIONS.md`, `.ai/DASHBOARD.md`, `.ai/DATA_OVERVIEW.md`
 - `docs/EXTRACAO_DADOS.md` — guia canônico de extração ANEEL + IBGE
+- `docs/DATA_QUALITY_AUDIT.md` — backlog e contrato da auditoria numerica
 
 ## Testing
 

@@ -8,6 +8,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from src.analysis.distributor_groups import compose_distributor_label, default_group_label
+from src.analysis.metrics import (
+    calc_compensacao_por_uc,
+    calc_fora_prazo_por_100k,
+    calc_taxa_fora_prazo,
+    classify_periodo_regulatorio,
+)
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 DIR_ANALYSIS = ROOT / "data" / "processed" / "analysis"
 DIR_GROUPS = DIR_ANALYSIS / "grupos"
@@ -43,10 +51,12 @@ REQUIRED_NON_EMPTY_SECTIONS = [
     "franquias_insights",
 ]
 
-REGULATORY_ORDER = ["grupo_a", "grupo_b", "rural", "urbana", "nao_classificado"]
+REGULATORY_ORDER = ["grupo_a", "grupo_b_rural", "grupo_b_urbana", "grupo_b", "rural", "urbana", "nao_classificado"]
 REGULATORY_LABELS = {
     "grupo_a": "Grupo A",
-    "grupo_b": "Grupo B",
+    "grupo_b_rural": "Grupo B Rural",
+    "grupo_b_urbana": "Grupo B Urbana",
+    "grupo_b": "Grupo B não classificado",
     "rural": "Rural",
     "urbana": "Urbana",
     "nao_classificado": "Não classificado",
@@ -115,16 +125,6 @@ def validate_non_empty_sections(data: dict) -> None:
         raise RuntimeError(msg)
 
 
-def compose_distributor_label(sig: object, legal: object) -> str:
-    sig_text = str(sig or "").strip()
-    legal_text = str(legal or "").strip()
-    if not sig_text:
-        return legal_text
-    if not legal_text or sig_text == legal_text:
-        return sig_text
-    return f"{sig_text} — {legal_text}"
-
-
 def ensure_label_columns(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
     if "distributor_name_sig" not in out.columns:
@@ -163,17 +163,23 @@ def build_historical_annual(indicadores: pd.DataFrame) -> dict:
         national["qtd_fora_prazo"] / national["qtd_serv"],
         np.nan,
     )
-    national["periodo_regulatorio"] = national["ano"].map(
-        lambda a: "pre_2022" if a <= 2021 else "pos_2022"
-    )
+    national["periodo_regulatorio"] = classify_periodo_regulatorio(national["ano"])
     pre = national[national["periodo_regulatorio"] == "pre_2022"]
     pos = national[national["periodo_regulatorio"] == "pos_2022"]
+    n_pre = int(pre["ano"].nunique()) if not pre.empty else 0
+    n_pos = int(pos["ano"].nunique()) if not pos.empty else 0
+    pre_total_comp = pre["compensacao_rs"].sum() if not pre.empty else np.nan
+    pos_total_comp = pos["compensacao_rs"].sum() if not pos.empty else np.nan
     return {
         "annual_series": _df_to_records(national.sort_values("ano")),
         "pre_avg_taxa": _safe(pre["taxa_fora_prazo"].mean()) if not pre.empty else None,
         "pos_avg_taxa": _safe(pos["taxa_fora_prazo"].mean()) if not pos.empty else None,
-        "pre_total_comp": _safe(pre["compensacao_rs"].sum()) if not pre.empty else None,
-        "pos_total_comp": _safe(pos["compensacao_rs"].sum()) if not pos.empty else None,
+        "pre_total_comp": _safe(pre_total_comp) if not pre.empty else None,
+        "pos_total_comp": _safe(pos_total_comp) if not pos.empty else None,
+        "n_anos_pre": n_pre,
+        "n_anos_pos": n_pos,
+        "pre_compensacao_media_anual": _safe(pre_total_comp / n_pre) if n_pre else None,
+        "pos_compensacao_media_anual": _safe(pos_total_comp / n_pos) if n_pos else None,
     }
 
 
@@ -193,6 +199,10 @@ def build_kpi_overview(kpi: pd.DataFrame) -> dict:
     pos_taxa = pos_fora / pos_serv if pos_serv > 0 else 0
     pre_comp = pre["compensacao_rs"].sum() if len(pre) > 0 else 0
     pos_comp = pos["compensacao_rs"].sum() if len(pos) > 0 else 0
+    n_anos_pre = int(pre["ano"].nunique()) if len(pre) > 0 else 0
+    n_anos_pos = int(pos["ano"].nunique()) if len(pos) > 0 else 0
+    pre_comp_anual = pre_comp / n_anos_pre if n_anos_pre else 0
+    pos_comp_anual = pos_comp / n_anos_pos if n_anos_pos else 0
 
     return {
         "pre_taxa_media": _safe(pre_taxa),
@@ -201,10 +211,15 @@ def build_kpi_overview(kpi: pd.DataFrame) -> dict:
         "pre_compensacao_total": _safe(pre_comp),
         "pos_compensacao_total": _safe(pos_comp),
         "delta_compensacao": _safe(pos_comp - pre_comp),
+        "pre_compensacao_media_anual": _safe(pre_comp_anual),
+        "pos_compensacao_media_anual": _safe(pos_comp_anual),
+        "delta_compensacao_media_anual": _safe(pos_comp_anual - pre_comp_anual),
         "pre_servicos_total": _safe(pre_serv),
         "pos_servicos_total": _safe(pos_serv),
         "pre_fora_prazo_total": _safe(pre_fora),
         "pos_fora_prazo_total": _safe(pos_fora),
+        "n_anos_pre": n_anos_pre,
+        "n_anos_pos": n_anos_pos,
         "anos_pre": sorted(pre["ano"].unique().tolist()),
         "anos_pos": sorted(pos["ano"].unique().tolist()),
     }
@@ -513,7 +528,7 @@ def build_legacy_neo_alias(group_views: dict[str, dict]) -> dict[str, list[dict]
 def normalize_regulatory_class(value: object) -> str:
     key = str(value or "").strip().lower()
     if key in {"grupo_b", "grupo_b_rural", "grupo_b_urbana"}:
-        return "grupo_b"
+        return key
     if key in REGULATORY_LABELS:
         return key
     return "nao_classificado"
@@ -719,9 +734,7 @@ def build_regulatory_long_summary(indicadores: pd.DataFrame, class_id: str) -> p
     long_base["regulatory_class"] = long_base["classe_local"].map(normalize_regulatory_class)
     class_filtered = long_base[(long_base["regulatory_class"] == class_id) & (long_base["ano"] <= 2023)].copy()
     if class_filtered.empty or class_filtered["ano"].nunique() < 5:
-        # Fallback: use all classes when class-specific data spans too few years
-        # (classe_local is 'nao_classificado' for many pre-2018 rows)
-        long_base = long_base[long_base["ano"] <= 2023].copy()
+        return pd.DataFrame()
     else:
         long_base = class_filtered
     if long_base.empty:
@@ -849,7 +862,7 @@ def build_regulatory_views(monthly_porte: pd.DataFrame, indicadores: pd.DataFram
         )
 
     default_regulatory_id = None
-    for preferred in ["urbana", "grupo_a", "grupo_b", "rural", "nao_classificado"]:
+    for preferred in ["urbana", "grupo_b_urbana", "grupo_a", "grupo_b_rural", "grupo_b", "rural", "nao_classificado"]:
         if any(item["class_id"] == preferred and item["selector_enabled"] for item in groups):
             default_regulatory_id = preferred
             break
@@ -1082,22 +1095,27 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
     # Ranking de Grupos Econômicos — métricas agregadas + variação pre/pos REN 1000
     if not fato_mensal.empty:
         df = fato_mensal.copy()
-        _KNOWN_LABELS = {
-            "neoenergia": "Neoenergia", "cpfl": "CPFL", "equatorial": "Equatorial",
-            "energisa": "Energisa", "enel": "Enel", "cemig": "Cemig", "copel": "Copel",
-            "edp": "EDP", "celesc": "Celesc", "light": "Light", "elektro": "Elektro",
-            "coelce": "Coelce", "coelba": "Coelba", "elektro_redes": "Elektro Redes",
-        }
         ano_max = df["ano"].max()
         df_latest = df[df["ano"] == ano_max].copy()
+        group_label_lookup = (
+            df_latest[["group_id", "group_label"]]
+            .dropna(subset=["group_id"])
+            .drop_duplicates(subset=["group_id"])
+            .set_index("group_id")["group_label"]
+            .to_dict()
+            if "group_label" in df_latest.columns
+            else {}
+        )
         rk_agg = df_latest.groupby("group_id", as_index=False).agg(
-            fora_prazo_por_100k_uc_mes=("fora_prazo_por_100k_uc_mes", "mean"),
-            compensacao_rs_por_uc_mes=("compensacao_rs_por_uc_mes", "mean"),
-            taxa_fora_prazo=("taxa_fora_prazo", "mean"),
             n_distribuidoras=("distributor_id", "nunique"),
+            qtd_serv_realizado=("qtd_serv_realizado", "sum"),
             qtd_fora_prazo=("qtd_fora_prazo", "sum"),
             compensacao_rs=("compensacao_rs", "sum"),
+            exposicao_uc_mes=("uc_ativa_mes", "sum"),
         )
+        rk_agg["taxa_fora_prazo"] = calc_taxa_fora_prazo(rk_agg["qtd_fora_prazo"], rk_agg["qtd_serv_realizado"])
+        rk_agg["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(rk_agg["qtd_fora_prazo"], rk_agg["exposicao_uc_mes"])
+        rk_agg["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(rk_agg["compensacao_rs"], rk_agg["exposicao_uc_mes"])
         porte_by_group = df_latest.groupby("group_id")["bucket_porte"].agg(
             lambda x: x.mode().iloc[0] if len(x) > 0 else "N/A"
         ).reset_index().rename(columns={"bucket_porte": "porte"})
@@ -1108,9 +1126,19 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
         if not fato_indicadores.empty and "periodo_regulatorio" in fato_indicadores.columns:
             ind = fato_indicadores.copy()
             ind_agg = ind.groupby(["group_id", "periodo_regulatorio"], as_index=False).agg(
-                taxa_fora_prazo=("taxa_fora_prazo", "mean"),
-                compensacao_rs_por_uc=("compensacao_rs_por_uc", "mean"),
-                fora_prazo_por_100k_uc=("fora_prazo_por_100k_uc", "mean"),
+                n_anos=("ano", "nunique"),
+                qtd_serv=("qtd_serv", "sum"),
+                qtd_fora_prazo=("qtd_fora_prazo", "sum"),
+                compensacao_rs=("compensacao_rs", "sum"),
+                uc_ativa_media_mensal=("uc_ativa_media_mensal", "sum"),
+            )
+            ind_agg["taxa_fora_prazo"] = calc_taxa_fora_prazo(ind_agg["qtd_fora_prazo"], ind_agg["qtd_serv"])
+            ind_agg["compensacao_rs_por_uc"] = calc_compensacao_por_uc(ind_agg["compensacao_rs"], ind_agg["uc_ativa_media_mensal"])
+            ind_agg["fora_prazo_por_100k_uc"] = calc_fora_prazo_por_100k(ind_agg["qtd_fora_prazo"], ind_agg["uc_ativa_media_mensal"])
+            ind_agg["compensacao_rs_media_anual"] = np.where(
+                ind_agg["n_anos"] > 0,
+                ind_agg["compensacao_rs"] / ind_agg["n_anos"],
+                np.nan,
             )
             for gid in ind_agg["group_id"].unique():
                 g_data = ind_agg[ind_agg["group_id"] == gid]
@@ -1122,15 +1150,22 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
                 pos_taxa = pos["taxa_fora_prazo"].iloc[0]
                 pre_comp = pre["compensacao_rs_por_uc"].iloc[0]
                 pos_comp = pos["compensacao_rs_por_uc"].iloc[0]
+                pre_comp_anual = pre["compensacao_rs_media_anual"].iloc[0]
+                pos_comp_anual = pos["compensacao_rs_media_anual"].iloc[0]
                 pre_fora = pre["fora_prazo_por_100k_uc"].iloc[0]
                 pos_fora = pos["fora_prazo_por_100k_uc"].iloc[0]
                 variacao_by_group[str(gid)] = {
+                    "n_anos_pre": int(pre["n_anos"].iloc[0]),
+                    "n_anos_pos": int(pos["n_anos"].iloc[0]),
                     "pre_taxa": _safe(pre_taxa),
                     "pos_taxa": _safe(pos_taxa),
                     "variacao_taxa_pct": _safe((pos_taxa - pre_taxa) / pre_taxa * 100) if pre_taxa else None,
                     "pre_comp_por_uc": _safe(pre_comp),
                     "pos_comp_por_uc": _safe(pos_comp),
                     "variacao_comp_pct": _safe((pos_comp - pre_comp) / pre_comp * 100) if pre_comp else None,
+                    "pre_compensacao_media_anual": _safe(pre_comp_anual),
+                    "pos_compensacao_media_anual": _safe(pos_comp_anual),
+                    "variacao_compensacao_media_anual_pct": _safe((pos_comp_anual - pre_comp_anual) / pre_comp_anual * 100) if pre_comp_anual else None,
                     "pre_fora_100k": _safe(pre_fora),
                     "pos_fora_100k": _safe(pos_fora),
                     "variacao_fora_100k_pct": _safe((pos_fora - pre_fora) / pre_fora * 100) if pre_fora else None,
@@ -1144,7 +1179,7 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
             if len(dist_labels) == 1:
                 grupo_label = dist_labels[0].split(" — ")[0].strip()
             else:
-                grupo_label = _KNOWN_LABELS.get(gid, gid.replace("_", " ").title())
+                grupo_label = str(group_label_lookup.get(gid, default_group_label(gid)))
             record = {
                 "group_id": gid,
                 "grupo": grupo_label,
@@ -1166,10 +1201,14 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
         # Timeseries Tendência
         df["date_str"] = df["ano"].astype(str) + "-" + df["mes"].astype(str).str.zfill(2)
         def calc_mean(subset, label, group_type):
-            res = subset.groupby("date_str", as_index=False).agg({
-                "fora_prazo_por_100k_uc_mes": "mean",
-                "compensacao_rs_por_uc_mes": "mean"
-            }).sort_values("date_str")
+            res = subset.groupby("date_str", as_index=False).agg(
+                qtd_serv_realizado=("qtd_serv_realizado", "sum"),
+                qtd_fora_prazo=("qtd_fora_prazo", "sum"),
+                compensacao_rs=("compensacao_rs", "sum"),
+                exposicao_uc_mes=("uc_ativa_mes", "sum"),
+            ).sort_values("date_str")
+            res["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(res["qtd_fora_prazo"], res["exposicao_uc_mes"])
+            res["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(res["compensacao_rs"], res["exposicao_uc_mes"])
             res["grupo"] = label
             res["tipo"] = group_type
             return res
@@ -1193,18 +1232,18 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
         final_df = pd.concat(dfs, ignore_index=True)
         ts_data = []
         for _, row in final_df.iterrows():
-            # Inferir periodo_regulatorio a partir do ano no date_str
             try:
                 ano_ts = int(row["date_str"].split("-")[0])
             except (ValueError, AttributeError):
-                ano_ts = 9999
+                ano_ts = np.nan
+            periodo = classify_periodo_regulatorio(pd.Series([ano_ts]))[0] if pd.notna(ano_ts) else None
             ts_data.append({
                 "grupo": row["grupo"],
                 "tipo": row["tipo"],
                 "date": row["date_str"],
                 "fora_prazo_por_100k_uc_mes": _safe(row.get("fora_prazo_por_100k_uc_mes")),
                 "compensacao_rs_por_uc_mes": _safe(row.get("compensacao_rs_por_uc_mes")),
-                "periodo_regulatorio": "pre_2022" if ano_ts <= 2021 else "pos_2022",
+                "periodo_regulatorio": periodo,
             })
         insights["timeseries_tendencia"] = ts_data
 

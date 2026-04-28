@@ -43,12 +43,16 @@ VALIDAÇÃO
 """
 
 import argparse
+import json
 import sys
+import subprocess
 import zipfile
 from datetime import datetime
 from pathlib import Path
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from src.etl.schema_contracts import validate_raw_contracts
 
@@ -91,7 +95,7 @@ CATALOGO = {
     "indger": {
         "descricao": "INDGER — Indicadores Gerenciais da Distribuição",
         "tier": "nuclear",
-        "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/indicadores-gerenciais-de-distribuicao-indger",
+        "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/indger-indicadores-gerenciais-da-distribuicao",
         "periodicidade": "mensal",
         "tamanho_esperado_mb": 7500,  # ZIP descompacta em ~36 CSVs ≈ 7.7 GB + dados-comerciais 107 MB
         "cobertura_temporal": "2023-01 → 2025-12 (mensal). Atualizado continuamente.",
@@ -127,7 +131,7 @@ CATALOGO = {
     "autos_infracao": {
         "descricao": "Autos de Infração (penalidades e multas ANEEL)",
         "tier": "complementar",
-        "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/autos-de-infracao",
+        "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/auto-de-infracao",
         "periodicidade": "contínua (acumulativo)",
         "tamanho_esperado_mb": None,  # não baixado localmente
         "cobertura_temporal": "contínua desde 2000+ (verificar no portal)",
@@ -151,7 +155,7 @@ CATALOGO = {
     "reclamacoes": {
         "descricao": "Reclamações nos 1º e 2º Níveis da Distribuidora",
         "tier": "complementar",
-        "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/reclamacoes-nos-1o-e-2o-niveis-da-distribuidora",
+        "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/reclamacoes-no-1o-e-2o-niveis-da-distribuidora",
         "periodicidade": "anual (particionado por ano)",
         "tamanho_esperado_mb": None,  # não baixado localmente
         "cobertura_temporal": "2010–2025 (consolidado 2010–2022 + um CSV por ano posterior)",
@@ -196,9 +200,82 @@ CATALOGO = {
 
 # Diretório raiz do projeto (2 níveis acima de src/etl/)
 RAIZ_PROJETO = Path(__file__).resolve().parent.parent.parent
+PROVENANCE_RECORDS: list[dict[str, object]] = []
 
 
-def baixar_arquivo(url: str, caminho_destino: Path, timeout: int = 120) -> bool:
+def _requests_session() -> requests.Session:
+    retry = Retry(
+        total=3,
+        connect=3,
+        read=3,
+        backoff_factor=2,
+        status_forcelist=(429, 500, 502, 503, 504),
+        allowed_methods=("GET", "HEAD"),
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session = requests.Session()
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session
+
+
+def _git_sha() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=RAIZ_PROJETO,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return result.stdout.strip()
+    except Exception:
+        return "unknown"
+
+
+def _registrar_provenance(
+    *,
+    url: str,
+    caminho_destino: Path,
+    tipo: str,
+    response: requests.Response,
+    bytes_baixados: int,
+) -> None:
+    PROVENANCE_RECORDS.append(
+        {
+            "downloaded_at": datetime.now().isoformat(timespec="seconds"),
+            "git_sha": _git_sha(),
+            "url": url,
+            "path": str(caminho_destino.relative_to(RAIZ_PROJETO)),
+            "tipo": tipo,
+            "status_code": response.status_code,
+            "content_type": response.headers.get("Content-Type", ""),
+            "content_length": response.headers.get("Content-Length", ""),
+            "last_modified": response.headers.get("Last-Modified", ""),
+            "etag": response.headers.get("ETag", ""),
+            "bytes_baixados": bytes_baixados,
+        }
+    )
+
+
+def salvar_provenance() -> None:
+    if not PROVENANCE_RECORDS:
+        return
+    out_dir = RAIZ_PROJETO / "data" / "_provenance"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out_path = out_dir / f"extract_aneel_{stamp}.json"
+    out_path.write_text(json.dumps(PROVENANCE_RECORDS, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"\nProvenance salvo em: {out_path.relative_to(RAIZ_PROJETO)}")
+
+
+def baixar_arquivo(
+    url: str,
+    caminho_destino: Path,
+    *,
+    tipo: str = "csv",
+    timeout: tuple[int, int] = (15, 120),
+) -> bool:
     """
     Baixa um arquivo da URL e salva no caminho indicado.
 
@@ -210,14 +287,40 @@ def baixar_arquivo(url: str, caminho_destino: Path, timeout: int = 120) -> bool:
     try:
         print(f"  ↓ Baixando: {caminho_destino.name}...", end=" ", flush=True)
 
-        response = requests.get(url, stream=True, timeout=timeout)
+        session = _requests_session()
+        response = session.get(url, stream=True, timeout=timeout)
         response.raise_for_status()
 
+        content_type = response.headers.get("Content-Type", "").lower()
+        if "text/html" in content_type:
+            raise RuntimeError(f"servidor retornou HTML em vez de {tipo}: {content_type}")
+
+        expected = response.headers.get("Content-Length")
+        expected_bytes = int(expected) if expected and expected.isdigit() else None
+
         bytes_baixados = 0
-        with open(caminho_destino, "wb") as f:
+        partial_path = caminho_destino.with_suffix(caminho_destino.suffix + ".part")
+        partial_path.unlink(missing_ok=True)
+        with open(partial_path, "wb") as f:
             for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-                bytes_baixados += len(chunk)
+                if chunk:
+                    f.write(chunk)
+                    bytes_baixados += len(chunk)
+
+        if expected_bytes is not None and bytes_baixados != expected_bytes:
+            partial_path.unlink(missing_ok=True)
+            raise RuntimeError(
+                f"download truncado: esperado {expected_bytes} bytes, recebeu {bytes_baixados}"
+            )
+
+        partial_path.replace(caminho_destino)
+        _registrar_provenance(
+            url=url,
+            caminho_destino=caminho_destino,
+            tipo=tipo,
+            response=response,
+            bytes_baixados=bytes_baixados,
+        )
 
         tamanho_mb = bytes_baixados / (1024 * 1024)
         print(f"OK {tamanho_mb:.1f} MB")
@@ -231,9 +334,11 @@ def baixar_arquivo(url: str, caminho_destino: Path, timeout: int = 120) -> bool:
         return False
     except requests.exceptions.HTTPError as e:
         print(f"ERRO HTTP: {e.response.status_code}")
+        caminho_destino.with_suffix(caminho_destino.suffix + ".part").unlink(missing_ok=True)
         return False
     except Exception as e:
         print(f"ERRO inesperado: {e}")
+        caminho_destino.with_suffix(caminho_destino.suffix + ".part").unlink(missing_ok=True)
         return False
 
 
@@ -241,8 +346,14 @@ def descompactar_zip(caminho_zip: Path, destino: Path) -> list[str]:
     """Descompacta ZIP e extrai membros para destino. Retorna lista de arquivos extraídos."""
     arquivos_extraidos = []
     try:
+        destino_resolvido = destino.resolve()
         with zipfile.ZipFile(caminho_zip, "r") as zf:
             for membro in zf.namelist():
+                target = (destino / membro).resolve()
+                try:
+                    target.relative_to(destino_resolvido)
+                except ValueError as exc:
+                    raise RuntimeError(f"entrada ZIP insegura fora do destino: {membro}") from exc
                 zf.extract(membro, destino)
                 arquivos_extraidos.append(membro)
                 print(f"    [zip] Extraído: {membro}")
@@ -300,7 +411,7 @@ def executar_extracao(incluir_complementares: bool = False) -> bool:
             pasta_destino.mkdir(parents=True, exist_ok=True)
             caminho_arquivo = pasta_destino / recurso["nome"]
 
-            sucesso = baixar_arquivo(recurso["url"], caminho_arquivo)
+            sucesso = baixar_arquivo(recurso["url"], caminho_arquivo, tipo=recurso["tipo"])
 
             if sucesso:
                 total_sucesso += 1
@@ -330,6 +441,7 @@ def executar_extracao(incluir_complementares: bool = False) -> bool:
     )
     print(f"Contratos de schema bruto: {'OK' if contrato_ok else 'FALHOU'}")
     print("=" * 70)
+    salvar_provenance()
 
     if total_falha == 0 and contrato_ok:
         print("\nTodos os arquivos foram baixados com sucesso.")

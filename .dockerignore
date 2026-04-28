@@ -8,6 +8,10 @@ data/raw
 .cursor
 .pytest_cache
 node_modules
+**/node_modules
+**/.next
+**/dist
+**/build
 data/processed/*.csv
 data/processed/*.parquet
 notebooks/

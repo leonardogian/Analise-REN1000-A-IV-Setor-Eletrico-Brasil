@@ -436,7 +436,7 @@ edp,Grupo EDP,linhas_valor_negativo,0
 eflul,Grupo Eflul,duplicidades_chave_ano_mes_distribuidora,0
 eflul,Grupo Eflul,fora_prazo_maior_que_servico,6
 eflul,Grupo Eflul,linhas_compensacao_positiva_sem_fora,0
-eflul,Grupo Eflul,linhas_taxa_fora_prazo_maior_1,5
+eflul,Grupo Eflul,linhas_taxa_fora_prazo_maior_1,0
 eflul,Grupo Eflul,linhas_total,36
 eflul,Grupo Eflul,linhas_uc_ativa_zero_ou_negativa,0
 eflul,Grupo Eflul,linhas_valor_negativo,0

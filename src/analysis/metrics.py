@@ -14,7 +14,8 @@ def calc_taxa_fora_prazo(
     qtd_fora_prazo: pd.Series, qtd_serv: pd.Series
 ) -> pd.Series:
     """Taxa de transgressão: qtd_fora_prazo / qtd_serv (0-1)."""
-    return np.where(qtd_serv > 0, qtd_fora_prazo / qtd_serv, np.nan)
+    taxa = np.where(qtd_serv > 0, qtd_fora_prazo / qtd_serv, np.nan)
+    return np.clip(taxa, 0.0, 1.0)
 
 
 def calc_fora_prazo_por_100k(
@@ -50,6 +51,19 @@ def classify_periodo_regulatorio(ano: pd.Series) -> pd.Series:
         ano <= REN1000_CUTOFF_YEAR,
         PERIOD_LABELS["pre"],
         PERIOD_LABELS["pos"],
+    )
+
+
+def classify_regime_regulatorio(ano: pd.Series) -> pd.Series:
+    """Classifica ano no regime normativo auditavel."""
+    ano_num = pd.to_numeric(ano, errors="coerce")
+    return np.select(
+        [
+            ano_num <= REN1000_CUTOFF_YEAR,
+            ano_num >= REN1000_CUTOFF_YEAR + 1,
+        ],
+        ["REN_414", "REN_1000"],
+        default="TRANSICAO",
     )
 
 

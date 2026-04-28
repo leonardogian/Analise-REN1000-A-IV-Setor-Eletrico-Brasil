@@ -10,7 +10,7 @@ Normativa nº 1.000/2021 da ANEEL** na qualidade dos serviços comerciais das
 distribuidoras de energia elétrica do Brasil. Foco especial nas **5 distribuidoras
 do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 
-> **🎯 Fase Atual do Projeto:** ETL, dados e design system do frontend estão completos. O dashboard tem 6 páginas ativas com módulos compartilhados unificados (utils.js, nav.js, filters.js, app.js). Notebook de diagnóstico e análises estatísticas concluído (`notebooks/diagnostico_dados.ipynb`). Próximos passos: corrigir bug de nomes de distribuidoras em `fato_indicadores_anuais`, camada coroplética no mapa, e refinamento das análises estatísticas.
+> **🎯 Fase Atual do Projeto:** ETL, backend e dois frontends estão operacionais. A rodada atual adicionou auditoria numérica (`make qa-data`) e reforçou a política de identidade: `distributor_id` é chave factual, enquanto `group_id` agrega holdings. Próximos passos: manter `qa-data` verde, camada coroplética no mapa e redação da tese.
 
 > **🔄 ROTINA OBRIGATÓRIA PARA IAs:**
 >
@@ -51,7 +51,7 @@ TCC_leo_main/
 │       ├── build_analysis_tables.py  ← Gera tabelas analíticas em CSV/Parquet
 │       ├── build_report.py           ← Gera relatório markdown
 │       ├── neoenergia_diagnostico.py ← Benchmark detalhado 5 Neoenergias
-│       └── build_dashboard_data.py   ← Gera dashboard/dashboard_data.json
+│       └── build_dashboard_data.py   ← Gera app/frontend/dashboard_data.json
 │   └── backend/
 │       └── main.py                  ← Backend local (API + static em localhost)
 │
@@ -81,20 +81,10 @@ TCC_leo_main/
 │           └── neoenergia/   ← CSVs específicos do grupo Neoenergia
 │
 ├── reports/                  ← Relatórios gerados (markdown)
-├── notebooks/                ← Jupyter (exploratórios + diagnóstico)
-│   ├── diagnostico_dados.ipynb              ← Diagnóstico + análises estatísticas (3 partes)
-│   ├── diagnostico_dados_executed.ipynb     ← Versão executada com outputs
-│   ├── 01_mapa_dados_e_qualidade.ipynb      ← Mapa de dados e qualidade
-│   ├── fig_teste_medias_pre_pos.png         ← Box plot pré/pós REN 1000
-│   ├── fig_decomposicao_sazonal.png         ← Decomposição sazonal 4 painéis
-│   ├── fig_ranking_melhoria_piora.png       ← Top 15 melhoria/piora
-│   ├── fig_porte_vs_transgressao.png        ← Scatter porte × transgressão
-│   └── fig_compensacoes_evolucao.png        ← Evolução compensações R$
 ├── docs/                     ← Documentação auxiliar + imagens
 ├── logos/                    ← Logos PNG de holdings (espelhados em app/frontend/assets/logos/)
 ├── docker/                   ← Infraestrutura local em contêineres (Stack Docker nome: "tcc", ex: app, Postgres, Kestra)
-├── scripts/                  ← Utilitários (cargas PostgreSQL, check_artifacts, validações)
-│   └── generate_tcc_investigacao_pptx.py ← Gera apresentação .pptx do trabalho (output/)
+├── scripts/                  ← Utilitários (cargas PostgreSQL, QA, validações)
 ├── Makefile                  ← Orquestração: make pipeline, make serve, etc.
 ├── requirements.txt          ← Dependências Python
 └── README.md                 ← Documentação principal para humanos
@@ -131,6 +121,7 @@ make test-fast           # compilação + imports + contratos + artefatos core
 make test-smoke          # análise + neoenergia + dashboard + validação completa
 make check-artifacts     # verifica artefatos core
 make check-artifacts-full # verifica artefatos completos + dashboard_data.json
+make qa-data             # auditoria numérica read-only dos artefatos
 
 # Limpeza
 make clean-analysis  # remove data/processed/analysis/
@@ -145,22 +136,21 @@ make clean-analysis  # remove data/processed/analysis/
 | 5433  | PostgreSQL (AgentCycle)    | ⚠️ Ocupada |
 | 6379  | Redis (AgentCycle)         | ⚠️ Ocupada |
 | 8000  | AgentCycle Backend         | ⚠️ Ocupada |
-| 8050  | TCC Dashboard (Docker)     | ⚠️ Docker only |
 | 8051  | **TCC Dashboard (make serve)** | ✅ Local dev |
 | 8080  | Airflow Webserver / Kestra | ⚠️ Ocupada |
 | 8090  | Kestra (Alternativa)       | ⚠️ Ocupada |
 
-> Dev local: porta **8051**. Docker: porta 8050. Não usar 8000 para o dashboard.
+> Dev local e Docker do TCC: porta **8051**. Não usar 8000 para o dashboard.
 
-## Arquivos Gerados (NÃO versionados)
+## Arquivos Gerados e Política de Versionamento
 
-Estes arquivos são gerados por scripts e listados no `.gitignore`:
+Estes arquivos são gerados por scripts:
 
 - `data/raw/*.csv` — dados brutos da ANEEL
 - `data/processed/*.csv` e `*.parquet` — dados transformados
-- `dashboard/dashboard_data.json` — JSON do dashboard (1.7 MB)
-- `output/apresentacao_tcc_investigacao_dados_analises.pptx` — apresentação executiva do TCC
 - `.venv/` — ambiente virtual Python
+
+`data/raw/` e `data/processed/` base não são versionados. `data/processed/analysis/**/*.csv` e `app/frontend/dashboard_*.json` podem estar no Git para auditoria/demo/deploy, mas devem ser regenerados com `make pipeline` para reprodução científica.
 
 ## Venv (Ambiente Virtual)
 
@@ -179,28 +169,15 @@ pip install -r requirements.txt
 
 - **Visão Completa dos Dados**: `.ai/DATA_OVERVIEW.md` ← **SEMPRE ler antes de qualquer análise**
 - **README humano**: `README.md`
-- **Dashboard docs**: `dashboard/README.md`
+- **Dashboard docs**: `app/frontend/README.md`
 - **Guia de análise**: `docs/GUIA_ANALISE.md`
 - **Próximos passos TCC**: `docs/PROXIMOS_PASSOS_TCC.md`
 - **Relatório Neoenergia**: `reports/neoenergia_diagnostico.md`
-- **Apresentação executiva**: `output/apresentacao_tcc_investigacao_dados_analises.pptx`
 - **Como usar Git**: `COMO_USAR_GIT.md`
-- **Diagnóstico de dados e análises**: `notebooks/diagnostico_dados.ipynb`
-
-## Resultados Estatísticos (Diagnóstico Mar 2026)
-
-Notebook `diagnostico_dados.ipynb` contém análises estatísticas completas para o TCC:
-
-| Análise | Resultado | Significância |
-|---------|-----------|---------------|
-| Taxa pré vs pós REN 1000 | 3.00% → 2.08% (Mann-Whitney p=0.015, d=0.283) | Significativo |
-| Tendência temporal | Mann-Kendall S=-28, p=0.10, slope=-0.085 p.p./ano | Marginal |
-| Distribuidoras que melhoraram | 44/102 (43%), binomial p=0.93 | Não significativo |
-| Porte × transgressão | Spearman rho=-0.286, p=0.49 (apenas 8 distrib.) | Fraca |
-| Compensação/transgressão | R$33 → R$207 (+528%) | Descritivo |
+- **Auditoria de qualidade dos dados**: `docs/DATA_QUALITY_AUDIT.md`
 
 ## Bugs Conhecidos no Pipeline
 
-1. ~~**`distributor_label` NaN em `fato_indicadores_anuais`**~~: **CORRIGIDO** (2026-03-21). Adicionados 35 aliases em `data/config/distributor_names_overrides.json` mapeando IDs históricos (COELBA→neoenergia_coelba, AME→amazonas_energia, etc.). Groupby em `build_fato_indicadores_anuais()` agora preserva colunas de nome. Resultado: 99.1% label fill, 95.2% match com dim_distributor_group, 5 Neoenergias rastreadas 2011-2023.
-2. **Ano 2023 com 25% do volume**: 7M serviços vs 28M em 2022 (91 vs 105 distribuidoras). Causa indeterminada.
-3. **Anos 2024-2025 fragmentados**: 17 e 11 distribuidoras respectivamente. Excluir de análises anuais comparativas.
+1. **Identidade de distribuidoras**: `distributor_id` não deve colapsar CNPJs/siglas distintos; aliases ficam em `distributor_alias_of` e agregação por holding usa `group_id`.
+2. **Ano 2023 com volume menor que 2022**: manter ressalva metodológica e validar com `make qa-data`.
+3. **Linhas brutas com transgressões acima do total de serviços**: taxa derivada é limitada a 100% e o auditor registra alerta para revisão.

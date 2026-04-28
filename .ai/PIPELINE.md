@@ -17,7 +17,8 @@ ANEEL API (CSVs)
     ├─▶ build_report.py           → reports/relatorio_aneel.md
     ├─▶ neoenergia_diagnostico.py → reports/neoenergia_diagnostico.md
     │                                data/processed/analysis/neoenergia/*.csv
-    └─▶ build_dashboard_data.py   → dashboard/dashboard_data.json
+    └─▶ build_dashboard_data.py   → app/frontend/dashboard_data.json
+                                      app/frontend/dashboard_*.json
 ```
 
 ## Etapa 1: Extração (`make extract`)
@@ -80,8 +81,9 @@ Gerados por `make neoenergia-diagnostico` (`src/analysis/neoenergia_diagnostico.
 
 **Script**: `src/analysis/build_dashboard_data.py`
 
-- Lê: CSVs de `data/processed/analysis/` e `neoenergia/`
-- Gera: `dashboard/dashboard_data.json` (≈1.7 MB)
+- Lê: CSVs de `data/processed/analysis/`, `grupos/` e `neoenergia/`
+- Gera: `app/frontend/dashboard_data.json` e micro-payloads `app/frontend/dashboard_*.json`
+- Política: JSONs podem estar versionados para demo/deploy, mas devem ser regenerados depois de `make pipeline` para reprodução científica.
 - **Fail-fast**: falha se entradas obrigatórias estiverem ausentes ou seções críticas ficarem vazias.
 - Estrutura do JSON:
 
@@ -122,7 +124,7 @@ extract → transform → analysis ─┬─→ report
                                  └─→ dashboard → serve/backend
 ```
 
-`make pipeline` executa tudo em ordem: `update-data → analysis → report → neoenergia-diagnostico → dashboard`
+`make pipeline` executa tudo em ordem: `update-data → analysis → report → grupos → neoenergia-diagnostico → dashboard → dashboard-transgressoes → validate-contracts → check-artifacts-full → qa-data`
 
 ## Como Regenerar Tudo do Zero
 
@@ -142,10 +144,9 @@ make dev-serve        # sobe backend FastAPI (com preflight) em http://localhost
    Só rode `make extract` se tiver espaço.
 3. **`.venv` não ativado**: Scripts chamados via `make` usam
    `.venv/bin/python` automaticamente. Para rodar direto, ative o venv.
-4. **`dashboard_data.json` não está no Git**: É gerado. Rode `make dashboard`.
+4. **`dashboard_data.json` é gerado e pode estar versionado**: não edite manualmente; rode `make dashboard-full` ou `make pipeline`.
 5. **Dashboard via `file://` não funciona**: Precisa de servidor HTTP (CORS).
    Use `make serve` (porta 8051).
 6. **Contratos de schema**: valide com `make validate-contracts` quando mudar ETL.
 7. **Backend local**: para API + estático use `make backend`/`make dev-serve`.
-8. **Porta 8051**: Porta do dev local. Portas 3000/5433/6379/8000/8050/8080/8090
-   estão ocupadas por outros serviços (AgentCycle, Airflow, Kestra, Docker TCC).
+8. **Porta 8051**: Porta do dev local e Docker do TCC. Use `3051` para Next.js local.

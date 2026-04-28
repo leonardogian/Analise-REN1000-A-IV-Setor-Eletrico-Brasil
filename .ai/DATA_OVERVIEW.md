@@ -34,7 +34,7 @@ Localização: `data/processed/` (Parquet + CSV)
 | Arquivo | Granularidade | Anos | Fonte Bruta | Validação |
 |---------|---------------|------|-------------|-----------|
 | **qualidade_comercial.parquet** | Anual × Indicador × Distributor | 2011–2023 | ANEEL `qualidade-atendimento-comercial.csv` | ✅ Schema contrato |
-| **indger_servicos_comerciais.parquet** | Mensal × Município × Tipo Serviço × Distributor | 2023–2025 | ANEEL INDGER (43 CSVs mensais) | ✅ Schema contrato |
+| **indger_servicos_comerciais.parquet** | Mensal × Município × Tipo Serviço × Distributor | 2023–2025 | ANEEL INDGER (36 CSVs mensais) | ✅ Schema contrato |
 | **indger_dados_comerciais.parquet** | Mensal × Município × Distributor | 2023–2025 | ANEEL INDGER | ✅ Schema contrato |
 
 ---
@@ -237,7 +237,7 @@ CREATE INDEX idx_dim_porte_ano
 ### Pipeline Implementado
 
 ```
-data/raw/*.csv (43 CSVs INDGER + ANEEL)
+data/raw/*.csv (ANEEL/IBGE; INDGER serviços = 36 CSVs mensais 2023-2025)
         ↓
 [1] extract_aneel.py
     ├─ Validação de encoding (utf-8, latin-1, cp1252)
@@ -265,14 +265,14 @@ data/processed/*.parquet
     ├─ Classificação período regulatório (pre_2022 / pos_2022)
     └─ Salvamento análise
         ↓
-data/processed/analysis/*.parquet
+data/processed/analysis/*.csv
         ↓
 [4] build_dashboard_data.py
     ├─ Leitura análise
     ├─ Agregações para UI (JSON structure)
     └─ Export JSON → app/frontend/dashboard_*.json
         ↓
-app/frontend/dashboard_*.json (5 variações)
+app/frontend/dashboard_*.json (payload principal + micro-payloads)
 ```
 
 ### Transformações Críticas
@@ -402,16 +402,11 @@ INDGER_SERVICOS_SCHEMA = {
 - **Status:** Não decomposto; misturado no agregado 2022
 - **Workaround:** Usar 2023+ para análise pós-REN1000 "pura"; marcar 2022 como "transição"
 
-### G. BUG: Nomes de Distribuidoras Perdidos em `fato_indicadores_anuais`
+### G. Identidade e nomes de distribuidoras
 
-- **Problema:** `build_fato_indicadores_anuais()` faz groupby que descarta colunas de nome (`distributor_label`, `nomagente`, `distributor_name_sig`). O `merge_fato_with_porte()` tenta recuperar via `dim_porte`, mas este só tem 2023-2025. Além disso, `sigagente` em `fato` é MAIÚSCULO (`AME`, `CEMIG-D`) mas em `dim_porte` é title case (`Amazonas Energia`, `Cemig-D`), impedindo o join.
-- **Impacto:** 99.3% dos registros (33.969/34.193) têm `distributor_label = NaN`. Rankings e labels do notebook mostram `nan` ao invés dos nomes das distribuidoras.
-- **Status:** Bug não corrigido (Mar 2026). Os dados numéricos (taxas, compensações) estão corretos; apenas os labels de nome são afetados.
-- **Workaround temporário:** Usar `distributor_id` como chave e fazer merge manual com `dim_distributor_group` via `distributor_id`:
-  ```python
-  fato.merge(dim_grupo[['distributor_id','distributor_label']], on='distributor_id', how='left', suffixes=('','_grp'))
-  ```
-- **Fix definitivo:** Em `build_fato_indicadores_anuais()`, preservar colunas de nome no groupby (via `first()`) ou re-merge com input `qualidade` após agregação.
+- **Regra atual:** `distributor_id` representa a distribuidora factual e nao deve colapsar CNPJs/siglas distintas. Agregacao por holding usa `group_id`.
+- **Motivo:** aliases antigos como `EBO`/`EPB` e `ENF`/`ESS` pertencem a grupos comuns, mas podem coexistir como entidades reguladas distintas.
+- **Validação:** `make qa-data` checa colisoes, chaves duplicadas, labels faltantes, taxas fora de faixa e drift CSV/parquet.
 
 ### H. Ano 2023 Potencialmente Incompleto
 
@@ -818,4 +813,4 @@ print(df[(df['compensacao_rs'] == 0) & (df['qtd_fora_prazo'] > 0)].head())
 - [src/analysis/build_analysis_tables.py](../src/analysis/build_analysis_tables.py) — Pipeline de construção das tabelas
 - [sql/grupos_diagnostico_dbeaver.sql](../sql/grupos_diagnostico_dbeaver.sql) — Queries de referência (com/sem 69/93)
 - [data/config/distributor_groups_overrides.json](../data/config/distributor_groups_overrides.json) — Mapa de holdings
-- [Notebooks análises](../notebooks/) — 01–05: EDA, tendências, porte, exploração SQL, 5 maiores
+- [Auditoria de qualidade dos dados](../docs/DATA_QUALITY_AUDIT.md) — checks numericos e backlog de achados

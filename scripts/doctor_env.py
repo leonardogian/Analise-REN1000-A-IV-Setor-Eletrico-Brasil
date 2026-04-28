@@ -10,7 +10,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 VENV_PYTHON = ROOT / ".venv" / "bin" / "python"
-REQUIRED_MODULES = ["numpy", "pandas", "fastapi", "uvicorn"]
+REQUIRED_MODULES = [
+    "numpy",
+    "pandas",
+    "pyarrow",
+    "requests",
+    "fastapi",
+    "uvicorn",
+    "asyncpg",
+    "redis",
+    "sqlalchemy",
+    "psycopg2",
+]
 
 
 def run(cmd: list[str]) -> subprocess.CompletedProcess[str]:

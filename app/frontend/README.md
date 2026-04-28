@@ -47,7 +47,7 @@ app/frontend/
 ├── ranking.js              ← Lógica da página ranking.html
 ├── mapa.js                 ← Lógica da página mapa.html
 │
-├── dashboard_data.json           ← Payload principal ~27 MB (NÃO versionado)
+├── dashboard_data.json           ← Payload principal ~27 MB (gerado; versionado para demo/deploy)
 ├── dashboard_transgressoes.json  ← Transgressões por distribuidora/grupo/rural
 ├── dashboard_timeseries.json     ← Séries mensais para evolucao.html
 ├── dashboard_scatter.json        ← Scatter: volume × compensação para benchmark.html
@@ -97,8 +97,13 @@ Cada `[page].js` escuta o evento `filters:change` para reagir a filtros globais 
 ## 🔄 Como Regenerar os JSONs
 
 ```bash
-# Todos os JSONs de uma vez (recomendado)
+# Reproducao cientifica completa, a partir dos brutos locais
+make pipeline
+make qa-data
+
+# Todos os JSONs a partir das tabelas analiticas ja existentes
 make dashboard-full
+make qa-data        # valida drift, chaves, taxas e labels dos artefatos
 
 # JSONs individuais
 python3 -m src.analysis.build_dashboard_data      # dashboard_data.json
@@ -106,6 +111,8 @@ python3 -m src.analysis.dashboard_transgressoes   # dashboard_transgressoes.json
 # dashboard_timeseries, scatter, heatmap, radar e groups_ranking são gerados
 # pelos scripts em src/analysis/ — veja CLAUDE.md para o mapeamento completo
 ```
+
+Os JSONs em `app/frontend/dashboard_*.json` podem estar no Git para demo e deploy estatico, mas nao sao fonte primaria. Depois de baixar/tratar dados brutos, regenere-os antes de avaliar os numeros.
 
 ---
 

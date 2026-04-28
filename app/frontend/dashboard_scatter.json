@@ -34,7 +34,7 @@
     },
     {
       "x": 14578,
-      "y": 0.07298313181361121,
+      "y": 0.07298313181361123,
       "label": "CPFL Piratininga — COMPANHIA PIRATININGA DE FORÇA E LUZ",
       "regra": "REN 1000",
       "porte": "GG",
@@ -42,7 +42,7 @@
     },
     {
       "x": 3986,
-      "y": 0.08252544820118703,
+      "y": 0.08252544820118704,
       "label": "CPFL Santa Cruz — COMPANHIA JAGUARI DE ENERGIA - CPFL SANTA CRUZ",
       "regra": "REN 1000",
       "porte": "G",
@@ -90,7 +90,7 @@
     },
     {
       "x": 515112,
-      "y": 0.1986145606188784,
+      "y": 0.19861456061887836,
       "label": "Celesc-Dis — CELESC DISTRIBUIÇÃO S.A.",
       "regra": "REN 1000",
       "porte": "GG",
@@ -106,7 +106,7 @@
     },
     {
       "x": 214588,
-      "y": 0.42241059999481806,
+      "y": 0.4224105999948181,
       "label": "Cemig-D — CEMIG DISTRIBUIÇÃO S.A.",
       "regra": "REN 1000",
       "porte": "GG",
@@ -274,7 +274,7 @@
     },
     {
       "x": 170,
-      "y": 0.07520083497058892,
+      "y": 0.07520083497058891,
       "label": "Cermoful — COOPERATIVA FUMACENSE DE ELETRICIDADE",
       "regra": "REN 1000",
       "porte": "M",
@@ -338,7 +338,7 @@
     },
     {
       "x": 333,
-      "y": 0.06001320505409672,
+      "y": 0.06001320505409671,
       "label": "Certel Energia — COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA TEUTÔNIA",
       "regra": "REN 1000",
       "porte": "G",
@@ -354,7 +354,7 @@
     },
     {
       "x": 69,
-      "y": 0.0267342307713068,
+      "y": 0.026734230771306797,
       "label": "Certrel — COOPERATIVA DE ENERGIA TREVISO",
       "regra": "REN 1000",
       "porte": "P",
@@ -402,7 +402,7 @@
     },
     {
       "x": 298,
-      "y": 0.04747213769937989,
+      "y": 0.047472137699379885,
       "label": "Coopera — COOPERATIVA PIONEIRA DE ELETRIFICAÇÃO",
       "regra": "REN 1000",
       "porte": "G",
@@ -538,7 +538,7 @@
     },
     {
       "x": 32641,
-      "y": 0.19556562666151667,
+      "y": 0.1955656266615167,
       "label": "EDP SP — EDP SÃO PAULO DISTRIBUIÇÃO DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
@@ -554,7 +554,7 @@
     },
     {
       "x": 1035,
-      "y": 0.01760963992122703,
+      "y": 0.017609639921227025,
       "label": "Eletrocar — CENTRAIS ELÉTRICAS DE CARAZINHO S.A.",
       "regra": "REN 1000",
       "porte": "G",
@@ -570,7 +570,7 @@
     },
     {
       "x": 54241,
-      "y": 0.3077550516212605,
+      "y": 0.3077550516212606,
       "label": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "regra": "REN 1000",
       "porte": "GG",
@@ -618,7 +618,7 @@
     },
     {
       "x": 9077,
-      "y": 0.08440304887128017,
+      "y": 0.08440304887128018,
       "label": "Energisa Minas Rio — ENERGISA MINAS RIO - DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "G",
@@ -650,7 +650,7 @@
     },
     {
       "x": 11079,
-      "y": 0.09365612333354002,
+      "y": 0.09365612333354001,
       "label": "Energisa Sul-Sudeste — ENERGISA SUL-SUDESTE DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "G",
@@ -666,7 +666,7 @@
     },
     {
       "x": 15998,
-      "y": 0.1616158995574854,
+      "y": 0.16161589955748543,
       "label": "Equatorial AL — EQUATORIAL ALAGOAS DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
@@ -674,7 +674,7 @@
     },
     {
       "x": 22713,
-      "y": 0.18541925522937855,
+      "y": 0.18541925522937852,
       "label": "Equatorial MA — EQUATORIAL MARANHÃO DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
@@ -722,7 +722,7 @@
     },
     {
       "x": 10596,
-      "y": 0.09473318140970004,
+      "y": 0.09473318140970002,
       "label": "Light — LIGHT SERVIÇOS DE ELETRICIDADE S.A.",
       "regra": "REN 1000",
       "porte": "GG",
@@ -754,7 +754,7 @@
     },
     {
       "x": 12549,
-      "y": 0.10643319597391077,
+      "y": 0.10643319597391075,
       "label": "Neoenergia Cosern — COMPANHIA ENERGÉTICA DO RIO GRANDE DO NORTE",
       "regra": "REN 1000",
       "porte": "GG",
@@ -762,7 +762,7 @@
     },
     {
       "x": 5040,
-      "y": 0.020644004750382666,
+      "y": 0.020644004750382673,
       "label": "Neoenergia Elektro — ELEKTRO REDES S.A.",
       "regra": "REN 1000",
       "porte": "GG",

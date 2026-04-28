@@ -53,5 +53,5 @@ python -m src.analysis.build_report
 Considere o ciclo pronto quando:
 
 - o relatorio em `reports/relatorio_aneel.md` estiver atualizado;
-- os notebooks tiverem resultados reproduziveis sem erro;
+- `make qa-data` estiver verde ou com apenas alertas documentados;
 - as tabelas finais exportadas para uso no texto estiverem congeladas para a versao da banca.
