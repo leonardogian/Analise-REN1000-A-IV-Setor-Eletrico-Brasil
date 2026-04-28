@@ -172,6 +172,8 @@ data/processed/analysis/*.csv  (versioned em Git)
 | Frontend v1 (legado) | Vanilla JS + Chart.js 4.4.7 | Zero dependências npm |
 | Deploy | Vercel + Railway | CDN global (front) + pay-per-use (back) |
 
+Nota operacional: o Next.js em produção depende da CSP em `app/frontend-next/vercel.json` permitir `script-src 'unsafe-inline'` para os scripts inline de boot/hydration. Quando `app/backend/main.py` ou `data/processed/dashboard/dashboard_*.json` mudarem, o Railway também precisa ser redeployado para publicar os endpoints e dados atuais.
+
 ---
 
 ## 📡 Pipeline de Dados

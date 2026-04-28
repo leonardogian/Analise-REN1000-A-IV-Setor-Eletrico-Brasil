@@ -27,6 +27,7 @@ Sempre que iniciar uma nova interação ou tarefa neste repositório, você DEVE
 - **Localização dos Dados Prontos:** Os CSVs validados pós-ETL/processamento estão em `data/processed/analysis/`; os JSONs canônicos do dashboard ficam em `data/processed/dashboard/`. Ambos podem estar versionados para auditoria/demo, mas o usuário externo deve regenerar tudo com `make pipeline` para reprodução científica.
 - **Extração e Tratamento (fontes brutas):** Toda documentação canônica de "como baixar os dados do zero", URLs CKAN, periodicidade, limitações e troubleshooting mora em [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md). Antes de mexer em `src/etl/`, leia esse doc. Para checar/adicionar fonte nova: atualizar `CATALOGO` em `extract_aneel.py` (ou criar novo `extract_<portal>.py`) e refletir no doc.
 - **Interface Web:** O frontend oficial consome `/api/*` e `/dashboard_*.json` via rewrites Next.js → Railway. A fonte canônica dos JSONs é `data/processed/dashboard/dashboard_*.json`, gerada por scripts em `src/analysis/`; cópias em `app/frontend/` são apenas espelho local legado.
+- **CSP e deploy oficial:** Em `app/frontend-next/vercel.json`, mantenha `script-src 'unsafe-inline'` para permitir o boot/hydration do Next.js App Router na Vercel. Ao mudar `app/backend/main.py` ou `data/processed/dashboard/dashboard_*.json`, redeploye também o Railway para evitar produção com endpoints/JSONs antigos.
 - **Apresentação do TCC (.pptx):** O script gerador foi removido. Apresentações devem ser criadas manualmente ou exportadas do Canva/Google Slides.
 - **Logos das Holdings:** Manter os logos em `logos/` (raiz) e espelhar nos assets usados pelos frontends com nomes padronizados (`neoenergia.png`, `cpfl.png`, `equatorial.png`, etc.).
 - **Porta Padronizada:** Desenvolvimento local e via Docker usam a **porta `8051`** (`http://localhost:8051/`). Não usar porta 8000 ou outras para o dashboard.
@@ -110,7 +111,7 @@ Estas regras valem para qualquer execucao bloqueante (comando/app) quando nao fo
 <claude-mem-context>
 # Memory Context
 
-# [TCC_leo_main] recent context, 2026-04-28 1:26pm GMT-3
+# [TCC_leo_main] recent context, 2026-04-28 3:00pm GMT-3
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE

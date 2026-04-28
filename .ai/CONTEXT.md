@@ -10,7 +10,7 @@ Normativa nº 1.000/2021 da ANEEL** na qualidade dos serviços comerciais das
 distribuidoras de energia elétrica do Brasil. Foco especial nas **5 distribuidoras
 do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 
-> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O Vanilla em `app/frontend/` fica como legado preservado. A rodada atual adicionou auditoria numérica (`make qa-data`) e desacoplou os JSONs do legado: a fonte canônica agora é `data/processed/dashboard/`.
+> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O Vanilla em `app/frontend/` fica como legado preservado. A rodada atual adicionou auditoria numérica (`make qa-data`), desacoplou os JSONs do legado e aplicou hotfix de CSP para permitir a hidratação do Next.js em produção. A fonte canônica dos JSONs agora é `data/processed/dashboard/`.
 
 > **🔄 ROTINA OBRIGATÓRIA PARA IAs:**
 >
@@ -31,7 +31,7 @@ do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 | Dados         | PostgreSQL DB, Redis Cache, Parquet              |
 | Versionamento | Git (branch: main)                               |
 
-> **Frontend oficial:** o Next.js (`app/frontend-next/`) roda na porta `3051` via `make frontend-next` ou `make stack-next`. O dashboard classico (Vanilla JS) segue como legado na porta `8051` via `make serve`/`make backend`.
+> **Frontend oficial:** o Next.js (`app/frontend-next/`) roda na porta `3051` via `make frontend-next` ou `make stack-next`. Em produção, `app/frontend-next/vercel.json` deve manter `script-src 'unsafe-inline'` na CSP para o boot/hydration do App Router. O dashboard classico (Vanilla JS) segue como legado na porta `8051` via `make serve`/`make backend`.
 
 ## Estrutura do Repositório
 

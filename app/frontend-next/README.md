@@ -113,7 +113,9 @@ Configuração esperada no Vercel:
 
 Deploy automático: qualquer push na branch `main` que modifique `app/frontend-next/**` dispara rebuild no Vercel com este diretório como Root Directory. A env antiga `NEXT_PUBLIC_API_URL` não é usada pelo código atual e deve ser removida ou mantida apenas como nota histórica.
 
-O `vercel.json` nesta pasta adiciona security headers (CSP) ao deploy. Os rewrites de API estão no `next.config.mjs` — não duplique no `vercel.json`.
+O `vercel.json` nesta pasta adiciona security headers (CSP) ao deploy. A CSP permite `script-src 'unsafe-inline'` porque o App Router do Next.js injeta scripts inline de boot/hydration; remover isso deixa a produção presa em skeleton/loading. Os rewrites de API estão no `next.config.mjs` — não duplique no `vercel.json`.
+
+Sempre que os endpoints ou JSONs do dashboard mudarem, redeploye também o backend Railway a partir do `main` atual. A produção deve expor `/api/v1/groups-ranking` e `/api/v1/transgressoes`, e `/dashboard_data.json` deve trazer o `meta.generated_at` dos JSONs versionados mais recentes.
 
 ---
 
