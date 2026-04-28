@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality of Brazilian energy distributors. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units). Special focus on 5 Neoenergia distributors.
 
-**Current phase:** ETL e backend FastAPI+Postgres+Redis estão operacionais; o frontend oficial é o Next.js em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O Vanilla em `app/frontend/` fica preservado como legado. A rodada de reprodutibilidade reforçou extração segura, contratos de schema, deduplicação INDGER e dashboard com agregações ponderadas. `make pipeline` agora termina com validações.
+**Current phase:** ETL e backend FastAPI+Postgres+Redis estão operacionais; o frontend oficial é o Next.js em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O dashboard Vanilla clássico foi movido para a branch `legacy/vanilla-dashboard`. A rodada de reprodutibilidade reforçou extração segura, contratos de schema, deduplicação INDGER e dashboard com agregações ponderadas. `make pipeline` agora termina com validações.
 
 ## Essential Commands
 
@@ -37,12 +37,11 @@ make clean-analysis         # remove data/processed/analysis/ outputs
 
 # Serving the dashboard & Testing Local API
 # URL Base (Local): http://localhost:8051 | URL Base (Produção Railway): https://tcc-ren1000x414-production.up.railway.app
-make serve                  # Frontend clássico (Vanilla JS) em http://localhost:8051
 make frontend-next          # Frontend Next.js em http://localhost:3051 (backend local)
 make frontend-next-railway  # Frontend Next.js em http://localhost:3051 (backend Railway)
 make stack-next             # Backend local + frontend Next.js num único comando
 make backend                # FastAPI em http://localhost:8051
-make dev-serve              # Backend com --reload (também serve estáticos como fallback)
+make dev-serve              # Backend com --reload
 
 # Tests
 make test-fast          # compile + imports + schema contracts + core artifacts
@@ -77,7 +76,6 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 |-------|------|
 | ETL/Analysis | Python 3.10+, pandas, numpy |
 | Backend | FastAPI + PostgreSQL + Redis (`app/backend/main.py`) no **Railway** |
-| Frontend clássico | HTML5, Vanilla JS, Chart.js 4.4.7 (CDN), CSS puro no **Vercel** |
 | Frontend Next.js | Next.js 14 + React + Tailwind + TanStack Query (`app/frontend-next/`) |
 | Orchestration | GNU Make + Docker Compose |
 | Data formats | PostgreSQL DB, Redis Cache, Parquet, JSON |
@@ -94,20 +92,13 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 
 - `src/etl/` — extraction and transformation scripts (ANEEL + IBGE)
 - `src/analysis/` — analytical table builders, report generators
-- `app/backend/main.py` — FastAPI (9 endpoints + static mount)
+- `app/backend/main.py` — FastAPI (9 endpoints)
 - `app/frontend-next/` — frontend oficial em Next.js 14 (7 páginas, Tailwind, TanStack Query)
-- `app/frontend/` — SPA clássico legado (6 páginas + shared JS modules)
-  - Load order: `utils.js → nav.js → filters.js → app.js → [page].js`
-  - `utils.js` — formatters (fmtNum, fmtMoney, fmtMoneyFull, fmtPct, fmtVar)
-  - `nav.js` — sidebar active-link, mobile toggle, toast system
-  - `filters.js` — global period/porte/group state + `filters:change` event
-  - `app.js` — Chart.js defaults (theme), shared constants
 - `data/processed/dashboard/` — JSONs canônicos `dashboard_*.json` servidos pelo backend/Railway
 - `data/processed/analysis/` — versioned analytical CSVs; Parquet mirrors are generated locally
 - `docker/` — Docker Compose (app stack, PostgreSQL, Kestra)
 - `docs/` — canonical docs (EXTRACAO_DADOS, DICIONARIO_DADOS, GUIA_ANALISE, PROXIMOS_PASSOS_TCC, ...)
 - `.github/agents/` — specialized AI agents (aneel-data-guardian, backend-fastapi-specialist, frontend-next-specialist)
-- `scripts/playwright/` — browser automation (`screenshot-all.js`, `check-charts.js`, `aneel-fetch.js`)
 - `scripts/` — utilities (Postgres loader, artifact checkers, QA automation)
 
 ### Frontend Data Flow
@@ -125,16 +116,6 @@ Backend endpoints (`app/backend/main.py`):
 - `/api/dashboard/{section}` — fatia por seção
 - `/api/v1/timeseries-tendencia`, `/scatter-eficiencia`, `/heatmap-transgressoes`, `/radar-slas`, `/groups-ranking`, `/transgressoes` — micro-payloads otimizados (cache Redis)
 
-Páginas principais em `app/frontend-next/app/` (espelhadas no legado `app/frontend/`):
-
-- `index.html` / `app.js` — main dashboard (KPIs, trends, groups overview)
-- `transgressoes.html` / `transgressoes.js` — time-series transgression analysis
-- `benchmark.html` / `benchmark.js` — bubble chart: services volume × compensation by porte
-- `evolucao.html` / `evolucao.js` — monthly heatmap: transgressions by holding
-- `ranking.html` / `ranking.js` — horizontal bar chart: group ranking by metric
-- `mapa.html` / `mapa.js` — interactive geographic map
-- `relatorio.html` — print-optimized report (Ctrl+P → PDF)
-
 ### Analytical Tables (`data/processed/analysis/`)
 
 Key files consumed by backend and dashboard:
@@ -151,12 +132,11 @@ Key files consumed by backend and dashboard:
 
 ## Critical Constraints
 
-1. **Port 8051 para local dev e Docker** — `make serve`, `make backend`, scripts Playwright e Docker usam 8051. O frontend Next.js usa `3051` via `make frontend-next`.
+1. **Port 8051 para local dev e Docker** — `make backend` e Docker usam 8051. O frontend Next.js usa `3051` via `make frontend-next`.
 2. **Use `python3`, não `python`** — o binário `python` não existe nesta máquina. O Makefile já trata isso.
-3. **Stacks de frontend divergentes** — `app/frontend/` é Vanilla JS puro + Chart.js via CDN (sem npm, sem frameworks). `app/frontend-next/` é Next.js 14 + React + Tailwind + TanStack Query. Não misturar convenções entre as duas.
-4. **Nunca abrir o dashboard via `file://`** — CORS quebra. Use sempre `make serve` ou `make backend`.
-5. **Não commitar raw/base processed** — `data/raw/` e `data/processed/*.{csv,parquet}` base são gerados localmente. `data/processed/analysis/**/*.csv` é versionado para auditoria/demo.
-6. **Dashboard JSONs são gerados** — `data/processed/dashboard/dashboard_*.json` pode ficar versionado para demo/deploy, mas deve ser regenerado com `make dashboard-full` ou `make pipeline`. Cópias em `app/frontend/` são apenas espelho local legado e ficam ignoradas.
+3. **Frontend Next.js** — Next.js 14 + React + Tailwind + TanStack Query (`app/frontend-next/`).
+4. **Não commitar raw/base processed** — `data/raw/` e `data/processed/*.{csv,parquet}` base são gerados localmente. `data/processed/analysis/**/*.csv` é versionado para auditoria/demo.
+5. **Dashboard JSONs são gerados** — `data/processed/dashboard/dashboard_*.json` deve ser regenerado com `make dashboard-full` ou `make pipeline`.
 
 ## Conventions
 
@@ -182,7 +162,7 @@ chore: atualizar requirements.txt
 Após mudanças estruturais, mantenha sincronizados:
 
 - `README.md`, `AGENTS.md`, `CLAUDE.md` (raiz)
-- `app/frontend/README.md` (dashboard clássico), `app/frontend-next/README.md` (dashboard Next.js)
+- `app/frontend-next/README.md` (dashboard principal)
 - `.ai/CONTEXT.md`, `.ai/PIPELINE.md`, `.ai/CONVENTIONS.md`, `.ai/DASHBOARD.md`, `.ai/DATA_OVERVIEW.md`
 - `docs/EXTRACAO_DADOS.md` — guia canônico de extração ANEEL + IBGE
 - `docs/DATA_QUALITY_AUDIT.md` — backlog e contrato da auditoria numerica
@@ -200,7 +180,7 @@ Não há pytest. Testes são Make targets:
 ## Docker
 
 ```bash
-# Main stack (dashboard + backend), porta 8051 interna
+# Main stack (backend), porta 8051 interna
 docker compose up --build
 
 # Kestra orchestration (pipelines de dados)
@@ -209,6 +189,4 @@ docker compose -f docker/docker-compose.kestra.yml up -d
 
 ## AI Tooling
 
-- **MCP context7** — busca de docs de pandas, FastAPI, Chart.js durante desenvolvimento
-- **Playwright** via Bash (`npx playwright test`, `npx playwright codegen`) ou plugin Claude Code para automação de browser
-- **Agentes especializados** em `.github/agents/` — aneel-data-guardian (ETL), backend-fastapi-specialist (API), frontend-next-specialist (Next.js)
+- Agentes especializados em `.github/agents/` — aneel-data-guardian (ETL), backend-fastapi-specialist (API), frontend-next-specialist (Next.js)

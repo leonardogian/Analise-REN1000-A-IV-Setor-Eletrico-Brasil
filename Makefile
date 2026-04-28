@@ -58,18 +58,12 @@ help:
 	@echo "  make dashboard-full         - analysis + grupos + dashboard + dashboard-transgressoes"
 	@echo ""
 	@echo "Serving / Backend:"
-	@echo "  make serve                  - frontend classico legado em http://localhost:$(PORT)"
-	@echo "  make frontend               - alias de make serve"
 	@echo "  make backend                - sobe backend FastAPI em http://localhost:$(PORT)"
 	@echo "  make dev-serve              - dashboard-full + preflight + backend com reload"
 	@echo "  make frontend-next          - frontend Next.js em http://localhost:$(NEXT_PORT) usando backend local"
 	@echo "  make frontend-next-railway  - frontend Next.js em http://localhost:$(NEXT_PORT) usando Railway"
 	@echo "  make stack-next             - sobe backend local em background + frontend Next.js"
 	@echo "  make frontend-next-install  - instala dependencias do frontend Next.js"
-	@echo ""
-	@echo "Extras:"
-	@echo "  make screenshots            - tira screenshots de todas as páginas (requer: make serve)"
-	@echo "  make check-visual           - verifica erros de console/charts (requer: make serve)"
 	@echo ""
 	@echo "Qualidade / Testes:"
 	@echo "  make validate-contracts     - valida contratos de schema (raw + processed)"
@@ -144,11 +138,6 @@ neoenergia-diagnostico:
 load-postgres:
 	$(PYTHON) scripts/load_to_postgres.py
 
-qa-audit:
-	$(PYTHON) scripts/qa_audit.py
-
-qa-frontend: qa-audit
-
 qa-data:
 	$(PYTHON) scripts/qa_data_audit.py
 
@@ -180,15 +169,6 @@ dashboard-full: analysis grupos-diagnostico neoenergia-diagnostico dashboard das
 
 # ── Serving / Backend ─────────────────────────────────────────────────────────
 # Frontend principal: make stack-next (backend + Next.js juntos)
-# Frontend legado (Vanilla JS): make serve
-
-serve: dashboard dashboard-transgressoes
-	@echo "🌐 Frontend Vanilla JS (legado) em http://localhost:$(PORT)"
-	@echo "ℹ️ Para reprodução científica, rode make pipeline antes de servir os JSONs."
-	@(sleep 2 && xdg-open http://localhost:$(PORT) 2>/dev/null || true) &
-	cd app/frontend && $(PYTHON) -m http.server $(PORT)
-
-frontend: serve  ## legado: use stack-next para o frontend Next.js principal
 
 frontend-next-install:
 	cd $(FRONTEND_NEXT_DIR) && $(NPM) install
@@ -228,14 +208,6 @@ stack-next:
 		sleep 5; \
 	fi
 	@$(MAKE) frontend-next
-
-# ── Extras ────────────────────────────────────────────────────────────────────
-
-screenshots:
-	node scripts/playwright/screenshot-all.js
-
-check-visual:
-	node scripts/playwright/check-charts.js
 
 # ── Qualidade / Testes ────────────────────────────────────────────────────────
 

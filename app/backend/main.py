@@ -21,7 +21,6 @@ load_dotenv()
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 APP_DIR = ROOT / "app"
-DASHBOARD_STATIC_DIR = APP_DIR / "frontend"
 DASHBOARD_DATA_DIR = ROOT / "data" / "processed" / "dashboard"
 DASHBOARD_JSON_PATH = DASHBOARD_DATA_DIR / "dashboard_data.json"
 ANALYSIS_DIR = ROOT / "data" / "processed" / "analysis"
@@ -307,7 +306,3 @@ for _dashboard_file_name in sorted(DASHBOARD_PUBLIC_JSON_FILES):
         methods=["GET"],
         include_in_schema=False,
     )
-
-
-if os.getenv("SERVE_STATIC", "true").lower() != "false" and DASHBOARD_STATIC_DIR.exists():
-    app.mount("/", StaticFiles(directory=str(DASHBOARD_STATIC_DIR), html=True), name="dashboard")

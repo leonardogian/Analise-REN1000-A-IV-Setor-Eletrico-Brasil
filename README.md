@@ -27,7 +27,7 @@ Foco em **transgressões de prazo, compensações financeiras (R$)** e normaliza
 |----------|-----|-----------|
 | **Frontend (Next.js) — Produção** | [tcc-frontend-react.vercel.app](https://tcc-frontend-react.vercel.app) | Dashboard principal, React + Tailwind |
 | **Backend API — Produção** | [Railway](https://tcc-ren1000x414-production.up.railway.app/health) | FastAPI + PostgreSQL + Redis |
-| **Frontend (Vanilla JS) — Legado** | [analise-ren-1000-a-iv-setor-eletric.vercel.app](https://analise-ren-1000-a-iv-setor-eletric.vercel.app) | Chart.js, sem dependências npm |
+| **Frontend (Vanilla JS) — Legado** | [analise-ren-1000-a-iv-setor-eletric.vercel.app](https://analise-ren-1000-a-iv-setor-eletric.vercel.app) | Preservado na branch `legacy/vanilla-dashboard` |
 
 ---
 
@@ -35,57 +35,7 @@ Foco em **transgressões de prazo, compensações financeiras (R$)** e normaliza
 
 Quando uma distribuidora de energia atrasa um atendimento além do prazo regulado pela ANEEL, ela é obrigada a **compensar o consumidor na fatura**. Este TCC responde: **isso está acontecendo na prática? Quais grupos pagam mais? A REN 1.000/2021 mudou o comportamento?**
 
-O projeto combina ~7 GB de dados históricos da ANEEL (2011–2025), pipeline ETL em Python, API FastAPI no Railway e frontend principal em Next.js 14 (React + Tailwind). O dashboard Vanilla JS fica preservado como legado.
-
----
-
-## 📸 Tour Visual do Dashboard
-
-### Visão Geral — KPIs e Tendências
-
-KPIs pré/pós REN 1000, série anual de taxa fora do prazo (2011–2025) e consolidado por grupos econômicos:
-
-![Visão Geral](docs/images/dashboard_visao_geral.png)
-
----
-
-### Transgressões — Séries Temporais
-
-Bi-eixo: volume de transgressões + compensações mensais por distribuidora, filtros por holding e período:
-
-![Transgressões](docs/images/dashboard_transgressoes.png)
-
----
-
-### Benchmark — Volume × Compensação
-
-Scatter plot: volume de serviços versus compensação financeira por porte (normalizado por 100k UC-mês):
-
-![Benchmark](docs/images/dashboard_benchmark.png)
-
----
-
-### Evolução — Heatmap Mensal por Holding
-
-Sazonalidade mensal de transgressões por holding/grupo (2023–2025):
-
-![Evolução](docs/images/dashboard_evolucao.png)
-
----
-
-### Ranking — Grupos Econômicos
-
-Ranking horizontal por métrica selecionável (taxa de transgressão, compensação R$/UC-mês, volume):
-
-![Ranking](docs/images/dashboard_ranking.png)
-
----
-
-### Mapa Geográfico Interativo
-
-Choropleth Leaflet: distribuidoras por estado, colorido por taxa de transgressão ou compensação:
-
-![Mapa](docs/images/dashboard_mapa.png)
+O projeto combina ~7 GB de dados históricos da ANEEL (2011–2025), pipeline ETL em Python, API FastAPI no Railway e frontend principal em Next.js 14 (React + Tailwind).
 
 ---
 
@@ -122,20 +72,11 @@ make stack-next
 
 Guia canônico das URLs, periodicidade, diretórios e troubleshooting: [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md).
 
-### Só o backend (API + legado estático)
+### Só o backend (API)
 
 ```bash
 make backend   # FastAPI em http://localhost:8051
-# Abra http://localhost:8051
 ```
-
-### Frontend legado (Vanilla JS)
-
-```bash
-make serve     # servidor estático legado em http://localhost:8051
-```
-
-> **Nota:** nunca abra via `file://` — use sempre um servidor (`make serve` ou `make backend`), caso contrário os fetch() falham por CORS.
 
 ### Instalar dependências do Next.js (primeira vez)
 
@@ -168,8 +109,7 @@ data/processed/analysis/*.csv  (versioned em Git)
 |--------|------|---------|
 | ETL | Python + Pandas + Parquet | Volume 7 GB + transformações complexas |
 | Backend | FastAPI + PostgreSQL + Redis | Async, cache, deploy fácil Railway |
-| Frontend v2 (principal) | Next.js 14 + React 18 + TanStack Query + Tailwind | SSR, cache inteligente, tipagem TS |
-| Frontend v1 (legado) | Vanilla JS + Chart.js 4.4.7 | Zero dependências npm |
+| Frontend principal | Next.js 14 + React 18 + TanStack Query + Tailwind | SSR, cache inteligente, tipagem TS |
 | Deploy | Vercel + Railway | CDN global (front) + pay-per-use (back) |
 
 Nota operacional: o Next.js em produção depende da CSP em `app/frontend-next/vercel.json` permitir `script-src 'unsafe-inline'` para os scripts inline de boot/hydration. Quando `app/backend/main.py` ou `data/processed/dashboard/dashboard_*.json` mudarem, o Railway também precisa ser redeployado para publicar os endpoints e dados atuais.
@@ -177,6 +117,7 @@ Nota operacional: o Next.js em produção depende da CSP em `app/frontend-next/v
 ---
 
 ## 📡 Pipeline de Dados
+
 
 ```
 ANEEL dadosabertos.aneel.gov.br
@@ -209,22 +150,19 @@ make grupos-diagnostico  # CSVs de grupos econômicos
 ```
 TCC_leo_main/
 ├── app/
-│   ├── frontend/          ← Vanilla JS (v1 legado)
-│   ├── frontend-next/     ← Next.js 14 (v2 principal)
+│   ├── frontend-next/     ← Next.js 14 (principal)
 │   │   ├── app/           ← App Router (rotas: benchmark, mapa, ranking…)
 │   │   ├── components/    ← React components (KPICard, ChartCard, Sidebar…)
 │   │   ├── hooks/         ← Custom hooks (useDashboardData…)
 │   │   └── next.config.mjs ← Rewrites → Railway
 │   └── backend/
-│       └── main.py        ← FastAPI: REST + CORS + serving estático
+│       └── main.py        ← FastAPI: REST + CORS
 ├── src/
 │   ├── etl/               ← extract_aneel.py, transform_aneel.py
 │   └── analysis/          ← build_analysis_tables, build_dashboard_data…
 ├── data/processed/analysis/ ← CSVs versionados consumidos pelo app
 ├── data/processed/dashboard/ ← JSONs canônicos servidos pelo backend/Next.js
-├── docs/images/           ← Screenshots do dashboard
 ├── docs/                  ← Documentação, auditorias e imagens
-├── vercel.json            ← Config do projeto Vercel legado (Vanilla JS)
 ├── railway.toml           ← Config Docker Railway (backend)
 └── Makefile               ← Todos os comandos (make help)
 ```
