@@ -1,29 +1,44 @@
 {
-  "name": "TCC REN1000 Dashboard",
+  "name": "TCC REN1000 - Eng. de Dados & Frontend",
   "image": "mcr.microsoft.com/devcontainers/python:3.12-bullseye",
-  "forwardPorts": [8051],
-  "portsAttributes": {
-    "8051": { "label": "Dashboard", "onAutoForward": "notify" }
-  },
   "features": {
-    "ghcr.io/devcontainers/features/node:1": { "version": "lts" },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "forwardPorts": [
+    8051,
+    3051
+  ],
+  "portsAttributes": {
+    "8051": {
+      "label": "Backend FastAPI",
+      "onAutoForward": "notify"
+    },
+    "3051": {
+      "label": "Frontend Next.js",
+      "onAutoForward": "notify"
+    }
   },
   "customizations": {
     "vscode": {
       "settings": {
-        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
-        "python.terminal.activateEnvironment": true,
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.languageServer": "Pylance",
+        "editor.formatOnSave": true,
         "files.eol": "\n"
       },
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-python.debugpy",
-        "ecmel.vscode-html-css"
+        "ms-azuretools.vscode-docker",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint"
       ]
     }
   },
-  "postCreateCommand": "python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && npm install -g vercel@latest @railway/cli",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y libpq-dev build-essential && pip install --upgrade pip && pip install -r requirements.txt",
   "remoteUser": "vscode"
 }

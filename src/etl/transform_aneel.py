@@ -52,6 +52,19 @@ NUMERIC_COLUMNS = {
     "qtdreclamacoesprocedentes",
 }
 
+INTEGER_COLUMNS = {
+    "anoindice",
+    "numperiodoindice",
+    "qtdservrealizado",
+    "qtdservrealizdescprazo",
+    "qtducativa",
+    "codmunicipioibge",
+    "codmunicipio",
+    "qtdreclamacoesrecebidas",
+    "qtdreclamacoesimprocedentes",
+    "qtdreclamacoesprocedentes",
+}
+
 STRING_COLUMNS = {
     "sigagente",
     "nomagente",
@@ -103,14 +116,21 @@ def _normalizar_tipos(df: pd.DataFrame) -> pd.DataFrame:
     """Apply stable dtype coercions used by the whole ETL."""
     for col in sorted(NUMERIC_COLUMNS & set(df.columns)):
         df[col] = _parse_br_numeric(df[col])
+        if col in INTEGER_COLUMNS:
+            # Rounding handles cases where float precision might have introduced .000001
+            df[col] = df[col].round().astype("Int64")
 
     for col in sorted(STRING_COLUMNS & set(df.columns)):
         df[col] = df[col].astype("string").str.strip()
 
     for col in sorted(DATE_LIKE_COLUMNS & set(df.columns)):
-        # Keep dates as strings to avoid implicit pandas inference changing the
-        # wire shape. Downstream scripts parse explicitly with errors="coerce".
-        df[col] = df[col].astype("string").str.strip()
+        # Attempt to parse dates if they look like dates, else keep as string
+        # This helps downstream but keeps safety.
+        parsed = pd.to_datetime(df[col], errors="coerce", dayfirst=True)
+        if parsed.notna().any():
+            df[col] = parsed
+        else:
+            df[col] = df[col].astype("string").str.strip()
 
     return df
 
@@ -129,18 +149,20 @@ def validar_colunas_obrigatorias(
     return True
 
 
-def _ler_csv_com_fallback(path: Path) -> tuple[pd.DataFrame, str]:
+def _ler_csv_com_fallback(path: Path, **kwargs) -> tuple[pd.DataFrame, str]:
     last_error: Exception | None = None
     for encoding in CSV_ENCODINGS:
         try:
-            frame = pd.read_csv(
-                path,
-                sep=";",
-                encoding=encoding,
-                low_memory=False,
-                decimal=",",
-                thousands=".",
-            )
+            params = {
+                "sep": ";",
+                "encoding": encoding,
+                "low_memory": False,
+                "decimal": ",",
+                "thousands": ".",
+                "na_values": ["-", "n/a", "N/A", ""],
+            }
+            params.update(kwargs)
+            frame = pd.read_csv(path, **params)
             if len(frame.columns) <= 1:
                 raise ValueError("CSV lido com uma coluna; separador provavelmente incorreto")
             return frame, encoding

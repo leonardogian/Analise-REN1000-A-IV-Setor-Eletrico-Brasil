@@ -14,35 +14,47 @@ def calc_taxa_fora_prazo(
     qtd_fora_prazo: pd.Series, qtd_serv: pd.Series
 ) -> pd.Series:
     """Taxa de transgressão: qtd_fora_prazo / qtd_serv (0-1)."""
-    taxa = np.where(qtd_serv > 0, qtd_fora_prazo / qtd_serv, np.nan)
-    return np.clip(taxa, 0.0, 1.0)
+    qfp = pd.to_numeric(qtd_fora_prazo, errors="coerce").astype(float)
+    qs = pd.to_numeric(qtd_serv, errors="coerce").astype(float)
+    taxa = np.where(qs > 0, qfp / qs, np.nan)
+    return pd.Series(np.clip(taxa, 0.0, 1.0), index=qtd_fora_prazo.index)
 
 
 def calc_fora_prazo_por_100k(
     qtd_fora_prazo: pd.Series, uc: pd.Series
 ) -> pd.Series:
     """Transgressões por 100 mil UCs-mês."""
-    return np.where(uc > 0, qtd_fora_prazo / uc * PER_100K, np.nan)
+    qfp = pd.to_numeric(qtd_fora_prazo, errors="coerce").astype(float)
+    u = pd.to_numeric(uc, errors="coerce").astype(float)
+    return pd.Series(np.where(u > 0, qfp / u * PER_100K, np.nan), index=uc.index)
 
 
 def calc_compensacao_por_uc(
     compensacao_rs: pd.Series, uc: pd.Series
 ) -> pd.Series:
     """Compensação financeira por UC (R$/UC-mês)."""
-    return np.where(uc > 0, compensacao_rs / uc, np.nan)
+    comp = pd.to_numeric(compensacao_rs, errors="coerce").astype(float)
+    u = pd.to_numeric(uc, errors="coerce").astype(float)
+    return pd.Series(np.where(u > 0, comp / u, np.nan), index=uc.index)
 
 
 def calc_compensacao_media_por_transgressao(
     compensacao_rs: pd.Series, qtd_fora_prazo: pd.Series
 ) -> pd.Series:
     """Compensação média por transgressão (R$/transgressão)."""
-    safe_denom = qtd_fora_prazo.replace(0, np.nan)
-    return compensacao_rs / safe_denom
+    comp = pd.to_numeric(compensacao_rs, errors="coerce").astype(float)
+    qfp = pd.to_numeric(qtd_fora_prazo, errors="coerce").astype(float)
+    safe_denom = qfp.replace(0, np.nan)
+    return comp / safe_denom
 
 
 def calc_share(parte: pd.Series, total: pd.Series) -> pd.Series:
     """Participação proporcional (0-1)."""
-    return np.where(total > 0, parte / total, np.nan)
+    p = pd.to_numeric(parte, errors="coerce").astype(float)
+    t = pd.to_numeric(total, errors="coerce").astype(float)
+    return pd.Series(np.where(t > 0, p / t, np.nan), index=total.index)
+
+
 
 
 def classify_periodo_regulatorio(ano: pd.Series) -> pd.Series:

@@ -259,12 +259,15 @@ def annotate_distributor_group(
     alias_targets: list[str] = []
     for sig, legal, dist_id in zip(sig_series.tolist(), name_series.tolist(), raw_distributor_ids):
         mapped = name_overrides.get(dist_id, {})
-        canonical_ids.append(dist_id)
-        alias_target = slugify(mapped.get("canonical_id", ""), fallback="") if mapped else ""
-        alias_targets.append(alias_target if alias_target and alias_target != dist_id else "")
-        # Do not rename factual aliases to the canonical sigla. EBO and EPB,
-        # for example, must stay distinct even if both belong to Energisa.
-        sig_name = _text(sig) if alias_target and alias_target != dist_id else str(mapped.get("sigagente", "")).strip() or _text(sig)
+        # C5: Resolvemos o ID canônico antes de qualquer coisa para evitar duplicidade de distribuidoras
+        # que mudaram minimamente de sigla/nome mas são a mesma entidade legal.
+        target_id = slugify(mapped.get("canonical_id", ""), fallback=dist_id) if mapped else dist_id
+        
+        canonical_ids.append(target_id)
+        alias_targets.append(target_id if target_id != dist_id else "")
+        
+        # Display names also follow canonical map if available
+        sig_name = str(mapped.get("sigagente", "")).strip() or _text(sig)
         legal_name = str(mapped.get("nomagente", "")).strip() or _text(legal)
         if not legal_name:
             legal_name = sig_name

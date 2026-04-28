@@ -349,6 +349,23 @@ def build_fato_indicadores_anuais(qualidade: pd.DataFrame, dim_indicador: pd.Dat
 
     fact = pd.concat([qs, qv, pm, cr], axis=1).reset_index()
 
+    # C6: Prevenir dupla contagem por variações de classe_local para o mesmo código base
+    # Se houver duplicatas de (ano, distributor_id, codigo_base), algo está errado na
+    # taxonomia dos indicadores ou na classificação.
+    dups = fact.duplicated(subset=["ano", "distributor_id", "codigo_base"], keep=False)
+    if dups.any():
+        num_dups = dups.sum()
+        print(f"  AVISO: {num_dups} linhas duplicadas por codigo_base detectadas (C6).")
+        # Para o TCC, preferimos a linha que tem classificação mais específica se disponível.
+        # Ordenamos para que 'nao_classificado' fique por último e removemos duplicatas.
+        fact["_class_rank"] = fact["classe_local"].apply(
+            lambda x: 0 if x not in ["nao_classificado", "urbana", "rural"] else (1 if x != "nao_classificado" else 2)
+        )
+        fact = fact.sort_values(["ano", "distributor_id", "codigo_base", "_class_rank"])
+        fact = fact.drop_duplicates(subset=["ano", "distributor_id", "codigo_base"], keep="first")
+        fact = fact.drop(columns=["_class_rank"])
+        print(f"  INFO: Duplicatas resolvidas priorizando classe específica.")
+
     fact["has_qs"] = fact["qtd_serv"].notna()
     fact["has_qv"] = fact["qtd_fora_prazo"].notna()
     fact["has_pm"] = fact["prazo_medio"].notna()
@@ -395,7 +412,7 @@ def build_dim_distribuidora_porte(
     frame = frame.dropna(subset=["dt_ref", "sigagente"])
     frame["ano"] = frame["dt_ref"].dt.year
     frame["mes"] = frame["dt_ref"].dt.month
-    frame["uc_ativa"] = parse_br_number(frame["qtducativa"]).fillna(0.0)
+    frame["uc_ativa"] = parse_br_number(frame["qtducativa"])
     frame = annotate_distributor_group(
         frame,
         sig_col="sigagente",
@@ -479,7 +496,7 @@ def build_uc_ativa_mensal_distribuidora(
     frame = frame.dropna(subset=["dt_ref", "sigagente"])
     frame["ano"] = frame["dt_ref"].dt.year
     frame["mes"] = frame["dt_ref"].dt.month
-    frame["uc_ativa"] = parse_br_number(frame["qtducativa"]).fillna(0.0)
+    frame["uc_ativa"] = parse_br_number(frame["qtducativa"])
     frame = annotate_distributor_group(
         frame,
         sig_col="sigagente",
@@ -563,9 +580,9 @@ def build_fato_servicos_municipio_mes(
     )
     frame["codtiposervico"] = frame["codtiposervico"].astype("string").str.strip()
 
-    frame["qtd_serv_realizado"] = parse_br_number(frame["qtdservrealizado"]).fillna(0.0)
-    frame["qtd_fora_prazo"] = parse_br_number(frame["qtdservrealizdescprazo"]).fillna(0.0)
-    frame["compensacao_rs"] = parse_br_number(frame["vlrpagocompensacao"]).fillna(0.0)
+    frame["qtd_serv_realizado"] = parse_br_number(frame["qtdservrealizado"])
+    frame["qtd_fora_prazo"] = parse_br_number(frame["qtdservrealizdescprazo"])
+    frame["compensacao_rs"] = parse_br_number(frame["vlrpagocompensacao"])
     frame["classe_local_servico"] = frame["dsctiposervico"].apply(lambda v: classify_segment(normalize_text(v)))
 
     keys = [

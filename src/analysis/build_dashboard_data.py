@@ -1069,8 +1069,12 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
         df = grupos_classe.copy()
         top_groups = df.groupby("group_label")["exposicao_uc_mes"].sum().nlargest(5).index
         df_top = df[df["group_label"].isin(top_groups)]
-        res_heat = df_top.groupby(["group_label", "classe_local_servico"], as_index=False)["fora_prazo_por_100k_uc_mes"].mean()
-        
+        res_heat = df_top.groupby(["group_label", "classe_local_servico"], as_index=False).agg({
+            "qtd_fora_prazo": "sum",
+            "exposicao_uc_mes": "sum",
+        })
+        res_heat["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(res_heat["qtd_fora_prazo"], res_heat["exposicao_uc_mes"])
+
         heat_data = []
         for _, row in res_heat.iterrows():
             heat_data.append({
@@ -1086,10 +1090,13 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
         df = fato_mensal.copy()
         res_scatter = df.groupby(["distributor_label", "periodo_regulatorio"], as_index=False).agg({
             "qtd_fora_prazo": "sum",
-            "compensacao_rs_por_uc_mes": "mean",
+            "compensacao_rs": "sum",
+            "uc_ativa_mes": "sum",
             "bucket_porte": "first",
             "group_id": "first",
         })
+        res_scatter["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(res_scatter["compensacao_rs"], res_scatter["uc_ativa_mes"])
+
         for _, row in res_scatter.iterrows():
             scat_data.append({
                 "x": int(row["qtd_fora_prazo"]),
@@ -1099,7 +1106,6 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
                 "porte": str(row["bucket_porte"]) if pd.notna(row["bucket_porte"]) else "N/A",
                 "holding": str(row["group_id"]) if pd.notna(row["group_id"]) else "N/A",
             })
-
     # Nota: dados REN 414 (pre_2022) de fato_indicadores não incluídos no scatter
     # pois faltam métricas per-UC para o período (uc_ativa_media_mensal é nulo),
     # tornando os eixos incomparáveis. A comparação pre/pos REN 1000 é feita

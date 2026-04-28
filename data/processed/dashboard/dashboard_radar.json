@@ -1,66 +1,66 @@
 {
   "services": [
+    "LigBUb",
     "RelNorUb",
     "RclDano",
-    "LigBUb",
     "VistUb",
-    "ObraSec",
-    "ObraPrim"
+    "ObraPrim",
+    "LigBRr"
   ],
   "data": [
     {
       "distributor_label": "Cemig-D — CEMIG DISTRIBUIÇÃO S.A.",
       "metrics": {
-        "LigBUb": 0.07265573080418822,
+        "LigBRr": 0.14900876631093743,
+        "LigBUb": 0.06522511552880948,
+        "ObraPrim": 0.8977284352778074,
+        "RclDano": 0.10959200335388392,
+        "RelNorUb": 0.01703281873375667,
+        "VistUb": 0.0872604650086252
+      }
+    },
+    {
+      "distributor_label": "Enel SP — ELETROPAULO METROPOLITANA ELETRICIDADE DE SÃO PAULO S.A.",
+      "metrics": {
+        "LigBRr": 6.177346984453915e-05,
+        "LigBUb": 6.834650534608583e-05,
+        "ObraPrim": 0.1760795365638523,
+        "RclDano": 0.10391523734764069,
+        "RelNorUb": 0.003271773890542015,
+        "VistUb": 0.0005849189731568327
+      }
+    },
+    {
+      "distributor_label": "Neoenergia Coelba — COMPANHIA DE ELETRICIDADE DO ESTADO DA BAHIA",
+      "metrics": {
+        "LigBRr": 0.04339775326712386,
+        "LigBUb": 0.03426726585179708,
         "ObraPrim": 1.0,
-        "ObraSec": 0.9570755323160124,
-        "RclDano": 0.12207701020406021,
-        "RelNorUb": 0.01897324186738695,
-        "VistUb": 0.09720140476738037
+        "RclDano": 0.032785696707079544,
+        "RelNorUb": 0.006911739635576979,
+        "VistUb": 0.09772892432676138
       }
     },
     {
       "distributor_label": "Copel-Dis — COPEL DISTRIBUIÇÃO S.A.",
       "metrics": {
-        "LigBUb": 0.0022939111179265392,
-        "ObraPrim": 0.03033244657260636,
-        "ObraSec": 0.049221198914518725,
-        "RclDano": 0.008000109555297417,
-        "RelNorUb": 0.022045792656411052,
-        "VistUb": 0.02222457317186336
+        "LigBRr": 0.001149568001301893,
+        "LigBUb": 0.002059309238562558,
+        "ObraPrim": 0.027230299799773604,
+        "RclDano": 0.007181925833128187,
+        "RelNorUb": 0.01979113494589887,
+        "VistUb": 0.019951631298294033
       }
     },
     {
       "distributor_label": "CPFL Paulista — COMPANHIA PAULISTA DE FORÇA E LUZ",
       "metrics": {
-        "LigBUb": 0.014841250065329836,
-        "ObraPrim": 0.025398761028279163,
-        "ObraSec": 0.04643609480599642,
-        "RclDano": 0.0008280573910354717,
-        "RelNorUb": 0.008671551424168367,
-        "VistUb": 0.0031296771890494623
-      }
-    },
-    {
-      "distributor_label": "Enel CE — COMPANHIA ENERGÉTICA DO CEARÁ",
-      "metrics": {
-        "LigBUb": 0.0009399903831273467,
-        "ObraPrim": 0.8228655984948736,
-        "ObraSec": 0.9791530761233086,
-        "RclDano": 0.3102872981463724,
-        "RelNorUb": 0.04738382226511253,
-        "VistUb": 0.01313321318998534
-      }
-    },
-    {
-      "distributor_label": "Enel RJ — AMPLA ENERGIA E SERVIÇOS S.A.",
-      "metrics": {
-        "LigBUb": 0.011942182566885182,
-        "ObraPrim": 0.5277281631559216,
-        "ObraSec": 0.4952006074553705,
-        "RclDano": 0.1786116693368177,
-        "RelNorUb": 0.010993010127489614,
-        "VistUb": 0.010255222395659578
+        "LigBRr": 0.1354614601714202,
+        "LigBUb": 0.01332341219871521,
+        "ObraPrim": 0.02280118999591201,
+        "RclDano": 0.0007433706659744975,
+        "RelNorUb": 0.007784698291449711,
+        "VistUb": 0.002809600205850021
       }
     }
   ]
