@@ -65,6 +65,9 @@ output/
 # Test runner artifacts
 test-results/
 
+# Claude Code worktrees
+.claude/
+
 # QA reports temporários que caem na raiz
 .qa-report-*.txt
 
