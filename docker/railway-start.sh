@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-if [ ! -f "app/frontend/dashboard_data.json" ]; then
+if [ ! -f "data/processed/dashboard/dashboard_data.json" ]; then
     echo "Gerando dashboard JSON files..."
     python3 -m src.analysis.build_dashboard_data
     python3 -m src.analysis.dashboard_transgressoes

@@ -46,7 +46,7 @@ app/frontend-next/
 │                             useTimeSeries, useHeatmap, useRanking, useGroups
 │
 ├── lib/
-│   ├── colors.ts         ← Paleta de cores, API_BASE (Railway URL)
+│   ├── colors.ts         ← Paleta de cores, API_BASE relativo
 │   ├── format.ts         ← Formatadores pt-BR (moeda, %, número)
 │   └── store.ts          ← Zustand: estado global de filtros (período, grupo)
 │
@@ -67,7 +67,7 @@ Browser → /api/dashboard
 Railway → https://tcc-ren1000x414-production.up.railway.app/api/dashboard
 ```
 
-O mesmo vale para os arquivos `dashboard_*.json` que o backend serve como estáticos.
+O mesmo vale para os arquivos `dashboard_*.json`; a fonte canônica é `data/processed/dashboard/`, servida pelo backend em `/dashboard_*.json`.
 
 Localmente, a variável `API_REWRITE_URL=http://localhost:8051` (definida pelo `make frontend-next`) aponta os rewrites pro backend local em vez do Railway.
 
@@ -99,9 +99,19 @@ export default function NovaPagina() {
 
 ## Deploy (Vercel)
 
-Este diretório está vinculado ao projeto Vercel **`tcc-frontend-react`** (ID `prj_hanCWL0GVRwXVKHw5ecCuWmJPSyn`).
+Este diretório é o frontend oficial e deve estar vinculado ao projeto Vercel **`tcc-frontend-react`** (ID `prj_hanCWL0GVRwXVKHw5ecCuWmJPSyn`).
 
-Deploy automático: qualquer push na branch `main` que modifique `app/frontend-next/**` dispara rebuild no Vercel com este diretório como Root Directory.
+Configuração esperada no Vercel:
+
+- Git Repository: `leonardogian/Analise-REN1000-A-IV-Setor-Eletrico-Brasil`
+- Production Branch: `main`
+- Root Directory: `app/frontend-next`
+- Build Command: `npm run build`
+- Install Command: `npm install`
+- Output Directory: Next.js default
+- Env production: `API_REWRITE_URL=https://tcc-ren1000x414-production.up.railway.app`
+
+Deploy automático: qualquer push na branch `main` que modifique `app/frontend-next/**` dispara rebuild no Vercel com este diretório como Root Directory. A env antiga `NEXT_PUBLIC_API_URL` não é usada pelo código atual e deve ser removida ou mantida apenas como nota histórica.
 
 O `vercel.json` nesta pasta adiciona security headers (CSP) ao deploy. Os rewrites de API estão no `next.config.mjs` — não duplique no `vercel.json`.
 

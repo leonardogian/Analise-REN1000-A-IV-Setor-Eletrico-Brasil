@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality of Brazilian energy distributors. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units). Special focus on 5 Neoenergia distributors.
 
-**Current phase:** ETL, backend FastAPI+Postgres+Redis e dois frontends estão operacionais. A rodada de reprodutibilidade reforçou extração segura, leitura CSV centralizada, contratos de schema com dtypes/ranges, deduplicação INDGER e dashboard com agregações ponderadas. `make pipeline` agora termina com validações.
+**Current phase:** ETL e backend FastAPI+Postgres+Redis estão operacionais; o frontend oficial é o Next.js em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O Vanilla em `app/frontend/` fica preservado como legado. A rodada de reprodutibilidade reforçou extração segura, contratos de schema, deduplicação INDGER e dashboard com agregações ponderadas. `make pipeline` agora termina com validações.
 
 ## Essential Commands
 
@@ -67,8 +67,8 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
     +-> build_report.py            -> reports/relatorio_aneel.md
     +-> neoenergia_diagnostico.py  -> data/processed/analysis/neoenergia/*.csv
     +-> grupos_diagnostico.py      -> data/processed/analysis/grupos/*.csv (13 files)
-    +-> build_dashboard_data.py    -> app/frontend/dashboard_data.json
-    +-> dashboard_transgressoes.py -> app/frontend/dashboard_transgressoes.json
+    +-> build_dashboard_data.py    -> data/processed/dashboard/dashboard_data.json
+    +-> dashboard_transgressoes.py -> data/processed/dashboard/dashboard_transgressoes.json
 ```
 
 ### Application Stack
@@ -84,7 +84,7 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 
 ### Deploy híbrido (Vercel + Railway)
 
-- **Frontend (Vercel)**: estáticos + rewrites em `vercel.json` encaminham `/api/*` para o Railway transparentemente.
+- **Frontend oficial (Vercel)**: Next.js em `app/frontend-next/`; rewrites em `next.config.mjs` encaminham `/api/*` e `/dashboard_*.json` para o Railway.
 - **Backend (Railway)**: FastAPI em `app/backend/main.py`, PostgreSQL para tabelas analíticas (substitui o payload JSON gigante) e Redis para cache in-memory. URL base: `https://tcc-ren1000x414-production.up.railway.app`.
 - **Local**: `make backend` / `make dev-serve` rodam FastAPI em `localhost:8051` (mesma API, sem rewrite).
 
@@ -93,13 +93,14 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 - `src/etl/` — extraction and transformation scripts (ANEEL + IBGE)
 - `src/analysis/` — analytical table builders, report generators
 - `app/backend/main.py` — FastAPI (9 endpoints + static mount)
-- `app/frontend/` — SPA clássico (6 páginas + shared JS modules)
+- `app/frontend-next/` — frontend oficial em Next.js 14 (7 páginas, Tailwind, TanStack Query)
+- `app/frontend/` — SPA clássico legado (6 páginas + shared JS modules)
   - Load order: `utils.js → nav.js → filters.js → app.js → [page].js`
   - `utils.js` — formatters (fmtNum, fmtMoney, fmtMoneyFull, fmtPct, fmtVar)
   - `nav.js` — sidebar active-link, mobile toggle, toast system
   - `filters.js` — global period/porte/group state + `filters:change` event
   - `app.js` — Chart.js defaults (theme), shared constants
-- `app/frontend-next/` — frontend alternativo em Next.js 14 (7 páginas, Tailwind, TanStack Query)
+- `data/processed/dashboard/` — JSONs canônicos `dashboard_*.json` servidos pelo backend/Railway
 - `data/processed/analysis/` — versioned analytical CSVs; Parquet mirrors are generated locally
 - `docker/` — Docker Compose (app stack, PostgreSQL, Kestra)
 - `docs/` — canonical docs (EXTRACAO_DADOS, DICIONARIO_DADOS, GUIA_ANALISE, PROXIMOS_PASSOS_TCC, ...)
@@ -109,10 +110,11 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 
 ### Frontend Data Flow
 
-Frontend clássico consome JSON estáticos + endpoints REST:
+Frontend Next.js consome endpoints REST via rewrites para o Railway:
 
-- `dashboard_data.json` — payload principal, ~27 MB (gerado por `build_dashboard_data.py`)
-- `dashboard_transgressoes.json`, `dashboard_timeseries.json`, `dashboard_scatter.json`, `dashboard_heatmap.json`, `dashboard_radar.json`, `dashboard_groups_ranking.json` — micro-payloads por visualização
+- `/api/dashboard/{section}` — fatias do payload principal
+- `/api/v1/timeseries-tendencia`, `/scatter-eficiencia`, `/heatmap-transgressoes`, `/radar-slas`, `/groups-ranking`, `/transgressoes` — micro-payloads otimizados
+- `/dashboard_*.json` — fallback público servido de `data/processed/dashboard/`
 
 Backend endpoints (`app/backend/main.py`):
 
@@ -121,7 +123,7 @@ Backend endpoints (`app/backend/main.py`):
 - `/api/dashboard/{section}` — fatia por seção
 - `/api/v1/timeseries-tendencia`, `/scatter-eficiencia`, `/heatmap-transgressoes`, `/radar-slas`, `/groups-ranking`, `/transgressoes` — micro-payloads otimizados (cache Redis)
 
-Páginas (todas em `app/frontend/` e espelhadas em `app/frontend-next/app/`):
+Páginas principais em `app/frontend-next/app/` (espelhadas no legado `app/frontend/`):
 
 - `index.html` / `app.js` — main dashboard (KPIs, trends, groups overview)
 - `transgressoes.html` / `transgressoes.js` — time-series transgression analysis
@@ -152,7 +154,7 @@ Key files consumed by backend and dashboard:
 3. **Stacks de frontend divergentes** — `app/frontend/` é Vanilla JS puro + Chart.js via CDN (sem npm, sem frameworks). `app/frontend-next/` é Next.js 14 + React + Tailwind + TanStack Query. Não misturar convenções entre as duas.
 4. **Nunca abrir o dashboard via `file://`** — CORS quebra. Use sempre `make serve` ou `make backend`.
 5. **Não commitar raw/base processed** — `data/raw/` e `data/processed/*.{csv,parquet}` base são gerados localmente. `data/processed/analysis/**/*.csv` é versionado para auditoria/demo.
-6. **Dashboard JSONs são gerados** — `app/frontend/dashboard_*.json` pode ficar versionado para demo/deploy estático, mas deve ser regenerado com `make dashboard-full` ou `make pipeline`.
+6. **Dashboard JSONs são gerados** — `data/processed/dashboard/dashboard_*.json` pode ficar versionado para demo/deploy, mas deve ser regenerado com `make dashboard-full` ou `make pipeline`. Cópias em `app/frontend/` são apenas espelho local legado e ficam ignoradas.
 
 ## Conventions
 

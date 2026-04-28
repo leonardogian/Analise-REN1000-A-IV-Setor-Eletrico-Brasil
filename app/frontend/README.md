@@ -1,9 +1,9 @@
-# 📊 Frontend — Dashboard REN 1000/2021
+# 📊 Frontend Legado — Dashboard REN 1000/2021
 
 > Para comandos de build, arquitetura geral e constraints, veja [`CLAUDE.md`](../../CLAUDE.md).
 > Para diretrizes operacionais de IA, veja [`AGENTS.md`](../../AGENTS.md).
 
-Painel analítico interativo para visualização dos dados de qualidade comercial das distribuidoras de energia elétrica, com foco na eficácia da Resolução Normativa ANEEL nº 1.000/2021.
+Painel analítico Vanilla JS preservado como legado. O frontend oficial do TCC é o Next.js em [`app/frontend-next/`](../frontend-next/README.md).
 
 ---
 
@@ -47,13 +47,13 @@ app/frontend/
 ├── ranking.js              ← Lógica da página ranking.html
 ├── mapa.js                 ← Lógica da página mapa.html
 │
-├── dashboard_data.json           ← Payload principal ~27 MB (gerado; versionado para demo/deploy)
-├── dashboard_transgressoes.json  ← Transgressões por distribuidora/grupo/rural
-├── dashboard_timeseries.json     ← Séries mensais para evolucao.html
-├── dashboard_scatter.json        ← Scatter: volume × compensação para benchmark.html
-├── dashboard_heatmap.json        ← Matriz grupo × dimensão
-├── dashboard_radar.json          ← Perfis multidimensionais de grupo
-├── dashboard_groups_ranking.json ← Ranking top-N de grupos para ranking.html
+├── dashboard_data.json           ← Espelho local gerado; fonte canônica em data/processed/dashboard/
+├── dashboard_transgressoes.json  ← Espelho local gerado
+├── dashboard_timeseries.json     ← Espelho local gerado
+├── dashboard_scatter.json        ← Espelho local gerado
+├── dashboard_heatmap.json        ← Espelho local gerado
+├── dashboard_radar.json          ← Espelho local gerado
+├── dashboard_groups_ranking.json ← Espelho local gerado
 │
 └── assets/
     └── logos/              ← Logos das holdings (neoenergia.png, cpfl.png, etc.)
@@ -112,7 +112,7 @@ python3 -m src.analysis.dashboard_transgressoes   # dashboard_transgressoes.json
 # pelos scripts em src/analysis/ — veja CLAUDE.md para o mapeamento completo
 ```
 
-Os JSONs em `app/frontend/dashboard_*.json` podem estar no Git para demo e deploy estatico, mas nao sao fonte primaria. Depois de baixar/tratar dados brutos, regenere-os antes de avaliar os numeros.
+Os JSONs canônicos ficam em `data/processed/dashboard/dashboard_*.json`. Os arquivos `app/frontend/dashboard*.json` são apenas espelhos locais para este legado e ficam ignorados no Git. Depois de baixar/tratar dados brutos, regenere-os antes de avaliar os numeros.
 
 ---
 

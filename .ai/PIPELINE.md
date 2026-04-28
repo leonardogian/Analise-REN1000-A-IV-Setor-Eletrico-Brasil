@@ -17,8 +17,8 @@ ANEEL API (CSVs)
     ├─▶ build_report.py           → reports/relatorio_aneel.md
     ├─▶ neoenergia_diagnostico.py → reports/neoenergia_diagnostico.md
     │                                data/processed/analysis/neoenergia/*.csv
-    └─▶ build_dashboard_data.py   → app/frontend/dashboard_data.json
-                                      app/frontend/dashboard_*.json
+    └─▶ build_dashboard_data.py   → data/processed/dashboard/dashboard_data.json
+                                      data/processed/dashboard/dashboard_*.json
 ```
 
 ## Etapa 1: Extração (`make extract`)
@@ -82,8 +82,8 @@ Gerados por `make neoenergia-diagnostico` (`src/analysis/neoenergia_diagnostico.
 **Script**: `src/analysis/build_dashboard_data.py`
 
 - Lê: CSVs de `data/processed/analysis/`, `grupos/` e `neoenergia/`
-- Gera: `app/frontend/dashboard_data.json` e micro-payloads `app/frontend/dashboard_*.json`
-- Política: JSONs podem estar versionados para demo/deploy, mas devem ser regenerados depois de `make pipeline` para reprodução científica.
+- Gera: `data/processed/dashboard/dashboard_data.json` e micro-payloads `data/processed/dashboard/dashboard_*.json`
+- Política: JSONs canônicos podem estar versionados para demo/deploy, mas devem ser regenerados depois de `make pipeline` para reprodução científica. O legado Vanilla recebe espelhos locais em `app/frontend/dashboard*.json`, ignorados pelo Git.
 - **Fail-fast**: falha se entradas obrigatórias estiverem ausentes ou seções críticas ficarem vazias.
 - Estrutura do JSON:
 
@@ -144,7 +144,7 @@ make dev-serve        # sobe backend FastAPI (com preflight) em http://localhost
    Só rode `make extract` se tiver espaço.
 3. **`.venv` não ativado**: Scripts chamados via `make` usam
    `.venv/bin/python` automaticamente. Para rodar direto, ative o venv.
-4. **`dashboard_data.json` é gerado e pode estar versionado**: não edite manualmente; rode `make dashboard-full` ou `make pipeline`.
+4. **`dashboard_data.json` é gerado e pode estar versionado**: a fonte canônica é `data/processed/dashboard/`; não edite manualmente, rode `make dashboard-full` ou `make pipeline`.
 5. **Dashboard via `file://` não funciona**: Precisa de servidor HTTP (CORS).
    Use `make serve` (porta 8051).
 6. **Contratos de schema**: valide com `make validate-contracts` quando mudar ETL.

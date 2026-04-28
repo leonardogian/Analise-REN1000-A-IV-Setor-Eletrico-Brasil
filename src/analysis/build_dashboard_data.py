@@ -19,7 +19,8 @@ from src.analysis.metrics import (
 ROOT = Path(__file__).resolve().parent.parent.parent
 DIR_ANALYSIS = ROOT / "data" / "processed" / "analysis"
 DIR_GROUPS = DIR_ANALYSIS / "grupos"
-DASHBOARD_DIR = ROOT / "app" / "frontend"
+DASHBOARD_DIR = ROOT / "data" / "processed" / "dashboard"
+LEGACY_DASHBOARD_DIR = ROOT / "app" / "frontend"
 OUTPUT_PATH = DASHBOARD_DIR / "dashboard_data.json"
 
 REQUIRED_INPUT_FILES = [
@@ -98,6 +99,19 @@ def _read(name: str, subdir: str | None = None) -> pd.DataFrame:
     if not path.exists():
         raise FileNotFoundError(f"Arquivo obrigatório não encontrado: {path}")
     return pd.read_csv(path)
+
+
+def _write_dashboard_json(file_name: str, payload: object, *, indent: int | None = 2) -> Path:
+    """Write canonical dashboard JSON and mirror it for the legacy static app."""
+    DASHBOARD_DIR.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(payload, ensure_ascii=False, indent=indent)
+    path = DASHBOARD_DIR / file_name
+    path.write_text(text, encoding="utf-8")
+
+    if LEGACY_DASHBOARD_DIR.exists():
+        (LEGACY_DASHBOARD_DIR / file_name).write_text(text, encoding="utf-8")
+
+    return path
 
 
 def validate_required_inputs() -> None:
@@ -1317,7 +1331,6 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
 
 def main() -> None:
     print("🔧 Gerando dados para o dashboard...")
-    DASHBOARD_DIR.mkdir(parents=True, exist_ok=True)
     validate_required_inputs()
 
     kpi = _read("kpi_regulatorio_anual")
@@ -1389,39 +1402,44 @@ def main() -> None:
     data.update(build_legacy_neo_alias(group_views))
     validate_non_empty_sections(data)
 
-    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    output_path = _write_dashboard_json("dashboard_data.json", data, indent=2)
 
-    size_mb = OUTPUT_PATH.stat().st_size / 1024 / 1024
-    print(f"✅ Arquivo gerado: {OUTPUT_PATH} ({size_mb:.2f} MB)")
+    size_mb = output_path.stat().st_size / 1024 / 1024
+    print(f"✅ Arquivo gerado: {output_path} ({size_mb:.2f} MB)")
 
     # Export individual JSONs for advanced charts to support static deployment
     print("Exportando dados individuais para gráficos avançados (estáticos)...")
     franquias_insights = data.get("franquias_insights", {})
     
-    heatmap_path = DASHBOARD_DIR / "dashboard_heatmap.json"
-    scatter_path = DASHBOARD_DIR / "dashboard_scatter.json"
-    radar_path = DASHBOARD_DIR / "dashboard_radar.json"
-    timeseries_path = DASHBOARD_DIR / "dashboard_timeseries.json"
-    
-    with open(heatmap_path, "w", encoding="utf-8") as f:
-        json.dump({"data": franquias_insights.get("heatmap_transgressoes", [])}, f, ensure_ascii=False, indent=2)
-        
-    with open(scatter_path, "w", encoding="utf-8") as f:
-        json.dump({"data": franquias_insights.get("scatter_eficiencia", [])}, f, ensure_ascii=False, indent=2)
-        
-    with open(radar_path, "w", encoding="utf-8") as f:
-        json.dump(franquias_insights.get("radar_slas", {"services": [], "data": []}), f, ensure_ascii=False, indent=2)
-        
-    with open(timeseries_path, "w", encoding="utf-8") as f:
-        json.dump({"data": franquias_insights.get("timeseries_tendencia", [])}, f, ensure_ascii=False, indent=2)
+    _write_dashboard_json(
+        "dashboard_heatmap.json",
+        {"data": franquias_insights.get("heatmap_transgressoes", [])},
+        indent=2,
+    )
+    _write_dashboard_json(
+        "dashboard_scatter.json",
+        {"data": franquias_insights.get("scatter_eficiencia", [])},
+        indent=2,
+    )
+    _write_dashboard_json(
+        "dashboard_radar.json",
+        franquias_insights.get("radar_slas", {"services": [], "data": []}),
+        indent=2,
+    )
+    _write_dashboard_json(
+        "dashboard_timeseries.json",
+        {"data": franquias_insights.get("timeseries_tendencia", [])},
+        indent=2,
+    )
 
-    ranking_path = DASHBOARD_DIR / "dashboard_groups_ranking.json"
-    with open(ranking_path, "w", encoding="utf-8") as f:
-        json.dump({
+    _write_dashboard_json(
+        "dashboard_groups_ranking.json",
+        {
             "data": franquias_insights.get("ranking_grupos", []),
             "headlines": franquias_insights.get("headlines", {}),
-        }, f, ensure_ascii=False, indent=2)
+        },
+        indent=2,
+    )
     print(f"✅ dashboard_groups_ranking.json → {len(franquias_insights.get('ranking_grupos', []))} grupos")
 
     print("✅ JSONs individuais de franquias_insights exportados com sucesso.")

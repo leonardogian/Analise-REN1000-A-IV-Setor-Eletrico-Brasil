@@ -37,10 +37,11 @@ Thumbs.db
 node_modules/
 
 # ==========================
-# Dashboard (dados gerados — path legado)
+# Dashboard JSONs
 # ==========================
-dashboard/dashboard_data.json
-# app/frontend/dashboard_*.json  ← LIBERADO para deploy Vercel estático
+# Fonte canônica versionável: data/processed/dashboard/dashboard_*.json
+# Espelho legado gerado localmente para app/frontend/ não deve voltar ao Git.
+app/frontend/dashboard*.json
 
 # ==========================
 # Manter estas pastas no Git (via .gitkeep)

@@ -5,7 +5,7 @@
 ## 🎯 Momento Atual do Projeto
 
 - **Dados consolidados:** A etapa de limpeza (ETL), extração e validação básica dos dados está concluída e sua estrutura é confiável.
-- **Foco de atuação:** O desenvolvimento técnico centrará as forças no **Front-End** (Dashboard web com Vanilla JS/HTML/CSS e Chart.js) suportado pelas APIs no **Back-End** (FastAPI).
+- **Foco de atuação:** O desenvolvimento técnico centrará as forças no **Front-End oficial Next.js/React** (`app/frontend-next/`, projeto Vercel `tcc-frontend-react`) suportado pelas APIs no **Back-End** (FastAPI/Railway). O dashboard Vanilla em `app/frontend/` é legado.
 - **Mindset:** Priorize implementar soluções lógicas para o backend servir os dados prontos ao frontend interativo. Pense em JSON, REST APIs e renderização de dados na tela do cliente.
 
 ## 🔄 Rotina Obrigatória de Inicialização (Para IAs)
@@ -14,7 +14,7 @@ Sempre que iniciar uma nova interação ou tarefa neste repositório, você DEVE
 
 1. **Analise os Commits Recentes:** Execute `git log -n 5 --stat` e `git status` para entender as últimas mudanças.
 2. **Leia os Arquivos Relacionados:** Leia os arquivos recém-modificados e arquivos chaves para o domínio do problema. Faça isso expandindo o contexto lendo os arquivos em blocos/lotes (de certa em certa quantidade) para não se perder.
-3. **Mantenha o Contexto Atualizado:** Ao concluir mudanças, sempre atualize os arquivos de contexto relevantes com o status mais recente — veja a lista canônica em `CLAUDE.md` seção "Context Files for AI Agents". No mínimo: `README.md`, `AGENTS.md`, `CLAUDE.md` e `.ai/CONTEXT.md`. Para mudanças no frontend, atualize também `app/frontend/README.md`.
+3. **Mantenha o Contexto Atualizado:** Ao concluir mudanças, sempre atualize os arquivos de contexto relevantes com o status mais recente — veja a lista canônica em `CLAUDE.md` seção "Context Files for AI Agents". No mínimo: `README.md`, `AGENTS.md`, `CLAUDE.md` e `.ai/CONTEXT.md`. Para mudanças no frontend oficial, atualize também `app/frontend-next/README.md`; para legado Vanilla, atualize `app/frontend/README.md`.
 
 ## 🛑 Escopo Estrito e Limites de Domínio (MUITO IMPORTANTE)
 
@@ -24,11 +24,11 @@ Sempre que iniciar uma nova interação ou tarefa neste repositório, você DEVE
 
 ## 💾 Acesso aos Dados Importantes & Portas Padrão
 
-- **Localização dos Dados Prontos:** Os CSVs validados pós-ETL/processamento estão exclusivamente na pasta `data/processed/analysis/`. CSVs analíticos e `app/frontend/dashboard_*.json` podem estar versionados para auditoria/demo, mas o usuário externo deve regenerar tudo com `make pipeline` para reprodução científica.
+- **Localização dos Dados Prontos:** Os CSVs validados pós-ETL/processamento estão em `data/processed/analysis/`; os JSONs canônicos do dashboard ficam em `data/processed/dashboard/`. Ambos podem estar versionados para auditoria/demo, mas o usuário externo deve regenerar tudo com `make pipeline` para reprodução científica.
 - **Extração e Tratamento (fontes brutas):** Toda documentação canônica de "como baixar os dados do zero", URLs CKAN, periodicidade, limitações e troubleshooting mora em [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md). Antes de mexer em `src/etl/`, leia esse doc. Para checar/adicionar fonte nova: atualizar `CATALOGO` em `extract_aneel.py` (ou criar novo `extract_<portal>.py`) e refletir no doc.
-- **Interface Web:** A aplicação frontend consome `app/frontend/dashboard_data.json` e micro-payloads `app/frontend/dashboard_*.json`, todos gerados por scripts em `src/analysis/`.
+- **Interface Web:** O frontend oficial consome `/api/*` e `/dashboard_*.json` via rewrites Next.js → Railway. A fonte canônica dos JSONs é `data/processed/dashboard/dashboard_*.json`, gerada por scripts em `src/analysis/`; cópias em `app/frontend/` são apenas espelho local legado.
 - **Apresentação do TCC (.pptx):** O script gerador foi removido. Apresentações devem ser criadas manualmente ou exportadas do Canva/Google Slides.
-- **Logos das Holdings:** Manter os logos em `logos/` (raiz) e espelhar em `app/frontend/assets/logos/` com nomes padronizados (`neoenergia.png`, `cpfl.png`, `equatorial.png`, etc.).
+- **Logos das Holdings:** Manter os logos em `logos/` (raiz) e espelhar nos assets usados pelos frontends com nomes padronizados (`neoenergia.png`, `cpfl.png`, `equatorial.png`, etc.).
 - **Porta Padronizada:** Desenvolvimento local e via Docker usam a **porta `8051`** (`http://localhost:8051/`). Não usar porta 8000 ou outras para o dashboard.
 - **Frontend Next local:** quando precisar comparar com o frontend React em `app/frontend-next/`, use a **porta `3051`** (`http://localhost:3051/`) para evitar conflito com a 3000, que ja esta ocupada nesta maquina.
 
@@ -110,26 +110,17 @@ Estas regras valem para qualquer execucao bloqueante (comando/app) quando nao fo
 <claude-mem-context>
 # Memory Context
 
-# [TCC_leo_main] recent context, 2026-04-27 11:29pm GMT-3
+# [TCC_leo_main] recent context, 2026-04-28 1:26pm GMT-3
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 47 obs (24,487t read) | 1,185,763t work | 98% savings
+Stats: 50 obs (25,731t read) | 1,573,607t work | 98% savings
 
 ### Apr 23, 2026
-11 5:09p 🔵 User Inquired About ODT File Manipulation Support
+S23 TCC ANEEL Full Code Audit — Senior Data Engineer review of ETL pipeline, redundancies, data integrity, and dashboard optimization across the entire codebase (Apr 23, 5:09 PM)
 S11 User Inquired About ODT File Manipulation Support (Apr 23, 5:09 PM)
-12 5:12p 🔵 TCC Revision Goals Defined: Focus on Data Processing, Open Source, and Data Quality
-14 " 🔵 TCC ANEEL Project Structure Fully Mapped at /home/gianmarinolc/Documents/Estudos/TCC_leo_main
-15 5:13p 🔵 TCC ANEEL Statistical Results and Key Data Quality Limitations Confirmed
-16 5:14p 🟣 TCC Opus Critical Review Plan Created at ~/.claude/plans/iridescent-swimming-wreath.md
-18 6:04p 🔵 TCC LEO.odt Confirmed Present and Valid for Extraction
-19 6:05p 🔵 TCC ODT Internal Structure Mapped: 23 Annotations, 668 Paragraphs, 0 Headings via text:h
-20 " 🔵 All 23 TCC ODT Inline Comments Extracted with Full Author/Paragraph Context
-21 " 🔵 TCC ODT Paragraph Index Map: Real Content Starts at Block 252 (RESUMO)
-22 " 🟣 Full TCC Thesis Text Extracted to Markdown: 52KB, 155 Paragraphs, Ready for Opus Critique
 23 6:07p 🔵 TCC ANEEL Data Layer Mapped: Star Schema CSVs + 5 Analysis Notebooks in Worktree
 ### Apr 27, 2026
 25 4:15p ⚖️ TCC ANEEL — Full Data Pipeline Audit Scope Defined
@@ -142,7 +133,6 @@ S11 User Inquired About ODT File Manipulation Support (Apr 23, 5:09 PM)
 32 4:19p ⚖️ TCC ANEEL — Senior Data Engineer Audit Scope Defined
 33 4:25p 🔵 TCC ANEEL — Full ETL/Analysis Audit: 70+ Findings Mapped Across 4 Pipeline Layers
 34 4:32p ⚖️ TCC ANEEL — Senior Data Engineer Audit Scope Formally Defined
-S23 TCC ANEEL Full Code Audit — Senior Data Engineer review of ETL pipeline, redundancies, data integrity, and dashboard optimization across the entire codebase (Apr 27, 4:33 PM)
 35 10:35p 🔵 TCC ANEEL — Onboarding Audit Scope Defined for External User Reproducibility
 36 10:36p 🔵 TCC ANEEL — Project Structure and Onboarding Documentation Map Confirmed
 37 " 🔵 TCC ANEEL — All 7 Dashboard JSON Files ARE Versioned Despite README Stating Otherwise
@@ -169,6 +159,21 @@ S23 TCC ANEEL Full Code Audit — Senior Data Engineer review of ETL pipeline, r
 62 11:00p 🔄 build_dashboard_data.py — Hardcoded Labels, Metric Formulas, and Timeseries Aggregation Fully Replaced
 63 " 🔄 check_artifacts.py — Artifact Manifest Updated to CSV-First + Parquet Drift Checker Added
 64 " 🔵 extract_aneel.py — Full CKAN Download Catalog with Direct URLs Confirmed
+### Apr 28, 2026
+68 1:03p 🔵 Claude Context Overload — MCP Plugins and Deferred Tools Burning Tokens
+69 " 🔵 Claude Context Bloat Identified — MCP Plugins and Deferred Tools Consuming Tokens
+70 1:06p ⚖️ Context Pollution Audit — MCP Plugins and Token Waste
+71 1:14p 🔵 Claude Context Bloat Identified — MCPs and Deferred Tools Burning Tokens
+72 " ✅ settings.local.json Permissions Cleaned — 154 Lines Reduced to 49
+73 " 🚨 Discord Bot Token Hardcoded in settings.local.json Permission Entries
+S36 settings.local.json Permissions Cleaned — 154 Lines Reduced to 49 (Apr 28, 1:14 PM)
+74 1:17p ⚖️ TCC Frontend Strategy: tcc-frontend-react as Primary, analise-ren-1000 as Legacy
+75 " 🔵 Dual Vercel Project Structure Confirmed: Legacy Root vs New app/frontend-next
+76 " 🔵 Vercel MCP Tool Returns 403 for Both Project IDs
+77 " 🔵 tcc-frontend-react Next.js Config: Railway Rewrites Already Wired
+78 1:18p 🔵 tcc-frontend-react Live on Vercel but Serving Stale March 2026 Data
+79 " 🔵 Vercel MCP OAuth Authenticated to Wrong Scope — No Team Access
+80 " 🔵 Backend /api/v1/groups-ranking Returns 404 via Railway
 
-Access 1186k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 1574k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

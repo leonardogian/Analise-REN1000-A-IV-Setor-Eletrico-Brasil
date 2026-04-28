@@ -31,11 +31,12 @@ Prefixos: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`
 
 - **NÃO versionar** dados brutos/processados (`.gitignore`)
 - **SIM versionar** tabelas analíticas em `data/processed/analysis/`
-- `app/frontend/dashboard_*.json` é gerado e versionado para demo/deploy estático; regenere com `make dashboard-full` depois do ETL
+- `data/processed/dashboard/dashboard_*.json` é gerado e versionado para demo/deploy; regenere com `make dashboard-full` depois do ETL
+- `app/frontend/dashboard*.json` é apenas espelho local legado e fica ignorado no Git
 - Formato preferido para leitura: `.parquet` (mais rápido, menor)
 - Formato para humanos/debug: `.csv`
 
-## Dashboard (Frontend)
+## Dashboard (Frontend Legado)
 
 - **Zero frameworks JS**: Vanilla JS puro
 - **Chart.js via CDN**: Não instalar localmente
@@ -70,7 +71,7 @@ Não há framework de teste formal (pytest). Os testes existentes são:
 1. **NÃO alterar a porta 8051** (local dev e Docker) sem verificar portas livres.
 2. **NÃO usar `python`** — usar `python3` ou `make` (que trata automaticamente)
 3. **NÃO commitar dados brutos** (`data/raw/`) — são muito grandes
-4. **NÃO editar manualmente `app/frontend/dashboard_*.json`** — gere pelos scripts e revise o diff
+4. **NÃO editar manualmente `data/processed/dashboard/dashboard_*.json`** — gere pelos scripts e revise o diff
 5. **NÃO abrir o dashboard via `file://`** — não funciona (CORS)
 6. **NÃO instalar Chart.js localmente** — usa CDN
 7. **NÃO usar frameworks CSS/JS** — o dashboard é vanilla puro

@@ -10,7 +10,7 @@ Normativa nº 1.000/2021 da ANEEL** na qualidade dos serviços comerciais das
 distribuidoras de energia elétrica do Brasil. Foco especial nas **5 distribuidoras
 do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 
-> **🎯 Fase Atual do Projeto:** ETL, backend e dois frontends estão operacionais. A rodada atual adicionou auditoria numérica (`make qa-data`) e reforçou a política de identidade: `distributor_id` é chave factual, enquanto `group_id` agrega holdings. Próximos passos: manter `qa-data` verde, camada coroplética no mapa e redação da tese.
+> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O Vanilla em `app/frontend/` fica como legado preservado. A rodada atual adicionou auditoria numérica (`make qa-data`) e desacoplou os JSONs do legado: a fonte canônica agora é `data/processed/dashboard/`.
 
 > **🔄 ROTINA OBRIGATÓRIA PARA IAs:**
 >
@@ -25,13 +25,13 @@ do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 | ETL           | Python 3.10+, pandas, numpy, requests           |
 | Análise       | Python, pandas, numpy                            |
 | Backend Cloud | FastAPI, PostgreSQL, Redis (no Railway)          |
-| Dashboard     | HTML5, CSS3, Vanilla JS, Chart.js (na Vercel)    |
+| Dashboard     | Next.js 14, React, Tailwind, TanStack Query (Vercel) |
 | Relatório     | HTML print-optimized (Ctrl+P → PDF)              |
 | Build         | GNU Make                                         |
 | Dados         | PostgreSQL DB, Redis Cache, Parquet              |
 | Versionamento | Git (branch: main)                               |
 
-> **Frontend duplo em desenvolvimento local:** o dashboard classico (Vanilla JS) segue na porta `8051` via `make serve`/`make backend`; o frontend comparativo em Next.js (`app/frontend-next/`) roda na porta `3051` via `make frontend-next` ou `make stack-next`.
+> **Frontend oficial:** o Next.js (`app/frontend-next/`) roda na porta `3051` via `make frontend-next` ou `make stack-next`. O dashboard classico (Vanilla JS) segue como legado na porta `8051` via `make serve`/`make backend`.
 
 ## Estrutura do Repositório
 
@@ -51,12 +51,13 @@ TCC_leo_main/
 │       ├── build_analysis_tables.py  ← Gera tabelas analíticas em CSV/Parquet
 │       ├── build_report.py           ← Gera relatório markdown
 │       ├── neoenergia_diagnostico.py ← Benchmark detalhado 5 Neoenergias
-│       └── build_dashboard_data.py   ← Gera app/frontend/dashboard_data.json
+│       └── build_dashboard_data.py   ← Gera data/processed/dashboard/dashboard_data.json
 │   └── backend/
 │       └── main.py                  ← Backend local (API + static em localhost)
 │
 ├── app/
-│   ├── frontend/             ← Dashboard SPA (6 páginas ativas)
+│   ├── frontend-next/        ← Dashboard oficial Next.js/React
+│   ├── frontend/             ← Dashboard SPA legado (6 páginas)
 │   │   ├── index.html / app.js           ← Visão Geral (KPIs, tendências, grupos)
 │   │   ├── transgressoes.html / .js      ← Séries temporais de transgressões
 │   │   ├── benchmark.html / .js          ← Bubble chart: volume × compensação
@@ -74,11 +75,12 @@ TCC_leo_main/
 │   ├── raw/                  ← CSVs brutos da ANEEL (não versionados)
 │   └── processed/
 │       ├── *.csv / *.parquet ← Dados limpos (não versionados)
-│       └── analysis/         ← Tabelas analíticas versionadas no Git
+│       ├── analysis/         ← Tabelas analíticas versionadas no Git
 │           ├── kpi_regulatorio_anual.csv
 │           ├── fato_transgressao_mensal_distribuidora.csv
 │           ├── fato_indicadores_anuais.csv
 │           └── neoenergia/   ← CSVs específicos do grupo Neoenergia
+│       └── dashboard/        ← JSONs canônicos consumidos pelo backend/Next.js
 │
 ├── reports/                  ← Relatórios gerados (markdown)
 ├── docs/                     ← Documentação auxiliar + imagens
@@ -109,7 +111,7 @@ make dashboard       # gera dashboard_data.json
 make dashboard-full  # analysis + neoenergia + dashboard
 
 # Dashboard local
-make serve           # frontend classico em http://localhost:8051
+make serve           # frontend classico legado em http://localhost:8051
 make backend         # FastAPI em http://localhost:8051
 make dev-serve       # dashboard-full + preflight + backend (--reload)
 make frontend-next   # frontend Next.js em http://localhost:3051 usando API local
@@ -150,7 +152,7 @@ Estes arquivos são gerados por scripts:
 - `data/processed/*.csv` e `*.parquet` — dados transformados
 - `.venv/` — ambiente virtual Python
 
-`data/raw/` e `data/processed/` base não são versionados. `data/processed/analysis/**/*.csv` e `app/frontend/dashboard_*.json` podem estar no Git para auditoria/demo/deploy, mas devem ser regenerados com `make pipeline` para reprodução científica.
+`data/raw/` e `data/processed/` base não são versionados. `data/processed/analysis/**/*.csv` e `data/processed/dashboard/dashboard_*.json` podem estar no Git para auditoria/demo/deploy, mas devem ser regenerados com `make pipeline` para reprodução científica. Espelhos em `app/frontend/dashboard*.json` são gerados localmente e ignorados.
 
 ## Venv (Ambiente Virtual)
 

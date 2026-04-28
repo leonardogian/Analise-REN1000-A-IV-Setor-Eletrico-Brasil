@@ -35,7 +35,7 @@ Foco em **transgressões de prazo, compensações financeiras (R$)** e normaliza
 
 Quando uma distribuidora de energia atrasa um atendimento além do prazo regulado pela ANEEL, ela é obrigada a **compensar o consumidor na fatura**. Este TCC responde: **isso está acontecendo na prática? Quais grupos pagam mais? A REN 1.000/2021 mudou o comportamento?**
 
-O projeto combina ~7 GB de dados históricos da ANEEL (2011–2025), pipeline ETL em Python, API FastAPI no Railway e dois frontends: um moderno em Next.js 14 (React + Tailwind) e um clássico em Vanilla JS (legacy).
+O projeto combina ~7 GB de dados históricos da ANEEL (2011–2025), pipeline ETL em Python, API FastAPI no Railway e frontend principal em Next.js 14 (React + Tailwind). O dashboard Vanilla JS fica preservado como legado.
 
 ---
 
@@ -114,25 +114,25 @@ make install
 make doctor
 make pipeline
 make qa-data
-make serve
-# Abra http://localhost:8051
+make stack-next
+# Abra http://localhost:3051
 ```
 
 `make pipeline` executa extração, transformação, análise, geração dos JSONs e validações (`validate-contracts`, `check-artifacts-full`, `qa-data`). Em uma máquina comum, reserve ao menos 12 GB livres, conexão estável e uma janela longa de execução; o gargalo principal é baixar/descompactar e transformar o INDGER.
 
 Guia canônico das URLs, periodicidade, diretórios e troubleshooting: [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md).
 
-### Só o backend (API + Vanilla JS estático)
+### Só o backend (API + legado estático)
 
 ```bash
 make backend   # FastAPI em http://localhost:8051
 # Abra http://localhost:8051
 ```
 
-### Frontend legado (Vanilla JS, sem backend obrigatório)
+### Frontend legado (Vanilla JS)
 
 ```bash
-make serve     # servidor estático em http://localhost:8051
+make serve     # servidor estático legado em http://localhost:8051
 ```
 
 > **Nota:** nunca abra via `file://` — use sempre um servidor (`make serve` ou `make backend`), caso contrário os fetch() falham por CORS.
@@ -185,12 +185,12 @@ data/processed/*.parquet
    ↓  build_analysis_tables.py
 data/processed/analysis/*.csv  (13 tabelas — VERSIONED)
    ↓
-build_dashboard_data.py → app/frontend/dashboard_*.json
+build_dashboard_data.py → data/processed/dashboard/dashboard_*.json
 build_report.py         → reports/relatorio_aneel.md
 grupos_diagnostico.py   → data/processed/analysis/grupos/
 ```
 
-Política de versionamento: `data/raw/` e `data/processed/` base são gerados localmente e não entram no Git. `data/processed/analysis/**/*.csv` e `app/frontend/dashboard_*.json` podem ficar versionados para auditoria/demo/deploy estático, mas devem ser regenerados após ETL para reprodução científica.
+Política de versionamento: `data/raw/` e `data/processed/` base são gerados localmente e não entram no Git. `data/processed/analysis/**/*.csv` e `data/processed/dashboard/dashboard_*.json` podem ficar versionados para auditoria/demo/deploy, mas devem ser regenerados após ETL para reprodução científica. Cópias em `app/frontend/dashboard*.json` são apenas espelho local do legado e ficam ignoradas.
 
 Comandos rápidos:
 
@@ -219,6 +219,7 @@ TCC_leo_main/
 │   ├── etl/               ← extract_aneel.py, transform_aneel.py
 │   └── analysis/          ← build_analysis_tables, build_dashboard_data…
 ├── data/processed/analysis/ ← CSVs versionados consumidos pelo app
+├── data/processed/dashboard/ ← JSONs canônicos servidos pelo backend/Next.js
 ├── docs/images/           ← Screenshots do dashboard
 ├── docs/                  ← Documentação, auditorias e imagens
 ├── vercel.json            ← Config do projeto Vercel legado (Vanilla JS)

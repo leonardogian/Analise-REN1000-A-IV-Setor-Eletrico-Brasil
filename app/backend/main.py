@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.backend.core.database import db_manager
@@ -20,8 +21,9 @@ load_dotenv()
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 APP_DIR = ROOT / "app"
-DASHBOARD_DIR = APP_DIR / "frontend"
-DASHBOARD_JSON_PATH = DASHBOARD_DIR / "dashboard_data.json"
+DASHBOARD_STATIC_DIR = APP_DIR / "frontend"
+DASHBOARD_DATA_DIR = ROOT / "data" / "processed" / "dashboard"
+DASHBOARD_JSON_PATH = DASHBOARD_DATA_DIR / "dashboard_data.json"
 ANALYSIS_DIR = ROOT / "data" / "processed" / "analysis"
 GROUPS_DIR = ANALYSIS_DIR / "grupos"
 CHART_JSON_FILES = {
@@ -32,6 +34,7 @@ CHART_JSON_FILES = {
     "groups_ranking": "dashboard_groups_ranking.json",
     "transgressoes": "dashboard_transgressoes.json",
 }
+DASHBOARD_PUBLIC_JSON_FILES = frozenset({"dashboard_data.json", *CHART_JSON_FILES.values()})
 
 REQUIRED_JSON_KEYS = {
     "meta",
@@ -119,7 +122,7 @@ def _load_chart_payload(key: str) -> dict[str, Any]:
     if not file_name:
         raise HTTPException(status_code=404, detail="Chart data source not found.")
 
-    path = DASHBOARD_DIR / file_name
+    path = DASHBOARD_DATA_DIR / file_name
     if not path.exists():
         raise HTTPException(
             status_code=503,
@@ -275,6 +278,36 @@ def api_transgressoes() -> dict[str, Any]:
     return _load_chart_payload("transgressoes")
 
 
+def _dashboard_json_response(file_name: str) -> FileResponse:
+    if file_name not in DASHBOARD_PUBLIC_JSON_FILES:
+        raise HTTPException(status_code=404, detail="Dashboard JSON not found.")
 
-if os.getenv("SERVE_STATIC", "true").lower() != "false":
-    app.mount("/", StaticFiles(directory=str(DASHBOARD_DIR), html=True), name="dashboard")
+    path = DASHBOARD_DATA_DIR / file_name
+    if not path.exists():
+        raise HTTPException(
+            status_code=503,
+            detail=f"{file_name} not found. Run `make dashboard-full` first.",
+        )
+
+    return FileResponse(path, media_type="application/json")
+
+
+def _dashboard_json_endpoint(file_name: str):
+    def endpoint() -> FileResponse:
+        return _dashboard_json_response(file_name)
+
+    endpoint.__name__ = f"dashboard_json_{file_name.removesuffix('.json')}"
+    return endpoint
+
+
+for _dashboard_file_name in sorted(DASHBOARD_PUBLIC_JSON_FILES):
+    app.add_api_route(
+        f"/{_dashboard_file_name}",
+        _dashboard_json_endpoint(_dashboard_file_name),
+        methods=["GET"],
+        include_in_schema=False,
+    )
+
+
+if os.getenv("SERVE_STATIC", "true").lower() != "false" and DASHBOARD_STATIC_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(DASHBOARD_STATIC_DIR), html=True), name="dashboard")

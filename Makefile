@@ -58,7 +58,7 @@ help:
 	@echo "  make dashboard-full         - analysis + grupos + dashboard + dashboard-transgressoes"
 	@echo ""
 	@echo "Serving / Backend:"
-	@echo "  make serve                  - frontend classico em http://localhost:$(PORT)"
+	@echo "  make serve                  - frontend classico legado em http://localhost:$(PORT)"
 	@echo "  make frontend               - alias de make serve"
 	@echo "  make backend                - sobe backend FastAPI em http://localhost:$(PORT)"
 	@echo "  make dev-serve              - dashboard-full + preflight + backend com reload"
@@ -169,9 +169,9 @@ pipeline:
 dashboard:
 	$(PYTHON) -m src.analysis.build_dashboard_data
 	@echo ""
-	@echo "✅ Dashboard pronto! Abra no navegador:"
-	@echo "   app/frontend/index.html      (interativo)"
-	@echo "   app/frontend/relatorio.html  (relatório imprimível)"
+	@echo "✅ Payloads do dashboard prontos em data/processed/dashboard/."
+	@echo "   Frontend principal: make stack-next"
+	@echo "   Legado local: make serve"
 
 dashboard-transgressoes:
 	$(PYTHON) -m src.analysis.dashboard_transgressoes
@@ -182,7 +182,7 @@ dashboard-full: analysis grupos-diagnostico neoenergia-diagnostico dashboard das
 # Frontend principal: make stack-next (backend + Next.js juntos)
 # Frontend legado (Vanilla JS): make serve
 
-serve: dashboard
+serve: dashboard dashboard-transgressoes
 	@echo "🌐 Frontend Vanilla JS (legado) em http://localhost:$(PORT)"
 	@echo "ℹ️ Para reprodução científica, rode make pipeline antes de servir os JSONs."
 	@(sleep 2 && xdg-open http://localhost:$(PORT) 2>/dev/null || true) &

@@ -14,7 +14,7 @@
 - [ ] Group diagnostics regenerated (`make grupos-diagnostico`)
 - [ ] Dashboard JSONs regenerated (`make dashboard-full`)
 - [ ] Schema contracts pass (`make validate-contracts`)
-- [ ] `dashboard_data.json` is NOT committed (it's generated at build time via `railway-start.sh`)
+- [ ] `data/processed/dashboard/dashboard_*.json` regenerated from current analytical CSVs
 
 ## 2. Pre-Deploy — Code Quality
 
@@ -39,7 +39,16 @@
 - [ ] PostgreSQL tables loaded with latest analytical CSVs (`data/processed/analysis/`)
 - [ ] Redis is reachable from Railway backend
 
-## 4. Pre-Deploy — Vercel Frontend
+## 4. Pre-Deploy — Vercel Frontend Oficial
+
+- [ ] Project `tcc-frontend-react` connected to GitHub repo `leonardogian/Analise-REN1000-A-IV-Setor-Eletrico-Brasil`
+- [ ] Production branch is `main`
+- [ ] Root Directory is `app/frontend-next`
+- [ ] Build Command is `npm run build`
+- [ ] Install Command is `npm install`
+- [ ] Production env `API_REWRITE_URL=https://tcc-ren1000x414-production.up.railway.app`
+
+## 4B. Pre-Deploy — Vercel Legado
 
 - [ ] `vercel.json` → `outputDirectory` is `app/frontend`
 - [ ] All 6 dashboard pages present: `index.html`, `transgressoes.html`, `benchmark.html`, `evolucao.html`, `ranking.html`, `mapa.html`
@@ -89,7 +98,7 @@
 |---------|--------|
 | Railway `/health` returns non-200 | Redeploy previous Railway commit |
 | API returns 500 errors | Check Railway logs → DB connection → Redis connection |
-| Frontend shows blank charts | Verify `dashboard_data.json` generation in Railway logs |
+| Frontend shows blank charts | Verify `data/processed/dashboard/dashboard_data.json` generation in Railway logs |
 | CORS errors on Vercel | Check `vercel.json` rewrite URLs match Railway domain |
 | PostgreSQL connection refused | Verify `DATABASE_URL` env var on Railway |
 

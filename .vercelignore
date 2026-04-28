@@ -1,18 +1,20 @@
-# Vercel serves only static frontend files from app/frontend/.
-# The FastAPI backend runs on Railway — proxied via vercel.json rewrites.
-# api/index.py exists only to satisfy Vercel's FastAPI entrypoint detection.
+# Legacy Vercel project only.
+# Official frontend deploy uses app/frontend-next as the Vercel Root Directory.
 requirements.txt
 src/
 app/backend/
 docker/
 notebooks/
 scripts/
-data/
+data/raw/
+data/processed/analysis/
+data/processed/*.csv
+data/processed/*.parquet
 reports/
 Makefile
 *.py
 *.toml
 *.cfg
 *.ini
-!api/index.py
-!api/requirements.txt
+!data/processed/dashboard/
+!data/processed/dashboard/*.json

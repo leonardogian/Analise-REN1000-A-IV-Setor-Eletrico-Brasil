@@ -13,7 +13,7 @@ make dev-serve
 
 # Opção 2: Só gerar os dados
 make dashboard
-# → app/frontend/dashboard_data.json
+# → data/processed/dashboard/dashboard_data.json
 
 # Opção 3: Servidor manual
 cd app/frontend && python3 -m http.server 8051
@@ -36,8 +36,11 @@ app/frontend/
 ├── ranking.html            ← Ranking por métrica
 ├── mapa.html               ← Mapa geográfico
 ├── relatorio.html          ← Relatório imprimível
-├── dashboard_data.json     ← Payload principal
-└── dashboard_*.json        ← Micro-payloads por visualização
+└── relatorio.html          ← Relatório imprimível
+
+data/processed/dashboard/
+├── dashboard_data.json     ← Payload principal canônico
+└── dashboard_*.json        ← Micro-payloads canônicos por visualização
 ```
 
 ## Páginas do Dashboard
@@ -92,7 +95,7 @@ app/frontend/
 
 ## Dados de Entrada (`dashboard_data.json`)
 
-Gerado por `src/analysis/build_dashboard_data.py`. Lê estes CSVs:
+Gerado por `src/analysis/build_dashboard_data.py` em `data/processed/dashboard/`. Lê estes CSVs:
 
 | CSV de entrada | Chave no JSON | Usado na aba |
 |----------------|---------------|--------------|

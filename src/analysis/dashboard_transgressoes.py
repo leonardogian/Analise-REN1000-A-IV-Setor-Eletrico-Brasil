@@ -12,7 +12,8 @@ from src.analysis.distributor_groups import to_group_objects, build_group_dimens
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DIR_ANALYSIS = ROOT / "data" / "processed" / "analysis"
-DIR_OUT = ROOT / "app" / "frontend"
+DIR_OUT = ROOT / "data" / "processed" / "dashboard"
+LEGACY_DIR_OUT = ROOT / "app" / "frontend"
 
 
 def _safe_float(v: object) -> float:
@@ -21,12 +22,30 @@ def _safe_float(v: object) -> float:
     return float(v)
 
 
+def _write_dashboard_json(file_name: str, payload: object) -> Path:
+    """Write canonical dashboard JSON and mirror it for the legacy static app."""
+    DIR_OUT.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    path = DIR_OUT / file_name
+    path.write_text(text, encoding="utf-8")
+
+    if LEGACY_DIR_OUT.exists():
+        (LEGACY_DIR_OUT / file_name).write_text(text, encoding="utf-8")
+
+    return path
+
+
 def load_fato_porte() -> pd.DataFrame:
     """Load the monthly transgressions data segmented by class/location."""
-    path = DIR_ANALYSIS / "fato_transgressao_mensal_porte.parquet"
-    if not path.exists():
-        raise FileNotFoundError(f"Missing required input table: {path}")
-    return pd.read_parquet(path)
+    csv_path = DIR_ANALYSIS / "fato_transgressao_mensal_porte.csv"
+    if csv_path.exists():
+        return pd.read_csv(csv_path)
+
+    parquet_path = DIR_ANALYSIS / "fato_transgressao_mensal_porte.parquet"
+    if parquet_path.exists() and parquet_path.stat().st_size > 0:
+        return pd.read_parquet(parquet_path)
+
+    raise FileNotFoundError(f"Missing required input table: {csv_path}")
 
 
 def build_dashboard_data():
@@ -127,10 +146,7 @@ def build_dashboard_data():
         }
     }
 
-    DIR_OUT.mkdir(parents=True, exist_ok=True)
-    out_path = DIR_OUT / "dashboard_transgressoes.json"
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(output, f, ensure_ascii=False, separators=(",", ":"))
+    out_path = _write_dashboard_json("dashboard_transgressoes.json", output)
     
     print(f"Generated dashboard data at {out_path}")
 

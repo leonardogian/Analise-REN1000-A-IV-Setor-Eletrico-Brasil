@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY src /app/src
 COPY app /app/app
 COPY data/processed/analysis /app/data/processed/analysis
+COPY data/processed/dashboard /app/data/processed/dashboard
 COPY docker/railway-start.sh /app/docker/railway-start.sh
 
 EXPOSE 8051

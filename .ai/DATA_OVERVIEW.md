@@ -270,9 +270,9 @@ data/processed/analysis/*.csv
 [4] build_dashboard_data.py
     ├─ Leitura análise
     ├─ Agregações para UI (JSON structure)
-    └─ Export JSON → app/frontend/dashboard_*.json
+    └─ Export JSON → data/processed/dashboard/dashboard_*.json
         ↓
-app/frontend/dashboard_*.json (payload principal + micro-payloads)
+data/processed/dashboard/dashboard_*.json (payload principal + micro-payloads)
 ```
 
 ### Transformações Críticas
