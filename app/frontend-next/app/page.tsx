@@ -4,6 +4,7 @@ import {
   useDashboardData,
   useGroupViews,
   useSerieMensalNacional,
+  type SerieMensalNacionalItem,
 } from '@/hooks/useDashboardData';
 import { KPICard } from '@/components/KPICard';
 import { ChartCard, ChartSkeleton, ErrorMessage } from '@/components/ChartCard';
@@ -79,6 +80,10 @@ interface ServiceSplitRow {
   grupo_b_uc_media: number;
 }
 
+const POST_REN_START = 2023;
+const POST_REN_END = 2025;
+const POST_REN_LABEL = `${POST_REN_START}-${POST_REN_END}`;
+
 const METRIC_OPTIONS: Array<{ key: MetricKey; label: string }> = [
   { key: 'taxa_fora_prazo', label: 'Taxa fora do prazo' },
   { key: 'qtd_fora_prazo', label: 'Quantidade de serviços fora do prazo' },
@@ -110,6 +115,76 @@ function metricFormatter(metric: MetricKey, value: number | null | undefined): s
 function serviceMetricFormatter(metric: ServiceMetric, value: number): string {
   if (metric === 'compensacao_rs') return fmtMoney(value);
   return fmtNum(value);
+}
+
+function buildAnnualTotals(rows: readonly SerieMensalNacionalItem[]): Map<number, YearTotals> {
+  const byYear = new Map<number, YearTotals>();
+  const monthKeysByYear = new Map<number, Set<number>>();
+
+  for (const row of rows) {
+    const year = Number(row.ano);
+    const month = Number(row.mes);
+    if (!Number.isFinite(year) || !Number.isFinite(month)) continue;
+
+    const curr = byYear.get(year) ?? {
+      qtd_fora_prazo: 0,
+      compensacao_rs: 0,
+      qtd_serv_realizado: 0,
+      uc_exposicao_mes: 0,
+      monthsObserved: 12,
+    };
+
+    curr.qtd_fora_prazo += Number(row.qtd_fora_prazo) || 0;
+    curr.compensacao_rs += Number(row.compensacao_rs) || 0;
+    curr.qtd_serv_realizado += Number(row.qtd_serv_realizado) || 0;
+    curr.uc_exposicao_mes += Number(row.uc_ativa_mes) || 0;
+
+    byYear.set(year, curr);
+
+    const monthSet = monthKeysByYear.get(year) ?? new Set<number>();
+    monthSet.add(month);
+    monthKeysByYear.set(year, monthSet);
+  }
+
+  for (const [year, total] of byYear.entries()) {
+    const monthsObserved = Math.max(monthKeysByYear.get(year)?.size ?? 0, 1);
+    const annualFactor = 12 / monthsObserved;
+    total.qtd_fora_prazo *= annualFactor;
+    total.compensacao_rs *= annualFactor;
+    total.qtd_serv_realizado *= annualFactor;
+    total.monthsObserved = monthsObserved;
+    byYear.set(year, total);
+  }
+
+  return byYear;
+}
+
+function summarizeYearTotals(
+  totals: Map<number, YearTotals>,
+  startYear: number,
+  endYear: number
+): YearTotals | null {
+  let yearsObserved = 0;
+  const summary: YearTotals = {
+    qtd_fora_prazo: 0,
+    compensacao_rs: 0,
+    qtd_serv_realizado: 0,
+    uc_exposicao_mes: 0,
+    monthsObserved: 0,
+  };
+
+  for (let year = startYear; year <= endYear; year += 1) {
+    const total = totals.get(year);
+    if (!total) continue;
+    summary.qtd_fora_prazo += total.qtd_fora_prazo;
+    summary.compensacao_rs += total.compensacao_rs;
+    summary.qtd_serv_realizado += total.qtd_serv_realizado;
+    summary.uc_exposicao_mes += total.uc_exposicao_mes;
+    summary.monthsObserved += total.monthsObserved;
+    yearsObserved += 1;
+  }
+
+  return yearsObserved > 0 ? summary : null;
 }
 
 export default function HomePage() {
@@ -163,47 +238,17 @@ export default function HomePage() {
     });
   }, [companyScope, holdingOptions, selectedHoldings, serieMensalNacional]);
 
-  const yearlyTotals = useMemo(() => {
-    const byYear = new Map<number, YearTotals>();
-    const monthKeysByYear = new Map<number, Set<number>>();
+  const yearlyTotals = useMemo(() => buildAnnualTotals(filteredMonthlyRows), [filteredMonthlyRows]);
 
-    for (const row of filteredMonthlyRows) {
-      const year = Number(row.ano);
-      const month = Number(row.mes);
-      if (!Number.isFinite(year) || !Number.isFinite(month)) continue;
+  const nationalYearlyTotals = useMemo(
+    () => buildAnnualTotals(serieMensalNacional ?? []),
+    [serieMensalNacional]
+  );
 
-      const curr = byYear.get(year) ?? {
-        qtd_fora_prazo: 0,
-        compensacao_rs: 0,
-        qtd_serv_realizado: 0,
-        uc_exposicao_mes: 0,
-        monthsObserved: 12,
-      };
-
-      curr.qtd_fora_prazo += Number(row.qtd_fora_prazo) || 0;
-      curr.compensacao_rs += Number(row.compensacao_rs) || 0;
-      curr.qtd_serv_realizado += Number(row.qtd_serv_realizado) || 0;
-      curr.uc_exposicao_mes += Number(row.uc_ativa_mes) || 0;
-
-      byYear.set(year, curr);
-
-      const monthSet = monthKeysByYear.get(year) ?? new Set<number>();
-      monthSet.add(month);
-      monthKeysByYear.set(year, monthSet);
-    }
-
-    for (const [year, total] of byYear.entries()) {
-      const monthsObserved = Math.max(monthKeysByYear.get(year)?.size ?? 0, 1);
-      const annualFactor = 12 / monthsObserved;
-      total.qtd_fora_prazo *= annualFactor;
-      total.compensacao_rs *= annualFactor;
-      total.qtd_serv_realizado *= annualFactor;
-      total.monthsObserved = monthsObserved;
-      byYear.set(year, total);
-    }
-
-    return byYear;
-  }, [filteredMonthlyRows]);
+  const postRenNationalTotals = useMemo(
+    () => summarizeYearTotals(nationalYearlyTotals, POST_REN_START, POST_REN_END),
+    [nationalYearlyTotals]
+  );
 
   const comboSeries = useMemo<YearMetricRow[]>(() => {
     const rows: YearMetricRow[] = [];
@@ -583,18 +628,18 @@ export default function HomePage() {
   const anosPreLabel = kpi?.anos_pre?.length
     ? `${Math.min(...kpi.anos_pre)}-${Math.max(...kpi.anos_pre)}`
     : '2011-2021';
-  const anosPosLabel = kpi?.anos_pos?.length
-    ? `${Math.min(...kpi.anos_pos)}-${Math.max(...kpi.anos_pos)}`
-    : '2022-2023';
+  const anosPosLabel = POST_REN_LABEL;
+  const postRenTaxaMedia = postRenNationalTotals && postRenNationalTotals.qtd_serv_realizado > 0
+    ? postRenNationalTotals.qtd_fora_prazo / postRenNationalTotals.qtd_serv_realizado
+    : null;
+  const deltaTaxaPct = kpi && kpi.pre_taxa_media > 0 && postRenTaxaMedia != null
+    ? ((postRenTaxaMedia - kpi.pre_taxa_media) / kpi.pre_taxa_media) * 100
+    : null;
 
   const deltaCompPct = (() => {
-    if (!kpi) return null;
-    if (typeof kpi.delta_compensacao_pct === 'number') return kpi.delta_compensacao_pct;
+    if (!kpi || !postRenNationalTotals) return null;
     if (kpi.pre_compensacao_total > 0) {
-      const deltaAbs = typeof kpi.delta_compensacao === 'number'
-        ? kpi.delta_compensacao
-        : kpi.pos_compensacao_total - kpi.pre_compensacao_total;
-      return (deltaAbs / kpi.pre_compensacao_total) * 100;
+      return ((postRenNationalTotals.compensacao_rs - kpi.pre_compensacao_total) / kpi.pre_compensacao_total) * 100;
     }
     return null;
   })();
@@ -617,7 +662,7 @@ export default function HomePage() {
       <div>
         <h1 className="text-xl font-bold text-zinc-100">Visão Geral</h1>
         <p className="text-sm text-zinc-500 mt-0.5">
-          Eficácia da REN 1000/2021 · KPI histórico {anosPreLabel} vs {anosPosLabel} · operacional 2023-2025
+          Eficácia da REN 1000/2021 · KPI histórico {anosPreLabel} vs operacional {anosPosLabel}
         </p>
       </div>
 
@@ -630,14 +675,14 @@ export default function HomePage() {
         />
         <KPICard
           title="Taxa Média Pós-REN"
-          value={fmtPct(kpi?.pos_taxa_media)}
-          sub={`taxa ponderada ${anosPosLabel}`}
+          value={fmtPct(postRenTaxaMedia)}
+          sub={`taxa ponderada operacional ${anosPosLabel}`}
           variant="green"
         />
         <KPICard
           title="Variação da Taxa"
-          value={fmtVar(kpi && kpi.pre_taxa_media > 0 ? (kpi.delta_taxa / kpi.pre_taxa_media) * 100 : null)}
-          sub="redução após REN 1000"
+          value={fmtVar(deltaTaxaPct)}
+          sub={`variação ${anosPosLabel} vs pré`}
           variant="blue"
         />
         <KPICard
@@ -648,14 +693,14 @@ export default function HomePage() {
         />
         <KPICard
           title="Compensações Pós-REN"
-          value={fmtMoney(kpi?.pos_compensacao_total)}
-          sub={`total acumulado ${anosPosLabel}`}
+          value={fmtMoney(postRenNationalTotals?.compensacao_rs ?? null)}
+          sub={`total anualizado ${anosPosLabel}`}
           variant="red"
         />
         <KPICard
           title="Δ Compensações"
           value={fmtVar(deltaCompPct)}
-          sub="variação pós vs pré"
+          sub={`${anosPosLabel} vs total pré`}
           variant="amber"
         />
       </div>

@@ -32,6 +32,7 @@ do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 | Versionamento | Git (branch: main)                               |
 
 > **Frontend oficial:** o Next.js (`app/frontend-next/`) roda na porta `3051` via `make frontend-next` ou `make stack-next`. Em produção, `app/frontend-next/vercel.json` deve manter `script-src 'unsafe-inline'` na CSP para o boot/hydration do App Router. A porta `8051` é do backend FastAPI local (`make backend`/`make dev-serve`).
+> Na home, os cards pré-REN do topo permanecem no agregado histórico `kpi_overview`; os cards pós-REN e deltas do topo são calculados como visão Brasil fixa sobre `serie_mensal_nacional` na janela operacional 2023–2025. Os filtros de empresas continuam restritos aos gráficos e cards inferiores.
 
 ## Estrutura do Repositório
 

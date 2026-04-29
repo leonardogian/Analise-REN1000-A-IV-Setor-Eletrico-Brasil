@@ -73,6 +73,8 @@ O mesmo vale para os arquivos `dashboard_*.json`; a fonte canônica é `data/pro
 
 Localmente, a variável `API_REWRITE_URL=http://localhost:8051` (definida pelo `make frontend-next`) aponta os rewrites pro backend local em vez do Railway.
 
+Na home, os dois cards pré-REN do topo usam o agregado histórico de `kpi_overview`. Já os cards pós-REN e as variações do topo são uma visão Brasil fixa recalculada no cliente a partir de `serie_mensal_nacional`, usando a janela operacional 2023–2025; os filtros de empresas afetam apenas os gráficos e cards inferiores.
+
 ---
 
 ## Como adicionar uma nova página
