@@ -10,7 +10,9 @@ Frontend principal do TCC. Consome a API FastAPI no Railway via rewrites do Next
 
 ```bash
 # Da raiz do projeto (recomendado — sobe backend junto):
-make stack-next        # backend :8051 + Next.js :3051
+make site              # backend :8051 + Next.js :3051 com JSON atual
+make site-refresh      # regenera JSONs + backend :8051 + Next.js :3051
+make site-railway      # Next.js local usando Railway, igual à Vercel
 
 # Só o Next.js (precisa de backend separado):
 make backend &         # backend em segundo plano

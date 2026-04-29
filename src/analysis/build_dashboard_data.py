@@ -21,7 +21,6 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 DIR_ANALYSIS = ROOT / "data" / "processed" / "analysis"
 DIR_GROUPS = DIR_ANALYSIS / "grupos"
 DASHBOARD_DIR = ROOT / "data" / "processed" / "dashboard"
-LEGACY_DASHBOARD_DIR = ROOT / "app" / "frontend"
 OUTPUT_PATH = DASHBOARD_DIR / "dashboard_data.json"
 
 REQUIRED_INPUT_FILES = [
@@ -117,15 +116,11 @@ def _read(name: str, subdir: str | None = None) -> pd.DataFrame:
 
 
 def _write_dashboard_json(file_name: str, payload: object, *, indent: int | None = 2) -> Path:
-    """Write canonical dashboard JSON and mirror it for the legacy static app."""
+    """Write canonical dashboard JSON consumed by FastAPI and Next.js."""
     DASHBOARD_DIR.mkdir(parents=True, exist_ok=True)
     text = json.dumps(payload, ensure_ascii=False, indent=indent)
     path = DASHBOARD_DIR / file_name
     path.write_text(text, encoding="utf-8")
-
-    if LEGACY_DASHBOARD_DIR.exists():
-        (LEGACY_DASHBOARD_DIR / file_name).write_text(text, encoding="utf-8")
-
     return path
 
 

@@ -50,7 +50,7 @@ Há dois caminhos diferentes:
 
 ```bash
 source .venv/bin/activate   # ou: make venv-recreate && make install
-make stack-next              # backend (8051) + Next.js (3051) simultaneamente
+make site                    # backend (8051) + Next.js (3051) com JSON atual
 # Abra http://localhost:3051
 ```
 
@@ -81,7 +81,7 @@ make backend   # FastAPI em http://localhost:8051
 ### Instalar dependências do Next.js (primeira vez)
 
 ```bash
-make frontend-next-install   # npm install em app/frontend-next/
+make frontend-next-install   # npm ci em app/frontend-next/
 make frontend-next           # Next.js dev em http://localhost:3051
 ```
 
@@ -133,13 +133,16 @@ build_report.py         → reports/relatorio_aneel.md
 grupos_diagnostico.py   → data/processed/analysis/grupos/
 ```
 
-Política de versionamento: `data/raw/` e `data/processed/` base são gerados localmente e não entram no Git. `data/processed/analysis/**/*.csv` e `data/processed/dashboard/dashboard_*.json` podem ficar versionados para auditoria/demo/deploy, mas devem ser regenerados após ETL para reprodução científica. Cópias em `app/frontend/dashboard*.json` são apenas espelho local do legado e ficam ignoradas.
+Política de versionamento: `data/raw/` e `data/processed/` base são gerados localmente e não entram no Git. `data/processed/analysis/**/*.csv` e `data/processed/dashboard/dashboard_*.json` podem ficar versionados para auditoria/demo/deploy, mas devem ser regenerados após ETL para reprodução científica. O frontend oficial consome esses JSONs via FastAPI/rewrites do Next.js.
 
 Comandos rápidos:
 
 ```bash
 make pipeline            # extract → transform → análise → JSONs → validações
 make dashboard-full      # só a camada analítica → JSONs (sem re-extrair)
+make site                # backend + Next.js com JSON atual
+make site-refresh        # dashboard-full + backend + Next.js
+make site-railway        # Next.js local usando o backend Railway, igual à Vercel
 make grupos-diagnostico  # CSVs de grupos econômicos
 ```
 
@@ -189,7 +192,6 @@ make qa-data          # auditoria numerica dos artefatos analiticos
 | [`.ai/CONTEXT.md`](.ai/CONTEXT.md) | Visão de arquitetura para agentes IA |
 | [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md) | Como baixar dados do zero (URLs CKAN, periodicidade, troubleshooting) |
 | [`app/frontend-next/README.md`](app/frontend-next/README.md) | Rotas, componentes e padrões do Next.js |
-| [`app/frontend/README.md`](app/frontend/README.md) | Módulos JS compartilhados, data flow do Vanilla (legado) |
 | [`AGENTS.md`](AGENTS.md) | Diretrizes operacionais para agentes IA |
 
 ---

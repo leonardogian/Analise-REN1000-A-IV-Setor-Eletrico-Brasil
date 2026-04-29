@@ -1,11 +1,11 @@
 # Diretrizes Principais para IA (Contexto e Escopo Atual)
 
-> **⚠️ ATENÇÃO IAs:** Antes de atuar, leia sempre `CLAUDE.md` (comandos, arquitetura, constraints) e os arquivos em `.ai/` (especialmente `CONTEXT.md` e `CONVENTIONS.md`). Para detalhes do frontend, consulte `app/frontend/README.md`.
+> **⚠️ ATENÇÃO IAs:** Antes de atuar, leia sempre `CLAUDE.md` (comandos, arquitetura, constraints) e os arquivos em `.ai/` (especialmente `CONTEXT.md` e `CONVENTIONS.md`). Para detalhes do frontend oficial, consulte `app/frontend-next/README.md`.
 
 ## 🎯 Momento Atual do Projeto
 
 - **Dados consolidados:** A etapa de limpeza (ETL), extração e validação básica dos dados está concluída e sua estrutura é confiável.
-- **Foco de atuação:** O desenvolvimento técnico centrará as forças no **Front-End oficial Next.js/React** (`app/frontend-next/`, projeto Vercel `tcc-frontend-react`) suportado pelas APIs no **Back-End** (FastAPI/Railway). O dashboard Vanilla em `app/frontend/` é legado.
+- **Foco de atuação:** O desenvolvimento técnico centrará as forças no **Front-End oficial Next.js/React** (`app/frontend-next/`, projeto Vercel `tcc-frontend-react`) suportado pelas APIs no **Back-End** (FastAPI/Railway). O dashboard Vanilla ficou legado na branch `legacy/vanilla-dashboard`.
 - **Mindset:** Priorize implementar soluções lógicas para o backend servir os dados prontos ao frontend interativo. Pense em JSON, REST APIs e renderização de dados na tela do cliente.
 
 ## 🔄 Rotina Obrigatória de Inicialização (Para IAs)
@@ -14,7 +14,7 @@ Sempre que iniciar uma nova interação ou tarefa neste repositório, você DEVE
 
 1. **Analise os Commits Recentes:** Execute `git log -n 5 --stat` e `git status` para entender as últimas mudanças.
 2. **Leia os Arquivos Relacionados:** Leia os arquivos recém-modificados e arquivos chaves para o domínio do problema. Faça isso expandindo o contexto lendo os arquivos em blocos/lotes (de certa em certa quantidade) para não se perder.
-3. **Mantenha o Contexto Atualizado:** Ao concluir mudanças, sempre atualize os arquivos de contexto relevantes com o status mais recente — veja a lista canônica em `CLAUDE.md` seção "Context Files for AI Agents". No mínimo: `README.md`, `AGENTS.md`, `CLAUDE.md` e `.ai/CONTEXT.md`. Para mudanças no frontend oficial, atualize também `app/frontend-next/README.md`; para legado Vanilla, atualize `app/frontend/README.md`.
+3. **Mantenha o Contexto Atualizado:** Ao concluir mudanças, sempre atualize os arquivos de contexto relevantes com o status mais recente — veja a lista canônica em `CLAUDE.md` seção "Context Files for AI Agents". No mínimo: `README.md`, `AGENTS.md`, `CLAUDE.md` e `.ai/CONTEXT.md`. Para mudanças no frontend oficial, atualize também `app/frontend-next/README.md`.
 
 ## 🛑 Escopo Estrito e Limites de Domínio (MUITO IMPORTANTE)
 
@@ -26,7 +26,7 @@ Sempre que iniciar uma nova interação ou tarefa neste repositório, você DEVE
 
 - **Localização dos Dados Prontos:** Os CSVs validados pós-ETL/processamento estão em `data/processed/analysis/`; os JSONs canônicos do dashboard ficam em `data/processed/dashboard/`. Ambos podem estar versionados para auditoria/demo, mas o usuário externo deve regenerar tudo com `make pipeline` para reprodução científica.
 - **Extração e Tratamento (fontes brutas):** Toda documentação canônica de "como baixar os dados do zero", URLs CKAN, periodicidade, limitações e troubleshooting mora em [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md). Antes de mexer em `src/etl/`, leia esse doc. Para checar/adicionar fonte nova: atualizar `CATALOGO` em `extract_aneel.py` (ou criar novo `extract_<portal>.py`) e refletir no doc.
-- **Interface Web:** O frontend oficial consome `/api/*` e `/dashboard_*.json` via rewrites Next.js → Railway. A fonte canônica dos JSONs é `data/processed/dashboard/dashboard_*.json`, gerada por scripts em `src/analysis/`; cópias em `app/frontend/` são apenas espelho local legado.
+- **Interface Web:** O frontend oficial consome `/api/*` e `/dashboard_*.json` via rewrites Next.js → Railway. A fonte canônica dos JSONs é `data/processed/dashboard/dashboard_*.json`, gerada por scripts em `src/analysis/`.
 - **CSP e deploy oficial:** Em `app/frontend-next/vercel.json`, mantenha `script-src 'unsafe-inline'` para permitir o boot/hydration do Next.js App Router na Vercel. Ao mudar `app/backend/main.py` ou `data/processed/dashboard/dashboard_*.json`, redeploye também o Railway para evitar produção com endpoints/JSONs antigos.
 - **Apresentação do TCC (.pptx):** O script gerador foi removido. Apresentações devem ser criadas manualmente ou exportadas do Canva/Google Slides.
 - **Logos das Holdings:** Manter os logos em `logos/` (raiz) e espelhar nos assets usados pelos frontends com nomes padronizados (`neoenergia.png`, `cpfl.png`, `equatorial.png`, etc.).
@@ -111,43 +111,20 @@ Estas regras valem para qualquer execucao bloqueante (comando/app) quando nao fo
 <claude-mem-context>
 # Memory Context
 
-# [TCC_leo_main] recent context, 2026-04-28 3:00pm GMT-3
+# [TCC_leo_main] recent context, 2026-04-28 9:21pm GMT-3
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (25,731t read) | 1,573,607t work | 98% savings
+Stats: 50 obs (21,749t read) | 2,054,732t work | 99% savings
 
 ### Apr 23, 2026
 S23 TCC ANEEL Full Code Audit — Senior Data Engineer review of ETL pipeline, redundancies, data integrity, and dashboard optimization across the entire codebase (Apr 23, 5:09 PM)
 S11 User Inquired About ODT File Manipulation Support (Apr 23, 5:09 PM)
-23 6:07p 🔵 TCC ANEEL Data Layer Mapped: Star Schema CSVs + 5 Analysis Notebooks in Worktree
 ### Apr 27, 2026
-25 4:15p ⚖️ TCC ANEEL — Full Data Pipeline Audit Scope Defined
-26 " 🔵 TCC ANEEL Analysis Pipeline Structure: ETL Architecture and Data Integrity Patterns
-27 " 🔵 Code Redundancy: Duplicate Column Normalization Logic Across Modules
-28 " 🔵 Data Quality Risk: Pre/Post REN Comparison Uses Aggregated Rates Without Distributor-Level Validation
-29 " 🔵 Data Integrity Gap: Missing Validation for Zero-Division and NaN Propagation in Metric Calculations
-30 4:16p 🔵 QA Infrastructure and Validation Framework Established
-31 4:18p 🔵 TCC ANEEL — Senior Data Engineer Audit Request Scoped Across ETL Pipeline
-32 4:19p ⚖️ TCC ANEEL — Senior Data Engineer Audit Scope Defined
-33 4:25p 🔵 TCC ANEEL — Full ETL/Analysis Audit: 70+ Findings Mapped Across 4 Pipeline Layers
-34 4:32p ⚖️ TCC ANEEL — Senior Data Engineer Audit Scope Formally Defined
-35 10:35p 🔵 TCC ANEEL — Onboarding Audit Scope Defined for External User Reproducibility
-36 10:36p 🔵 TCC ANEEL — Project Structure and Onboarding Documentation Map Confirmed
-37 " 🔵 TCC ANEEL — All 7 Dashboard JSON Files ARE Versioned Despite README Stating Otherwise
-38 " 🔵 TCC ANEEL — extract_aneel.py CATALOGO Has Hardcoded Direct CKAN Resource URLs
-39 " 🔵 TCC ANEEL — requirements.txt Contains LangChain Dependencies for Removed Gemini Feature
-40 " 🔵 TCC ANEEL — docs/EXTRACAO_DADOS.md is a Complete Onboarding Runbook with Direct URLs, Troubleshooting and Known Gaps
-41 10:37p ⚖️ TCC ANEEL — Reproducibility Audit Scope Defined for External User Onboarding
-42 10:38p 🔵 TCC ANEEL — Reproducibility Audit Scope Defined for External User Onboarding
-43 10:39p ⚖️ TCC ANEEL — Reproducibility Audit Scope: External User Onboarding Focus
-44 " ⚖️ TCC ANEEL — Reproducibility Audit Scope Defined for External-User Onboarding
-45 10:40p ⚖️ TCC ANEEL — Reproducibility Audit Scope Defined for External User Onboarding
-46 10:44p ⚖️ TCC ANEEL — Reproducibility Audit Scope Formally Defined for External-User Clone Workflow
+S36 settings.local.json Permissions Cleaned — 154 Lines Reduced to 49 (Apr 27, 4:33 PM)
 47 10:51p 🔵 TCC ANEEL — Large Batch of Uncommitted Changes Discovered Pre-Audit Including Critical Analysis Scripts
-48 " ⚖️ TCC ANEEL — 6-Phase Remediation Plan Defined for Reproducibility + Data Integrity Fixes
 49 10:52p 🔵 TCC ANEEL — Data Sizes Confirmed: 8.3GB Raw + 7.6GB Processed + 7 Tracked Dashboard JSONs
 50 " 🔵 TCC ANEEL — Analysis Layer Already Substantially Refactored in Uncommitted Working Tree
 51 " 🔵 TCC ANEEL — B1 Bug Still Active: transform_aneel.py Reads All CSVs Without decimal="," Parameter
@@ -167,7 +144,7 @@ S11 User Inquired About ODT File Manipulation Support (Apr 23, 5:09 PM)
 71 1:14p 🔵 Claude Context Bloat Identified — MCPs and Deferred Tools Burning Tokens
 72 " ✅ settings.local.json Permissions Cleaned — 154 Lines Reduced to 49
 73 " 🚨 Discord Bot Token Hardcoded in settings.local.json Permission Entries
-S36 settings.local.json Permissions Cleaned — 154 Lines Reduced to 49 (Apr 28, 1:14 PM)
+S37 codex:setup — Verify Codex CLI readiness and display setup status (Apr 28, 1:14 PM)
 74 1:17p ⚖️ TCC Frontend Strategy: tcc-frontend-react as Primary, analise-ren-1000 as Legacy
 75 " 🔵 Dual Vercel Project Structure Confirmed: Legacy Root vs New app/frontend-next
 76 " 🔵 Vercel MCP Tool Returns 403 for Both Project IDs
@@ -175,6 +152,32 @@ S36 settings.local.json Permissions Cleaned — 154 Lines Reduced to 49 (Apr 28,
 78 1:18p 🔵 tcc-frontend-react Live on Vercel but Serving Stale March 2026 Data
 79 " 🔵 Vercel MCP OAuth Authenticated to Wrong Scope — No Team Access
 80 " 🔵 Backend /api/v1/groups-ranking Returns 404 via Railway
+81 2:09p 🔴 CSP Hotfix Deployed to Vercel — Next.js Hydration Restored
+82 " 🔵 Vercel CLI Deploy Workaround — Subdirectory Root Path Bug
+83 " 🔵 Railway Backend Serving Stale Data — API Endpoints Missing
+84 " 🔴 Vanilla Frontend Accidental Redeploy Rolled Back
+85 7:18p 🔵 TCC ANEEL — Estado Atual do Repositório (git log)
+86 " 🔵 Fase 1 (ff96e90) — Correções Críticas de Integridade de Dados nos Cards do Dashboard
+87 " 🔵 Fase 2 (c7f7347) — Novas Métricas e Colunas no dashboard_data.json
+88 7:19p 🔵 Root Cause dos Cards Errados — kpi_regulatorio_anual.csv vai até 2023 com Dados Incompletos
+89 " 🔵 Frontend Next.js NÃO Tem Acesso Direto aos JSONs — Lê via FastAPI /api/dashboard/*
+90 " 🔵 KPICard Interface — Componente Apresentacional Puro, Lógica de Cálculo em page.tsx
+91 7:20p 🔵 Diagnóstico Completo dos 6 Cards de KPI — Raízes dos Bugs Confirmadas
+92 " 🔵 dashboard_data.json Gerado em 28/Abr 18:52 — serie_anual e kpi_overview Não Incluem 2024/2025
+93 " 🔵 Subagente Exploratório Confirma: Frontend Não Adaptado às Fases 1 e 2
+94 7:21p 🔵 Validação Completa dos KPIs — Números Corretos e Incorretos Mapeados
+95 " 🔵 Localização Exata das Linhas do Bug em page.tsx — Pronto Para Correção
+96 7:22p 🔵 kpi_overview JSON Não Tem Campo delta_compensacao_pct — Frontend Sempre Cai no Fallback Bugado
+97 " 🔵 Codex CLI Setup Status Verified — Ready
+S38 codex:rescue/review attempted — git working tree is clean, nothing to review (Apr 28, 7:22 PM)
+98 7:27p ⚖️ Plano de correção dos cards KPI do dashboard — cutoff REN1000 e métricas anualizadas
+99 " 🔵 KPI Cards Showing Incorrect REN1000 Period Comparison Due to Wrong Cutoff Year
+100 " ⚖️ Decided to Set REN1000 Cutoff to 2022 and Use Annualized Compensation Delta for KPI Cards
+S39 Diagnose and fix incorrect KPI cards on TCC ANEEL dashboard home page — wrong REN1000 period window and misleading −73% compensation delta (Apr 28, 7:51 PM)
+101 7:55p 🟣 TCC ANEEL Fase 2 — Demarcação Regulatória, Robustez e Normalização Temporal
+102 " 🔵 Dois docs não-commitados definem próximos passos de implementação
+103 " 🔵 KPI Cards do Dashboard Mostram Δ Compensações −73% Incorreto por Cutoff Errado
+104 " ⚖️ Plano de Fix em 8 Passos para Cards KPI com Cutoff 2022 e Métrica Anualizada
 
-Access 1574k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 2055k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

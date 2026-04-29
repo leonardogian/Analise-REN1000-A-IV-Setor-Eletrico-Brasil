@@ -5,8 +5,8 @@
 Usar **Conventional Commits** em português:
 
 ```
-feat: dashboard interativo com 4 abas
-fix: porta do make serve para 8051
+feat: dashboard interativo com nova rota
+fix: porta do make backend para 8051
 docs: README com showcase do dashboard
 refactor: separação das tabelas analíticas
 ```
@@ -24,7 +24,7 @@ Prefixos: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`
 
 - Scripts: `snake_case.py`
 - CSVs analíticos: `snake_case.csv` (convenção do pipeline)
-- HTML/CSS/JS: `snake_case` ou descritivo (`index.html`, `app.js`, `styles.css`)
+- Frontend Next.js: componentes React em `PascalCase.tsx`; hooks em `useNome.ts`
 - Docs: `UPPER_CASE.md` para guias, `snake_case.md` para relatórios
 
 ## Dados
@@ -32,17 +32,15 @@ Prefixos: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`
 - **NÃO versionar** dados brutos/processados (`.gitignore`)
 - **SIM versionar** tabelas analíticas em `data/processed/analysis/`
 - `data/processed/dashboard/dashboard_*.json` é gerado e versionado para demo/deploy; regenere com `make dashboard-full` depois do ETL
-- `app/frontend/dashboard*.json` é apenas espelho local legado e fica ignorado no Git
 - Formato preferido para leitura: `.parquet` (mais rápido, menor)
 - Formato para humanos/debug: `.csv`
 
-## Dashboard (Frontend Legado)
+## Dashboard (Frontend Oficial)
 
-- **Zero frameworks JS**: Vanilla JS puro
-- **Chart.js via CDN**: Não instalar localmente
-- **CSS puro**: Sem Tailwind, sem Bootstrap
-- **Dark mode**: Cores definidas em variáveis CSS (`:root`)
-- **Glassmorphism**: `backdrop-filter: blur()` + bordas translúcidas
+- **Next.js 14 + React + Tailwind** em `app/frontend-next/`
+- **TanStack Query** para consumo dos endpoints `/api/*`
+- **Recharts/Leaflet** para gráficos e mapa
+- **Rewrites** em `next.config.mjs` apontam `/api/*` e `/dashboard_*.json` para o backend
 
 ## Branch
 
@@ -72,6 +70,5 @@ Não há framework de teste formal (pytest). Os testes existentes são:
 2. **NÃO usar `python`** — usar `python3` ou `make` (que trata automaticamente)
 3. **NÃO commitar dados brutos** (`data/raw/`) — são muito grandes
 4. **NÃO editar manualmente `data/processed/dashboard/dashboard_*.json`** — gere pelos scripts e revise o diff
-5. **NÃO abrir o dashboard via `file://`** — não funciona (CORS)
-6. **NÃO instalar Chart.js localmente** — usa CDN
-7. **NÃO usar frameworks CSS/JS** — o dashboard é vanilla puro
+5. **NÃO criar servidor Python solto fora de `app/backend/`** — isso conflita com build/deploy Vercel.
+6. **NÃO servir o frontend oficial por `file://`** — use `make stack-next` ou `make frontend-next`.

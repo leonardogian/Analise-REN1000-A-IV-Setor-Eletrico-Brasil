@@ -83,7 +83,7 @@ Gerados por `make neoenergia-diagnostico` (`src/analysis/neoenergia_diagnostico.
 
 - Lê: CSVs de `data/processed/analysis/`, `grupos/` e `neoenergia/`
 - Gera: `data/processed/dashboard/dashboard_data.json` e micro-payloads `data/processed/dashboard/dashboard_*.json`
-- Política: JSONs canônicos podem estar versionados para demo/deploy, mas devem ser regenerados depois de `make pipeline` para reprodução científica. O legado Vanilla recebe espelhos locais em `app/frontend/dashboard*.json`, ignorados pelo Git.
+- Política: JSONs canônicos podem estar versionados para demo/deploy, mas devem ser regenerados depois de `make pipeline` para reprodução científica. O frontend oficial consome esses arquivos via FastAPI/rewrites do Next.js.
 - **Fail-fast**: falha se entradas obrigatórias estiverem ausentes ou seções críticas ficarem vazias.
 - Estrutura do JSON:
 
@@ -121,7 +121,7 @@ Gerados por `make neoenergia-diagnostico` (`src/analysis/neoenergia_diagnostico.
 ```
 extract → transform → analysis ─┬─→ report
                                  ├─→ neoenergia-diagnostico
-                                 └─→ dashboard → serve/backend
+                                 └─→ dashboard → backend/Next.js
 ```
 
 `make pipeline` executa tudo em ordem: `update-data → analysis → report → grupos → neoenergia-diagnostico → dashboard → dashboard-transgressoes → validate-contracts → check-artifacts-full → qa-data`
@@ -132,8 +132,7 @@ extract → transform → analysis ─┬─→ report
 source .venv/bin/activate
 make clean-analysis   # limpa tabelas analíticas
 make pipeline         # roda tudo: ETL → análise → relatório → dashboard
-make serve            # sobe dashboard em http://localhost:8051
-make dev-serve        # sobe backend FastAPI (com preflight) em http://localhost:8051
+make site-refresh     # regenera dashboard e sobe backend + Next.js
 ```
 
 ## Gotchas e Armadilhas
@@ -145,8 +144,8 @@ make dev-serve        # sobe backend FastAPI (com preflight) em http://localhost
 3. **`.venv` não ativado**: Scripts chamados via `make` usam
    `.venv/bin/python` automaticamente. Para rodar direto, ative o venv.
 4. **`dashboard_data.json` é gerado e pode estar versionado**: a fonte canônica é `data/processed/dashboard/`; não edite manualmente, rode `make dashboard-full` ou `make pipeline`.
-5. **Dashboard via `file://` não funciona**: Precisa de servidor HTTP (CORS).
-   Use `make serve` (porta 8051).
+5. **Frontend oficial via `file://` não existe**: use o Next.js local.
+   Use `make site`, `make site-refresh`, `make stack-next` ou `make backend` + `make frontend-next`.
 6. **Contratos de schema**: valide com `make validate-contracts` quando mudar ETL.
-7. **Backend local**: para API + estático use `make backend`/`make dev-serve`.
+7. **Backend local**: para API e JSONs públicos use `make backend`/`make dev-serve`.
 8. **Porta 8051**: Porta do dev local e Docker do TCC. Use `3051` para Next.js local.

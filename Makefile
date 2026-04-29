@@ -1,95 +1,70 @@
 SHELL := /bin/bash
+.DEFAULT_GOAL := help
 
 PORT ?= 8051
 NEXT_PORT ?= 3051
 PROJECT_ROOT := $(CURDIR)
 PYTHON_VENV := $(PROJECT_ROOT)/.venv/bin/python
-PYTHON ?= $(if $(shell test -x $(PYTHON_VENV) && echo ok),$(PYTHON_VENV),python3)
-PIP ?= $(PYTHON) -m pip
+PYTHON ?= $(if $(shell test -x "$(PYTHON_VENV)" && echo ok),$(PYTHON_VENV),python3)
 NPM ?= npm
 FRONTEND_NEXT_DIR := app/frontend-next
-
 ANALYSIS_DIR := data/processed/analysis
+DASHBOARD_DIR := data/processed/dashboard
+COMPOSE ?= docker compose
+COMPOSE_BACKEND := $(COMPOSE) -f docker/docker-compose.yml
 
-.PHONY: help venv venv-recreate install doctor \
+.PHONY: help \
+	venv venv-recreate install doctor \
 	extract extract-aneel extract-aneel-full extract-ibge transform update-data \
-	analysis report grupos-diagnostico neoenergia-diagnostico \
-	load-postgres qa-audit qa-frontend qa-data pipeline \
-	dashboard dashboard-transgressoes dashboard-full \
-	serve frontend frontend-next frontend-next-railway frontend-next-install stack-next preflight-backend backend dev-serve \
-	screenshots check-visual \
-	check-artifacts check-artifacts-full validate-contracts validate-contracts-processed \
-	test-fast test-smoke test clean-analysis \
-	docker-up docker-down docker-build docker-ps \
-	logs logs-backend logs-nginx health \
-	docker-full-up docker-full-down docker-full-ps
-
-# ── Help ───────────────────────────────────────────────────────────────────────
+	analysis report grupos-diagnostico neoenergia-diagnostico load-postgres \
+	dashboard dashboard-transgressoes dashboard-full pipeline clean-analysis \
+	preflight-backend backend dev-serve stack-next site site-clean site-refresh site-full site-railway \
+	frontend-next-install frontend-next frontend-next-railway frontend-next-build frontend-next-clean \
+	validate-contracts validate-contracts-processed check-artifacts check-artifacts-full \
+	qa-data test-fast test-smoke test \
+	docker-up docker-down docker-ps docker-logs health
 
 help:
-	@echo "Targets disponíveis:"
+	@echo "Targets essenciais:"
 	@echo ""
 	@echo "Setup:"
-	@echo "  make venv                   - cria ambiente virtual .venv"
-	@echo "  make venv-recreate          - recria .venv do zero (remove + cria)"
-	@echo "  make install                - instala dependências em requirements.txt"
-	@echo "  make doctor                 - verifica saúde da .venv e imports críticos"
+	@echo "  make venv-recreate          recria .venv do zero"
+	@echo "  make install                instala requirements.txt na .venv"
+	@echo "  make doctor                 valida ambiente e imports criticos"
 	@echo ""
-	@echo "Pipeline de dados:"
-	@echo "  make extract                - extract-aneel + extract-ibge (nuclear)"
-	@echo "  make extract-aneel          - baixa fontes nucleares da ANEEL (qualidade + INDGER)"
-	@echo "  make extract-aneel-full     - + fontes complementares (autos_infracao + reclamacoes)"
-	@echo "  make extract-ibge           - baixa DTB 2024 do IBGE (idempotente)"
-	@echo "  make transform              - transforma dados brutos"
-	@echo "  make update-data            - extract + transform"
-	@echo "  make analysis               - gera tabelas analíticas"
-	@echo "  make report                 - gera relatório markdown"
-	@echo "  make grupos-diagnostico     - diagnóstico por grupos econômicos"
-	@echo "  make neoenergia-diagnostico - alias de compatibilidade (artefatos legados neo)"
-	@echo "  make load-postgres          - carrega dados no PostgreSQL"
-	@echo "  make qa-audit               - smoke visual do frontend legado (alias: qa-frontend)"
-	@echo "  make qa-frontend            - smoke visual do frontend legado via Playwright"
-	@echo "  make qa-data                - auditoria numerica read-only dos artefatos"
-	@echo "  make pipeline               - update-data + analysis + report + grupos + dashboards + validações"
+	@echo "Pipeline:"
+	@echo "  make pipeline               ETL completo + analise + JSONs + validacoes"
+	@echo "  make dashboard-full         analise + relatorio + grupos + JSONs"
+	@echo "  make extract                baixa fontes nucleares ANEEL + IBGE"
+	@echo "  make transform              gera dados tratados em data/processed/"
+	@echo "  make analysis               gera tabelas analiticas"
+	@echo "  make qa-data                auditoria numerica dos artefatos"
 	@echo ""
-	@echo "Dashboard:"
-	@echo "  make dashboard              - gera JSON do dashboard principal"
-	@echo "  make dashboard-transgressoes - gera JSON para a página transgressoes.html"
-	@echo "  make dashboard-full         - analysis + grupos + dashboard + dashboard-transgressoes"
+	@echo "Aplicacao:"
+	@echo "  make site                   sobe backend + Next.js com JSON atual"
+	@echo "  make site-clean             limpa build dev do Next.js e sobe o site"
+	@echo "  make site-refresh           regenera dashboard e sobe backend + Next.js"
+	@echo "  make site-full              ETL completo, valida artefatos e sobe o site"
+	@echo "  make site-railway           Next.js local usando backend Railway (como Vercel)"
+	@echo "  make backend                FastAPI em http://localhost:$(PORT)"
+	@echo "  make dev-serve              FastAPI com reload em http://localhost:$(PORT)"
+	@echo "  make frontend-next-install  instala dependencias do Next.js com npm ci"
+	@echo "  make frontend-next          Next.js em http://localhost:$(NEXT_PORT) usando backend local"
+	@echo "  make frontend-next-railway  Next.js em http://localhost:$(NEXT_PORT) usando Railway"
+	@echo "  make stack-next             backend local + Next.js oficial"
 	@echo ""
-	@echo "Serving / Backend:"
-	@echo "  make backend                - sobe backend FastAPI em http://localhost:$(PORT)"
-	@echo "  make dev-serve              - dashboard-full + preflight + backend com reload"
-	@echo "  make frontend-next          - frontend Next.js em http://localhost:$(NEXT_PORT) usando backend local"
-	@echo "  make frontend-next-railway  - frontend Next.js em http://localhost:$(NEXT_PORT) usando Railway"
-	@echo "  make stack-next             - sobe backend local em background + frontend Next.js"
-	@echo "  make frontend-next-install  - instala dependencias do frontend Next.js"
-	@echo ""
-	@echo "Qualidade / Testes:"
-	@echo "  make validate-contracts     - valida contratos de schema (raw + processed)"
-	@echo "  make check-artifacts        - valida artefatos core"
-	@echo "  make check-artifacts-full   - valida artefatos completos + dashboard JSON"
-	@echo "  make test-fast              - compilação + imports + contratos + artefatos core"
-	@echo "  make test-smoke             - smoke completo com grupos + dashboards"
-	@echo "  make test                   - alias para test-fast"
-	@echo "  make clean-analysis         - remove saídas em $(ANALYSIS_DIR)"
+	@echo "Validacao:"
+	@echo "  make test-fast              py_compile + imports + contratos + artefatos core"
+	@echo "  make test-smoke             dashboard-full + contratos + artefatos completos"
+	@echo "  make validate-contracts     contratos raw/processed"
+	@echo "  make check-artifacts-full   artefatos completos + JSONs"
 	@echo ""
 	@echo "Docker:"
-	@echo "  make docker-up              - sobe nginx + backend em background"
-	@echo "  make docker-down            - para e remove os containers"
-	@echo "  make docker-build           - reconstrói a imagem do backend"
-	@echo "  make docker-ps              - status dos containers"
-	@echo "  make logs                   - segue logs de todos os containers"
-	@echo "  make logs-backend           - segue logs do backend FastAPI"
-	@echo "  make logs-nginx             - segue logs do nginx"
-	@echo "  make health                 - checa /health e exibe JSON formatado"
-	@echo ""
-	@echo "Docker (stack completa):"
-	@echo "  make docker-full-up         - sobe app + banco + kestra em background"
-	@echo "  make docker-full-down       - para e remove todos os containers"
-	@echo "  make docker-full-ps         - status de todos os containers"
+	@echo "  make docker-up              sobe backend Docker em http://localhost:$(PORT)"
+	@echo "  make docker-down            para containers do backend"
+	@echo "  make docker-logs            segue logs do backend"
 
-# ── Setup ─────────────────────────────────────────────────────────────────────
+# Setup
 
 venv:
 	python3 -m venv .venv
@@ -99,13 +74,13 @@ venv-recreate:
 	python3 -m venv .venv
 
 install:
-	@test -x $(PYTHON_VENV) || (echo "❌ .venv ausente ou inválida. Rode: make venv-recreate" && exit 1)
-	$(PYTHON_VENV) -m pip install -r requirements.txt
+	@test -x "$(PYTHON_VENV)" || (echo ".venv ausente ou invalida. Rode: make venv-recreate" && exit 1)
+	"$(PYTHON_VENV)" -m pip install -r requirements.txt
 
 doctor:
-	python3 scripts/doctor_env.py
+	$(PYTHON) scripts/doctor_env.py
 
-# ── Pipeline de dados ─────────────────────────────────────────────────────────
+# Pipeline de dados
 
 extract-aneel:
 	$(PYTHON) -m src.etl.extract_aneel
@@ -138,84 +113,95 @@ neoenergia-diagnostico:
 load-postgres:
 	$(PYTHON) scripts/load_to_postgres.py
 
-qa-data:
-	$(PYTHON) scripts/qa_data_audit.py
-
-pipeline:
-	@$(MAKE) update-data
-	@$(MAKE) analysis
-	@$(MAKE) report
-	@$(MAKE) grupos-diagnostico
-	@$(MAKE) neoenergia-diagnostico
-	@$(MAKE) dashboard
-	@$(MAKE) dashboard-transgressoes
-	@$(MAKE) validate-contracts
-	@$(MAKE) check-artifacts-full
-	@$(MAKE) qa-data
-
-# ── Dashboard ─────────────────────────────────────────────────────────────────
-
 dashboard:
 	$(PYTHON) -m src.analysis.build_dashboard_data
-	@echo ""
-	@echo "✅ Payloads do dashboard prontos em data/processed/dashboard/."
-	@echo "   Frontend principal: make stack-next"
-	@echo "   Legado local: make serve"
+	@echo "Payloads prontos em $(DASHBOARD_DIR)/."
 
 dashboard-transgressoes:
 	$(PYTHON) -m src.analysis.dashboard_transgressoes
 
-dashboard-full: analysis grupos-diagnostico neoenergia-diagnostico dashboard dashboard-transgressoes
+dashboard-full: analysis report grupos-diagnostico neoenergia-diagnostico dashboard dashboard-transgressoes
 
-# ── Serving / Backend ─────────────────────────────────────────────────────────
-# Frontend principal: make stack-next (backend + Next.js juntos)
+pipeline:
+	@$(MAKE) update-data
+	@$(MAKE) dashboard-full
+	@$(MAKE) validate-contracts
+	@$(MAKE) check-artifacts-full
+	@$(MAKE) qa-data
 
-frontend-next-install:
-	cd $(FRONTEND_NEXT_DIR) && $(NPM) install
+clean-analysis:
+	rm -rf "$(ANALYSIS_DIR)"
 
-frontend-next:
-	@echo "⚛️ Frontend Next.js em http://localhost:$(NEXT_PORT) com API local em http://localhost:$(PORT)"
-	@(sleep 2 && xdg-open http://localhost:$(NEXT_PORT) 2>/dev/null || true) &
-	cd $(FRONTEND_NEXT_DIR) && API_REWRITE_URL=http://localhost:$(PORT) $(NPM) run dev -- --hostname 0.0.0.0 --port $(NEXT_PORT)
-
-frontend-next-railway:
-	@echo "⚛️ Frontend Next.js em http://localhost:$(NEXT_PORT) com dados da Railway"
-	@(sleep 2 && xdg-open http://localhost:$(NEXT_PORT) 2>/dev/null || true) &
-	cd $(FRONTEND_NEXT_DIR) && $(NPM) run dev -- --hostname 0.0.0.0 --port $(NEXT_PORT)
+# Aplicacao local
 
 preflight-backend:
 	@$(MAKE) validate-contracts-processed
 	@$(MAKE) check-artifacts-full
 
 backend: preflight-backend
-	@echo "🚀 Backend FastAPI em http://localhost:$(PORT)"
-	@echo "ℹ️ Se o preflight falhou, gere os artefatos locais com make pipeline."
-	@(sleep 2 && xdg-open http://localhost:$(PORT) 2>/dev/null || true) &
+	@echo "FastAPI em http://localhost:$(PORT)"
 	$(PYTHON) -m uvicorn app.backend.main:app --host 0.0.0.0 --port $(PORT)
 
 dev-serve: dashboard-full preflight-backend
-	@echo "🚀 Backend FastAPI (reload) em http://localhost:$(PORT)"
-	@(sleep 2 && xdg-open http://localhost:$(PORT) 2>/dev/null || true) &
+	@echo "FastAPI com reload em http://localhost:$(PORT)"
 	$(PYTHON) -m uvicorn app.backend.main:app --host 0.0.0.0 --port $(PORT) --reload
 
+frontend-next-install:
+	cd "$(FRONTEND_NEXT_DIR)" && $(NPM) ci
+
+frontend-next:
+	@echo "Next.js em http://localhost:$(NEXT_PORT) usando API local http://localhost:$(PORT)"
+	cd "$(FRONTEND_NEXT_DIR)" && API_REWRITE_URL=http://localhost:$(PORT) $(NPM) run dev -- --hostname 0.0.0.0 --port $(NEXT_PORT)
+
+frontend-next-railway:
+	@echo "Next.js em http://localhost:$(NEXT_PORT) usando Railway"
+	cd "$(FRONTEND_NEXT_DIR)" && $(NPM) run dev -- --hostname 0.0.0.0 --port $(NEXT_PORT)
+
+frontend-next-build:
+	cd "$(FRONTEND_NEXT_DIR)" && $(NPM) run build
+
+frontend-next-clean:
+	rm -rf "$(FRONTEND_NEXT_DIR)/.next"
+
 stack-next:
-	@echo "🚀 Backend local + frontend Next.js (http://localhost:$(PORT) + http://localhost:$(NEXT_PORT))"
-	@if curl -sf http://localhost:$(PORT)/health >/dev/null 2>&1; then \
-		echo "ℹ️ Backend ja esta ativo em http://localhost:$(PORT)"; \
+	@echo "Backend local + Next.js oficial (http://localhost:$(PORT) + http://localhost:$(NEXT_PORT))"
+	@if curl -sf http://localhost:$(PORT)/api/dashboard/kpi_overview >/dev/null 2>&1; then \
+		echo "Backend ja esta ativo em http://localhost:$(PORT)"; \
 	else \
-		echo "ℹ️ Iniciando backend local em background (log: /tmp/tcc-backend-$(PORT).log)"; \
+		echo "Iniciando backend local em background (log: /tmp/tcc-backend-$(PORT).log)"; \
 		($(MAKE) backend > /tmp/tcc-backend-$(PORT).log 2>&1 &) ; \
-		sleep 5; \
+		for i in {1..20}; do \
+			curl -sf http://localhost:$(PORT)/api/dashboard/kpi_overview >/dev/null 2>&1 && break; \
+			sleep 1; \
+		done; \
+		if ! curl -sf http://localhost:$(PORT)/api/dashboard/kpi_overview >/dev/null 2>&1; then \
+			echo "Backend nao respondeu. Ultimas linhas do log:"; \
+			tail -n 40 /tmp/tcc-backend-$(PORT).log; \
+			exit 1; \
+		fi; \
 	fi
 	@$(MAKE) frontend-next
 
-# ── Qualidade / Testes ────────────────────────────────────────────────────────
+site:
+	@$(MAKE) stack-next
 
-check-artifacts:
-	$(PYTHON) scripts/check_artifacts.py --profile core
+site-clean: frontend-next-clean
+	@$(MAKE) site
 
-check-artifacts-full:
-	$(PYTHON) scripts/check_artifacts.py --profile full
+site-refresh: dashboard-full
+	@$(MAKE) stack-next
+
+site-full:
+	@$(MAKE) update-data
+	@$(MAKE) dashboard-full
+	@$(MAKE) validate-contracts
+	@$(MAKE) check-artifacts-full
+	@$(MAKE) stack-next
+
+site-railway:
+	@$(MAKE) frontend-next-railway
+
+# Validacao
 
 validate-contracts:
 	$(PYTHON) scripts/validate_schema_contracts.py
@@ -223,9 +209,19 @@ validate-contracts:
 validate-contracts-processed:
 	$(PYTHON) scripts/validate_schema_contracts.py --processed-only
 
+check-artifacts:
+	$(PYTHON) scripts/check_artifacts.py --profile core
+
+check-artifacts-full:
+	$(PYTHON) scripts/check_artifacts.py --profile full
+
+qa-data:
+	$(PYTHON) scripts/qa_data_audit.py
+
 test-fast:
 	$(PYTHON) -m py_compile \
 	  src/etl/extract_aneel.py \
+	  src/etl/extract_ibge.py \
 	  src/etl/transform_aneel.py \
 	  src/etl/schema_contracts.py \
 	  src/analysis/build_analysis_tables.py \
@@ -240,60 +236,25 @@ test-fast:
 	@$(MAKE) validate-contracts-processed
 	@$(MAKE) check-artifacts
 
-test-smoke: analysis report grupos-diagnostico neoenergia-diagnostico dashboard dashboard-transgressoes
+test-smoke: dashboard-full
 	@$(MAKE) validate-contracts
 	@$(MAKE) check-artifacts-full
 
 test: test-fast
 
-clean-analysis:
-	rm -rf $(ANALYSIS_DIR)
-
-# ── Docker ────────────────────────────────────────────────────────────────────
+# Docker backend-only. O frontend oficial roda separado via make frontend-next.
 
 docker-up:
-	@echo "🐳 Subindo nginx + backend em http://localhost:$(PORT)"
-	docker compose -f docker/docker-compose.yml up -d
+	PORT=$(PORT) $(COMPOSE_BACKEND) up -d --build backend
 
 docker-down:
-	docker compose -f docker/docker-compose.yml down
-
-docker-build:
-	docker compose -f docker/docker-compose.yml build backend
+	$(COMPOSE_BACKEND) down
 
 docker-ps:
-	docker compose -f docker/docker-compose.yml ps
+	$(COMPOSE_BACKEND) ps
 
-logs:
-	docker compose -f docker/docker-compose.yml logs -f
-
-logs-backend:
-	docker compose -f docker/docker-compose.yml logs -f backend
-
-logs-nginx:
-	docker compose -f docker/docker-compose.yml logs -f nginx
+docker-logs:
+	$(COMPOSE_BACKEND) logs -f backend
 
 health:
 	@curl -s http://localhost:$(PORT)/health | $(PYTHON) -m json.tool
-
-docker-full-up:
-	@echo "🐳 Subindo stack completa em http://localhost:$(PORT)"
-	docker compose \
-	  -f docker/docker-compose.yml \
-	  -f docker/docker-compose.db.yml \
-	  -f docker/docker-compose.kestra.yml \
-	  up -d
-
-docker-full-down:
-	docker compose \
-	  -f docker/docker-compose.yml \
-	  -f docker/docker-compose.db.yml \
-	  -f docker/docker-compose.kestra.yml \
-	  down
-
-docker-full-ps:
-	docker compose \
-	  -f docker/docker-compose.yml \
-	  -f docker/docker-compose.db.yml \
-	  -f docker/docker-compose.kestra.yml \
-	  ps

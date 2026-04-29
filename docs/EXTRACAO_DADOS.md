@@ -49,7 +49,7 @@ make doctor          # checa .venv + imports críticos do ETL, backend e carga o
 
 ### Portas locais
 
-A porta `8051` serve o backend FastAPI / dashboard estático. O frontend Next local usa `3051`. Não use `8000` para este dashboard. Nada disso afeta a extração, mas é pré-requisito do `make serve` posterior.
+A porta `8051` serve o backend FastAPI local. O frontend Next local usa `3051`. Não use `8000` para este dashboard. Nada disso afeta a extração, mas é pré-requisito para `make stack-next` ou `make backend`.
 
 ---
 
@@ -174,12 +174,12 @@ make pipeline
 make qa-data
 
 # 5. Servir localmente
-make serve           # http://localhost:8051
-# ou
-make dev-serve       # backend FastAPI com --reload
+make site-refresh    # dashboard atualizado + backend 8051 + frontend Next.js 3051
+# ou, para depurar só a API
+make dev-serve       # backend FastAPI com --reload em 8051
 ```
 
-`make pipeline` faz extração, transformação, análise, relatório, grupos, dashboards e validações. Para depurar uma etapa específica, rode `make extract`, `make transform`, `make analysis`, `make dashboard-full`, `make validate-contracts`, `make check-artifacts-full` e `make qa-data` separadamente.
+`make pipeline` faz extração, transformação, análise, relatório, grupos, dashboards e validações, incluindo a auditoria numérica `qa-data`. `make site-full` baixa/transforma, regenera os dashboards, valida contratos/artefatos e depois sobe o site. Para depurar uma etapa específica, rode `make extract`, `make transform`, `make analysis`, `make dashboard-full`, `make validate-contracts`, `make check-artifacts-full` e `make qa-data` separadamente.
 
 ### 3.2. Para baixar também as fontes complementares
 
@@ -196,7 +196,7 @@ make transform
 | `make extract` | `data/raw/` | Arquivos do catálogo nuclear presentes: `qualidade-atendimento-comercial.csv`, `dominio-indicadores.csv`, `indger-dados-comerciais.csv`, `indger-dados-servicos-comerciais-YYYY-MM.csv` (36 arquivos), `DTB_2024.zip` + conteúdo extraído. PDFs em `data/docs/`. |
 | `make transform` | `data/processed/` | Parquet + CSV espelhados: `qualidade_comercial.*`, `indger_servicos_comerciais.*`, `indger_dados_comerciais.*`. |
 | `make analysis` | `data/processed/analysis/` | CSVs raiz + `grupos/` + `neoenergia/`. CSVs são versionados para auditoria/demo; Parquets são espelhos locais gerados. |
-| `make dashboard` | `app/frontend/dashboard_data.json` | ≈ 27 MB, versionado para demo/deploy estático e regenerado para reprodução científica. |
+| `make dashboard` | `data/processed/dashboard/dashboard_data.json` | Payload canônico versionado para demo/deploy e regenerado para reprodução científica. |
 
 ### 3.4. Diretórios ignorados pelo Git
 
@@ -206,7 +206,7 @@ make transform
 | `data/processed/*.{csv,parquet}` | Gerados pelo transform |
 | `data/processed/analysis/**/*.parquet` | Espelhos analíticos locais, gerados por `make analysis` |
 
-**Versionados intencionalmente:** `data/processed/analysis/**/*.csv` (auditoria) e `app/frontend/dashboard_*.json` (demo/deploy estático). Para reprodução científica, ambos devem ser regenerados após ETL.
+**Versionados intencionalmente:** `data/processed/analysis/**/*.csv` (auditoria) e `data/processed/dashboard/dashboard_*.json` (demo/deploy). Para reprodução científica, ambos devem ser regenerados após ETL.
 
 ---
 
@@ -458,8 +458,8 @@ src/analysis/build_analysis_tables.py   → data/processed/analysis/*.csv (9 arq
     ├─▶ build_report.py                   → reports/relatorio_aneel.md
     ├─▶ grupos_diagnostico.py             → data/processed/analysis/grupos/*.csv (13 arquivos)
     ├─▶ neoenergia_diagnostico.py         → data/processed/analysis/neoenergia/*.csv (13 arquivos)
-    └─▶ build_dashboard_data.py           → app/frontend/dashboard_data.json
-                                            app/frontend/dashboard_*.json
+    └─▶ build_dashboard_data.py           → data/processed/dashboard/dashboard_data.json
+                                            data/processed/dashboard/dashboard_*.json
 ```
 
 ### 7.2. Onde ler mais
@@ -470,7 +470,7 @@ src/analysis/build_analysis_tables.py   → data/processed/analysis/*.csv (9 arq
 | Colunas específicas (bruto + analítico) | [`docs/DICIONARIO_DADOS.md`](DICIONARIO_DADOS.md) + [`data/docs/table_schemas.txt`](../data/docs/table_schemas.txt) |
 | Visão do pipeline para outro agente IA | [`.ai/PIPELINE.md`](../.ai/PIPELINE.md) |
 | Convenções de código e commits | [`.ai/CONVENTIONS.md`](../.ai/CONVENTIONS.md) + [`CLAUDE.md`](../CLAUDE.md) |
-| Arquitetura do dashboard frontend | [`app/frontend/README.md`](../app/frontend/README.md) + [`.ai/DASHBOARD.md`](../.ai/DASHBOARD.md) |
+| Arquitetura do dashboard frontend | [`app/frontend-next/README.md`](../app/frontend-next/README.md) + [`.ai/DASHBOARD.md`](../.ai/DASHBOARD.md) |
 
 ---
 

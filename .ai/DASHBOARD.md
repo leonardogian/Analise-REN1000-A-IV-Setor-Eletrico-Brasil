@@ -1,128 +1,75 @@
 # 📊 Dashboard — Guia para IA
 
-## Como Subir o Dashboard
+## Como Subir o Dashboard Oficial
 
 ```bash
-# Opção 1: Automatizado (gera JSON + sobe servidor)
-make serve
-# → http://localhost:8051
+# Recomendado: backend local + frontend Next.js
+make site
+# Backend: http://localhost:8051
+# Frontend: http://localhost:3051
 
-# Opção 1B: Backend FastAPI (API + estático)
-make dev-serve
-# → http://localhost:8051 (health em /health, API em /api/dashboard)
+# Regenerar JSONs locais antes de subir
+make site-refresh
 
-# Opção 2: Só gerar os dados
-make dashboard
-# → data/processed/dashboard/dashboard_data.json
+# Separado, se precisar depurar cada lado
+make backend
+make frontend-next
 
-# Opção 3: Servidor manual
-cd app/frontend && python3 -m http.server 8051
+# Usando backend de produção Railway no frontend local, igual à Vercel
+make site-railway
 ```
 
-Para reprodução científica, rode `make pipeline` antes de servir: os JSONs podem estar versionados para demo/deploy, mas são derivados dos dados tratados localmente.
-
-> ⚠️ O dashboard **NÃO funciona** abrindo `index.html` diretamente no navegador
-> (`file://`). É necessário servir via HTTP por causa de restrições CORS do
-> `fetch()`.
+`make site` só sobe backend + Next.js com os JSONs atuais.
+`make site-refresh` roda `dashboard-full` e depois sobe backend + Next.js.
+Para reprodução científica desde o download/transformação, use `make site-full`
+(execução longa: baixa dados, transforma, valida e depois serve).
 
 ## Arquitetura dos Arquivos
 
 ```
-app/frontend/
-├── index.html              ← Visão Geral
-├── transgressoes.html      ← Séries temporais de transgressão
-├── benchmark.html          ← Volume de serviços × compensação
-├── evolucao.html           ← Evolução mensal por holding
-├── ranking.html            ← Ranking por métrica
-├── mapa.html               ← Mapa geográfico
-├── relatorio.html          ← Relatório imprimível
-└── relatorio.html          ← Relatório imprimível
+app/frontend-next/
+├── app/                  ← App Router: home, benchmark, evolucao, mapa, ranking, transgressoes
+├── components/           ← KPICard, ChartCard, Sidebar, MapView
+├── hooks/                ← TanStack Query hooks para API/dashboard
+├── lib/                  ← formatadores, cores, store
+├── next.config.mjs       ← rewrites /api/* e /dashboard_*.json → backend
+└── vercel.json           ← headers/CSP da Vercel
+
+app/backend/main.py       ← FastAPI: /api/dashboard, /api/v1/*, /dashboard_*.json
 
 data/processed/dashboard/
-├── dashboard_data.json     ← Payload principal canônico
-└── dashboard_*.json        ← Micro-payloads canônicos por visualização
+├── dashboard_data.json
+└── dashboard_*.json
 ```
 
-## Páginas do Dashboard
+## Fluxo de Dados
 
-- `index.html`: KPIs, séries anuais e visão geral.
-- `transgressoes.html`: séries temporais mensais por distribuidora/grupo.
-- `benchmark.html`: comparação de volume de serviços e compensação.
-- `evolucao.html`: heatmap mensal por holding.
-- `ranking.html`: ranking horizontal por métrica.
-- `mapa.html`: mapa interativo.
-- `relatorio.html`: saída imprimível.
+O browser chama rotas relativas (`/api/*` e `/dashboard_*.json`). O Next.js faz
+rewrite para `API_REWRITE_URL`, que localmente é `http://localhost:8051` no
+target `make frontend-next` e, em produção, é o Railway.
+
+Os JSONs canônicos são gerados em `data/processed/dashboard/` por:
+
+```bash
+make dashboard-full
+```
 
 ## Modificar o Dashboard
 
-### Adicionar um novo gráfico
-
-1. Edite `app.js` — crie a função `renderNovoGrafico(data)`:
-
-   ```javascript
-   function renderNovoGrafico(data) {
-       const ctx = document.getElementById('novo-chart').getContext('2d');
-       new Chart(ctx, {
-           type: 'bar',
-           data: { ... },
-           options: { ...chartDefaults }
-       });
-   }
-   ```
-
-2. Edite `index.html` — adicione o canvas na aba desejada:
-
-   ```html
-   <div class="chart-card">
-       <canvas id="novo-chart"></canvas>
-   </div>
-   ```
-
-3. Chame a função na aba correta dentro de `app.js` (ex: `renderOverview(data)`)
-
-### Adicionar novos dados ao JSON
-
-1. Edite `src/analysis/build_dashboard_data.py`
-2. Crie a função `build_novo_dado(df)` que retorna dict/list
-3. Adicione ao dict `data` em `main()`
-4. Rode `make dashboard` para regenerar
-
-### Alterar o visual
-
-- **Cores**: Edite as variáveis CSS em `styles.css` (`:root { ... }`)
-- **Fonte**: Mudar import do Google Fonts em `index.html`
-- **Glassmorphism**: Ajuste `backdrop-filter` e `background` em `.chart-card`
-
-## Dados de Entrada (`dashboard_data.json`)
-
-Gerado por `src/analysis/build_dashboard_data.py` em `data/processed/dashboard/`. Lê estes CSVs:
-
-| CSV de entrada | Chave no JSON | Usado na aba |
-|----------------|---------------|--------------|
-| `kpi_regulatorio_anual.csv` | `kpi_overview`, `serie_anual` | Visão Geral |
-| `fato_transgressao_mensal_distribuidora.csv` | `serie_mensal_nacional` | Regulatória |
-| `neo_anual_2023_2025.csv` | `neo_anual` | Neoenergia |
-| `neo_tendencia_2023_2025.csv` | `neo_tendencia` | Neoenergia |
-| `neo_benchmark_porte_latest.csv` | `neo_benchmark` | Neoenergia |
-| `neo_classe_local_2023_2025.csv` | `neo_classe_local` | Diagnóstico |
-| `neo_longa_resumo_2011_2023.csv` | `neo_longa_resumo` | Diagnóstico |
-| `neo_mensal_2023_2025.csv` | `neo_mensal` | (reservado) |
-
-## Relatório Imprimível
-
-- **Arquivo**: `app/frontend/relatorio.html`
-- **Serve para**: Gerar PDF via Ctrl+P / botão "Imprimir / Salvar PDF"
-- **Visual**: Fundo branco, layout otimizado para impressão (page breaks)
-- **Dados**: Usa o mesmo `dashboard_data.json`
-- **Diferença do dashboard**: Estático, sem interatividade, otimizado para papel
+1. Para mudança visual ou de interação, edite `app/frontend-next/app/**`,
+   `components/**`, `hooks/**` ou `lib/**`.
+2. Para novo dado no dashboard, edite `src/analysis/build_dashboard_data.py`
+   ou o gerador específico de micro-payload.
+3. Regenere os JSONs com `make dashboard-full`.
+4. Valide com `make test-fast`; para checagem mais ampla, use `make test-smoke`.
 
 ## Troubleshooting
 
 | Problema | Causa | Solução |
 |----------|-------|---------|
-| "Erro ao carregar dados" | `dashboard_data.json` não existe | `make dashboard-full` ou `make pipeline` |
-| "Erro ao carregar dados" | Acessou via `file://` | `make serve` |
-| Backend não sobe | Pré-check falhou em artefatos/schema | `make preflight-backend` |
-| Porta 8051 ocupada | Outro processo na porta | `ss -tlnp \| grep :8051` |
-| Gráficos vazios | JSON desatualizado | `make dashboard-full` ou `make pipeline` |
-| Charts não renderizam | CDN Chart.js inacessível | Verificar internet |
+| Frontend carrega skeleton | backend/JSON indisponível ou CSP quebrada | `make backend`, conferir `/health` e manter CSP em `app/frontend-next/vercel.json` |
+| `/api/*` retorna erro local | backend local não está rodando | `make backend` ou `make stack-next` |
+| JSON ausente/desatualizado | dashboard não foi regenerado | `make dashboard-full` ou `make pipeline` |
+| Preflight do backend falha | artefatos/schema incompletos | `make preflight-backend` e revisar saída |
+| Porta 8051 ocupada | outro serviço local | `ss -tlnp | grep :8051` |
+| Porta 3051 ocupada | outro frontend local | `NEXT_PORT=3052 make frontend-next` |

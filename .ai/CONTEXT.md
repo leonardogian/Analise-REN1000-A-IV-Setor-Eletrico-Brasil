@@ -10,7 +10,7 @@ Normativa nº 1.000/2021 da ANEEL** na qualidade dos serviços comerciais das
 distribuidoras de energia elétrica do Brasil. Foco especial nas **5 distribuidoras
 do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 
-> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O Vanilla em `app/frontend/` fica como legado preservado. A rodada atual adicionou auditoria numérica (`make qa-data`), desacoplou os JSONs do legado e aplicou hotfix de CSP para permitir a hidratação do Next.js em produção. A fonte canônica dos JSONs agora é `data/processed/dashboard/`.
+> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O Vanilla foi movido para a branch `legacy/vanilla-dashboard`. A rodada atual adicionou auditoria numérica (`make qa-data`), removeu targets locais do legado no Makefile e consolidou os JSONs canônicos em `data/processed/dashboard/`.
 
 > **🔄 ROTINA OBRIGATÓRIA PARA IAs:**
 >
@@ -31,7 +31,7 @@ do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
 | Dados         | PostgreSQL DB, Redis Cache, Parquet              |
 | Versionamento | Git (branch: main)                               |
 
-> **Frontend oficial:** o Next.js (`app/frontend-next/`) roda na porta `3051` via `make frontend-next` ou `make stack-next`. Em produção, `app/frontend-next/vercel.json` deve manter `script-src 'unsafe-inline'` na CSP para o boot/hydration do App Router. O dashboard classico (Vanilla JS) segue como legado na porta `8051` via `make serve`/`make backend`.
+> **Frontend oficial:** o Next.js (`app/frontend-next/`) roda na porta `3051` via `make frontend-next` ou `make stack-next`. Em produção, `app/frontend-next/vercel.json` deve manter `script-src 'unsafe-inline'` na CSP para o boot/hydration do App Router. A porta `8051` é do backend FastAPI local (`make backend`/`make dev-serve`).
 
 ## Estrutura do Repositório
 
@@ -53,23 +53,11 @@ TCC_leo_main/
 │       ├── neoenergia_diagnostico.py ← Benchmark detalhado 5 Neoenergias
 │       └── build_dashboard_data.py   ← Gera data/processed/dashboard/dashboard_data.json
 │   └── backend/
-│       └── main.py                  ← Backend local (API + static em localhost)
+│       └── main.py                  ← Backend local (API + JSONs publicos)
 │
 ├── app/
 │   ├── frontend-next/        ← Dashboard oficial Next.js/React
-│   ├── frontend/             ← Dashboard SPA legado (6 páginas)
-│   │   ├── index.html / app.js           ← Visão Geral (KPIs, tendências, grupos)
-│   │   ├── transgressoes.html / .js      ← Séries temporais de transgressões
-│   │   ├── benchmark.html / .js          ← Bubble chart: volume × compensação
-│   │   ├── evolucao.html / .js           ← Heatmap mensal por holding
-│   │   ├── ranking.html / .js            ← Ranking horizontal por métrica
-│   │   ├── mapa.html / .js               ← Mapa interativo (Leaflet + timeline)
-│   │   ├── relatorio.html                ← Relatório imprimível (Ctrl+P → PDF)
-│   │   ├── utils.js                      ← Formatadores pt-BR compartilhados
-│   │   ├── nav.js                        ← Sidebar + toast system
-│   │   ├── filters.js                    ← Estado global de filtros (período/porte/grupo)
-│   │   └── styles.css                    ← Design system: dark mode, cards, grid
-│   └── backend/main.py       ← FastAPI: endpoints REST + serve static files
+│   └── backend/main.py       ← FastAPI: endpoints REST + JSONs publicos
 │
 ├── data/
 │   ├── raw/                  ← CSVs brutos da ANEEL (não versionados)
@@ -84,10 +72,10 @@ TCC_leo_main/
 │
 ├── reports/                  ← Relatórios gerados (markdown)
 ├── docs/                     ← Documentação auxiliar + imagens
-├── logos/                    ← Logos PNG de holdings (espelhados em app/frontend/assets/logos/)
-├── docker/                   ← Infraestrutura local em contêineres (Stack Docker nome: "tcc", ex: app, Postgres, Kestra)
+├── logos/                    ← Logos PNG de holdings
+├── docker/                   ← Dockerfile/Compose do backend e stacks opcionais
 ├── scripts/                  ← Utilitários (cargas PostgreSQL, QA, validações)
-├── Makefile                  ← Orquestração: make pipeline, make serve, etc.
+├── Makefile                  ← Orquestração: make pipeline, make stack-next, etc.
 ├── requirements.txt          ← Dependências Python
 └── README.md                 ← Documentação principal para humanos
 ```
@@ -108,10 +96,12 @@ make transform       # limpa e transforma
 make analysis        # gera tabelas analíticas
 make report          # gera relatório markdown
 make dashboard       # gera dashboard_data.json
-make dashboard-full  # analysis + neoenergia + dashboard
+make dashboard-full  # analysis + report + grupos + neoenergia + dashboard
 
-# Dashboard local
-make serve           # frontend classico legado em http://localhost:8051
+# Aplicação local
+make site            # backend + Next.js com JSON atual
+make site-refresh    # regenera dashboard + backend + Next.js
+make site-railway    # Next.js local usando Railway, igual à Vercel
 make backend         # FastAPI em http://localhost:8051
 make dev-serve       # dashboard-full + preflight + backend (--reload)
 make frontend-next   # frontend Next.js em http://localhost:3051 usando API local
@@ -138,7 +128,7 @@ make clean-analysis  # remove data/processed/analysis/
 | 5433  | PostgreSQL (AgentCycle)    | ⚠️ Ocupada |
 | 6379  | Redis (AgentCycle)         | ⚠️ Ocupada |
 | 8000  | AgentCycle Backend         | ⚠️ Ocupada |
-| 8051  | **TCC Dashboard (make serve)** | ✅ Local dev |
+| 8051  | **TCC Backend FastAPI** | ✅ Local dev |
 | 8080  | Airflow Webserver / Kestra | ⚠️ Ocupada |
 | 8090  | Kestra (Alternativa)       | ⚠️ Ocupada |
 
@@ -152,7 +142,7 @@ Estes arquivos são gerados por scripts:
 - `data/processed/*.csv` e `*.parquet` — dados transformados
 - `.venv/` — ambiente virtual Python
 
-`data/raw/` e `data/processed/` base não são versionados. `data/processed/analysis/**/*.csv` e `data/processed/dashboard/dashboard_*.json` podem estar no Git para auditoria/demo/deploy, mas devem ser regenerados com `make pipeline` para reprodução científica. Espelhos em `app/frontend/dashboard*.json` são gerados localmente e ignorados.
+`data/raw/` e `data/processed/` base não são versionados. `data/processed/analysis/**/*.csv` e `data/processed/dashboard/dashboard_*.json` podem estar no Git para auditoria/demo/deploy, mas devem ser regenerados com `make pipeline` para reprodução científica. O frontend oficial consome os JSONs via FastAPI/rewrites do Next.js.
 
 ## Venv (Ambiente Virtual)
 
@@ -171,7 +161,7 @@ pip install -r requirements.txt
 
 - **Visão Completa dos Dados**: `.ai/DATA_OVERVIEW.md` ← **SEMPRE ler antes de qualquer análise**
 - **README humano**: `README.md`
-- **Dashboard docs**: `app/frontend/README.md`
+- **Dashboard docs**: `app/frontend-next/README.md`
 - **Guia de análise**: `docs/GUIA_ANALISE.md`
 - **Próximos passos TCC**: `docs/PROXIMOS_PASSOS_TCC.md`
 - **Relatório Neoenergia**: `reports/neoenergia_diagnostico.md`

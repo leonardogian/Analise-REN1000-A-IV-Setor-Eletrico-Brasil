@@ -58,6 +58,19 @@ REQUIRED_DASHBOARD_KEYS = {
     "data_availability",
 }
 
+EXPECTED_REGULATORY_CLASSES = {
+    "grupo_a",
+    "grupo_b_residencial",
+    "grupo_b_rural",
+    "grupo_b_demais",
+    "grupo_b_iluminacao",
+    "grupo_b_urbana",
+    "grupo_b_outros",
+    "rural",
+    "urbana",
+    "nao_classificado",
+}
+
 
 def check_dashboard_json() -> list[str]:
     """Validate dashboard JSON has expected top-level keys."""
@@ -131,15 +144,14 @@ def check_dashboard_json() -> list[str]:
                 "dashboard JSON missing data_availability keys: " + ", ".join(missing_availability)
             )
 
-    expected_regulatory = {"grupo_a", "grupo_b", "rural", "urbana", "nao_classificado"}
     if isinstance(regulatory_groups, list):
         found = {str(item.get("class_id")) for item in regulatory_groups if isinstance(item, dict)}
-        missing_classes = sorted(expected_regulatory - found)
+        missing_classes = sorted(EXPECTED_REGULATORY_CLASSES - found)
         if missing_classes:
             errors.append("dashboard JSON missing regulatory classes: " + ", ".join(missing_classes))
 
     if isinstance(regulatory_views, dict):
-        missing_views = sorted(expected_regulatory - set(regulatory_views.keys()))
+        missing_views = sorted(EXPECTED_REGULATORY_CLASSES - set(regulatory_views.keys()))
         if missing_views:
             errors.append("dashboard JSON missing regulatory views: " + ", ".join(missing_views))
 

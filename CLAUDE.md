@@ -32,16 +32,19 @@ python3 -m src.analysis.dashboard_transgressoes  # dashboard_transgressoes.json
 # Generating dashboard data
 make grupos-diagnostico     # data/processed/analysis/grupos/
 make neoenergia-diagnostico # data/processed/analysis/neoenergia/
-make dashboard-full         # analysis + grupos + neoenergia + all JSONs
+make dashboard-full         # analysis + report + grupos + neoenergia + all JSONs
 make clean-analysis         # remove data/processed/analysis/ outputs
 
 # Serving the dashboard & Testing Local API
 # URL Base (Local): http://localhost:8051 | URL Base (Produção Railway): https://tcc-ren1000x414-production.up.railway.app
 make frontend-next          # Frontend Next.js em http://localhost:3051 (backend local)
 make frontend-next-railway  # Frontend Next.js em http://localhost:3051 (backend Railway)
+make site                   # Sobe backend + Next.js com JSON atual
+make site-refresh           # Regenera JSONs e sobe backend + Next.js
+make site-railway           # Next.js local usando backend Railway (como Vercel)
 make stack-next             # Backend local + frontend Next.js num único comando
 make backend                # FastAPI em http://localhost:8051
-make dev-serve              # Backend com --reload
+make dev-serve              # Regenera JSONs e sobe backend com --reload
 
 # Tests
 make test-fast          # compile + imports + schema contracts + core artifacts
@@ -96,7 +99,7 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 - `app/frontend-next/` — frontend oficial em Next.js 14 (7 páginas, Tailwind, TanStack Query)
 - `data/processed/dashboard/` — JSONs canônicos `dashboard_*.json` servidos pelo backend/Railway
 - `data/processed/analysis/` — versioned analytical CSVs; Parquet mirrors are generated locally
-- `docker/` — Docker Compose (app stack, PostgreSQL, Kestra)
+- `docker/` — Dockerfile/Compose do backend e stacks opcionais (PostgreSQL, Kestra)
 - `docs/` — canonical docs (EXTRACAO_DADOS, DICIONARIO_DADOS, GUIA_ANALISE, PROXIMOS_PASSOS_TCC, ...)
 - `.github/agents/` — specialized AI agents (aneel-data-guardian, backend-fastapi-specialist, frontend-next-specialist)
 - `scripts/` — utilities (Postgres loader, artifact checkers, QA automation)
@@ -180,8 +183,8 @@ Não há pytest. Testes são Make targets:
 ## Docker
 
 ```bash
-# Main stack (backend), porta 8051 interna
-docker compose up --build
+# Backend containerizado, porta 8051
+make docker-up
 
 # Kestra orchestration (pipelines de dados)
 docker compose -f docker/docker-compose.kestra.yml up -d
