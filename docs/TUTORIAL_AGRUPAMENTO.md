@@ -1,6 +1,6 @@
 # Como Analisar Múltiplas Distribuidoras por Grupo Econômico
 
-No setor elétrico, um grupo econômico como a **Neoenergia** ou **CPFL** é muitas vezes dividido em diversas distribuidoras regionais com CNPJs e cadastros separados na ANEEL (ex: `Neoenergia Coelba`, `Neoenergia Elektro`, `CPFL Paulista`, `CPFL Piratininga`, etc).
+No setor elétrico, um grupo econômico como **CPFL**, **Equatorial**, **Enel**, **Energisa** ou **Neoenergia** é muitas vezes dividido em diversas distribuidoras regionais com CNPJs e cadastros separados na ANEEL (ex: `CPFL Paulista`, `CPFL Piratininga`, `Equatorial PA`, `Neoenergia Coelba`, etc).
 
 Para facilitar a sua análise, **o pipeline de dados do TCC já consolida isso automaticamente!**
 
@@ -10,14 +10,14 @@ Você não precisa fazer cruzamentos manuais complexos. As tabelas analíticas e
 
 Sempre que você abrir uma tabela fato (ex: `fato_transgressao_mensal_distribuidora.parquet`) ou a dimensão de base (`dim_distributor_group.parquet`), verá as seguintes colunas:
 
-- **`group_id`**: O ID string único do grupo grande (ex: `"neoenergia"`, `"cpfl"`, `"enel"`, `"energisa"`). Para distribuidoras "solteiras" que não são de um grande grupo, usa-se a própria sigla da empresa ou `"outros"`.
-- **`distributor_id`**: O ID limpo da distribuidora (ex: `"neoenergia_coelba"`).
+- **`group_id`**: O ID string único do grupo grande (ex: `"cpfl"`, `"enel"`, `"energisa"`, `"neoenergia"`). Para distribuidoras "solteiras" que não são de um grande grupo, usa-se a própria sigla da empresa ou `"outros"`.
+- **`distributor_id`**: O ID limpo da distribuidora (ex: `"cpfl_paulista"`).
 - **`sigagente` / `nomagente`**: Os nomes oficias da ANEEL.
 - **`distributor_name_sig` / `distributor_name_legal`**: Nomes limpos e normalizados pelo pipeline.
 
 ## Como Agrupar Dados em Python (Pandas)
 
-Se você quer ver as multas pagas (`compensacao_rs`) ao longo do tempo focando apenas nos grandes grupos (ex: CPFL vs Neoenergia vs Enel), tudo o que você precisa fazer é extrair a tabela desejada e aplicar um `.groupby("group_id")`.
+Se você quer ver as multas pagas (`compensacao_rs`) ao longo do tempo focando nos grandes grupos do setor (ex: CPFL vs Equatorial vs Enel), tudo o que você precisa fazer é extrair a tabela desejada e aplicar um `.groupby("group_id")`.
 
 ### Exemplo de Código: Comparando Grandes Grupos
 
@@ -35,18 +35,19 @@ resumo_grupos = resumo_grupos.sort_values("compensacao_rs", ascending=False)
 print(resumo_grupos.head())
 ```
 
-### Exemplo de Código: Analisando as empresas DENTRO da Neoenergia
+### Exemplo de Código: Analisando as empresas DENTRO de um grupo
 
 ```python
 import pandas as pd
 df = pd.read_parquet("data/processed/analysis/fato_transgressao_mensal_distribuidora.parquet")
 
-# 1. Filtra só Neoenergia
-df_neo = df[df["group_id"] == "neoenergia"]
+# 1. Filtra um grupo econômico específico
+grupo_id = "cpfl"
+df_grupo = df[df["group_id"] == grupo_id]
 
-# 2. Agrupa pelas empresas filhas da Neoenergia
-empresas_neo = df_neo.groupby("distributor_name_sig")[["compensacao_rs"]].sum().reset_index()
-print(empresas_neo)
+# 2. Agrupa pelas distribuidoras do grupo
+empresas_grupo = df_grupo.groupby("distributor_name_sig")[["compensacao_rs"]].sum().reset_index()
+print(empresas_grupo)
 ```
 
 ## Explorando os Metadados dos Grupos
@@ -56,4 +57,4 @@ Se você quer apenas entender quais empresas pertencem a qual grupo e se orienta
 
 Lá tem todas as traduções de Sigla ANEEL para "Nome Limpo", junto ao `group_id` correspondente.
 
-> **Dica de Visualização (Dashboard)**: O arquivo `dashboard_data.json` que alimenta a aplicação Web já faz esses cruzamentos sozinho para construir a aba "Neoenergia", e a página principal já mostra o Ranking Regulatório comparando empresas filhas e grupos ao mesmo tempo!
+> **Dica de Visualização (Dashboard)**: O arquivo `dashboard_data.json` que alimenta a aplicação Web já faz esses cruzamentos sozinho para rankings, filtros e comparações entre distribuidoras e grupos econômicos.

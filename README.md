@@ -2,7 +2,7 @@
 
 **Eficácia da Resolução Normativa ANEEL nº 1.000/2021 na qualidade comercial das distribuidoras de energia elétrica do Brasil.**
 
-Foco em **transgressões de prazo, compensações financeiras (R$)** e normalização por UC (unidades consumidoras). Destaque para os 5 grupos da Neoenergia.
+Foco setorial em **transgressões de prazo, compensações financeiras (R$)** e normalização por UC (unidades consumidoras), com recortes por distribuidora, grupo econômico, porte, território e período regulatório.
 
 ---
 
@@ -45,6 +45,16 @@ Há dois caminhos diferentes:
 
 1. **Ver a demo com dados versionados.** Usa os CSVs analíticos e JSONs já presentes no clone. Serve para explorar o dashboard rapidamente, mas não reproduz cientificamente a base.
 2. **Reproduzir do zero.** Baixa os dados brutos da ANEEL/IBGE, transforma, valida e regenera os JSONs. Este é o caminho obrigatório para conferir os números.
+
+### VS Code Dev Container
+
+O devcontainer oficial usa Python 3.12 em Debian Bookworm, Node 20 e Docker-in-Docker. A `.venv` dentro do container fica em um volume Docker nomeado (`tcc-ren1000-devcontainer-venv`), isolado da `.venv` do host, para que `make doctor` valide as dependências do próprio container.
+
+No VS Code, use `Dev Containers: Rebuild and Reopen in Container`. Depois de entrar, rode:
+
+```bash
+make doctor
+```
 
 ### Demo rápida — Backend + Frontend Next.js
 
@@ -176,7 +186,7 @@ TCC_leo_main/
 
 ```bash
 make test-fast        # 30s: imports + schema contracts + artefatos core
-make test-smoke       # 5min: smoke completo (Neoenergia + dashboard)
+make test-smoke       # 5min: smoke completo (grupos + dashboard)
 make validate-contracts  # valida schema raw vs processed
 make qa-data          # auditoria numerica dos artefatos analiticos
 ```
@@ -191,6 +201,7 @@ make qa-data          # auditoria numerica dos artefatos analiticos
 | [`docs/DATA_QUALITY_AUDIT.md`](docs/DATA_QUALITY_AUDIT.md) | Backlog e contrato da auditoria numerica dos dados |
 | [`.ai/CONTEXT.md`](.ai/CONTEXT.md) | Visão de arquitetura para agentes IA |
 | [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md) | Como baixar dados do zero (URLs CKAN, periodicidade, troubleshooting) |
+| [`docs/metodologia_tcc.excalidraw`](docs/metodologia_tcc.excalidraw) | Fluxograma visual da metodologia real do TCC, em blocos para banca |
 | [`app/frontend-next/README.md`](app/frontend-next/README.md) | Rotas, componentes e padrões do Next.js |
 | [`AGENTS.md`](AGENTS.md) | Diretrizes operacionais para agentes IA |
 

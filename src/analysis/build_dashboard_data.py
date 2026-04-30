@@ -77,7 +77,7 @@ REGULATORY_LABELS = {
     "nao_classificado": "Não classificado",
 }
 FEATURED_TOP_N = 6
-FEATURED_REQUIRED_GROUPS = ("equatorial", "cpfl", "neoenergia")
+FEATURED_REQUIRED_GROUPS: tuple[str, ...] = ()
 DIMENSION_ORDER = ["economico", "porte", "geografico"]
 DIMENSION_LABELS = {
     "economico": "Grupo Econômico",
@@ -379,8 +379,6 @@ def choose_default_group_id(
             return str(by_uc.iloc[0]["group_id"])
 
     group_ids = [str(item["group_id"]) for item in distributor_groups]
-    if "neoenergia" in group_ids:
-        return "neoenergia"
     return sorted(group_ids)[0]
 
 
@@ -1251,11 +1249,24 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
             return res
             
         dfs = [calc_mean(df, "Média Nacional", "nacional")]
-        grupos = ["Neoenergia", "CPFL", "Energisa", "Equatorial", "Enel"]
-        for g in grupos:
-            subset = df[df["distributor_label"].str.contains(g, case=False, na=False)]
+        group_labels = (
+            df.groupby(["group_id", "group_label"], as_index=False)
+            .agg(
+                exposicao_uc_mes=("uc_ativa_mes", "sum"),
+                n_distribuidoras=("distributor_label", "nunique"),
+            )
+            .sort_values(
+                ["exposicao_uc_mes", "n_distribuidoras", "group_label"],
+                ascending=[False, False, True],
+            )
+            .head(5)
+        )
+        for _, group_row in group_labels.iterrows():
+            gid = str(group_row["group_id"])
+            group_label = str(group_row["group_label"])
+            subset = df[df["group_id"].astype(str) == gid]
             if not subset.empty:
-                dfs.append(calc_mean(subset, g, "holding"))
+                dfs.append(calc_mean(subset, group_label, "holding"))
                 
         # Individual franchises
         distributors = df["distributor_label"].dropna().unique()

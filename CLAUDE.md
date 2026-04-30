@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality of Brazilian energy distributors. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units). Special focus on 5 Neoenergia distributors.
+TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality in Brazil's electricity distribution sector. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units), with cuts by distributor, economic group, size, geography, and regulatory period.
 
 **Current phase:** ETL e backend FastAPI+Postgres+Redis estão operacionais; o frontend oficial é o Next.js em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O dashboard Vanilla clássico foi movido para a branch `legacy/vanilla-dashboard`. A rodada de reprodutibilidade reforçou extração segura, contratos de schema, deduplicação INDGER e dashboard com agregações ponderadas. `make pipeline` agora termina com validações.
 
@@ -31,8 +31,8 @@ python3 -m src.analysis.dashboard_transgressoes  # dashboard_transgressoes.json
 
 # Generating dashboard data
 make grupos-diagnostico     # data/processed/analysis/grupos/
-make neoenergia-diagnostico # data/processed/analysis/neoenergia/
-make dashboard-full         # analysis + report + grupos + neoenergia + all JSONs
+make neoenergia-diagnostico # legacy compatibility artifacts for one group
+make dashboard-full         # analysis + report + groups + compatibility artifacts + all JSONs
 make clean-analysis         # remove data/processed/analysis/ outputs
 
 # Serving the dashboard & Testing Local API
@@ -48,7 +48,7 @@ make dev-serve              # Regenera JSONs e sobe backend com --reload
 
 # Tests
 make test-fast          # compile + imports + schema contracts + core artifacts
-make test-smoke         # full smoke (neoenergia + dashboard + full validation)
+make test-smoke         # full smoke (groups + dashboard + full validation)
 make validate-contracts # schema contracts (raw/processed)
 make qa-data            # numeric/data-quality audit for analysis artifacts
 ```
@@ -67,7 +67,7 @@ src/etl/transform_aneel.py                  -> data/processed/*.{csv,parquet}  (
 src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (versioned)
     |
     +-> build_report.py            -> reports/relatorio_aneel.md
-    +-> neoenergia_diagnostico.py  -> data/processed/analysis/neoenergia/*.csv
+    +-> neoenergia_diagnostico.py  -> legacy compatibility group artifacts
     +-> grupos_diagnostico.py      -> data/processed/analysis/grupos/*.csv (13 files)
     +-> build_dashboard_data.py    -> data/processed/dashboard/dashboard_data.json
     +-> dashboard_transgressoes.py -> data/processed/dashboard/dashboard_transgressoes.json
@@ -100,7 +100,7 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 - `data/processed/dashboard/` — JSONs canônicos `dashboard_*.json` servidos pelo backend/Railway
 - `data/processed/analysis/` — versioned analytical CSVs; Parquet mirrors are generated locally
 - `docker/` — Dockerfile/Compose do backend e stacks opcionais (PostgreSQL, Kestra)
-- `docs/` — canonical docs (EXTRACAO_DADOS, DICIONARIO_DADOS, GUIA_ANALISE, PROXIMOS_PASSOS_TCC, ...)
+- `docs/` — canonical docs (EXTRACAO_DADOS, DICIONARIO_DADOS, GUIA_ANALISE, metodologia_tcc.excalidraw, ...)
 - `.github/agents/` — specialized AI agents (aneel-data-guardian, backend-fastapi-specialist, frontend-next-specialist)
 - `scripts/` — utilities (Postgres loader, artifact checkers, QA automation)
 
@@ -169,13 +169,14 @@ Após mudanças estruturais, mantenha sincronizados:
 - `.ai/CONTEXT.md`, `.ai/PIPELINE.md`, `.ai/CONVENTIONS.md`, `.ai/DASHBOARD.md`, `.ai/DATA_OVERVIEW.md`
 - `docs/EXTRACAO_DADOS.md` — guia canônico de extração ANEEL + IBGE
 - `docs/DATA_QUALITY_AUDIT.md` — backlog e contrato da auditoria numerica
+- `docs/metodologia_tcc.excalidraw` — fluxograma visual da metodologia para banca
 
 ## Testing
 
 Não há pytest. Testes são Make targets:
 
 - `make test-fast` — validação rápida (imports, schema contracts, core artifacts)
-- `make test-smoke` — smoke completo (neoenergia + dashboard + validação)
+- `make test-smoke` — smoke completo (grupos + dashboard + validação)
 - `scripts/check_artifacts.py --profile core|full` — presença de artefatos
 - `scripts/smoke_imports.py` — smoke de imports
 - `scripts/validate_schema_contracts.py` — contratos de schema
@@ -189,6 +190,10 @@ make docker-up
 # Kestra orchestration (pipelines de dados)
 docker compose -f docker/docker-compose.kestra.yml up -d
 ```
+
+## Dev Container
+
+O VS Code Dev Container usa `mcr.microsoft.com/devcontainers/python:3.12-bookworm`, feature Node 20 e Docker-in-Docker. A `.venv` do container é montada em volume Docker nomeado (`tcc-ren1000-devcontainer-venv`) para não reutilizar a `.venv` do host; ao entrar, valide com `make doctor`.
 
 ## AI Tooling
 

@@ -15,7 +15,7 @@ ANEEL API (CSVs)
 [3] build_analysis_tables.py → data/processed/analysis/*.csv
     │
     ├─▶ build_report.py           → reports/relatorio_aneel.md
-    ├─▶ neoenergia_diagnostico.py → reports/neoenergia_diagnostico.md
+    ├─▶ neoenergia_diagnostico.py → artefatos legados de compatibilidade
     │                                data/processed/analysis/neoenergia/*.csv
     └─▶ build_dashboard_data.py   → data/processed/dashboard/dashboard_data.json
                                       data/processed/dashboard/dashboard_*.json
@@ -64,13 +64,13 @@ ANEEL API (CSVs)
 | `dim_distribuidora_porte.csv` | Dimensão: mapa distribuidora → porte |
 | `dim_indicador_servico.csv` | Dimensão: mapa indicador → serviço |
 
-### Dados Neoenergia (`data/processed/analysis/neoenergia/`)
+### Artefatos legados de compatibilidade (`data/processed/analysis/neoenergia/`)
 
-Gerados por `make neoenergia-diagnostico` (`src/analysis/neoenergia_diagnostico.py`):
+Gerados por `make neoenergia-diagnostico` (`src/analysis/neoenergia_diagnostico.py`). Esses arquivos preservam compatibilidade com análises antigas e payloads legados; não definem o foco do TCC, que é setorial.
 
 | Arquivo | Descrição |
 |---------|-----------|
-| `neo_anual_2023_2025.csv` | Dados anuais das 5 distribuidoras |
+| `neo_anual_2023_2025.csv` | Dados anuais do grupo correspondente |
 | `neo_tendencia_2023_2025.csv` | Variação percentual 2023→2025 |
 | `neo_benchmark_porte_latest.csv` | Benchmark vs distribuidoras de mesmo porte |
 | `neo_classe_local_2023_2025.csv` | Transgressões por classe (urbana/rural/grupo A) |
@@ -81,7 +81,7 @@ Gerados por `make neoenergia-diagnostico` (`src/analysis/neoenergia_diagnostico.
 
 **Script**: `src/analysis/build_dashboard_data.py`
 
-- Lê: CSVs de `data/processed/analysis/`, `grupos/` e `neoenergia/`
+- Lê: CSVs de `data/processed/analysis/`, `grupos/` e artefatos legados quando necessários
 - Gera: `data/processed/dashboard/dashboard_data.json` e micro-payloads `data/processed/dashboard/dashboard_*.json`
 - Política: JSONs canônicos podem estar versionados para demo/deploy, mas devem ser regenerados depois de `make pipeline` para reprodução científica. O frontend oficial consome esses arquivos via FastAPI/rewrites do Next.js.
 - **Fail-fast**: falha se entradas obrigatórias estiverem ausentes ou seções críticas ficarem vazias.
@@ -120,11 +120,11 @@ Gerados por `make neoenergia-diagnostico` (`src/analysis/neoenergia_diagnostico.
 
 ```
 extract → transform → analysis ─┬─→ report
-                                 ├─→ neoenergia-diagnostico
+                                 ├─→ artefatos legados de compatibilidade
                                  └─→ dashboard → backend/Next.js
 ```
 
-`make pipeline` executa tudo em ordem: `update-data → analysis → report → grupos → neoenergia-diagnostico → dashboard → dashboard-transgressoes → validate-contracts → check-artifacts-full → qa-data`
+`make pipeline` executa tudo em ordem: `update-data → analysis → report → grupos → neoenergia-diagnostico (compatibilidade legada) → dashboard → dashboard-transgressoes → validate-contracts → check-artifacts-full → qa-data`
 
 ## Como Regenerar Tudo do Zero
 

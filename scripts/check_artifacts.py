@@ -166,7 +166,7 @@ def check_grouping_regression() -> list[str]:
     if not dim_csv.exists():
         return errors
 
-    prefixes = ("neoenergia", "cpfl", "enel")
+    prefixes = ("cpfl", "enel", "energisa", "equatorial", "neoenergia")
     offenders: list[str] = []
     with dim_csv.open("r", encoding="utf-8", newline="") as fp:
         reader = csv.DictReader(fp)
@@ -180,7 +180,7 @@ def check_grouping_regression() -> list[str]:
     if offenders:
         uniq = sorted(set(offenders))
         errors.append(
-            "grouping regression: distributors with sigagente Neoenergia/CPFL/Enel mapped to companhia: "
+            "grouping regression: distributors with known holding prefixes mapped to companhia: "
             + ", ".join(uniq[:10])
         )
     return errors

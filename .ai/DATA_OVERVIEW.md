@@ -25,7 +25,7 @@ Localização: `data/processed/analysis/`
 | **kpi_regulatorio_anual** | KPI | Anual Brasil (agregado) | 2011–2023 | `taxa_fora_prazo`, `compensacao_rs` | ✅ Agregado |
 | **dim_distribuidora_porte** | Dimensão | Anual × Distribuidora | 2023–2025 | `bucket_porte` (P/M/G/GG), `rank_porte_ano` | ⚠️ Apenas pós-2023 |
 | **dim_indicador_servico** | Dimensão | Catálogo | Estático | Mapeamento serviços → famílias (QS/QV/PM/CR) | ✅ Referência |
-| **dim_distributor_group** | Dimensão | Mapeamento Holdings | Estático | Agrupamento corporativo (Neoenergia, CPFL, Equatorial, etc.) | ✅ Hierarquia |
+| **dim_distributor_group** | Dimensão | Mapeamento Holdings | Estático | Agrupamento corporativo (CPFL, Equatorial, Enel, Neoenergia, etc.) | ✅ Hierarquia |
 
 ### Arquivos Brutos Processados
 
@@ -558,7 +558,7 @@ import matplotlib.pyplot as plt
 # Carregar mensal
 df_mensal = pd.read_parquet('data/processed/analysis/fato_transgressao_mensal_distribuidora.parquet')
 
-# Filtrar distribuidora (ex: "NEOENERGIA SÃO PAULO")
+# Filtrar distribuidora (ex: "ENEL SP")
 sigagente_target = "SAOPAU"  # Exemplo; usar o código correto
 
 df_sao_paulo = df_mensal[df_mensal['sigagente'] == sigagente_target].copy()
@@ -573,7 +573,7 @@ fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
 # Taxa
 ax1.plot(df_sao_paulo['data'], df_sao_paulo['taxa_fora_prazo'] * 100, marker='o', label='Taxa (%)')
 ax1.set_ylabel('Taxa Fora Prazo (%)')
-ax1.set_title('NEOENERGIA SÃO PAULO - Série Temporal 2023–2025')
+ax1.set_title('ENEL SP - Série Temporal 2023–2025')
 ax1.grid(True, alpha=0.3)
 ax1.legend()
 

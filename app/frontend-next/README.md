@@ -75,6 +75,8 @@ Localmente, a variável `API_REWRITE_URL=http://localhost:8051` (definida pelo `
 
 Na home, os dois cards pré-REN do topo usam o agregado histórico de `kpi_overview`. Já os cards pós-REN e as variações do topo são uma visão Brasil fixa recalculada no cliente a partir de `serie_mensal_nacional`, usando a janela operacional 2023–2025; os filtros de empresas afetam apenas os gráficos e cards inferiores.
 
+Na rota `/mapa`, os filtros de holdings iniciam em visão setorial sem recorte pré-selecionado; os chips são ordenados pelo rótulo dos grupos disponíveis nos dados, sem destacar uma holding como foco padrão.
+
 ---
 
 ## Como adicionar uma nova página

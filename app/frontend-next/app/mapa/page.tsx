@@ -112,47 +112,14 @@ export default function MapaPage() {
       agg[item.distribuidora].qtd += item.qtd_transgressoes;
     }
 
-    const majorHoldings = [
-      'neoenergia',
-      'cpfl',
-      'equatorial',
-      'enel',
-      'energisa',
-      'cemig',
-      'copel',
-      'edp',
-      'celesc',
-    ];
+    const labelFor = (id: string) =>
+      data.groups.find((g) => g.id === id)?.label ?? id;
     const holdingsArr = [...holdingsSet].sort((a, b) => {
-      const ai = majorHoldings.indexOf(a);
-      const bi = majorHoldings.indexOf(b);
-      if (ai >= 0 && bi >= 0) return ai - bi;
-      if (ai >= 0) return -1;
-      if (bi >= 0) return 1;
-      return a.localeCompare(b);
+      return labelFor(a).localeCompare(labelFor(b), 'pt-BR');
     });
 
     return { distData: Object.values(agg), holdings: holdingsArr };
   }, [data, selectedHoldings]);
-
-  // Initialize selectedHoldings with major holdings when data arrives
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useMemo(() => {
-    if (holdings.length > 0 && selectedHoldings.size === 0) {
-      const major = [
-        'neoenergia',
-        'cpfl',
-        'equatorial',
-        'enel',
-        'energisa',
-        'cemig',
-        'copel',
-        'edp',
-        'celesc',
-      ].filter((h) => holdings.includes(h));
-      if (major.length > 0) setSelectedHoldings(new Set(major));
-    }
-  }, [holdings, selectedHoldings.size]);
 
   function toggleHolding(h: string) {
     setSelectedHoldings((prev) => {
@@ -200,7 +167,7 @@ export default function MapaPage() {
       {/* Holding filter chips */}
       <div className="flex flex-wrap gap-1.5">
         {holdings.slice(0, 12).map((h) => {
-          const active = selectedHoldings.has(h);
+          const active = selectedHoldings.size === 0 || selectedHoldings.has(h);
           const color = HOLDING_COLORS[h] ?? '#71717a';
           return (
             <button

@@ -1,0 +1,85 @@
+flowchart TB
+  %% Metodologia TCC REN 1.000/2021 - fonte estrutural versionável
+
+  C((Evidência regulatória auditável<br/>REN 1.000/2021 + setor de distribuição))
+
+  subgraph S1["1. Pergunta e recorte"]
+    S1A["Feito<br/>Delimitamos qualidade comercial, distribuidoras brasileiras e 2011-2025"]
+    S1B["Por quê<br/>Comparar antes/depois exige recorte temporal e institucional estável"]
+    S1C["Risco controlado<br/>Evita misturar fenômenos fora da REN 1.000/2021"]
+  end
+
+  subgraph S2["2. Fontes oficiais"]
+    S2A["Feito<br/>ANEEL Qualidade Comercial, INDGER mensal e IBGE DTB"]
+    S2B["Por quê<br/>Combinar série anual, granularidade mensal e território"]
+    S2C["Risco controlado<br/>Evita base privada, sem rastreabilidade ou sem cobertura"]
+  end
+
+  subgraph S3["3. ETL e tratamento"]
+    S3A["Feito<br/>Download automatizado, leitura robusta e padronização"]
+    S3B["Por quê<br/>Transformar dado bruto em tabela comparável e auditável"]
+    S3C["Risco controlado<br/>Encoding, decimal, nomes e IDs não distorcem métricas"]
+  end
+
+  subgraph S4["4. Contratos e QA"]
+    S4A["Feito<br/>Schema contracts, check-artifacts e qa-data"]
+    S4B["Por quê<br/>A análise só avança quando os artefatos passam nos critérios"]
+    S4C{"Passou?"}
+  end
+
+  subgraph S5["5. Camada analítica"]
+    S5A["Feito<br/>Fatos, dimensões, métricas e recortes por grupo, porte e território"]
+    S5B["Por quê<br/>Conectar conceito regulatório a medida operacional"]
+    S5C{"Métrica coerente?"}
+  end
+
+  subgraph S6["6. Produto exploratório"]
+    S6A["Feito<br/>JSON canônico, FastAPI/Railway, Next.js e relatórios"]
+    S6B["Por quê<br/>Explorar padrões e sustentar narrativa verificável"]
+    S6C{"Novo achado?"}
+  end
+
+  subgraph S7["7. Interpretação para dissertação"]
+    S7A["Feito<br/>Achados, gráficos, ressalvas e resposta à pergunta"]
+    S7B["Por quê<br/>Transformar evidência em argumento acadêmico limitado"]
+    S7C{"Limite metodológico?"}
+  end
+
+  T["Timeline<br/>2011 série histórica | 2022 corte REN | 2023 INDGER | 2024-2025 parcial"]
+  V["Variáveis<br/>período, distribuidora, serviço, transgressões, compensações, UCs"]
+  L["Limites<br/>2022 transição, cobertura parcial, heterogeneidade setorial, estudo observacional"]
+
+  S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> C
+  C -. orienta .-> S1
+  T -. contextualiza .-> S1
+  V -. operacionaliza .-> S5
+  L -. disciplina .-> S7
+
+  S4C -- "não: revisar ETL/contratos" --> S3
+  S4C -- "sim" --> S5
+  S5C -- "não" --> S5A
+  S5C -- "sim" --> S6
+  S6C -- "sim" --> S1
+  S6C -- "não" --> S7
+  S7C -- "sim" --> S7B
+  S7C -- "não" --> C
+
+  classDef center fill:#f8fafc,stroke:#111827,stroke-width:3px,color:#111827;
+  classDef scope fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a;
+  classDef data fill:#dcfce7,stroke:#15803d,color:#14532d;
+  classDef etl fill:#fef3c7,stroke:#b45309,color:#78350f;
+  classDef qa fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d;
+  classDef analysis fill:#fef9c3,stroke:#a16207,color:#713f12;
+  classDef product fill:#f3e8ff,stroke:#7e22ce,color:#581c87;
+  classDef result fill:#f3f4f6,stroke:#374151,color:#111827;
+  classDef support fill:#f8fafc,stroke:#64748b,color:#334155;
+
+  class C center;
+  class S1A,S1B,S1C scope;
+  class S2A,S2B,S2C data;
+  class S3A,S3B,S3C etl;
+  class S4A,S4B,S4C qa;
+  class S5A,S5B,S5C analysis;
+  class S6A,S6B,S6C product;
+  class S7A,S7B,S7C result;
+  class T,V,L support;

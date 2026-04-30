@@ -59,7 +59,7 @@ Prefixos: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`
 Não há framework de teste formal (pytest). Os testes existentes são:
 
 - `make test-fast`: Compila scripts + verifica imports + contratos + artefatos core
-- `make test-smoke`: Roda análise + neoenergia + dashboard + validação completa
+- `make test-smoke`: Roda análise + grupos + dashboard + validação completa
 - `scripts/check_artifacts.py`: Verifica artefatos (`--profile core|full`)
 - `scripts/smoke_imports.py`: Testa se imports dos módulos funcionam
 - `scripts/validate_schema_contracts.py`: Valida contratos de schema raw/processed

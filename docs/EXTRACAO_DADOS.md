@@ -195,7 +195,7 @@ make transform
 |---|---|---|
 | `make extract` | `data/raw/` | Arquivos do catálogo nuclear presentes: `qualidade-atendimento-comercial.csv`, `dominio-indicadores.csv`, `indger-dados-comerciais.csv`, `indger-dados-servicos-comerciais-YYYY-MM.csv` (36 arquivos), `DTB_2024.zip` + conteúdo extraído. PDFs em `data/docs/`. |
 | `make transform` | `data/processed/` | Parquet + CSV espelhados: `qualidade_comercial.*`, `indger_servicos_comerciais.*`, `indger_dados_comerciais.*`. |
-| `make analysis` | `data/processed/analysis/` | CSVs raiz + `grupos/` + `neoenergia/`. CSVs são versionados para auditoria/demo; Parquets são espelhos locais gerados. |
+| `make analysis` | `data/processed/analysis/` | CSVs raiz + `grupos/` + artefatos legados de compatibilidade. CSVs são versionados para auditoria/demo; Parquets são espelhos locais gerados. |
 | `make dashboard` | `data/processed/dashboard/dashboard_data.json` | Payload canônico versionado para demo/deploy e regenerado para reprodução científica. |
 
 ### 3.4. Diretórios ignorados pelo Git
@@ -457,7 +457,7 @@ data/processed/*.parquet
 src/analysis/build_analysis_tables.py   → data/processed/analysis/*.csv (9 arquivos raiz)
     ├─▶ build_report.py                   → reports/relatorio_aneel.md
     ├─▶ grupos_diagnostico.py             → data/processed/analysis/grupos/*.csv (13 arquivos)
-    ├─▶ neoenergia_diagnostico.py         → data/processed/analysis/neoenergia/*.csv (13 arquivos)
+    ├─▶ neoenergia_diagnostico.py         → artefatos legados de compatibilidade (13 arquivos)
     └─▶ build_dashboard_data.py           → data/processed/dashboard/dashboard_data.json
                                             data/processed/dashboard/dashboard_*.json
 ```
@@ -525,7 +525,7 @@ make pipeline                   # update-data + analysis + report + grupos + das
 # Qualidade
 make validate-contracts         # raw + processed
 make test-fast                  # imports + contratos + artefatos core
-make test-smoke                 # + neoenergia + dashboards
+make test-smoke                 # + grupos + dashboards
 
 # Limpeza
 make clean-analysis             # remove data/processed/analysis/

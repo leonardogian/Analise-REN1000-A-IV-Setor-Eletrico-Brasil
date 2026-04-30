@@ -98,7 +98,7 @@ Interpretacao recomendada:
 1. Pre vs pos regulatorio (pre_2022 vs pos_2022)
 2. Tendencia anual de taxa fora do prazo
 3. Tendencia mensal de compensacao
-4. Benchmark Coelba vs Neoenergia Brasilia vs Copel
+4. Benchmark entre distribuidoras de portes semelhantes
 5. Ranking de distribuidoras por taxa normalizada
 
 ## Notebooks e ordem recomendada

@@ -7,8 +7,9 @@
 
 Trabalho de Conclusão de Curso (TCC) que analisa a eficácia da **Resolução
 Normativa nº 1.000/2021 da ANEEL** na qualidade dos serviços comerciais das
-distribuidoras de energia elétrica do Brasil. Foco especial nas **5 distribuidoras
-do grupo Neoenergia** (Brasília, Coelba, Cosern, Elektro, Pernambuco).
+distribuidoras de energia elétrica do Brasil. O foco é setorial: transgressões,
+compensações financeiras e normalização por UC, com recortes por distribuidora,
+grupo econômico, porte, território e período regulatório.
 
 > **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O Vanilla foi movido para a branch `legacy/vanilla-dashboard`. A rodada atual adicionou auditoria numérica (`make qa-data`), removeu targets locais do legado no Makefile e consolidou os JSONs canônicos em `data/processed/dashboard/`.
 
@@ -51,7 +52,7 @@ TCC_leo_main/
 │   ├── analysis/
 │       ├── build_analysis_tables.py  ← Gera tabelas analíticas em CSV/Parquet
 │       ├── build_report.py           ← Gera relatório markdown
-│       ├── neoenergia_diagnostico.py ← Benchmark detalhado 5 Neoenergias
+│       ├── neoenergia_diagnostico.py ← Artefatos legados de compatibilidade por grupo
 │       └── build_dashboard_data.py   ← Gera data/processed/dashboard/dashboard_data.json
 │   └── backend/
 │       └── main.py                  ← Backend local (API + JSONs publicos)
@@ -68,11 +69,11 @@ TCC_leo_main/
 │           ├── kpi_regulatorio_anual.csv
 │           ├── fato_transgressao_mensal_distribuidora.csv
 │           ├── fato_indicadores_anuais.csv
-│           └── neoenergia/   ← CSVs específicos do grupo Neoenergia
+│           └── neoenergia/   ← CSVs legados de compatibilidade para esse grupo
 │       └── dashboard/        ← JSONs canônicos consumidos pelo backend/Next.js
 │
 ├── reports/                  ← Relatórios gerados (markdown)
-├── docs/                     ← Documentação auxiliar + imagens
+├── docs/                     ← Documentação auxiliar, imagens e metodologia_tcc.excalidraw
 ├── logos/                    ← Logos PNG de holdings
 ├── docker/                   ← Dockerfile/Compose do backend e stacks opcionais
 ├── scripts/                  ← Utilitários (cargas PostgreSQL, QA, validações)
@@ -97,7 +98,7 @@ make transform       # limpa e transforma
 make analysis        # gera tabelas analíticas
 make report          # gera relatório markdown
 make dashboard       # gera dashboard_data.json
-make dashboard-full  # analysis + report + grupos + neoenergia + dashboard
+make dashboard-full  # analysis + report + grupos + compatibilidade + dashboard
 
 # Aplicação local
 make site            # backend + Next.js com JSON atual
@@ -111,7 +112,7 @@ make stack-next      # backend local + frontend Next.js juntos
 # Testes
 make validate-contracts  # valida contratos de schema (raw + processed)
 make test-fast           # compilação + imports + contratos + artefatos core
-make test-smoke          # análise + neoenergia + dashboard + validação completa
+make test-smoke          # análise + grupos + dashboard + validação completa
 make check-artifacts     # verifica artefatos core
 make check-artifacts-full # verifica artefatos completos + dashboard_data.json
 make qa-data             # auditoria numérica read-only dos artefatos
@@ -158,14 +159,17 @@ pip install -r requirements.txt
 # O Makefile já trata isso automaticamente via a variável PYTHON
 ```
 
+No VS Code Dev Container, a `.venv` do workspace é um volume Docker nomeado (`tcc-ren1000-devcontainer-venv`) criado dentro do container Debian Bookworm/Python 3.12. Isso evita reaproveitar a `.venv` do host e mantém `make doctor` validando o ambiente correto.
+
 ## Links Importantes
 
 - **Visão Completa dos Dados**: `.ai/DATA_OVERVIEW.md` ← **SEMPRE ler antes de qualquer análise**
 - **README humano**: `README.md`
 - **Dashboard docs**: `app/frontend-next/README.md`
 - **Guia de análise**: `docs/GUIA_ANALISE.md`
+- **Fluxograma da metodologia**: `docs/metodologia_tcc.excalidraw`
 - **Próximos passos TCC**: `docs/PROXIMOS_PASSOS_TCC.md`
-- **Relatório Neoenergia**: `reports/neoenergia_diagnostico.md`
+- **Artefato legado de compatibilidade de grupo**: `reports/neoenergia_diagnostico.md`
 - **Como usar Git**: `COMO_USAR_GIT.md`
 - **Auditoria de qualidade dos dados**: `docs/DATA_QUALITY_AUDIT.md`
 
