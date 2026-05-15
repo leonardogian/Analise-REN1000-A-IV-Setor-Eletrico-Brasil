@@ -28,10 +28,13 @@ Sempre que iniciar uma nova interação ou tarefa neste repositório, você DEVE
 - **Extração e Tratamento (fontes brutas):** Toda documentação canônica de "como baixar os dados do zero", URLs CKAN, periodicidade, limitações e troubleshooting mora em [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md). Antes de mexer em `src/etl/`, leia esse doc. Para checar/adicionar fonte nova: atualizar `CATALOGO` em `extract_aneel.py` (ou criar novo `extract_<portal>.py`) e refletir no doc.
 - **Interface Web:** O frontend oficial consome `/api/*` e `/dashboard_*.json` via rewrites Next.js → Railway. A fonte canônica dos JSONs é `data/processed/dashboard/dashboard_*.json`, gerada por scripts em `src/analysis/`.
 - **CSP e deploy oficial:** Em `app/frontend-next/vercel.json`, mantenha `script-src 'unsafe-inline'` para permitir o boot/hydration do Next.js App Router na Vercel. Ao mudar `app/backend/main.py` ou `data/processed/dashboard/dashboard_*.json`, redeploye também o Railway para evitar produção com endpoints/JSONs antigos.
+- **Mapa visual da metodologia:** `docs/metodologia_tcc.excalidraw` resume para banca o fluxo real do TCC: pergunta regulatória, fontes ANEEL/IBGE, ETL, análise, validação, API/dashboard e interpretação.
+- **Fluxograma do pipeline Make:** `docs/mtdpipeline.excalidraw` documenta, em linguagem metodológica, o que cada target (`make pipeline`, `make validate-contracts`, `make qa-data`, etc.) executa e qual artefato/riscos controla.
 - **Apresentação do TCC (.pptx):** O script gerador foi removido. Apresentações devem ser criadas manualmente ou exportadas do Canva/Google Slides.
 - **Logos das Holdings:** Manter os logos em `logos/` (raiz) e espelhar nos assets usados pelos frontends com nomes padronizados (`neoenergia.png`, `cpfl.png`, `equatorial.png`, etc.).
 - **Porta Padronizada:** Desenvolvimento local e via Docker usam a **porta `8051`** (`http://localhost:8051/`). Não usar porta 8000 ou outras para o dashboard.
 - **Frontend Next local:** quando precisar comparar com o frontend React em `app/frontend-next/`, use a **porta `3051`** (`http://localhost:3051/`) para evitar conflito com a 3000, que ja esta ocupada nesta maquina.
+- **Devcontainer VS Code:** `.devcontainer/devcontainer.json` usa Debian Bookworm (`mcr.microsoft.com/devcontainers/python:3.12-bookworm`), Node 20 e Docker-in-Docker. A `.venv` do container fica no volume nomeado `tcc-ren1000-devcontainer-venv`, isolada da `.venv` do host.
 
 ---
 
@@ -111,32 +114,19 @@ Estas regras valem para qualquer execucao bloqueante (comando/app) quando nao fo
 <claude-mem-context>
 # Memory Context
 
-# [TCC_leo_main] recent context, 2026-04-28 9:38pm GMT-3
+# [TCC_leo_main] recent context, 2026-04-30 12:32pm GMT-3
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (21,749t read) | 2,054,732t work | 99% savings
+Stats: 50 obs (20,876t read) | 1,825,881t work | 99% savings
 
 ### Apr 23, 2026
 S23 TCC ANEEL Full Code Audit — Senior Data Engineer review of ETL pipeline, redundancies, data integrity, and dashboard optimization across the entire codebase (Apr 23, 5:09 PM)
 S11 User Inquired About ODT File Manipulation Support (Apr 23, 5:09 PM)
 ### Apr 27, 2026
 S36 settings.local.json Permissions Cleaned — 154 Lines Reduced to 49 (Apr 27, 4:33 PM)
-47 10:51p 🔵 TCC ANEEL — Large Batch of Uncommitted Changes Discovered Pre-Audit Including Critical Analysis Scripts
-49 10:52p 🔵 TCC ANEEL — Data Sizes Confirmed: 8.3GB Raw + 7.6GB Processed + 7 Tracked Dashboard JSONs
-50 " 🔵 TCC ANEEL — Analysis Layer Already Substantially Refactored in Uncommitted Working Tree
-51 " 🔵 TCC ANEEL — B1 Bug Still Active: transform_aneel.py Reads All CSVs Without decimal="," Parameter
-52 " 🔵 TCC ANEEL — build_regulatory_long_summary Silent Fallback (C7) Still Present in build_dashboard_data.py
-54 10:54p 🟣 TCC ANEEL — docs/REPRODUCIBILITY_FIX_TASKS.md Created as Operational Handoff Document
-55 " 🔵 TCC ANEEL — C8 Confirmed Active: normalize_regulatory_class Collapses Rural/Urban Distinction in Dashboard
-57 10:55p 🔄 TCC ANEEL — transform_aneel.py Fully Rewritten: B1/B2/B3/B9 Audit Findings Fixed
-58 10:56p 🔄 TCC ANEEL — schema_contracts.py Massively Extended: B10/B11/B13/D13/D19 Audit Findings Fixed
-60 10:59p ⚖️ TCC ANEEL — Reproducibility Audit Request: External User Git Clone Perspective
-62 11:00p 🔄 build_dashboard_data.py — Hardcoded Labels, Metric Formulas, and Timeseries Aggregation Fully Replaced
-63 " 🔄 check_artifacts.py — Artifact Manifest Updated to CSV-First + Parquet Drift Checker Added
-64 " 🔵 extract_aneel.py — Full CKAN Download Catalog with Direct URLs Confirmed
 ### Apr 28, 2026
 68 1:03p 🔵 Claude Context Overload — MCP Plugins and Deferred Tools Burning Tokens
 69 " 🔵 Claude Context Bloat Identified — MCP Plugins and Deferred Tools Consuming Tokens
@@ -170,14 +160,30 @@ S37 codex:setup — Verify Codex CLI readiness and display setup status (Apr 28,
 96 7:22p 🔵 kpi_overview JSON Não Tem Campo delta_compensacao_pct — Frontend Sempre Cai no Fallback Bugado
 97 " 🔵 Codex CLI Setup Status Verified — Ready
 S38 codex:rescue/review attempted — git working tree is clean, nothing to review (Apr 28, 7:22 PM)
+S39 Diagnose and fix incorrect KPI cards on TCC ANEEL dashboard home page — wrong REN1000 period window and misleading −73% compensation delta (Apr 28, 7:24 PM)
 98 7:27p ⚖️ Plano de correção dos cards KPI do dashboard — cutoff REN1000 e métricas anualizadas
 99 " 🔵 KPI Cards Showing Incorrect REN1000 Period Comparison Due to Wrong Cutoff Year
 100 " ⚖️ Decided to Set REN1000 Cutoff to 2022 and Use Annualized Compensation Delta for KPI Cards
-S39 Diagnose and fix incorrect KPI cards on TCC ANEEL dashboard home page — wrong REN1000 period window and misleading −73% compensation delta (Apr 28, 7:51 PM)
+S51 Update docs/metodologia_tcc.excalidraw to be more academic, explanatory, and visually polished for TCC defense panel — using Codex as aid (Apr 28, 7:51 PM)
 101 7:55p 🟣 TCC ANEEL Fase 2 — Demarcação Regulatória, Robustez e Normalização Temporal
 102 " 🔵 Dois docs não-commitados definem próximos passos de implementação
 103 " 🔵 KPI Cards do Dashboard Mostram Δ Compensações −73% Incorreto por Cutoff Errado
 104 " ⚖️ Plano de Fix em 8 Passos para Cards KPI com Cutoff 2022 e Métrica Anualizada
+### Apr 30, 2026
+S50 Codex CLI setup check via /codex:setup skill (Apr 30, 10:36 AM)
+130 10:41a 🔵 TCC Methodology Diagram Structure Mapped
+131 " ⚖️ Academic TCC Diagram Expansion Plan Defined
+132 " ⚖️ TCC Diagram Expansion Plan Approved — Execution Phase Started
+133 " 🔵 Codex CLI exec Interface Confirmed for Non-Interactive Academic Text Generation
+135 10:45a 🟣 Codex Generated Academic Texts for TCC Diagram Slots 1–10
+136 10:47a 🟣 Codex Generated Academic Texts for Diagram Slots 11–30 (ETL, Analytics, Audit blocks)
+137 10:49a 🟣 Codex Generated Academic Texts for Diagram Slots 31–50 (Product, Result, Timeline, Variables)
+134 10:50a 🟣 TCC Excalidraw Diagram Academic Texts Generated
+138 " 🔵 Codex Batch 4 Returned Empty Output — Slots 51–76 Not Generated
+139 10:51a 🔵 Codex Batch 4 Succeeded on Retry — grep Extraction Was the Failure Point
+140 11:01a 🔵 TCC REN 1.000/2021 — Metodologia Submetida à Banca Simulada
+141 11:02a 🔵 TCC_leo_main — Estado Atual do Projeto e Histórico Recente de Commits
+142 11:03a 🔵 docs/metodologia_tcc.excalidraw — Fluxograma Metodológico Completo para Banca
 
-Access 2055k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 1826k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

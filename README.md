@@ -82,6 +82,10 @@ make stack-next
 
 Guia canônico das URLs, periodicidade, diretórios e troubleshooting: [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md).
 
+O fluxograma editável do pipeline Make fica em
+[`docs/mtdpipeline.excalidraw`](docs/mtdpipeline.excalidraw), como apoio visual
+para explicar os targets, artefatos e validações de reprodutibilidade.
+
 ### Só o backend (API)
 
 ```bash
@@ -202,6 +206,7 @@ make qa-data          # auditoria numerica dos artefatos analiticos
 | [`.ai/CONTEXT.md`](.ai/CONTEXT.md) | Visão de arquitetura para agentes IA |
 | [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md) | Como baixar dados do zero (URLs CKAN, periodicidade, troubleshooting) |
 | [`docs/metodologia_tcc.excalidraw`](docs/metodologia_tcc.excalidraw) | Fluxograma visual da metodologia real do TCC, em blocos para banca |
+| [`docs/mtdpipeline.excalidraw`](docs/mtdpipeline.excalidraw) | Fluxograma editável do pipeline Make, artefatos e validações de reprodutibilidade |
 | [`app/frontend-next/README.md`](app/frontend-next/README.md) | Rotas, componentes e padrões do Next.js |
 | [`AGENTS.md`](AGENTS.md) | Diretrizes operacionais para agentes IA |
 

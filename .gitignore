@@ -55,6 +55,7 @@ app/frontend/dashboard*.json
 
 # IDE & Tools
 .cursor/
+.codex/
 .playwright/
 .playwright-cli/
 playwright-cli.json

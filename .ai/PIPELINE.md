@@ -2,6 +2,10 @@
 
 ## Visão Geral do Fluxo
 
+O fluxograma editável do pipeline Make fica em
+[`docs/mtdpipeline.excalidraw`](../docs/mtdpipeline.excalidraw), com foco nos
+targets, artefatos e validações de reprodutibilidade.
+
 ```
 ANEEL API (CSVs)
     │

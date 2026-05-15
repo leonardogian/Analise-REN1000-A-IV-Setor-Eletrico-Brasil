@@ -101,6 +101,7 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 - `data/processed/analysis/` — versioned analytical CSVs; Parquet mirrors are generated locally
 - `docker/` — Dockerfile/Compose do backend e stacks opcionais (PostgreSQL, Kestra)
 - `docs/` — canonical docs (EXTRACAO_DADOS, DICIONARIO_DADOS, GUIA_ANALISE, metodologia_tcc.excalidraw, ...)
+- `docs/mtdpipeline.excalidraw` — fluxograma editável do pipeline Make, artefatos e validações de reprodutibilidade
 - `.github/agents/` — specialized AI agents (aneel-data-guardian, backend-fastapi-specialist, frontend-next-specialist)
 - `scripts/` — utilities (Postgres loader, artifact checkers, QA automation)
 
@@ -170,6 +171,7 @@ Após mudanças estruturais, mantenha sincronizados:
 - `docs/EXTRACAO_DADOS.md` — guia canônico de extração ANEEL + IBGE
 - `docs/DATA_QUALITY_AUDIT.md` — backlog e contrato da auditoria numerica
 - `docs/metodologia_tcc.excalidraw` — fluxograma visual da metodologia para banca
+- `docs/mtdpipeline.excalidraw` — fluxograma editável do pipeline Make para a seção 3.5
 
 ## Testing
 

@@ -168,6 +168,7 @@ No VS Code Dev Container, a `.venv` do workspace é um volume Docker nomeado (`t
 - **Dashboard docs**: `app/frontend-next/README.md`
 - **Guia de análise**: `docs/GUIA_ANALISE.md`
 - **Fluxograma da metodologia**: `docs/metodologia_tcc.excalidraw`
+- **Fluxograma do pipeline Make**: `docs/mtdpipeline.excalidraw`
 - **Próximos passos TCC**: `docs/PROXIMOS_PASSOS_TCC.md`
 - **Artefato legado de compatibilidade de grupo**: `reports/neoenergia_diagnostico.md`
 - **Como usar Git**: `COMO_USAR_GIT.md`
