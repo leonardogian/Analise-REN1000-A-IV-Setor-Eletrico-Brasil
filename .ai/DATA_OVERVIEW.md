@@ -761,9 +761,9 @@ print(df[(df['compensacao_rs'] == 0) & (df['qtd_fora_prazo'] > 0)].head())
 #### 3.2 Feed Contínuo INDGER (Automação)
 
 - **Gap:** Dashboard congelado em Dez/2025; atualizar manualmente mês-a-mês.
-- **Solução:** Integrar Kestra ou cron com API ANEEL INDGER; pull automático mensalmente.
+- **Solução:** Automatizar `make extract`/`make pipeline` via cron ou CI dedicado; pull automático mensalmente.
 - **Impacto:** Dashboard sempre atualizado.
-- **Esforço:** Alto (desenvolvimento Kestra + CI/CD).
+- **Esforço:** Alto (agendamento, logs, alertas e CI/CD).
 - **ETA:** 1 mês.
 - **Dono:** DevOps / Engenharia de dados.
 

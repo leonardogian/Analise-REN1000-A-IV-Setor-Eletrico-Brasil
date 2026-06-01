@@ -1,72 +1,93 @@
-# 📊 TCC — Análise ANEEL REN 1000/2021
+# TCC — ANEEL REN 1.000/2021
 
-**Eficácia da Resolução Normativa ANEEL nº 1.000/2021 na qualidade comercial das distribuidoras de energia elétrica do Brasil.**
+Analise setorial da eficacia da **Resolucao Normativa ANEEL no. 1.000/2021**
+na qualidade comercial das distribuidoras de energia eletrica do Brasil.
 
-Foco setorial em **transgressões de prazo, compensações financeiras (R$)** e normalização por UC (unidades consumidoras), com recortes por distribuidora, grupo econômico, porte, território e período regulatório.
+O projeto mede transgressoes de prazo, compensacoes financeiras pagas na fatura
+dos consumidores e normalizacao por unidades consumidoras (UCs), com recortes
+por distribuidora, grupo economico, porte, territorio e periodo regulatorio.
 
----
+[![Frontend](https://img.shields.io/badge/frontend-Next.js_14-black?logo=vercel)](https://tcc-frontend-react.vercel.app)
+[![Backend](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi)](https://tcc-ren1000x414-production.up.railway.app/health)
+[![Python](https://img.shields.io/badge/python-3.10+-3776AB?logo=python)](requirements.txt)
+[![TCC](https://img.shields.io/badge/TCC-ANEEL_REN_1000-orange)](docs/metodologia_tcc.excalidraw)
 
-<!-- TODO: Adicione badges abaixo (5-8 linhas)
-   Objetivo: comunicar status, stack e link de produção rapidamente.
-   Candidatos: deploy status Vercel, linguagens (Python + TypeScript), licença, link ao TCC.
+## Para Quem Chegou Agora
 
-   Exemplo simples (substitua as URLs reais):
-   [![Deploy](https://img.shields.io/badge/frontend-Next.js_14-black?logo=vercel)](https://tcc-frontend-react.vercel.app)
-   [![Backend](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi)](https://tcc-ren1000x414-production.up.railway.app/health)
-   [![Python](https://img.shields.io/badge/python-3.10+-3776AB?logo=python)](requirements.txt)
-   [![TCC](https://img.shields.io/badge/TCC-ANEEL_REN_1000-orange)](https://tcc-frontend-react.vercel.app)
+| Perfil | Comece por aqui | Objetivo |
+|---|---|---|
+| Pesquisador ou banca | [Reproducao cientifica](#reproducao-cientifica) + [evidencia primaria](#evidencia-primaria-vs-camadas-derivadas) | Conferir a cadeia de evidencias e validar os numeros. |
+| Usuario do dashboard | [Demo rapida](#demo-rapida-com-dados-versionados) | Abrir o painel com os dados versionados no repo. |
+| Dev frontend | `app/frontend-next/README.md` + [aplicacao local](#aplicacao-local) | Rodar o Next.js e ajustar telas/componentes. |
+| Dev backend/API | `app/backend/main.py` + [arquitetura](#arquitetura-em-producao) | Entender endpoints, JSONs e degradacao Postgres/Redis. |
+| Agente IA | `AGENTS.md`, `CLAUDE.md` e `.ai/` | Seguir as restricoes do projeto antes de mudar qualquer coisa. |
 
-   Dica: menos é mais. 4 badges máximo pra não virar poluição visual.
--->
+## Links Principais
 
----
+| Ambiente | URL | Uso |
+|---|---|---|
+| Frontend oficial | <https://tcc-frontend-react.vercel.app> | Dashboard Next.js/React em producao. |
+| Backend Railway | <https://tcc-ren1000x414-production.up.railway.app/health> | Healthcheck da API e diagnostico de dependencias. |
+| Dashboard Vanilla legado | <https://analise-ren-1000-a-iv-setor-eletric.vercel.app> | Preservado apenas na branch `legacy/vanilla-dashboard`. |
 
-## 🌐 Acessar o Projeto
+## Visao Visual
 
-| Ambiente | URL | Descrição |
-|----------|-----|-----------|
-| **Frontend (Next.js) — Produção** | [tcc-frontend-react.vercel.app](https://tcc-frontend-react.vercel.app) | Dashboard principal, React + Tailwind |
-| **Backend API — Produção** | [Railway](https://tcc-ren1000x414-production.up.railway.app/health) | FastAPI servindo JSONs canônicos; PostgreSQL/Redis são dependências degradáveis |
-| **Frontend (Vanilla JS) — Legado** | [analise-ren-1000-a-iv-setor-eletric.vercel.app](https://analise-ren-1000-a-iv-setor-eletric.vercel.app) | Preservado na branch `legacy/vanilla-dashboard` |
+![Fluxograma metodologico do TCC](docs/images/metodologia_tcc_mermaid.svg)
 
----
+### Telas Do Dashboard
 
-## 🎯 O que é este projeto?
+| Visao geral | Ranking |
+|---|---|
+| ![Dashboard visao geral](docs/images/dashboard_visao_geral.png) | ![Ranking de grupos](docs/images/dashboard_ranking.png) |
 
-Quando uma distribuidora de energia atrasa um atendimento além do prazo regulado pela ANEEL, ela é obrigada a **compensar o consumidor na fatura**. Este TCC responde: **isso está acontecendo na prática? Quais grupos pagam mais? A REN 1.000/2021 mudou o comportamento?**
+| Evolucao mensal | Mapa |
+|---|---|
+| ![Evolucao mensal](docs/images/dashboard_evolucao.png) | ![Mapa geografico](docs/images/dashboard_mapa.png) |
 
-O projeto combina ~7 GB de dados históricos da ANEEL (2011–2025), pipeline ETL em Python, API FastAPI no Railway e frontend principal em Next.js 14 (React + Tailwind).
+## O Que Este Repo Entrega
 
----
+- Pipeline reprodutivel de dados abertos ANEEL/IBGE, de fontes oficiais ate
+  tabelas analiticas validadas.
+- Artefatos auditaveis em `data/processed/analysis/`, versionados para revisao
+  e demonstracao.
+- JSONs derivados em `data/processed/dashboard/`, consumidos pelo backend e pelo
+  frontend.
+- API FastAPI em `app/backend/`, publicada no Railway e resiliente a falhas
+  isoladas de PostgreSQL/Redis.
+- Dashboard oficial Next.js/React em `app/frontend-next/`, publicado na Vercel.
+- Documentacao metodologica para o TCC em `docs/`, `.ai/` e `reports/`.
 
-## 🚀 Como Usar Localmente
+O foco exclusivo do projeto e regulacao distribuidora de energia da ANEEL,
+especialmente qualidade comercial, transgressoes de prazo e compensacoes
+financeiras na REN 1.000/2021.
 
-Há dois caminhos diferentes:
+## Demo Rapida Com Dados Versionados
 
-1. **Ver a demo com dados versionados.** Usa os CSVs analíticos e JSONs já presentes no clone. Serve para explorar o dashboard rapidamente, mas não reproduz cientificamente a base.
-2. **Reproduzir do zero.** Baixa os dados brutos da ANEEL/IBGE, transforma, valida e regenera os JSONs. Este é o caminho obrigatório para conferir os números.
-
-### VS Code Dev Container
-
-O devcontainer oficial usa Python 3.12 em Debian Bookworm, Node 20 e Docker-in-Docker. A `.venv` dentro do container fica em um volume Docker nomeado (`tcc-ren1000-devcontainer-venv`), isolado da `.venv` do host, para que `make doctor` valide as dependências do próprio container.
-
-No VS Code, use `Dev Containers: Rebuild and Reopen in Container`. Depois de entrar, rode:
+Use este caminho para abrir o painel sem rebaixar os dados brutos. Ele usa os
+CSVs analiticos e JSONs ja versionados no repositorio, o que serve para
+explorar a aplicacao, mas nao substitui a reproducao cientifica.
 
 ```bash
+make venv-recreate
+make install
 make doctor
+make site
 ```
 
-### Demo rápida — Backend + Frontend Next.js
+Depois abra:
 
-```bash
-source .venv/bin/activate   # ou: make venv-recreate && make install
-make site                    # backend (8051) + Next.js (3051) com JSON atual
-# Abra http://localhost:3051
+```text
+http://localhost:3051
 ```
 
-### Reprodução científica do zero
+`make site` sobe o backend em `http://localhost:8051` e o frontend Next.js em
+`http://localhost:3051`.
 
-Os dados brutos não estão no Git por tamanho. Antes de considerar a visualização válida para auditoria, rode:
+## Reproducao Cientifica
+
+Use este caminho para refazer a cadeia completa a partir das fontes oficiais.
+Reserve pelo menos 12 GB livres e uma janela longa de execucao, pois o INDGER
+tem volume grande.
 
 ```bash
 make venv-recreate
@@ -75,197 +96,203 @@ make doctor
 make pipeline
 make qa-data
 make stack-next
-# Abra http://localhost:3051
 ```
 
-`make pipeline` executa extração, transformação, análise, geração dos JSONs e validações (`validate-contracts`, `check-artifacts-full`, `qa-data`). Em uma máquina comum, reserve ao menos 12 GB livres, conexão estável e uma janela longa de execução; o gargalo principal é baixar/descompactar e transformar o INDGER.
+O `make pipeline` executa:
 
-Desde 2026-05-31, a camada analítica valida a cobertura mensal INDGER como contrato de dados: as três tabelas mensais precisam conter exatamente os 36 períodos de `2023-01` a `2025-12`, e os JSONs do dashboard precisam expor série mensal até `2025-12`.
+```mermaid
+flowchart LR
+  A["Fontes oficiais<br/>ANEEL + IBGE"] --> B["data/raw/<br/>CSVs brutos"]
+  B --> C["data/processed/<br/>CSV/Parquet tratados"]
+  C --> D["data/processed/analysis/<br/>tabelas auditaveis"]
+  D --> E["validacoes<br/>contracts + artifacts + QA"]
+  E --> F["data/processed/dashboard/<br/>JSONs derivados"]
+  F --> G["FastAPI Railway<br/>/api/* + dashboard_*.json"]
+  G --> H["Next.js Vercel<br/>dashboard publico"]
+```
 
-Guia canônico das URLs, periodicidade, diretórios e troubleshooting: [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md).
+Controles obrigatorios da reproducao:
 
-O fluxograma editável do pipeline Make fica em
-[`docs/mtdpipeline.excalidraw`](docs/mtdpipeline.excalidraw), como apoio visual
-para explicar os targets, artefatos e validações de reprodutibilidade.
+- `make validate-contracts`: valida colunas, tipos, faixas e cobertura.
+- `make check-artifacts-full`: confirma artefatos esperados.
+- `make qa-data`: audita chaves, taxas, denominadores e cobertura temporal.
+- Cobertura mensal INDGER: exatamente `2023-01` a `2025-12` nas tres tabelas
+  mensais principais.
 
-### Só o backend (API)
+Guia canonico para baixar dados do zero, URLs CKAN, periodicidade, limites e
+troubleshooting: [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md).
+
+## Evidencia Primaria Vs Camadas Derivadas
+
+| Camada | Caminho | Papel metodologico | Versionamento |
+|---|---|---|---|
+| Fontes brutas | `data/raw/` | Dados oficiais baixados da ANEEL/IBGE. | Nao entra no Git por tamanho. |
+| Tratamento base | `data/processed/*.{csv,parquet}` | Dados limpos, tipados e comprimidos. | Regeneravel localmente. |
+| Evidencia primaria | `data/processed/analysis/` | Tabelas auditaveis usadas para interpretacao do TCC. | Versionada. |
+| Auditoria textual | `reports/tcc_claims_audit.md` | Rastreia afirmacoes numericas do texto. | Versionada. |
+| Camada derivada | `data/processed/dashboard/` | JSONs para comunicacao no painel. | Versionada para demo/deploy. |
+| Aplicacao | `app/backend/` + `app/frontend-next/` | Exploracao e comunicacao dos dados. | Codigo versionado. |
+
+O dashboard e a API **nao sao a fonte primaria da evidencia cientifica**. Eles
+sao camadas derivadas para exploracao e comunicacao. Para auditar uma conclusao,
+comece em `data/processed/analysis/` e `reports/tcc_claims_audit.md`.
+
+## Comandos Por Objetivo
+
+| Objetivo | Comando |
+|---|---|
+| Ver todos os targets | `make help` |
+| Criar ambiente limpo | `make venv-recreate` |
+| Instalar dependencias Python | `make install` |
+| Validar ambiente | `make doctor` |
+| Baixar fontes ANEEL/IBGE | `make extract` |
+| Transformar raw em processed | `make transform` |
+| Gerar tabelas analiticas | `make analysis` |
+| Gerar relatorio e JSONs | `make dashboard-full` |
+| Rodar pipeline completo | `make pipeline` |
+| Validacao rapida | `make test-fast` |
+| Smoke completo | `make test-smoke` |
+| Auditoria numerica | `make qa-data` |
+| Subir backend local | `make backend` |
+| Subir frontend local | `make frontend-next` |
+| Subir backend + frontend | `make site` ou `make stack-next` |
+| Usar backend Railway localmente | `make site-railway` |
+
+Use sempre `python3` ou os targets `make`. Nesta maquina, nao assuma que o
+binario `python` existe.
+
+## Aplicacao Local
+
+Portas padrao:
+
+| Servico | Porta | URL |
+|---|---:|---|
+| Backend FastAPI | `8051` | `http://localhost:8051` |
+| Frontend Next.js | `3051` | `http://localhost:3051` |
+
+Backend separado:
 
 ```bash
-make backend   # FastAPI em http://localhost:8051
+make backend
 ```
 
-### Instalar dependências do Next.js (primeira vez)
+Frontend separado, usando backend local:
 
 ```bash
-make frontend-next-install   # npm ci em app/frontend-next/
-make frontend-next           # Next.js dev em http://localhost:3051
+make frontend-next-install
+make frontend-next
 ```
 
----
-
-## 🏗️ Arquitetura em Produção
-
-```
-Browser
-   │  fetch() /api/...
-   ▼
-Vercel — Next.js 14  (tcc-frontend-react.vercel.app)
-   │  rewrite transparente via next.config.mjs
-   ▼
-Railway — FastAPI + Docker  (tcc-ren1000x414-production.up.railway.app)
-   │  serve /api/* e /dashboard_*.json a partir dos JSONs versionados
-   ▼
-PostgreSQL + Redis opcionais (no Railway: persistência/cache)
-   │  carregado a partir de
-   ▼
-data/processed/analysis/*.csv  (versioned em Git)
-```
-
-| Camada | Tech | Por quê |
-|--------|------|---------|
-| ETL | Python + Pandas + Parquet | Volume 7 GB + transformações complexas |
-| Backend | FastAPI + JSONs canônicos + PostgreSQL/Redis opcionais | Site público continua disponível com artefatos versionados mesmo se dependências auxiliares degradarem |
-| Frontend principal | Next.js 14 + React 18 + TanStack Query + Tailwind | SSR, cache inteligente, tipagem TS |
-| Deploy | Vercel + Railway | CDN global (front) + pay-per-use (back) |
-
-Nota operacional: o Next.js em produção depende da CSP em `app/frontend-next/vercel.json` permitir `script-src 'unsafe-inline'` para os scripts inline de boot/hydration. Quando `app/backend/main.py` ou `data/processed/dashboard/dashboard_*.json` mudarem, o Railway também precisa ser redeployado para publicar os endpoints e dados atuais. O `/health` separa `dashboard_artifacts_ready`, `database_connected` e `redis_connected`; PostgreSQL/Redis indisponíveis deixam o backend em modo degradado, mas não devem impedir a entrega dos JSONs do dashboard.
-
----
-
-## 📡 Pipeline de Dados
-
-
-```
-ANEEL dadosabertos.aneel.gov.br
-   ↓  extract_aneel.py
-data/raw/*.csv  (7+ GB — não vai pro Git)
-   ↓  transform_aneel.py
-data/processed/*.parquet
-   ↓  build_analysis_tables.py
-data/processed/analysis/*.csv  (13 tabelas — VERSIONED)
-   ↓
-build_dashboard_data.py → data/processed/dashboard/dashboard_*.json
-build_report.py         → reports/relatorio_aneel.md
-grupos_diagnostico.py   → data/processed/analysis/grupos/
-```
-
-Política de versionamento: `data/raw/` e `data/processed/` base são gerados localmente e não entram no Git. `data/processed/analysis/**/*.csv` e `data/processed/dashboard/dashboard_*.json` podem ficar versionados para auditoria/demo/deploy, mas devem ser regenerados após ETL para reprodução científica. O frontend oficial consome esses JSONs via FastAPI/rewrites do Next.js.
-
-Para redação do TCC, a auditoria rastreável das afirmações numéricas fica em `reports/tcc_claims_audit.md`. Ela diferencia valores certificados pelos CSVs/JSONs locais de análises exploratórias que dependem de fontes externas, como EBITDA/CVM/B3.
-
-Comandos rápidos:
+Frontend separado, usando Railway como a Vercel:
 
 ```bash
-make pipeline            # extract → transform → análise → JSONs → validações
-make dashboard-full      # só a camada analítica → JSONs (sem re-extrair)
-make site                # backend + Next.js com JSON atual
-make site-refresh        # dashboard-full + backend + Next.js
-make site-railway        # Next.js local usando o backend Railway, igual à Vercel
-make grupos-diagnostico  # CSVs de grupos econômicos
+make frontend-next-railway
 ```
 
----
+## Arquitetura Em Producao
 
-## 📂 Estrutura de Pastas Relevante
-
+```mermaid
+flowchart TD
+  Browser["Browser"] --> Vercel["Vercel<br/>app/frontend-next"]
+  Vercel -->|rewrites /api/* e /dashboard_*.json| Railway["Railway<br/>FastAPI app/backend"]
+  Railway --> JSON["data/processed/dashboard<br/>JSONs canonicos"]
+  Railway -. opcional .-> Postgres["PostgreSQL"]
+  Railway -. opcional .-> Redis["Redis cache"]
+  Analysis["data/processed/analysis<br/>CSVs auditaveis"] --> JSON
 ```
+
+Pontos operacionais:
+
+- `app/frontend-next/next.config.mjs` encaminha `/api/*` e
+  `/dashboard_*.json` para o Railway.
+- `app/frontend-next/vercel.json` deve manter `script-src 'unsafe-inline'` na
+  CSP para o boot/hydration do App Router.
+- O backend deve seguir servindo JSONs mesmo com Postgres ou Redis
+  indisponiveis.
+- Mudancas em `app/backend/main.py` ou `data/processed/dashboard/dashboard_*.json`
+  exigem redeploy do Railway.
+
+Checklist detalhado de deploy: [`DEPLOY_CHECKLIST.md`](DEPLOY_CHECKLIST.md).
+
+## Mapa Do Repositorio
+
+```text
 TCC_leo_main/
 ├── app/
-│   ├── frontend-next/     ← Next.js 14 (principal)
-│   │   ├── app/           ← App Router (rotas: benchmark, mapa, ranking…)
-│   │   ├── components/    ← React components (KPICard, ChartCard, Sidebar…)
-│   │   ├── hooks/         ← Custom hooks (useDashboardData…)
-│   │   └── next.config.mjs ← Rewrites → Railway
-│   └── backend/
-│       └── main.py        ← FastAPI: REST + CORS
+│   ├── backend/              FastAPI oficial
+│   └── frontend-next/        Dashboard oficial Next.js/React
+├── data/
+│   ├── raw/                  Dados brutos locais, nao versionados
+│   ├── docs/                 PDFs/dicionarios oficiais de referencia
+│   └── processed/
+│       ├── analysis/         CSVs auditaveis versionados
+│       └── dashboard/        JSONs canonicos para API/dashboard
+├── docs/                     Documentacao tecnica e figuras metodologicas
+├── reports/                  Relatorios e auditoria de afirmacoes
+├── scripts/                  Validadores, QA e utilitarios
 ├── src/
-│   ├── etl/               ← extract_aneel.py, transform_aneel.py
-│   └── analysis/          ← build_analysis_tables, build_dashboard_data…
-├── data/processed/analysis/ ← CSVs versionados consumidos pelo app
-├── data/processed/dashboard/ ← JSONs canônicos servidos pelo backend/Next.js
-├── docs/                  ← Documentação, auditorias e imagens
-├── railway.toml           ← Config Docker Railway (backend)
-└── Makefile               ← Todos os comandos (make help)
+│   ├── etl/                  Extracao e transformacao
+│   └── analysis/             Tabelas analiticas, relatorio e JSONs
+├── .ai/                      Contexto vivo para agentes IA
+├── AGENTS.md                 Regras operacionais para agentes
+├── CLAUDE.md                 Comandos, arquitetura e restricoes
+└── Makefile                  Orquestracao principal
 ```
 
----
+Os workflows e fluxos Kestra antigos foram removidos intencionalmente. O fluxo
+oficial atual e Make + FastAPI/Railway + Next.js/Vercel.
 
-## 🧪 Testes e Validação
+## Documentacao Essencial
 
-```bash
-make test-fast        # 30s: imports + schema contracts + artefatos core
-make test-smoke       # 5min: smoke completo (grupos + dashboard)
-make validate-contracts  # valida schema raw vs processed
-make qa-data          # auditoria numerica dos artefatos analiticos
-```
+| Documento | Quando ler |
+|---|---|
+| [`CLAUDE.md`](CLAUDE.md) | Antes de desenvolver ou orientar agentes IA. |
+| [`AGENTS.md`](AGENTS.md) | Antes de qualquer tarefa automatizada no repo. |
+| [`.ai/CONTEXT.md`](.ai/CONTEXT.md) | Para entender fase atual, arquitetura e limites. |
+| [`.ai/PIPELINE.md`](.ai/PIPELINE.md) | Para entender ETL, analise e validacoes. |
+| [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md) | Para baixar dados do zero ou mexer em `src/etl/`. |
+| [`docs/METODOLOGIA_PIPELINE_MAKE.md`](docs/METODOLOGIA_PIPELINE_MAKE.md) | Para explicar a reproducao no texto academico. |
+| [`docs/DICIONARIO_DADOS.md`](docs/DICIONARIO_DADOS.md) | Para consultar campos e significado dos dados. |
+| [`docs/DATA_QUALITY_AUDIT.md`](docs/DATA_QUALITY_AUDIT.md) | Para entender backlog e contrato de qualidade. |
+| [`app/frontend-next/README.md`](app/frontend-next/README.md) | Para mexer no dashboard oficial. |
+| [`plano_limpeza.md`](plano_limpeza.md) | Para entender a limpeza recente do repositorio. |
 
----
+## Fontes De Dados
 
-## 📚 Documentação Técnica Detalhada
+| Fonte | Conteudo | Granularidade |
+|---|---|---|
+| Qualidade do Atendimento Comercial (ANEEL) | Prazos, transgressoes e compensacoes | Anual 2011-2023 por distribuidora/servico |
+| INDGER — Indicadores Gerenciais (ANEEL) | Servicos comerciais mensais com volume e valor | Mensal 2023-01 a 2025-12 |
+| DTB 2024 (IBGE) | Divisao territorial municipal | Municipio |
 
-| Documento | Conteúdo |
-|-----------|----------|
-| [`CLAUDE.md`](CLAUDE.md) | Comandos, arquitetura, convenções de código (para devs e IAs) |
-| [`docs/DATA_QUALITY_AUDIT.md`](docs/DATA_QUALITY_AUDIT.md) | Backlog e contrato da auditoria numerica dos dados |
-| [`.ai/CONTEXT.md`](.ai/CONTEXT.md) | Visão de arquitetura para agentes IA |
-| [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md) | Como baixar dados do zero (URLs CKAN, periodicidade, troubleshooting) |
-| [`docs/metodologia_tcc.excalidraw`](docs/metodologia_tcc.excalidraw) | Fluxograma visual da metodologia real do TCC, em blocos para banca |
-| [`docs/mtdpipeline.excalidraw`](docs/mtdpipeline.excalidraw) | Fluxograma editável do pipeline Make, artefatos e validações de reprodutibilidade |
-| [`app/frontend-next/README.md`](app/frontend-next/README.md) | Rotas, componentes e padrões do Next.js |
-| [`AGENTS.md`](AGENTS.md) | Diretrizes operacionais para agentes IA |
+Todas as fontes usadas sao publicas. O projeto trabalha com informacao agregada
+por distribuidora, servico, municipio ou grupo economico; nao ha identificador
+individual de consumidor.
 
----
+## Problemas Comuns
 
-## 📊 Fontes de Dados
+| Sintoma | Provavel causa | Acao |
+|---|---|---|
+| `python: command not found` | A maquina usa `python3`. | Rode via `make` ou use `python3`. |
+| Backend nao sobe | Artefatos/contratos ausentes. | Rode `make validate-contracts-processed` e `make check-artifacts-full`. |
+| Frontend preso em skeleton | Backend/JSON indisponivel ou CSP quebrada. | Conferir `/health` e `app/frontend-next/vercel.json`. |
+| Serie mensal mostra so janeiro | Regressao na mensalidade INDGER. | Rodar `make dashboard-full`, `make check-artifacts-full` e `make qa-data`. |
+| Falta dado bruto | `data/raw/` nao e versionado. | Rode `make extract` ou `make pipeline`. |
 
-| Fonte | Conteúdo | Granularidade |
-|-------|----------|---------------|
-| **Qualidade do Atendimento Comercial** (ANEEL) | Prazos, transgressões, compensações R$ | Anual 2011–2023 por distribuidora/serviço |
-| **INDGER — Indicadores Gerenciais** (ANEEL) | Serviços comerciais mensais com volume + valor | Mensal 2023-01–2025-12 |
-| **DTB 2024** (IBGE) | Divisão territorial municipal para mapa e rural/urbano | Por município |
+## Pesquisa Futura
 
-Fonte dos dados: [dadosabertos.aneel.gov.br](https://dadosabertos.aneel.gov.br) (portal público oficial)
+O pipeline foi desenhado para ser extensivel:
 
----
+- ampliar a janela temporal quando novas safras ANEEL forem publicadas;
+- integrar outras bases ANEEL, como continuidade, tarifas ou perdas;
+- fazer modelos econometricos em painel com efeitos por distribuidora e ano;
+- comparar metodologia semelhante em outros setores regulados.
 
-## 🔬 Abertura, Fidelidade dos Dados e Pesquisas Futuras
+Contribuicoes sao bem-vindas, desde que preservem a rastreabilidade da cadeia de
+evidencias e os contratos de dados.
 
-Este projeto foi desenhado para ser **aberto por padrão** — tanto nos dados quanto na infraestrutura. Esta seção explica o porquê e como outros pesquisadores podem reutilizá-lo.
+## Para Agentes IA
 
-### Por que o projeto pode ficar público sem restrições
-
-Todas as fontes são **dados abertos obrigatórios por lei** (Lei de Acesso à Informação + Resolução Normativa ANEEL nº 1.000/2021) e disponíveis no portal oficial [dadosabertos.aneel.gov.br](https://dadosabertos.aneel.gov.br):
-
-- Os indicadores são **agregados por distribuidora (pessoa jurídica), serviço ou município** — sem nenhum identificador de consumidor individual. A LGPD não se aplica, pois não há titular de dado pessoal envolvido.
-- A API pública do backend serve exclusivamente leitura (`GET`) — sem endpoints de escrita, upload ou autenticação, por design: dados abertos não devem exigir login.
-- Nenhum dado sintético, estimado ou preenchido artificialmente: todas as transformações são determinísticas e auditáveis via histórico `git`.
-
-### Fidelidade e rastreabilidade da cadeia de dados
-
-A cadeia completa é reproduzível a partir do zero com `make pipeline`:
-
-| Etapa | Script | Saída |
-|-------|--------|-------|
-| Extração | `src/etl/extract_aneel.py` | `data/raw/*.csv` — CSVs brutos dos endpoints CKAN/ANEEL |
-| Transformação | `src/etl/transform_aneel.py` | `data/processed/*.parquet` — Parquet tipados |
-| Análise | `src/analysis/build_analysis_tables.py` | `data/processed/analysis/*.csv` — **13 tabelas versionadas no Git** |
-| Validação | `scripts/validate_schema_contracts.py` | Contratos de schema contra o raw e o processado |
-| Auditoria numérica | `scripts/qa_data_audit.py` | Unicidade, taxas, labels, cobertura e drift CSV/parquet |
-
-As tabelas analíticas em `data/processed/analysis/` entram no controle de versão para permitir **auditoria independente**. Para reproduzir os dados, porém, o clone deve regenerar raw/processado base e JSONs locais com `make pipeline`. A documentação ponta-a-ponta das fontes, URLs, cadência de atualização e troubleshooting está em [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md).
-
-### Caminhos para pesquisas futuras
-
-O pipeline foi estruturado para ser extensível. Alguns ganchos concretos:
-
-- **Ampliar a janela temporal** — o pipeline é idempotente por ano/mês; basta rodar `make pipeline` após novas safras INDGER ou de Qualidade Comercial serem publicadas pela ANEEL.
-- **Cross-análise com outras bases ANEEL** — indicadores de continuidade (DIC/FIC/DEC), tarifas, perdas não-técnicas. As dimensões `dim_distribuidora_porte.csv` e `dim_distributor_group.csv` funcionam como chave de junção.
-- **Estudos longitudinais pós-REN 1.000** — ex.: análise da trajetória de compensação per capita vs. complexidade geográfica municipal com dados IBGE DTB já integrados.
-- **Econometria em painel** — a separação fatos/dimensões facilita modelos com efeitos fixos por distribuidora e ano (`linearmodels`, `statsmodels`).
-- **Comparação setorial** — metodologia análoga pode ser aplicada a indicadores de qualidade de outras agências regulatórias (ANATEL, ANS, ANTT).
-
-Forks, issues e pull requests são bem-vindos. O repositório está aberto justamente para ser uma base reutilizável além do TCC original.
-
----
-
-> 🤖 **Para agentes IA:** antes de qualquer mudança estrutural, leia `CLAUDE.md` e `AGENTS.md`. Rotas, portas e targets Make estão documentados lá.
+Antes de atuar, leia `AGENTS.md`, `CLAUDE.md` e os arquivos em `.ai/`. Nao crie
+backend Python fora de `app/backend/`, nao altere as portas `8051`/`3051` sem
+motivo documentado e nao edite manualmente `data/processed/dashboard/*.json`.

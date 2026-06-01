@@ -37,6 +37,7 @@ Sempre que iniciar uma nova interação ou tarefa neste repositório, você DEVE
 - **Porta Padronizada:** Desenvolvimento local e via Docker usam a **porta `8051`** (`http://localhost:8051/`). Não usar porta 8000 ou outras para o dashboard.
 - **Frontend Next local:** quando precisar comparar com o frontend React em `app/frontend-next/`, use a **porta `3051`** (`http://localhost:3051/`) para evitar conflito com a 3000, que ja esta ocupada nesta maquina.
 - **Devcontainer VS Code:** `.devcontainer/devcontainer.json` usa Debian Bookworm (`mcr.microsoft.com/devcontainers/python:3.12-bookworm`), Node 20 e Docker-in-Docker. A `.venv` do container fica no volume nomeado `tcc-ren1000-devcontainer-venv`, isolada da `.venv` do host.
+- **Contexto de IA ativo:** mantenha contexto vivo em `.ai/`, `AGENTS.md`, `CLAUDE.md` e `.github/agents/`. Planos/specs antigos de agentes e fluxos Kestra obsoletos não devem voltar como documentação operacional sem decisão explícita.
 
 ---
 

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality in Brazil's electricity distribution sector. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units), with cuts by distributor, economic group, size, geography, and regulatory period.
 
-**Current phase:** ETL e backend FastAPI estão operacionais; o frontend oficial é o Next.js em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos como caminho crítico do dashboard e trata PostgreSQL/Redis como dependências degradáveis para persistência/cache. O dashboard Vanilla clássico foi movido para a branch `legacy/vanilla-dashboard`. A rodada de reprodutibilidade reforçou extração segura, contratos de schema, deduplicação INDGER e dashboard com agregações ponderadas. Em 2026-05-31, o parsing mensal INDGER foi corrigido para preservar `2023-01` a `2025-12` e o TCC ganhou auditoria rastreável em `reports/tcc_claims_audit.md`. `make pipeline` agora termina com validações.
+**Current phase:** ETL e backend FastAPI estão operacionais; o frontend oficial é o Next.js em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos como caminho crítico do dashboard e trata PostgreSQL/Redis como dependências degradáveis para persistência/cache. O dashboard Vanilla clássico foi movido para a branch `legacy/vanilla-dashboard`. A rodada de reprodutibilidade reforçou extração segura, contratos de schema, deduplicação INDGER e dashboard com agregações ponderadas. Em 2026-05-31, o parsing mensal INDGER foi corrigido para preservar `2023-01` a `2025-12` e o TCC ganhou auditoria rastreável em `reports/tcc_claims_audit.md`. `make pipeline` agora termina com validações. Em 2026-06-01, o repositório foi enxugado para remover docs/planos legados de agentes e fluxos Kestra obsoletos; o contexto ativo de IA fica em `.ai/`, `AGENTS.md`, `CLAUDE.md` e `.github/agents/`.
 
 ## Essential Commands
 
@@ -100,7 +100,7 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 - `app/frontend-next/` — frontend oficial em Next.js 14 (7 páginas, Tailwind, TanStack Query)
 - `data/processed/dashboard/` — JSONs canônicos `dashboard_*.json` servidos pelo backend/Railway
 - `data/processed/analysis/` — versioned analytical CSVs; Parquet mirrors are generated locally
-- `docker/` — Dockerfile/Compose do backend e stacks opcionais (PostgreSQL, Kestra)
+- `docker/` — Dockerfile/Compose do backend e stacks opcionais de infraestrutura local
 - `docs/` — canonical docs (EXTRACAO_DADOS, DICIONARIO_DADOS, GUIA_ANALISE, metodologia_tcc.excalidraw, ...)
 - `docs/mtdpipeline.excalidraw` — fluxograma editável do pipeline Make, artefatos e validações de reprodutibilidade
 - `.github/agents/` — specialized AI agents (aneel-data-guardian, backend-fastapi-specialist, frontend-next-specialist)
@@ -191,8 +191,8 @@ Não há pytest. Testes são Make targets:
 # Backend containerizado, porta 8051
 make docker-up
 
-# Kestra orchestration (pipelines de dados)
-docker compose -f docker/docker-compose.kestra.yml up -d
+# PostgreSQL local opcional
+docker compose -f docker/docker-compose.db.yml up -d
 ```
 
 ## Dev Container
@@ -202,3 +202,4 @@ O VS Code Dev Container usa `mcr.microsoft.com/devcontainers/python:3.12-bookwor
 ## AI Tooling
 
 - Agentes especializados em `.github/agents/` — aneel-data-guardian (ETL), backend-fastapi-specialist (API), frontend-next-specialist (Next.js)
+- Planos/specs históricos de agentes não são documentação ativa; evite recriar `docs/superpowers/`, `docs/archive/` ou `docs/ai-skills/` sem decisão explícita.

@@ -54,6 +54,7 @@ app/frontend/dashboard*.json
 .env.*
 
 # IDE & Tools
+.agents/
 .cursor/
 .codex/
 .playwright/

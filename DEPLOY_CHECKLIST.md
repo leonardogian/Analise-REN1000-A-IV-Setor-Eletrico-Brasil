@@ -1,113 +1,87 @@
-# Deploy Checklist — TCC REN 1.000/2021 Dashboard
+# Deploy Checklist — TCC REN 1.000/2021
 
-**Date:** 2026-03-21
-**Stack:** Vercel (frontend) + Railway (backend: FastAPI + PostgreSQL + Redis)
-**Railway URL:** `https://tcc-ren1000x414-production.up.railway.app`
+**Stack oficial:** Vercel (`app/frontend-next`) + Railway (`app/backend`)  
+**Frontend:** `https://tcc-frontend-react.vercel.app`  
+**Backend:** `https://tcc-ren1000x414-production.up.railway.app`
 
----
+Este checklist cobre o deploy atual do projeto. O dashboard Vanilla ficou legado
+na branch `legacy/vanilla-dashboard`; não use o diretório legado do Vanilla,
+páginas `.html` ou `vercel.json` da raiz como referência para o deploy oficial.
 
-## 1. Pre-Deploy — Data Pipeline
+## 1. Dados e Validação
 
-- [ ] Raw data is up to date (`make extract` ran successfully against ANEEL API)
-- [ ] Transform step completed without errors (`make transform`)
-- [ ] Analytical tables regenerated (`make analysis`)
-- [ ] Group diagnostics regenerated (`make grupos-diagnostico`)
-- [ ] Dashboard JSONs regenerated (`make dashboard-full`)
-- [ ] Schema contracts pass (`make validate-contracts`)
-- [ ] `data/processed/dashboard/dashboard_*.json` regenerated from current analytical CSVs
+- [ ] Rodar `make dashboard-full` quando a mudança depender apenas de artefatos analíticos já processados.
+- [ ] Rodar `make pipeline` quando for necessário reproduzir desde a extração ANEEL/IBGE.
+- [ ] Rodar `make validate-contracts-processed` para validar contratos processados quando não houver raw local completo.
+- [ ] Rodar `make check-artifacts-full` para confirmar todos os CSVs/JSONs canônicos.
+- [ ] Rodar `make qa-data` e revisar erros/alertas.
+- [ ] Confirmar que as tabelas mensais cobrem exatamente `2023-01` a `2025-12`.
+- [ ] Confirmar que `data/processed/dashboard/dashboard_timeseries.json` inclui `2025-12`.
 
-## 2. Pre-Deploy — Code Quality
+## 2. Código
 
-- [ ] `make test-fast` passes (imports + schema contracts + core artifacts)
-- [ ] `make test-smoke` passes (full smoke including neoenergia + dashboard)
-- [ ] No hardcoded `localhost:8051` URLs in frontend JS (all `/api/` calls should be relative)
-- [ ] `vercel.json` rewrites point to correct Railway production URL
-- [ ] `CSP` header in `vercel.json` includes all required CDN domains (jsdelivr, unpkg, carto, openstreetmap)
-- [ ] No secrets or API keys in committed files (check `.env` is in `.gitignore`)
-- [ ] `requirements.txt` is up to date with all Python dependencies
+- [ ] Rodar `make test-fast`.
+- [ ] Se o frontend mudou, rodar `make frontend-next-build`.
+- [ ] Verificar que o frontend usa chamadas relativas (`/api/*` e `/dashboard_*.json`), sem URL `localhost` hardcoded.
+- [ ] Conferir que `app/frontend-next/vercel.json` mantém `script-src 'unsafe-inline'` na CSP.
+- [ ] Conferir que nenhum segredo foi adicionado ao Git (`.env`, `.env.local` e variantes seguem ignorados).
 
-## 3. Pre-Deploy — Railway Backend
+## 3. Railway Backend
 
-- [ ] `docker/Dockerfile.backend` builds locally: `docker build -f docker/Dockerfile.backend .`
-- [ ] `railway.toml` healthcheck path is `/health` and timeout is adequate (currently 60s)
-- [ ] `railway-start.sh` fallback JSON generation works (removes dependency on pre-built JSON)
-- [ ] Environment variables set on Railway:
-  - [ ] `DATABASE_URL` (PostgreSQL connection string)
-  - [ ] `REDIS_URL` (Redis connection string)
-  - [ ] `PORT` (Railway sets this automatically, default 8051)
-  - [ ] `SERVE_STATIC=true` (set in Dockerfile ENV)
-- [ ] PostgreSQL tables loaded with latest analytical CSVs (`data/processed/analysis/`)
-- [ ] Redis is reachable from Railway backend
+- [ ] `railway.toml` usa `docker/Dockerfile.backend`.
+- [ ] `docker/railway-start.sh` continua sendo o start command.
+- [ ] `/health` responde e expõe `dashboard_artifacts_ready`, `database_connected` e `redis_connected`.
+- [ ] Postgres/Redis indisponíveis aparecem como modo degradado, sem impedir entrega dos JSONs.
+- [ ] Testar endpoints principais:
+  - [ ] `GET /health`
+  - [ ] `GET /api/dashboard`
+  - [ ] `GET /api/dashboard/kpi_overview`
+  - [ ] `GET /api/v1/timeseries-tendencia`
+  - [ ] `GET /api/v1/scatter-eficiencia`
+  - [ ] `GET /api/v1/heatmap-transgressoes`
+  - [ ] `GET /api/v1/groups-ranking`
+  - [ ] `GET /api/v1/transgressoes`
+  - [ ] `GET /dashboard_data.json`
 
-## 4. Pre-Deploy — Vercel Frontend Oficial
+## 4. Vercel Frontend Oficial
 
-- [ ] Project `tcc-frontend-react` connected to GitHub repo `leonardogian/Analise-REN1000-A-IV-Setor-Eletrico-Brasil`
-- [ ] Production branch is `main`
-- [ ] Root Directory is `app/frontend-next`
-- [ ] Build Command is `npm run build`
-- [ ] Install Command is `npm install`
-- [ ] Production env `API_REWRITE_URL=https://tcc-ren1000x414-production.up.railway.app`
+- [ ] Projeto Vercel: `tcc-frontend-react`.
+- [ ] Production branch: `main`.
+- [ ] Root Directory: `app/frontend-next`.
+- [ ] Install Command: `npm install` ou `npm ci`, conforme configuração do projeto.
+- [ ] Build Command: `npm run build`.
+- [ ] Env production: `API_REWRITE_URL=https://tcc-ren1000x414-production.up.railway.app`.
+- [ ] `app/frontend-next/next.config.mjs` mantém rewrites para `/api/*` e `/dashboard_*.json`.
+- [ ] `app/frontend-next/vercel.json` define apenas headers/security policy; rewrites ficam no Next config.
 
-## 4B. Pre-Deploy — Vercel Legado
+## 5. Ordem de Deploy
 
-- [ ] `vercel.json` → `outputDirectory` is `app/frontend`
-- [ ] All 6 dashboard pages present: `index.html`, `transgressoes.html`, `benchmark.html`, `evolucao.html`, `ranking.html`, `mapa.html`
-- [ ] Shared JS load order correct: `utils.js → nav.js → filters.js → app.js → [page].js`
-- [ ] Chart.js CDN version pinned at 4.4.7 (not `latest`)
-- [ ] No `file://` references anywhere in frontend code
-- [ ] Security headers configured (X-Content-Type-Options, X-Frame-Options, CSP, etc.)
-- [ ] JSON cache headers set (`Cache-Control: public, max-age=3600, s-maxage=86400`)
+1. Publicar/redeployar Railway primeiro quando houver mudança em `app/backend/**` ou `data/processed/dashboard/dashboard_*.json`.
+2. Confirmar `/health` e endpoints `/api/v1/*` no Railway.
+3. Publicar/rebuildar Vercel depois.
+4. Abrir `https://tcc-frontend-react.vercel.app` e conferir as rotas:
+   - [ ] `/`
+   - [ ] `/transgressoes`
+   - [ ] `/benchmark`
+   - [ ] `/evolucao`
+   - [ ] `/ranking`
+   - [ ] `/mapa`
 
-## 5. Deploy — Railway (Backend First)
+## 6. Pós-Deploy
 
-- [ ] Push to main / trigger Railway deploy
-- [ ] Wait for build to complete (Docker image builds ~2-3 min)
-- [ ] Healthcheck passes: `curl https://tcc-ren1000x414-production.up.railway.app/health`
-- [ ] Test key API endpoints:
-  - [ ] `GET /api/dashboard-data` returns valid JSON
-  - [ ] `GET /api/transgressoes` returns data
-  - [ ] `GET /api/grupos/ranking` returns group data
-- [ ] Check Railway logs for startup errors or DB connection failures
-- [ ] Verify Redis cache is warming up (first requests may be slower)
+- [ ] Console do navegador sem erros de CORS/CSP.
+- [ ] Home sai de skeleton/loading e renderiza KPIs.
+- [ ] `/evolucao` mostra série mensal completa, não apenas janeiro por ano.
+- [ ] `/ranking` e `/transgressoes` carregam dados dos endpoints `/api/v1/*`.
+- [ ] `/mapa` carrega tiles e dados geográficos sem quebrar a página.
+- [ ] Se `dashboard_*.json` mudou, confirmar que o Railway está servindo o `meta.generated_at` esperado.
 
-## 6. Deploy — Vercel (Frontend Second)
+## 7. Rollback
 
-- [ ] Push to main / trigger Vercel deploy
-- [ ] Verify Vercel build succeeds (no build command needed, just static files)
-- [ ] Test rewrite rules: frontend `/api/*` calls route to Railway backend
-- [ ] Open each page and verify charts render:
-  - [ ] `index.html` — KPIs, annual trends, group overview
-  - [ ] `transgressoes.html` — time-series charts load
-  - [ ] `benchmark.html` — bubble chart renders
-  - [ ] `evolucao.html` — heatmap renders
-  - [ ] `ranking.html` — horizontal bar chart renders
-  - [ ] `mapa.html` — map tiles load, markers appear
-
-## 7. Post-Deploy Verification
-
-- [ ] No CORS errors in browser console (Railway allows Vercel origin)
-- [ ] No mixed-content warnings (all HTTPS)
-- [ ] `relatorio.html` print-to-PDF works (Ctrl+P)
-- [ ] Mobile sidebar toggle works on all pages
-- [ ] Filters (period/porte/group) trigger `filters:change` events and update charts
-- [ ] Response times acceptable (< 2s for main dashboard load)
-
-## 8. Rollback Plan
-
-| Trigger | Action |
-|---------|--------|
-| Railway `/health` returns non-200 | Redeploy previous Railway commit |
-| API returns 500 errors | Check Railway logs → DB connection → Redis connection |
-| Frontend shows blank charts | Verify `data/processed/dashboard/dashboard_data.json` generation in Railway logs |
-| CORS errors on Vercel | Check `vercel.json` rewrite URLs match Railway domain |
-| PostgreSQL connection refused | Verify `DATABASE_URL` env var on Railway |
-
-**Railway rollback:** Railway dashboard → Deployments → click previous successful deploy → Redeploy
-**Vercel rollback:** Vercel dashboard → Deployments → promote previous deployment to production
-
-## 9. Maintenance Notes
-
-- ANEEL data updates: re-run `make pipeline` to refresh all downstream artifacts
-- After adding new frontend pages: update `vercel.json` CSP if new CDNs are needed
-- After schema changes in analytical CSVs: update `REQUIRED_JSON_KEYS` in `main.py` and run `make validate-contracts`
-- PostgreSQL table reloads: use loader scripts in `scripts/` directory
+| Falha | Ação |
+|---|---|
+| Railway `/health` falha | Ver logs Railway e redeployar commit anterior se necessário |
+| JSONs ausentes ou antigos | Redeployar Railway com os artefatos versionados atuais |
+| Frontend preso em skeleton | Conferir backend, rewrites e CSP `unsafe-inline` |
+| CORS/CSP no navegador | Verificar `app/backend/main.py` e `app/frontend-next/vercel.json` |
+| Build Vercel falha | Rodar `make frontend-next-build` localmente e comparar logs |

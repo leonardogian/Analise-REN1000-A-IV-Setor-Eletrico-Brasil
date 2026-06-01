@@ -11,7 +11,7 @@ distribuidoras de energia elétrica do Brasil. O foco é setorial: transgressõe
 compensações financeiras e normalização por UC, com recortes por distribuidora,
 grupo econômico, porte, território e período regulatório.
 
-> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos do dashboard como caminho crítico e trata PostgreSQL/Redis como dependências degradáveis. O Vanilla foi movido para a branch `legacy/vanilla-dashboard`. A rodada atual corrigiu o parsing mensal INDGER para preservar os 36 períodos `2023-01` a `2025-12`, adicionou contratos/auditorias de cobertura mensal e criou `reports/tcc_claims_audit.md` para separar números certificados pelo pipeline de fontes externas exploratórias.
+> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos do dashboard como caminho crítico e trata PostgreSQL/Redis como dependências degradáveis. O Vanilla foi movido para a branch `legacy/vanilla-dashboard`. A rodada atual corrigiu o parsing mensal INDGER para preservar os 36 períodos `2023-01` a `2025-12`, adicionou contratos/auditorias de cobertura mensal e criou `reports/tcc_claims_audit.md` para separar números certificados pelo pipeline de fontes externas exploratórias. Em 2026-06-01, docs/planos legados de agentes e fluxos Kestra obsoletos foram removidos da main; o contexto ativo de IA fica em `.ai/`, `AGENTS.md`, `CLAUDE.md` e `.github/agents/`.
 
 > **🔄 ROTINA OBRIGATÓRIA PARA IAs:**
 >
@@ -77,7 +77,7 @@ TCC_leo_main/
 ├── reports/                  ← Relatórios gerados (markdown)
 ├── docs/                     ← Documentação auxiliar, imagens e metodologia_tcc.excalidraw
 ├── logos/                    ← Logos PNG de holdings
-├── docker/                   ← Dockerfile/Compose do backend e stacks opcionais
+├── docker/                   ← Dockerfile/Compose do backend e infraestrutura local opcional
 ├── scripts/                  ← Utilitários (cargas PostgreSQL, QA, validações)
 ├── Makefile                  ← Orquestração: make pipeline, make stack-next, etc.
 ├── requirements.txt          ← Dependências Python
@@ -176,6 +176,7 @@ No VS Code Dev Container, a `.venv` do workspace é um volume Docker nomeado (`t
 - **Auditoria de afirmações numéricas do TCC**: `reports/tcc_claims_audit.md`
 - **Como usar Git**: `COMO_USAR_GIT.md`
 - **Auditoria de qualidade dos dados**: `docs/DATA_QUALITY_AUDIT.md`
+- **Plano de limpeza do repositório**: `plano_limpeza.md`
 
 ## Bugs Conhecidos no Pipeline
 
