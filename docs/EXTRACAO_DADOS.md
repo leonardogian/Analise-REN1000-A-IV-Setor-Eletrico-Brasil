@@ -244,14 +244,20 @@ Dedup é **por linha inteira idêntica**, não por chave de negócio. Consequên
 
 Garante que `sigAgente`, `SIGAGENTE`, `sigagente ` e cabeçalhos com BOM virem `sigagente`. É isso que permite os contratos de schema em `schema_contracts.py` usarem comparação case-insensitive.
 
-### 4.5. Datas permanecem string
+### 4.5. Referência mensal INDGER
 
-**Nenhuma coluna de data é convertida para `datetime64` em transform.** `datreferenciainformada` continua string `"YYYY-MM"` no Parquet. Motivo: evita erros de parse em linhas mal-formadas antes da análise; `build_analysis_tables.py` converte sob demanda com tratamento de erro explícito.
+O transform preserva as colunas de referência como vierem da ANEEL, com parsing mínimo para manter rastreabilidade. Nos Parquets atuais, `datreferenciainformada` pode aparecer como data no padrão `YYYY-01-DD`; nesse caso, o mês calendário fica como janeiro e o mês de referência real está codificado no dia ou no nome do arquivo de origem.
+
+Na camada analítica, `build_analysis_tables.py` centraliza a regra:
+
+- Em `indger_servicos_comerciais.parquet`, o mês autoritativo vem de `_source_file` (`indger-dados-servicos-comerciais-YYYY-MM.csv`).
+- Em `indger_dados_comerciais.parquet`, quando todas as datas aparecem como `YYYY-01-DD`, o dia `1..12` é interpretado como mês codificado.
+- As três tabelas mensais precisam cobrir exatamente `2023-01` a `2025-12`.
 
 Se você importar o Parquet e quiser datas, faça:
 
 ```python
-df["datreferenciainformada"] = pd.to_datetime(df["datreferenciainformada"], format="%Y-%m", errors="coerce")
+df["datreferenciainformada"] = pd.to_datetime(df["datreferenciainformada"], errors="coerce")
 ```
 
 ### 4.6. Deduplicação de arquivos INDGER

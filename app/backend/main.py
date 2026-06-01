@@ -197,6 +197,7 @@ app.add_middleware(
 @app.get("/health")
 async def health() -> dict[str, Any]:
     status = _artifact_status()
+    dashboard_artifacts_ready = not status["missing_artifacts"]
     db_ok = False
     redis_ok = False
     
@@ -215,10 +216,11 @@ async def health() -> dict[str, Any]:
         except Exception:
             pass
             
-    ok = not status["missing_artifacts"] and db_ok and redis_ok
+    ok = dashboard_artifacts_ready and db_ok and redis_ok
     return {
         "status": "ok" if ok else "degraded",
         "service": "tcc-local-backend",
+        "dashboard_artifacts_ready": dashboard_artifacts_ready,
         "database_connected": db_ok,
         "redis_connected": redis_ok,
         **status,

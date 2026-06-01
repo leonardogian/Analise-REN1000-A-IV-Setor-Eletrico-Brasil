@@ -256,6 +256,12 @@ ANALYSIS_RANGE_CONTRACTS: dict[str, dict[str, tuple[float | None, float | None]]
 }
 
 EXPECTED_REGIMES = {"REN_414", "REN_1000", "TRANSICAO"}
+EXPECTED_INDGER_PERIODS = {(ano, mes) for ano in range(2023, 2026) for mes in range(1, 13)}
+ANALYSIS_MONTHLY_PERIOD_CONTRACTS = {
+    "fato_uc_ativa_mensal_distribuidora.csv",
+    "fato_transgressao_mensal_porte.csv",
+    "fato_transgressao_mensal_distribuidora.csv",
+}
 
 
 def normalize_column_name(column: object) -> str:
@@ -370,6 +376,26 @@ def _validate_regime_values(frame: pd.DataFrame, path: Path) -> list[str]:
     if invalid:
         return [f"analysis regime mismatch: {path} invalid values {', '.join(invalid)}"]
     return []
+
+
+def _validate_monthly_periods(frame: pd.DataFrame, path: Path) -> list[str]:
+    if path.name not in ANALYSIS_MONTHLY_PERIOD_CONTRACTS:
+        return []
+    if not {"ano", "mes"}.issubset(frame.columns):
+        return []
+    periods = {
+        (int(row.ano), int(row.mes))
+        for row in frame[["ano", "mes"]].dropna().drop_duplicates().itertuples(index=False)
+    }
+    if periods == EXPECTED_INDGER_PERIODS:
+        return []
+    missing = sorted(EXPECTED_INDGER_PERIODS - periods)
+    extra = sorted(periods - EXPECTED_INDGER_PERIODS)
+    return [
+        "analysis monthly coverage mismatch: "
+        f"{path} has {len(periods)} periods; expected 36 from 2023-01 to 2025-12; "
+        f"missing={missing[:6]} extra={extra[:6]}"
+    ]
 
 
 def validate_raw_contracts(raw_dir: Path, incluir_complementares: bool = False) -> list[str]:
@@ -502,5 +528,6 @@ def validate_analysis_contracts(analysis_dir: Path) -> list[str]:
         errors.extend(_validate_csv_dtypes(frame, path, ANALYSIS_DTYPE_CONTRACTS.get(file_name, {})))
         errors.extend(_validate_csv_ranges(frame, path, ANALYSIS_RANGE_CONTRACTS.get(file_name, {})))
         errors.extend(_validate_regime_values(frame, path))
+        errors.extend(_validate_monthly_periods(frame, path))
 
     return errors

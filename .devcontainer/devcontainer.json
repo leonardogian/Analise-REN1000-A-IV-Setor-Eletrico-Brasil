@@ -1,6 +1,6 @@
 {
   "name": "TCC REN1000 - Eng. de Dados & Frontend",
-  "image": "mcr.microsoft.com/devcontainers/python:3.12-bullseye",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "20"
@@ -10,6 +10,9 @@
   "forwardPorts": [
     8051,
     3051
+  ],
+  "mounts": [
+    "source=tcc-ren1000-devcontainer-venv,target=${containerWorkspaceFolder}/.venv,type=volume"
   ],
   "portsAttributes": {
     "8051": {
@@ -39,6 +42,6 @@
       ]
     }
   },
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y libpq-dev build-essential && pip install --upgrade pip && pip install -r requirements.txt",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y libpq-dev build-essential && sudo chown -R vscode:vscode .venv && python3 -m venv .venv && .venv/bin/python -m pip install --upgrade pip && .venv/bin/python -m pip install -r requirements.txt",
   "remoteUser": "vscode"
 }

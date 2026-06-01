@@ -56,6 +56,10 @@ ANEEL API (CSVs)
 **Script**: `src/analysis/build_analysis_tables.py`
 
 - Lê: `data/processed/*.parquet`
+- Deriva a referência mensal INDGER com parser próprio:
+  - `indger_servicos_comerciais.parquet`: mês autoritativo vem de `_source_file` (`indger-dados-servicos-comerciais-YYYY-MM.csv`).
+  - `indger_dados_comerciais.parquet`: quando `datreferenciainformada` aparece como `YYYY-01-DD`, usa o dia `1..12` como mês codificado.
+  - A análise falha se as tabelas mensais não cobrirem exatamente `2023-01` a `2025-12`.
 - Gera tabelas analíticas em `data/processed/analysis/`:
 
 | Arquivo | Descrição |
@@ -130,6 +134,8 @@ extract → transform → analysis ─┬─→ report
 
 `make pipeline` executa tudo em ordem: `update-data → analysis → report → grupos → neoenergia-diagnostico (compatibilidade legada) → dashboard → dashboard-transgressoes → validate-contracts → check-artifacts-full → qa-data`
 
+As validações finais protegem a mensalidade INDGER: `validate-contracts` exige 36 pares `(ano, mes)` nas três tabelas mensais, `check-artifacts-full` exige série mensal do dashboard além de janeiro e incluindo `2025-12`, e `qa-data` reporta erro se a cobertura mensal regredir.
+
 ## Como Regenerar Tudo do Zero
 
 ```bash
@@ -150,6 +156,6 @@ make site-refresh     # regenera dashboard e sobe backend + Next.js
 4. **`dashboard_data.json` é gerado e pode estar versionado**: a fonte canônica é `data/processed/dashboard/`; não edite manualmente, rode `make dashboard-full` ou `make pipeline`.
 5. **Frontend oficial via `file://` não existe**: use o Next.js local.
    Use `make site`, `make site-refresh`, `make stack-next` ou `make backend` + `make frontend-next`.
-6. **Contratos de schema**: valide com `make validate-contracts` quando mudar ETL.
+6. **Contratos de schema e cobertura mensal**: valide com `make validate-contracts` quando mudar ETL/análise. Para dashboard/TCC, rode também `make check-artifacts-full` e `make qa-data`.
 7. **Backend local**: para API e JSONs públicos use `make backend`/`make dev-serve`.
 8. **Porta 8051**: Porta do dev local e Docker do TCC. Use `3051` para Next.js local.

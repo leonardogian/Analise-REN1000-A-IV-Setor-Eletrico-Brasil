@@ -86,3 +86,6 @@ data/processed/**/*.xlsx
 !data/processed/analysis/**/*.csv
 .vercel
 .env*.local
+
+# Texto escrito do TCC (privado até defesa)
+Tcc_escrito/

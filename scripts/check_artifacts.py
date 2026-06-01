@@ -71,6 +71,8 @@ EXPECTED_REGULATORY_CLASSES = {
     "nao_classificado",
 }
 
+EXPECTED_DASHBOARD_MONTHS = {f"{ano}-{mes:02d}" for ano in range(2023, 2026) for mes in range(1, 13)}
+
 
 def check_dashboard_json() -> list[str]:
     """Validate dashboard JSON has expected top-level keys."""
@@ -156,7 +158,50 @@ def check_dashboard_json() -> list[str]:
             errors.append("dashboard JSON missing regulatory views: " + ", ".join(missing_views))
 
     errors.extend(check_grouping_regression())
+    errors.extend(check_dashboard_monthly_coverage(payload))
 
+    return errors
+
+
+def check_dashboard_monthly_coverage(payload: dict) -> list[str]:
+    errors: list[str] = []
+
+    serie = payload.get("serie_mensal_nacional")
+    if isinstance(serie, list):
+        periods = {
+            f"{int(row['ano'])}-{int(row['mes']):02d}"
+            for row in serie
+            if isinstance(row, dict) and row.get("ano") is not None and row.get("mes") is not None
+        }
+        if not EXPECTED_DASHBOARD_MONTHS.issubset(periods):
+            missing = sorted(EXPECTED_DASHBOARD_MONTHS - periods)
+            errors.append(
+                "dashboard JSON serie_mensal_nacional missing monthly periods: "
+                + ", ".join(missing[:8])
+            )
+        if periods and all(period.endswith("-01") for period in periods):
+            errors.append("dashboard JSON serie_mensal_nacional has only January periods")
+
+    timeseries_path = Path("data/processed/dashboard/dashboard_timeseries.json")
+    if not timeseries_path.exists():
+        errors.append(f"missing dashboard timeseries JSON: {timeseries_path}")
+        return errors
+    try:
+        timeseries_payload = json.loads(timeseries_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        errors.append(f"invalid dashboard timeseries JSON: {timeseries_path} ({exc})")
+        return errors
+
+    rows = timeseries_payload.get("data") if isinstance(timeseries_payload, dict) else None
+    if not isinstance(rows, list):
+        errors.append("dashboard timeseries JSON invalid type: data must be list")
+        return errors
+
+    dates = {str(row.get("date")) for row in rows if isinstance(row, dict) and row.get("date")}
+    if "2025-12" not in dates:
+        errors.append("dashboard timeseries JSON missing date 2025-12")
+    if dates and all(date.endswith("-01") for date in dates):
+        errors.append("dashboard timeseries JSON has only January dates")
     return errors
 
 

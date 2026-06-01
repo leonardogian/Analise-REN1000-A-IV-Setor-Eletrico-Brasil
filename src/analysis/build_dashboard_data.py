@@ -1078,7 +1078,27 @@ def build_cross_group_insights(group_dimensions: list[dict], top_n: int = 5) -> 
 
 def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.DataFrame, grupos_classe: pd.DataFrame) -> dict:
     insights = {}
-    
+
+    def _with_group_label(frame: pd.DataFrame) -> pd.DataFrame:
+        out = frame.copy()
+        if "group_label" in out.columns:
+            return out
+        lookup: dict[str, str] = {}
+        if {"group_id", "group_label"}.issubset(grupos_classe.columns):
+            lookup = (
+                grupos_classe[["group_id", "group_label"]]
+                .dropna(subset=["group_id"])
+                .drop_duplicates(subset=["group_id"])
+                .assign(group_id=lambda df: df["group_id"].astype(str))
+                .set_index("group_id")["group_label"]
+                .astype(str)
+                .to_dict()
+            )
+        out["group_label"] = out["group_id"].astype(str).map(
+            lambda gid: lookup.get(gid, default_group_label(gid))
+        )
+        return out
+
     # Heatmap Transgressões
     if not grupos_classe.empty:
         df = grupos_classe.copy()
@@ -1102,7 +1122,7 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
     # Scatter Eficiência — combina fato_mensal (pos_2022) + fato_indicadores (pre_2022)
     scat_data = []
     if not fato_mensal.empty:
-        df = fato_mensal.copy()
+        df = _with_group_label(fato_mensal)
         res_scatter = df.groupby(["distributor_label", "periodo_regulatorio"], as_index=False).agg({
             "qtd_fora_prazo": "sum",
             "compensacao_rs": "sum",
@@ -1129,7 +1149,7 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
 
     # Ranking de Grupos Econômicos — métricas agregadas + variação pre/pos REN 1000
     if not fato_mensal.empty:
-        df = fato_mensal.copy()
+        df = _with_group_label(fato_mensal)
         ano_max = df["ano"].max()
         df_latest = df[df["ano"] == ano_max].copy()
         group_label_lookup = (

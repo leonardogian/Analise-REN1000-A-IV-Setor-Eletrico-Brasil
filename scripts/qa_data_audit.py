@@ -199,8 +199,14 @@ def check_temporal_coverage(findings: list[Finding]) -> None:
         if missing:
             _add(findings, "ERROR", "ANNUAL_COVERAGE", f"kpi_regulatorio_anual sem anos esperados: {missing}")
 
-    monthly_path = DIR_ANALYSIS / "fato_transgressao_mensal_distribuidora.csv"
-    if monthly_path.exists():
+    for file_name in [
+        "fato_uc_ativa_mensal_distribuidora.csv",
+        "fato_transgressao_mensal_porte.csv",
+        "fato_transgressao_mensal_distribuidora.csv",
+    ]:
+        monthly_path = DIR_ANALYSIS / file_name
+        if not monthly_path.exists():
+            continue
         monthly = _read_csv(monthly_path, usecols=["ano", "mes"])
         coverage = monthly.groupby("ano")["mes"].nunique().to_dict()
         for year in [2023, 2024, 2025]:
@@ -210,7 +216,7 @@ def check_temporal_coverage(findings: list[Finding]) -> None:
                     findings,
                     "ERROR",
                     "MONTHLY_COVERAGE",
-                    f"fato_transgressao_mensal_distribuidora: ano {year} tem {months} meses, esperado 12",
+                    f"{file_name}: ano {year} tem {months} meses, esperado 12",
                 )
 
 

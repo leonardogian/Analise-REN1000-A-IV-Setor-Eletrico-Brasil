@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality in Brazil's electricity distribution sector. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units), with cuts by distributor, economic group, size, geography, and regulatory period.
 
-**Current phase:** ETL e backend FastAPI+Postgres+Redis estão operacionais; o frontend oficial é o Next.js em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O dashboard Vanilla clássico foi movido para a branch `legacy/vanilla-dashboard`. A rodada de reprodutibilidade reforçou extração segura, contratos de schema, deduplicação INDGER e dashboard com agregações ponderadas. `make pipeline` agora termina com validações.
+**Current phase:** ETL e backend FastAPI estão operacionais; o frontend oficial é o Next.js em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos como caminho crítico do dashboard e trata PostgreSQL/Redis como dependências degradáveis para persistência/cache. O dashboard Vanilla clássico foi movido para a branch `legacy/vanilla-dashboard`. A rodada de reprodutibilidade reforçou extração segura, contratos de schema, deduplicação INDGER e dashboard com agregações ponderadas. Em 2026-05-31, o parsing mensal INDGER foi corrigido para preservar `2023-01` a `2025-12` e o TCC ganhou auditoria rastreável em `reports/tcc_claims_audit.md`. `make pipeline` agora termina com validações.
 
 ## Essential Commands
 
@@ -78,15 +78,16 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 | Layer | Tech |
 |-------|------|
 | ETL/Analysis | Python 3.10+, pandas, numpy |
-| Backend | FastAPI + PostgreSQL + Redis (`app/backend/main.py`) no **Railway** |
+| Backend | FastAPI (`app/backend/main.py`) no **Railway**, com JSONs canônicos e PostgreSQL/Redis degradáveis |
 | Frontend Next.js | Next.js 14 + React + Tailwind + TanStack Query (`app/frontend-next/`) |
 | Orchestration | GNU Make + Docker Compose |
-| Data formats | PostgreSQL DB, Redis Cache, Parquet, JSON |
+| Data formats | JSON canônico, PostgreSQL DB, Redis Cache, Parquet |
 
 ### Deploy híbrido (Vercel + Railway)
 
 - **Frontend oficial (Vercel)**: Next.js em `app/frontend-next/`; rewrites em `next.config.mjs` encaminham `/api/*` e `/dashboard_*.json` para o Railway.
-- **Backend (Railway)**: FastAPI em `app/backend/main.py`, PostgreSQL para tabelas analíticas (substitui o payload JSON gigante) e Redis para cache in-memory. URL base: `https://tcc-ren1000x414-production.up.railway.app`.
+- **Backend (Railway)**: FastAPI em `app/backend/main.py`, servindo `/api/*` e `/dashboard_*.json` a partir dos JSONs canônicos. PostgreSQL e Redis são dependências degradáveis para persistência/cache; falha isolada nelas não deve impedir a entrega dos JSONs. URL base: `https://tcc-ren1000x414-production.up.railway.app`.
+- **Healthcheck Railway**: `/health` expõe `dashboard_artifacts_ready`, `database_connected` e `redis_connected`. Status `degraded` com artefatos prontos ainda permite diagnosticar Postgres/Redis sem derrubar o dashboard público.
 - **Headers do Next.js**: `app/frontend-next/vercel.json` mantém CSP com `script-src 'unsafe-inline'` para permitir boot/hydration do App Router; remover isso deixa a produção presa em skeleton/loading.
 - **Sincronização de produção**: mudanças em `app/backend/main.py` ou `data/processed/dashboard/dashboard_*.json` exigem redeploy do Railway para atualizar endpoints como `/api/v1/groups-ranking`, `/api/v1/transgressoes` e os JSONs públicos.
 - **Local**: `make backend` / `make dev-serve` rodam FastAPI em `localhost:8051` (mesma API, sem rewrite).
@@ -115,7 +116,7 @@ Frontend Next.js consome endpoints REST via rewrites para o Railway:
 
 Backend endpoints (`app/backend/main.py`):
 
-- `/health` — liveness
+- `/health` — liveness com status de artefatos JSON, PostgreSQL e Redis
 - `/api/dashboard` — payload completo
 - `/api/dashboard/{section}` — fatia por seção
 - `/api/v1/timeseries-tendencia`, `/scatter-eficiencia`, `/heatmap-transgressoes`, `/radar-slas`, `/groups-ranking`, `/transgressoes` — micro-payloads otimizados (cache Redis)
@@ -141,6 +142,7 @@ Key files consumed by backend and dashboard:
 3. **Frontend Next.js** — Next.js 14 + React + Tailwind + TanStack Query (`app/frontend-next/`).
 4. **Não commitar raw/base processed** — `data/raw/` e `data/processed/*.{csv,parquet}` base são gerados localmente. `data/processed/analysis/**/*.csv` é versionado para auditoria/demo.
 5. **Dashboard JSONs são gerados** — `data/processed/dashboard/dashboard_*.json` deve ser regenerado com `make dashboard-full` ou `make pipeline`.
+6. **Mensalidade INDGER é contrato** — as três tabelas mensais precisam conter exatamente 36 pares `(ano, mes)` de `2023-01` a `2025-12`; `check-artifacts-full` também exige `dashboard_timeseries.json` até `2025-12`.
 
 ## Conventions
 

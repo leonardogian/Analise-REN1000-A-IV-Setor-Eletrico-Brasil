@@ -1,0 +1,257 @@
+{
+  "data/processed/analysis/fato_uc_ativa_mensal_distribuidora.csv": {
+    "period_count": 3,
+    "by_year": {
+      "2023": 1,
+      "2024": 1,
+      "2025": 1
+    },
+    "first_periods": [
+      {
+        "ano": 2023,
+        "mes": 1
+      },
+      {
+        "ano": 2024,
+        "mes": 1
+      },
+      {
+        "ano": 2025,
+        "mes": 1
+      }
+    ],
+    "last_periods": [
+      {
+        "ano": 2023,
+        "mes": 1
+      },
+      {
+        "ano": 2024,
+        "mes": 1
+      },
+      {
+        "ano": 2025,
+        "mes": 1
+      }
+    ],
+    "annual_totals": {
+      "uc_ativa_mes": {
+        "2023": 1141463945,
+        "2024": 1161956480,
+        "2025": 1199580710
+      }
+    }
+  },
+  "data/processed/analysis/fato_transgressao_mensal_porte.csv": {
+    "period_count": 3,
+    "by_year": {
+      "2023": 1,
+      "2024": 1,
+      "2025": 1
+    },
+    "first_periods": [
+      {
+        "ano": 2023,
+        "mes": 1
+      },
+      {
+        "ano": 2024,
+        "mes": 1
+      },
+      {
+        "ano": 2025,
+        "mes": 1
+      }
+    ],
+    "last_periods": [
+      {
+        "ano": 2023,
+        "mes": 1
+      },
+      {
+        "ano": 2024,
+        "mes": 1
+      },
+      {
+        "ano": 2025,
+        "mes": 1
+      }
+    ],
+    "annual_totals": {
+      "qtd_serv_realizado": {
+        "2023": 513813252,
+        "2024": 473705166,
+        "2025": 394748117
+      },
+      "qtd_fora_prazo": {
+        "2023": 458841,
+        "2024": 476354,
+        "2025": 744189
+      },
+      "compensacao_rs": {
+        "2023": 241348541.81961343,
+        "2024": 251696471.7999156,
+        "2025": 237274515.70280775
+      },
+      "uc_ativa_mes": {
+        "2023": 4564615031,
+        "2024": 4646476122,
+        "2025": 4797010100
+      }
+    }
+  },
+  "data/processed/analysis/fato_transgressao_mensal_distribuidora.csv": {
+    "period_count": 3,
+    "by_year": {
+      "2023": 1,
+      "2024": 1,
+      "2025": 1
+    },
+    "first_periods": [
+      {
+        "ano": 2023,
+        "mes": 1
+      },
+      {
+        "ano": 2024,
+        "mes": 1
+      },
+      {
+        "ano": 2025,
+        "mes": 1
+      }
+    ],
+    "last_periods": [
+      {
+        "ano": 2023,
+        "mes": 1
+      },
+      {
+        "ano": 2024,
+        "mes": 1
+      },
+      {
+        "ano": 2025,
+        "mes": 1
+      }
+    ],
+    "annual_totals": {
+      "qtd_serv_realizado": {
+        "2023": 513813252,
+        "2024": 473705166,
+        "2025": 394748117
+      },
+      "qtd_fora_prazo": {
+        "2023": 458841,
+        "2024": 476354,
+        "2025": 744189
+      },
+      "compensacao_rs": {
+        "2023": 241348541.81961343,
+        "2024": 251696471.7999156,
+        "2025": 237274515.70280775
+      },
+      "uc_ativa_mes": {
+        "2023": 1141463945,
+        "2024": 1161956480,
+        "2025": 1199580710
+      }
+    }
+  },
+  "data/processed/analysis/kpi_regulatorio_anual.csv": {
+    "annual_rows": [
+      {
+        "ano": 2011,
+        "qtd_serv": 4465359.0,
+        "qtd_fora_prazo": 114191.74,
+        "compensacao_rs": 608020.26,
+        "taxa_fora_prazo": 0.0255728016493186
+      },
+      {
+        "ano": 2012,
+        "qtd_serv": 18662552.0,
+        "qtd_fora_prazo": 587160.03,
+        "compensacao_rs": 5560674.57,
+        "taxa_fora_prazo": 0.0314619367169077
+      },
+      {
+        "ano": 2013,
+        "qtd_serv": 21798304.87,
+        "qtd_fora_prazo": 828517.46,
+        "compensacao_rs": 17212256.01,
+        "taxa_fora_prazo": 0.0380083435359347
+      },
+      {
+        "ano": 2014,
+        "qtd_serv": 21313691.0,
+        "qtd_fora_prazo": 840782.0,
+        "compensacao_rs": 20002356.83,
+        "taxa_fora_prazo": 0.0394479773587784
+      },
+      {
+        "ano": 2015,
+        "qtd_serv": 22609592.0,
+        "qtd_fora_prazo": 1069246.0,
+        "compensacao_rs": 32155433.59,
+        "taxa_fora_prazo": 0.0472916981429828
+      },
+      {
+        "ano": 2016,
+        "qtd_serv": 24679568.0,
+        "qtd_fora_prazo": 946340.0,
+        "compensacao_rs": 33572778.76,
+        "taxa_fora_prazo": 0.0383450796221392
+      },
+      {
+        "ano": 2017,
+        "qtd_serv": 25866211.0,
+        "qtd_fora_prazo": 986696.0,
+        "compensacao_rs": 37880353.09,
+        "taxa_fora_prazo": 0.0381461358990692
+      },
+      {
+        "ano": 2018,
+        "qtd_serv": 27064107.0,
+        "qtd_fora_prazo": 882793.0,
+        "compensacao_rs": 40117429.96,
+        "taxa_fora_prazo": 0.0326185896323865
+      },
+      {
+        "ano": 2019,
+        "qtd_serv": 29692567.0,
+        "qtd_fora_prazo": 930043.0,
+        "compensacao_rs": 54555324.74,
+        "taxa_fora_prazo": 0.0313224181661356
+      },
+      {
+        "ano": 2020,
+        "qtd_serv": 24112828.0,
+        "qtd_fora_prazo": 768899.0,
+        "compensacao_rs": 40265323.1,
+        "taxa_fora_prazo": 0.0318875496478471
+      },
+      {
+        "ano": 2021,
+        "qtd_serv": 29416470.0,
+        "qtd_fora_prazo": 847270.0,
+        "compensacao_rs": 45924062.61,
+        "taxa_fora_prazo": 0.0288025721645051
+      },
+      {
+        "ano": 2022,
+        "qtd_serv": 27376176.0,
+        "qtd_fora_prazo": 710246.0,
+        "compensacao_rs": 37275391.75,
+        "taxa_fora_prazo": 0.0259439448372921
+      },
+      {
+        "ano": 2023,
+        "qtd_serv": 7075110.0,
+        "qtd_fora_prazo": 137521.0,
+        "compensacao_rs": 49928446.57,
+        "taxa_fora_prazo": 0.019437294967852
+      }
+    ],
+    "services_2011_2022_plus_indger_2023_2025": 1659323960.87
+  }
+}

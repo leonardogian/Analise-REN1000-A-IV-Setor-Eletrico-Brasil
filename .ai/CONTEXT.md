@@ -11,7 +11,7 @@ distribuidoras de energia elétrica do Brasil. O foco é setorial: transgressõe
 compensações financeiras e normalização por UC, com recortes por distribuidora,
 grupo econômico, porte, território e período regulatório.
 
-> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O Vanilla foi movido para a branch `legacy/vanilla-dashboard`. A rodada atual adicionou auditoria numérica (`make qa-data`), removeu targets locais do legado no Makefile e consolidou os JSONs canônicos em `data/processed/dashboard/`.
+> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos do dashboard como caminho crítico e trata PostgreSQL/Redis como dependências degradáveis. O Vanilla foi movido para a branch `legacy/vanilla-dashboard`. A rodada atual corrigiu o parsing mensal INDGER para preservar os 36 períodos `2023-01` a `2025-12`, adicionou contratos/auditorias de cobertura mensal e criou `reports/tcc_claims_audit.md` para separar números certificados pelo pipeline de fontes externas exploratórias.
 
 > **🔄 ROTINA OBRIGATÓRIA PARA IAs:**
 >
@@ -25,15 +25,17 @@ grupo econômico, porte, território e período regulatório.
 |---------------|-------------------------------------------------|
 | ETL           | Python 3.10+, pandas, numpy, requests           |
 | Análise       | Python, pandas, numpy                            |
-| Backend Cloud | FastAPI, PostgreSQL, Redis (no Railway)          |
+| Backend Cloud | FastAPI no Railway, JSONs canônicos, PostgreSQL/Redis degradáveis |
 | Dashboard     | Next.js 14, React, Tailwind, TanStack Query (Vercel) |
 | Relatório     | HTML print-optimized (Ctrl+P → PDF)              |
 | Build         | GNU Make                                         |
-| Dados         | PostgreSQL DB, Redis Cache, Parquet              |
+| Dados         | JSON canônico, PostgreSQL DB, Redis Cache, Parquet |
 | Versionamento | Git (branch: main)                               |
 
 > **Frontend oficial:** o Next.js (`app/frontend-next/`) roda na porta `3051` via `make frontend-next` ou `make stack-next`. Em produção, `app/frontend-next/vercel.json` deve manter `script-src 'unsafe-inline'` na CSP para o boot/hydration do App Router. A porta `8051` é do backend FastAPI local (`make backend`/`make dev-serve`).
+> O `/health` do backend separa `dashboard_artifacts_ready`, `database_connected` e `redis_connected`; se os JSONs existem, Postgres/Redis indisponíveis devem aparecer como modo degradado, não como quebra dos endpoints públicos do dashboard.
 > Na home, os cards pré-REN do topo permanecem no agregado histórico `kpi_overview`; os cards pós-REN e deltas do topo são calculados como visão Brasil fixa sobre `serie_mensal_nacional` na janela operacional 2023–2025. Os filtros de empresas continuam restritos aos gráficos e cards inferiores.
+> A cobertura mensal INDGER é contrato: `fato_uc_ativa_mensal_distribuidora`, `fato_transgressao_mensal_porte` e `fato_transgressao_mensal_distribuidora` devem ter exatamente 36 pares `(ano, mes)`, e `dashboard_timeseries.json` deve incluir `2025-12`.
 
 ## Estrutura do Repositório
 
@@ -111,7 +113,7 @@ make stack-next      # backend local + frontend Next.js juntos
 
 # Testes
 make validate-contracts  # valida contratos de schema (raw + processed)
-make test-fast           # compilação + imports + contratos + artefatos core
+make test-fast           # compilação + imports + smoke de degradação backend + contratos + artefatos core
 make test-smoke          # análise + grupos + dashboard + validação completa
 make check-artifacts     # verifica artefatos core
 make check-artifacts-full # verifica artefatos completos + dashboard_data.json
@@ -171,6 +173,7 @@ No VS Code Dev Container, a `.venv` do workspace é um volume Docker nomeado (`t
 - **Fluxograma do pipeline Make**: `docs/mtdpipeline.excalidraw`
 - **Próximos passos TCC**: `docs/PROXIMOS_PASSOS_TCC.md`
 - **Artefato legado de compatibilidade de grupo**: `reports/neoenergia_diagnostico.md`
+- **Auditoria de afirmações numéricas do TCC**: `reports/tcc_claims_audit.md`
 - **Como usar Git**: `COMO_USAR_GIT.md`
 - **Auditoria de qualidade dos dados**: `docs/DATA_QUALITY_AUDIT.md`
 

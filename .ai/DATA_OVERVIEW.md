@@ -3,7 +3,7 @@
 > **Referência técnica única para estrutura, cobertura, limitações e operacionalização dos dados do projeto TCC.**  
 > Consultar este documento sempre antes de iniciar exploração ou análise de dados.
 
-**Última atualização:** Mar 2026  
+**Última atualização:** Mai 2026
 **Escopo:** REN 1000/2021 (regulação distribuidoras ANEEL); compensações financeiras & prazos de serviços.
 
 ---
@@ -46,7 +46,8 @@ Localização: `data/processed/` (Parquet + CSV)
 ```
 REN 414/2010 (Legacy)           REN 1000/2021 (Vigente)
 ┌────────────────────────┬──────────────────────────────┐
-│  2011–2021 (anual)     │  2022–2025 (mensal + anual)  │
+│  2011–2021 (anual)     │  2022 (transição anual)      │
+│                         │  2023–2025 (mensal INDGER)  │
 │  pre_2022              │  pos_2022                    │
 └────────────────────────┴──────────────────────────────┘
 ```
@@ -75,8 +76,10 @@ SERIES_HISTORICA = (2011, 2023)    # TCC: análise pré/pós REN1000
 ANOS_COMPARAVEIS = (2023, 2025)    # Dashboard: dados operacionais recentes
 LONGRUN_CUTOFF = 2023              # Limite tabelas anuais longas
 MENSAL_INICIO = 2023               # Dados mensais começam Jan 2023 (INDGER)
-MENSAL_FIM = 2025                  # Até Mar 2025
+MENSAL_FIM = 2025                  # Até Dez 2025
 ```
+
+Validação obrigatória da mensalidade INDGER: as tabelas `fato_uc_ativa_mensal_distribuidora`, `fato_transgressao_mensal_porte` e `fato_transgressao_mensal_distribuidora` devem conter exatamente 36 pares `(ano, mes)` de `2023-01` a `2025-12`. O mês é derivado de `_source_file` em serviços comerciais e do dia codificado em `datreferenciainformada` para dados comerciais quando a data aparece como `YYYY-01-DD`.
 
 ---
 
@@ -334,7 +337,7 @@ QUALIDADE_COMERCIAL_SCHEMA = {
 }
 
 INDGER_COMERCIAL_SCHEMA = {
-    'datreferenciainformada': str,  # Data período (YYYY-MM)
+    'datreferenciainformada': str,  # Referência mensal; pode vir como YYYY-01-DD com mês codificado no dia
     'sigagente': str,               # Distribuidora
     'nomagente': str,               # Nome distribuidora
     'qtducativa': int,              # UCs ativas
@@ -420,7 +423,7 @@ INDGER_SERVICOS_SCHEMA = {
 - **Problema:** 2024 tem apenas 17 distribuidoras, 2025 tem 11
 - **Impacto:** Análises anuais comparativas são inviáveis para estes anos
 - **Status:** Dados estão em processo de publicação pela ANEEL
-- **Recomendação:** Excluir de análises anuais; usar apenas os dados mensais de 2024-2025 (INDGER) para análise de tendência
+- **Recomendação:** Excluir de análises anuais longas quando a fonte anual estiver fragmentada; usar os dados mensais INDGER de 2024-2025 para tendência após validar os 36 períodos.
 
 ---
 
@@ -502,7 +505,7 @@ print(f"\nTotal compensado: R$ {df_dez_2024['compensacao_rs'].sum():,.2f}")
 ```
 
 **⚠️ Caveats:**
-- Dados até Mar 2025; Dez/2024 está completo
+- Dados mensais INDGER até Dez/2025; Dez/2024 está completo
 - Compensação = créditos cedidos (não inclui multas)
 
 ---
@@ -757,7 +760,7 @@ print(df[(df['compensacao_rs'] == 0) & (df['qtd_fora_prazo'] > 0)].head())
 
 #### 3.2 Feed Contínuo INDGER (Automação)
 
-- **Gap:** Dashboard congelado em Mar/2025; atualizar manualmente mês-a-mês.
+- **Gap:** Dashboard congelado em Dez/2025; atualizar manualmente mês-a-mês.
 - **Solução:** Integrar Kestra ou cron com API ANEEL INDGER; pull automático mensalmente.
 - **Impacto:** Dashboard sempre atualizado.
 - **Esforço:** Alto (desenvolvimento Kestra + CI/CD).
@@ -799,7 +802,7 @@ print(df[(df['compensacao_rs'] == 0) & (df['qtd_fora_prazo'] > 0)].head())
 | **Normalización por UC?** | ⚠️ Parcial | ✅ 2023–2025 real; ⚠️ 2011–2022 proxy |
 | **Classe Rural/Urbano?** | ⚠️ Parcial | ✅ 2023–2025; ❌ 2011–2021 |
 | **SQL + Índices?** | ⚠️ Draft | Script de referencia; sem PG operacional |
-| **Dashboard atualizado?** | ✅ Mar 2025 | JSON estático; feed automático = roadmap |
+| **Dashboard atualizado?** | ✅ Dez 2025 | JSON estático; feed automático = roadmap |
 | **Documentação?** | ✅ Excelente | DICIONARIO_DADOS.md, GUIA_ANALISE.md, este DATA_OVERVIEW.md |
 | **Limitações conhecidas?** | ✅ Documentadas | Códigos 69/93, UC proxy, compensação = créditos, período 2022 transição |
 

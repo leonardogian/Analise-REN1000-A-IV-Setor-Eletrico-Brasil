@@ -26,7 +26,7 @@ Foco setorial em **transgressões de prazo, compensações financeiras (R$)** e 
 | Ambiente | URL | Descrição |
 |----------|-----|-----------|
 | **Frontend (Next.js) — Produção** | [tcc-frontend-react.vercel.app](https://tcc-frontend-react.vercel.app) | Dashboard principal, React + Tailwind |
-| **Backend API — Produção** | [Railway](https://tcc-ren1000x414-production.up.railway.app/health) | FastAPI + PostgreSQL + Redis |
+| **Backend API — Produção** | [Railway](https://tcc-ren1000x414-production.up.railway.app/health) | FastAPI servindo JSONs canônicos; PostgreSQL/Redis são dependências degradáveis |
 | **Frontend (Vanilla JS) — Legado** | [analise-ren-1000-a-iv-setor-eletric.vercel.app](https://analise-ren-1000-a-iv-setor-eletric.vercel.app) | Preservado na branch `legacy/vanilla-dashboard` |
 
 ---
@@ -80,6 +80,8 @@ make stack-next
 
 `make pipeline` executa extração, transformação, análise, geração dos JSONs e validações (`validate-contracts`, `check-artifacts-full`, `qa-data`). Em uma máquina comum, reserve ao menos 12 GB livres, conexão estável e uma janela longa de execução; o gargalo principal é baixar/descompactar e transformar o INDGER.
 
+Desde 2026-05-31, a camada analítica valida a cobertura mensal INDGER como contrato de dados: as três tabelas mensais precisam conter exatamente os 36 períodos de `2023-01` a `2025-12`, e os JSONs do dashboard precisam expor série mensal até `2025-12`.
+
 Guia canônico das URLs, periodicidade, diretórios e troubleshooting: [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md).
 
 O fluxograma editável do pipeline Make fica em
@@ -111,9 +113,9 @@ Vercel — Next.js 14  (tcc-frontend-react.vercel.app)
    │  rewrite transparente via next.config.mjs
    ▼
 Railway — FastAPI + Docker  (tcc-ren1000x414-production.up.railway.app)
-   │  queries SQL
+   │  serve /api/* e /dashboard_*.json a partir dos JSONs versionados
    ▼
-PostgreSQL + Redis (no Railway)
+PostgreSQL + Redis opcionais (no Railway: persistência/cache)
    │  carregado a partir de
    ▼
 data/processed/analysis/*.csv  (versioned em Git)
@@ -122,11 +124,11 @@ data/processed/analysis/*.csv  (versioned em Git)
 | Camada | Tech | Por quê |
 |--------|------|---------|
 | ETL | Python + Pandas + Parquet | Volume 7 GB + transformações complexas |
-| Backend | FastAPI + PostgreSQL + Redis | Async, cache, deploy fácil Railway |
+| Backend | FastAPI + JSONs canônicos + PostgreSQL/Redis opcionais | Site público continua disponível com artefatos versionados mesmo se dependências auxiliares degradarem |
 | Frontend principal | Next.js 14 + React 18 + TanStack Query + Tailwind | SSR, cache inteligente, tipagem TS |
 | Deploy | Vercel + Railway | CDN global (front) + pay-per-use (back) |
 
-Nota operacional: o Next.js em produção depende da CSP em `app/frontend-next/vercel.json` permitir `script-src 'unsafe-inline'` para os scripts inline de boot/hydration. Quando `app/backend/main.py` ou `data/processed/dashboard/dashboard_*.json` mudarem, o Railway também precisa ser redeployado para publicar os endpoints e dados atuais.
+Nota operacional: o Next.js em produção depende da CSP em `app/frontend-next/vercel.json` permitir `script-src 'unsafe-inline'` para os scripts inline de boot/hydration. Quando `app/backend/main.py` ou `data/processed/dashboard/dashboard_*.json` mudarem, o Railway também precisa ser redeployado para publicar os endpoints e dados atuais. O `/health` separa `dashboard_artifacts_ready`, `database_connected` e `redis_connected`; PostgreSQL/Redis indisponíveis deixam o backend em modo degradado, mas não devem impedir a entrega dos JSONs do dashboard.
 
 ---
 
@@ -148,6 +150,8 @@ grupos_diagnostico.py   → data/processed/analysis/grupos/
 ```
 
 Política de versionamento: `data/raw/` e `data/processed/` base são gerados localmente e não entram no Git. `data/processed/analysis/**/*.csv` e `data/processed/dashboard/dashboard_*.json` podem ficar versionados para auditoria/demo/deploy, mas devem ser regenerados após ETL para reprodução científica. O frontend oficial consome esses JSONs via FastAPI/rewrites do Next.js.
+
+Para redação do TCC, a auditoria rastreável das afirmações numéricas fica em `reports/tcc_claims_audit.md`. Ela diferencia valores certificados pelos CSVs/JSONs locais de análises exploratórias que dependem de fontes externas, como EBITDA/CVM/B3.
 
 Comandos rápidos:
 
@@ -217,7 +221,7 @@ make qa-data          # auditoria numerica dos artefatos analiticos
 | Fonte | Conteúdo | Granularidade |
 |-------|----------|---------------|
 | **Qualidade do Atendimento Comercial** (ANEEL) | Prazos, transgressões, compensações R$ | Anual 2011–2023 por distribuidora/serviço |
-| **INDGER — Indicadores Gerenciais** (ANEEL) | Serviços comerciais mensais com volume + valor | Mensal 2023–2025 |
+| **INDGER — Indicadores Gerenciais** (ANEEL) | Serviços comerciais mensais com volume + valor | Mensal 2023-01–2025-12 |
 | **DTB 2024** (IBGE) | Divisão territorial municipal para mapa e rural/urbano | Por município |
 
 Fonte dos dados: [dadosabertos.aneel.gov.br](https://dadosabertos.aneel.gov.br) (portal público oficial)

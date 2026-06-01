@@ -75,6 +75,8 @@ Localmente, a variável `API_REWRITE_URL=http://localhost:8051` (definida pelo `
 
 Na home, os dois cards pré-REN do topo usam o agregado histórico de `kpi_overview`. Já os cards pós-REN e as variações do topo são uma visão Brasil fixa recalculada no cliente a partir de `serie_mensal_nacional`, usando a janela operacional 2023–2025; os filtros de empresas afetam apenas os gráficos e cards inferiores.
 
+Os JSONs atuais esperam a mensalidade INDGER corrigida: `serie_mensal_nacional` e `dashboard_timeseries.json` devem conter 36 meses de `2023-01` a `2025-12`. Se a home ou `/evolucao` voltar a mostrar apenas janeiro por ano, regenere os artefatos e rode `make check-artifacts-full`.
+
 Na rota `/mapa`, os filtros de holdings iniciam em visão setorial sem recorte pré-selecionado; os chips são ordenados pelo rótulo dos grupos disponíveis nos dados, sem destacar uma holding como foco padrão.
 
 ---
@@ -122,6 +124,8 @@ Deploy automático: qualquer push na branch `main` que modifique `app/frontend-n
 O `vercel.json` nesta pasta adiciona security headers (CSP) ao deploy. A CSP permite `script-src 'unsafe-inline'` porque o App Router do Next.js injeta scripts inline de boot/hydration; remover isso deixa a produção presa em skeleton/loading. Os rewrites de API estão no `next.config.mjs` — não duplique no `vercel.json`.
 
 Sempre que os endpoints ou JSONs do dashboard mudarem, redeploye também o backend Railway a partir do `main` atual. A produção deve expor `/api/v1/groups-ranking` e `/api/v1/transgressoes`, e `/dashboard_data.json` deve trazer o `meta.generated_at` dos JSONs versionados mais recentes.
+
+Mudanças em `data/processed/dashboard/dashboard_*.json` alteram o dado exibido mesmo sem mudança visual no React; após regeneração, o Railway precisa publicar os JSONs novos para que a Vercel não consuma payload antigo.
 
 ---
 

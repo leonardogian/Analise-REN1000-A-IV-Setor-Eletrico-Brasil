@@ -42,6 +42,8 @@ DIR_ANALYSIS = DIR_PROCESSED / "analysis"
 DOMAIN_INDICATORS_PATH = ROOT / "data" / "raw" / "dominio-indicadores.csv"
 
 FAMILIAS_VALIDAS = {"QS", "QV", "PM", "CR"}
+INDGER_SOURCE_MONTH_RE = re.compile(r"(20\d{2})-(0[1-9]|1[0-2])\.csv$")
+EXPECTED_INDGER_PERIODS = {(ano, mes) for ano in range(2023, 2026) for mes in range(1, 13)}
 
 
 def parse_br_number(series: pd.Series) -> pd.Series:
@@ -78,13 +80,87 @@ def parse_br_number(series: pd.Series) -> pd.Series:
             if s.count(".") > 1:
                 s = s.replace(".", "")
             # Single dot -> assume US decimal (1234.56)
-            
+
         try:
             return float(s)
         except ValueError:
             return pd.NA
 
     return series.apply(_parse_val)
+
+
+def derive_indger_year_month(frame: pd.DataFrame) -> pd.DataFrame:
+    """Derive INDGER reference year/month from source file or encoded date."""
+    if "datreferenciainformada" not in frame.columns:
+        raise RuntimeError("INDGER frame missing datreferenciainformada")
+
+    result = frame.copy()
+    parsed = pd.to_datetime(result["datreferenciainformada"], errors="coerce")
+    result["ano"] = parsed.dt.year.astype("Int64")
+    result["mes"] = parsed.dt.month.astype("Int64")
+
+    parsed_day = parsed.dt.day.astype("Int64")
+
+    if "_source_file" in result.columns:
+        source = result["_source_file"].astype("string").str.extract(INDGER_SOURCE_MONTH_RE)
+        source_year = pd.to_numeric(source[0], errors="coerce").astype("Int64")
+        source_month = pd.to_numeric(source[1], errors="coerce").astype("Int64")
+        has_source_month = source_year.notna() & source_month.notna()
+
+        encoded_month = (
+            parsed.notna()
+            & result["mes"].eq(1)
+            & parsed_day.between(1, 12)
+        )
+        expected_month_from_date = result["mes"].where(~encoded_month, parsed_day)
+        inconsistent = (
+            has_source_month
+            & parsed.notna()
+            & (
+                source_year.ne(result["ano"])
+                | source_month.ne(expected_month_from_date.astype("Int64"))
+            )
+        )
+        if inconsistent.any():
+            examples = (
+                result.loc[inconsistent, ["datreferenciainformada", "_source_file"]]
+                .head(5)
+                .to_dict("records")
+            )
+            raise RuntimeError(
+                "Referencia mensal INDGER inconsistente entre _source_file e "
+                f"datreferenciainformada. Exemplos: {examples}"
+            )
+
+        result.loc[has_source_month, "ano"] = source_year.loc[has_source_month]
+        result.loc[has_source_month, "mes"] = source_month.loc[has_source_month]
+
+    suspicious_encoded_month = (
+        result["mes"].eq(1)
+        & parsed_day.between(1, 12)
+        & result["datreferenciainformada"].notna()
+    )
+    if "_source_file" in result.columns:
+        source_missing = result["_source_file"].isna() | (result["_source_file"].astype("string").str.strip() == "")
+        suspicious_encoded_month = suspicious_encoded_month & source_missing
+
+    result.loc[suspicious_encoded_month, "mes"] = parsed_day.loc[suspicious_encoded_month]
+    return result
+
+
+def assert_expected_indger_periods(frame: pd.DataFrame, table_name: str) -> None:
+    periods = {
+        (int(row.ano), int(row.mes))
+        for row in frame[["ano", "mes"]].dropna().drop_duplicates().itertuples(index=False)
+    }
+    if periods != EXPECTED_INDGER_PERIODS:
+        missing = sorted(EXPECTED_INDGER_PERIODS - periods)
+        extra = sorted(periods - EXPECTED_INDGER_PERIODS)
+        raise RuntimeError(
+            f"Cobertura mensal INDGER inesperada em {table_name}: "
+            f"{len(periods)} periodos encontrados; esperado 36 para 2023-01 a 2025-12. "
+            f"Ausentes={missing[:6]} extras={extra[:6]}"
+        )
 
 
 def safe_read_csv(path: Path, sep: str = ";") -> pd.DataFrame:
@@ -281,7 +357,13 @@ def load_qualidade_comercial(
 
 def load_domain_indicators() -> pd.DataFrame:
     if not DOMAIN_INDICATORS_PATH.exists():
-        raise FileNotFoundError(f"Missing file: {DOMAIN_INDICATORS_PATH}")
+        fallback_path = DIR_ANALYSIS / "dim_indicador_servico.csv"
+        if not fallback_path.exists():
+            raise FileNotFoundError(f"Missing file: {DOMAIN_INDICATORS_PATH}")
+        fallback = pd.read_csv(fallback_path, usecols=["sigindicador", "dscindicador"])
+        fallback["sigindicador"] = fallback["sigindicador"].astype("string").str.strip()
+        fallback["dscindicador"] = fallback["dscindicador"].astype("string").str.strip()
+        return fallback.dropna(subset=["sigindicador"]).drop_duplicates(subset=["sigindicador"])
 
     domain = safe_read_csv(DOMAIN_INDICATORS_PATH, sep=";")
     domain.columns = [normalize_text(c) for c in domain.columns]
@@ -423,10 +505,10 @@ def build_dim_distribuidora_porte(
 
     frame["sigagente"] = frame["sigagente"].astype("string").str.strip()
     frame["nomagente"] = frame["nomagente"].astype("string").str.strip()
-    frame["dt_ref"] = pd.to_datetime(frame["datreferenciainformada"], errors="coerce")
-    frame = frame.dropna(subset=["dt_ref", "sigagente"])
-    frame["ano"] = frame["dt_ref"].dt.year
-    frame["mes"] = frame["dt_ref"].dt.month
+    frame = derive_indger_year_month(frame)
+    frame = frame.dropna(subset=["ano", "mes", "sigagente"])
+    frame["ano"] = frame["ano"].astype(int)
+    frame["mes"] = frame["mes"].astype(int)
     frame["uc_ativa"] = parse_br_number(frame["qtducativa"])
     frame = annotate_distributor_group(
         frame,
@@ -507,10 +589,10 @@ def build_uc_ativa_mensal_distribuidora(
 
     frame["sigagente"] = frame["sigagente"].astype("string").str.strip()
     frame["nomagente"] = frame["nomagente"].astype("string").str.strip()
-    frame["dt_ref"] = pd.to_datetime(frame["datreferenciainformada"], errors="coerce")
-    frame = frame.dropna(subset=["dt_ref", "sigagente"])
-    frame["ano"] = frame["dt_ref"].dt.year
-    frame["mes"] = frame["dt_ref"].dt.month
+    frame = derive_indger_year_month(frame)
+    frame = frame.dropna(subset=["ano", "mes", "sigagente"])
+    frame["ano"] = frame["ano"].astype(int)
+    frame["mes"] = frame["mes"].astype(int)
     frame["uc_ativa"] = parse_br_number(frame["qtducativa"])
     frame = annotate_distributor_group(
         frame,
@@ -568,6 +650,7 @@ def build_fato_servicos_municipio_mes(
             "qtdservrealizado",
             "qtdservrealizdescprazo",
             "vlrpagocompensacao",
+            "_source_file",
         ],
     )
 
@@ -576,10 +659,10 @@ def build_fato_servicos_municipio_mes(
     frame["dsctiposervico"] = frame["dsctiposervico"].astype("string").str.strip()
     frame["dscprazo"] = frame["dscprazo"].astype("string").str.strip()
 
-    frame["dt_ref"] = pd.to_datetime(frame["datreferenciainformada"], errors="coerce")
-    frame = frame.dropna(subset=["dt_ref", "sigagente"])
-    frame["ano"] = frame["dt_ref"].dt.year
-    frame["mes"] = frame["dt_ref"].dt.month
+    frame = derive_indger_year_month(frame)
+    frame = frame.dropna(subset=["ano", "mes", "sigagente"])
+    frame["ano"] = frame["ano"].astype(int)
+    frame["mes"] = frame["mes"].astype(int)
     frame = annotate_distributor_group(
         frame,
         sig_col="sigagente",
@@ -1147,6 +1230,12 @@ def run_all() -> dict[str, pd.DataFrame]:
     )
     fato_transgressao_mensal_distribuidora = build_fato_transgressao_mensal_distribuidora(
         fato_transgressao_mensal_porte
+    )
+    assert_expected_indger_periods(uc_ativa_mensal, "fato_uc_ativa_mensal_distribuidora")
+    assert_expected_indger_periods(fato_transgressao_mensal_porte, "fato_transgressao_mensal_porte")
+    assert_expected_indger_periods(
+        fato_transgressao_mensal_distribuidora,
+        "fato_transgressao_mensal_distribuidora",
     )
 
     fato_indicadores = merge_fato_with_porte(fato_indicadores, dim_porte)

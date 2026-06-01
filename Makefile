@@ -231,8 +231,11 @@ test-fast:
 	  src/analysis/neoenergia_diagnostico.py \
 	  src/analysis/build_dashboard_data.py \
 	  src/analysis/dashboard_transgressoes.py \
-	  app/backend/main.py
+	  app/backend/main.py \
+	  app/backend/core/database.py \
+	  scripts/test_backend_dependency_degradation.py
 	$(PYTHON) scripts/smoke_imports.py
+	$(PYTHON) scripts/test_backend_dependency_degradation.py
 	@$(MAKE) validate-contracts-processed
 	@$(MAKE) check-artifacts
 
