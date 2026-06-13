@@ -7,10 +7,24 @@ O projeto mede transgressoes de prazo, compensacoes financeiras pagas na fatura
 dos consumidores e normalizacao por unidades consumidoras (UCs), com recortes
 por distribuidora, grupo economico, porte, territorio e periodo regulatorio.
 
+Em termos simples: este repositorio mostra como sair de dados publicos da
+ANEEL/IBGE, tratar e validar esses dados, gerar tabelas auditaveis e publicar
+um dashboard para explorar os resultados. A evidencia primaria do TCC esta nas
+tabelas de `data/processed/analysis/` e na auditoria textual em
+`reports/tcc_claims_audit.md`; o dashboard e uma camada derivada para
+comunicacao e exploracao visual.
+
 [![Frontend](https://img.shields.io/badge/frontend-Next.js_14-black?logo=vercel)](https://tcc-frontend-react.vercel.app)
 [![Backend](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi)](https://tcc-ren1000x414-production.up.railway.app/health)
 [![Python](https://img.shields.io/badge/python-3.10+-3776AB?logo=python)](requirements.txt)
 [![TCC](https://img.shields.io/badge/TCC-ANEEL_REN_1000-orange)](docs/metodologia_tcc.excalidraw)
+
+## Dois Caminhos De Uso
+
+| Se voce quer... | Comece por | O que acontece |
+|---|---|---|
+| Ver o resultado rapidamente | [Demo rapida](#demo-rapida-com-dados-versionados) | Usa os CSVs/JSONs ja versionados para abrir o dashboard local. |
+| Replicar cientificamente | [Reproducao cientifica](#reproducao-cientifica) | Rebaixa fontes oficiais, refaz ETL, analises, validacoes e dashboard. |
 
 ## Para Quem Chegou Agora
 
@@ -30,19 +44,63 @@ por distribuidora, grupo economico, porte, territorio e periodo regulatorio.
 | Backend Railway | <https://tcc-ren1000x414-production.up.railway.app/health> | Healthcheck da API e diagnostico de dependencias. |
 | Dashboard Vanilla legado | <https://analise-ren-1000-a-iv-setor-eletric.vercel.app> | Preservado apenas na branch `legacy/vanilla-dashboard`. |
 
-## Visao Visual
+## Mapa Visual Da Metodologia
 
-![Fluxograma metodologico do TCC](docs/images/metodologia_tcc_mermaid.svg)
+O diagrama abaixo e o mapa-mae do Capitulo 3: ele mostra a cadeia completa de
+fontes oficiais, tratamento, consolidacao, validacao, indicadores, analise e
+painel. Clique na imagem para abrir em zoom no GitHub.
+
+<a href="docs/Fluxogramas_v2/exports/svg/figura_01_fluxo_metodologico.svg">
+  <img src="docs/Fluxogramas_v2/exports/svg/figura_01_fluxo_metodologico.svg" alt="Figura 1 - Fluxo metodologico geral da pesquisa" width="520">
+</a>
+
+Para leitura sem perder zoom, use os recortes abaixo. As figuras foram
+separadas para funcionar como "aproximacoes" dos blocos principais da
+metodologia.
+
+| Figura | O que ajuda a entender | Abrir em zoom |
+|---|---|---|
+| Figura 1 - Fluxo metodologico geral | Como a pesquisa sai das fontes oficiais e chega aos resultados cientificos. | [SVG](docs/Fluxogramas_v2/exports/svg/figura_01_fluxo_metodologico.svg) |
+| Figura 2 - Coleta e tratamento | Como os dados ANEEL/IBGE viram dados tratados e consistentes. | [SVG](docs/Fluxogramas_v2/exports/svg/figura_02_coleta_tratamento.svg) |
+| Figura 3 - Consolidacao analitica | Onde ficam as tabelas auditaveis que sustentam a evidencia do TCC. | [SVG](docs/Fluxogramas_v2/exports/svg/figura_03_consolidacao_analitica.svg) |
+| Figura 4 - Validacao e reprodutibilidade | Quais checagens impedem conclusoes com dados incompletos ou inconsistentes. | [SVG](docs/Fluxogramas_v2/exports/svg/figura_04_validacao_reprodutibilidade.svg) |
+| Figura 5 - Painel analitico | Como o dashboard comunica os resultados sem substituir a evidencia primaria. | [SVG](docs/Fluxogramas_v2/exports/svg/figura_05_painel_analitico.svg) |
+
+Fontes editaveis: [Mermaid](docs/Fluxogramas_v2/exports/mermaid/) para revisar
+a logica dos fluxos e
+[Excalidraw](docs/Fluxogramas_v2/exports/excalidraw/fluxogramas_capitulo_3.excalidraw)
+para ajustar a prancha visual.
 
 ### Telas Do Dashboard
 
-| Visao geral | Ranking |
-|---|---|
-| ![Dashboard visao geral](docs/images/dashboard_visao_geral.png) | ![Ranking de grupos](docs/images/dashboard_ranking.png) |
+<details>
+<summary>Ver capturas do dashboard oficial Next.js</summary>
 
-| Evolucao mensal | Mapa |
-|---|---|
-| ![Evolucao mensal](docs/images/dashboard_evolucao.png) | ![Mapa geografico](docs/images/dashboard_mapa.png) |
+#### Visao geral
+
+<img src="docs/images/dashboard_visao_geral.png" alt="Dashboard - visao geral" width="100%">
+
+#### Ranking de grupos
+
+<img src="docs/images/dashboard_ranking.png" alt="Dashboard - ranking de grupos" width="100%">
+
+#### Evolucao mensal
+
+<img src="docs/images/dashboard_evolucao.png" alt="Dashboard - evolucao mensal" width="100%">
+
+#### Benchmark por porte
+
+<img src="docs/images/dashboard_benchmark.png" alt="Dashboard - benchmark por porte" width="100%">
+
+#### Transgressoes
+
+<img src="docs/images/dashboard_transgressoes.png" alt="Dashboard - transgressoes" width="100%">
+
+#### Mapa geografico
+
+<img src="docs/images/dashboard_mapa.png" alt="Dashboard - mapa geografico" width="100%">
+
+</details>
 
 ## O Que Este Repo Entrega
 
@@ -228,6 +286,7 @@ TCC_leo_main/
 │       ├── analysis/         CSVs auditaveis versionados
 │       └── dashboard/        JSONs canonicos para API/dashboard
 ├── docs/                     Documentacao tecnica e figuras metodologicas
+│   └── Fluxogramas_v2/       Pacote visual atual do Capitulo 3
 ├── reports/                  Relatorios e auditoria de afirmacoes
 ├── scripts/                  Validadores, QA e utilitarios
 ├── src/
@@ -252,6 +311,7 @@ oficial atual e Make + FastAPI/Railway + Next.js/Vercel.
 | [`.ai/PIPELINE.md`](.ai/PIPELINE.md) | Para entender ETL, analise e validacoes. |
 | [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md) | Para baixar dados do zero ou mexer em `src/etl/`. |
 | [`docs/METODOLOGIA_PIPELINE_MAKE.md`](docs/METODOLOGIA_PIPELINE_MAKE.md) | Para explicar a reproducao no texto academico. |
+| [`docs/Fluxogramas_v2/`](docs/Fluxogramas_v2/00_README.md) | Para revisar os fluxogramas atuais do Capitulo 3. |
 | [`docs/DICIONARIO_DADOS.md`](docs/DICIONARIO_DADOS.md) | Para consultar campos e significado dos dados. |
 | [`docs/DATA_QUALITY_AUDIT.md`](docs/DATA_QUALITY_AUDIT.md) | Para entender backlog e contrato de qualidade. |
 | [`app/frontend-next/README.md`](app/frontend-next/README.md) | Para mexer no dashboard oficial. |

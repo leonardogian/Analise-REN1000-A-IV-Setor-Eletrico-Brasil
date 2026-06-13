@@ -11,7 +11,7 @@ distribuidoras de energia elétrica do Brasil. O foco é setorial: transgressõe
 compensações financeiras e normalização por UC, com recortes por distribuidora,
 grupo econômico, porte, território e período regulatório.
 
-> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos do dashboard como caminho crítico e trata PostgreSQL/Redis como dependências degradáveis. O Vanilla foi movido para a branch `legacy/vanilla-dashboard`. A rodada atual corrigiu o parsing mensal INDGER para preservar os 36 períodos `2023-01` a `2025-12`, adicionou contratos/auditorias de cobertura mensal e criou `reports/tcc_claims_audit.md` para separar números certificados pelo pipeline de fontes externas exploratórias. Em 2026-06-01, docs/planos legados de agentes e fluxos Kestra obsoletos foram removidos da main; o contexto ativo de IA fica em `.ai/`, `AGENTS.md`, `CLAUDE.md` e `.github/agents/`.
+> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos do dashboard como caminho crítico e trata PostgreSQL/Redis como dependências degradáveis. O Vanilla foi movido para a branch `legacy/vanilla-dashboard`. A rodada atual corrigiu o parsing mensal INDGER para preservar os 36 períodos `2023-01` a `2025-12`, adicionou contratos/auditorias de cobertura mensal e criou `reports/tcc_claims_audit.md` para separar números certificados pelo pipeline de fontes externas exploratórias. Em 2026-06-01, docs/planos legados de agentes e fluxos Kestra obsoletos foram removidos da main; o contexto ativo de IA fica em `.ai/`, `AGENTS.md`, `CLAUDE.md` e `.github/agents/`. Os fluxogramas acadêmicos atuais do Capítulo 3 ficam em `docs/Fluxogramas_v2/`, com Mermaid canônico, SVGs para GitHub e Excalidraw editável.
 
 > **🔄 ROTINA OBRIGATÓRIA PARA IAs:**
 >
@@ -76,6 +76,7 @@ TCC_leo_main/
 │
 ├── reports/                  ← Relatórios gerados (markdown)
 ├── docs/                     ← Documentação auxiliar, imagens e metodologia_tcc.excalidraw
+│   └── Fluxogramas_v2/       ← Fluxogramas atuais do Capítulo 3 (Mermaid, SVG, Excalidraw)
 ├── logos/                    ← Logos PNG de holdings
 ├── docker/                   ← Dockerfile/Compose do backend e infraestrutura local opcional
 ├── scripts/                  ← Utilitários (cargas PostgreSQL, QA, validações)
@@ -169,6 +170,8 @@ No VS Code Dev Container, a `.venv` do workspace é um volume Docker nomeado (`t
 - **README humano**: `README.md`
 - **Dashboard docs**: `app/frontend-next/README.md`
 - **Guia de análise**: `docs/GUIA_ANALISE.md`
+- **Fluxogramas atuais do Capítulo 3**: `docs/Fluxogramas_v2/00_README.md`
+- **Prancha editável do Capítulo 3**: `docs/Fluxogramas_v2/exports/excalidraw/fluxogramas_capitulo_3.excalidraw`
 - **Fluxograma da metodologia**: `docs/metodologia_tcc.excalidraw`
 - **Fluxograma do pipeline Make**: `docs/mtdpipeline.excalidraw`
 - **Próximos passos TCC**: `docs/PROXIMOS_PASSOS_TCC.md`

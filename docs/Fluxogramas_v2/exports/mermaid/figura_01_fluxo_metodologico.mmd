@@ -1,0 +1,28 @@
+%% Figura 1 - Fluxo metodologico geral da pesquisa
+%% Mapa-mae do Capitulo 3: as Figuras 2, 3, 4 e 5 detalham blocos deste fluxo.
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "primaryTextColor": "#111111", "primaryBorderColor": "#111111", "lineColor": "#111111"}, "flowchart": {"curve": "stepBefore", "htmlLabels": true, "nodeSpacing": 70, "rankSpacing": 80}}}%%
+flowchart TD
+    A["<b>FONTES OFICIAIS DE DADOS</b><br/>ANEEL, INDGER, IBGE e bases financeiras"]
+    B["<b>COLETA E TRATAMENTO DOS DADOS</b><br/>detalhado na Figura 2"]
+    C["<b>CONSOLIDAÇÃO ANALÍTICA</b><br/>detalhada na Figura 3"]
+    D["<b>VALIDAÇÃO E REPRODUTIBILIDADE</b><br/>detalhada na Figura 4"]
+    E{"<b>DADOS APROVADOS?</b>"}
+    F["<b>CONSTRUÇÃO DOS INDICADORES</b><br/>métricas regulatórias, operacionais e financeiras"]
+    G["<b>ANÁLISE COMPARATIVA</b><br/>pré/pós REN 1.000, Grupo A/B, urbano/rural e holdings"]
+    H["<b>RESULTADOS E EVIDÊNCIA CIENTÍFICA</b><br/>base do Capítulo 4"]
+    I["<b>PAINEL ANALÍTICO E INTERPRETAÇÃO</b><br/>detalhado na Figura 5"]
+
+    A --> B --> C --> D --> E
+    E -- "SIM" --> F
+    F --> G
+    G --> H
+    G --> I
+    I -- "apoio interpretativo" --> H
+    E -- "NÃO: correção ou reprocessamento" --> B
+    G -- "ajuste de métricas" --> F
+    I -- "identificação de padrões e outliers" --> G
+
+    classDef etapa fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef decisao fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    class A,B,C,D,F,G,H,I etapa;
+    class E decisao;

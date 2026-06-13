@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality in Brazil's electricity distribution sector. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units), with cuts by distributor, economic group, size, geography, and regulatory period.
 
-**Current phase:** ETL e backend FastAPI estão operacionais; o frontend oficial é o Next.js em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos como caminho crítico do dashboard e trata PostgreSQL/Redis como dependências degradáveis para persistência/cache. O dashboard Vanilla clássico foi movido para a branch `legacy/vanilla-dashboard`. A rodada de reprodutibilidade reforçou extração segura, contratos de schema, deduplicação INDGER e dashboard com agregações ponderadas. Em 2026-05-31, o parsing mensal INDGER foi corrigido para preservar `2023-01` a `2025-12` e o TCC ganhou auditoria rastreável em `reports/tcc_claims_audit.md`. `make pipeline` agora termina com validações. Em 2026-06-01, o repositório foi enxugado para remover docs/planos legados de agentes e fluxos Kestra obsoletos; o contexto ativo de IA fica em `.ai/`, `AGENTS.md`, `CLAUDE.md` e `.github/agents/`.
+**Current phase:** ETL e backend FastAPI estão operacionais; o frontend oficial é o Next.js em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos como caminho crítico do dashboard e trata PostgreSQL/Redis como dependências degradáveis para persistência/cache. O dashboard Vanilla clássico foi movido para a branch `legacy/vanilla-dashboard`. A rodada de reprodutibilidade reforçou extração segura, contratos de schema, deduplicação INDGER e dashboard com agregações ponderadas. Em 2026-05-31, o parsing mensal INDGER foi corrigido para preservar `2023-01` a `2025-12` e o TCC ganhou auditoria rastreável em `reports/tcc_claims_audit.md`. `make pipeline` agora termina com validações. Em 2026-06-01, o repositório foi enxugado para remover docs/planos legados de agentes e fluxos Kestra obsoletos; o contexto ativo de IA fica em `.ai/`, `AGENTS.md`, `CLAUDE.md` e `.github/agents/`. Os fluxogramas acadêmicos atuais do Capítulo 3 ficam em `docs/Fluxogramas_v2/`, com Mermaid canônico, SVGs para GitHub e Excalidraw editável.
 
 ## Essential Commands
 
@@ -101,8 +101,9 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 - `data/processed/dashboard/` — JSONs canônicos `dashboard_*.json` servidos pelo backend/Railway
 - `data/processed/analysis/` — versioned analytical CSVs; Parquet mirrors are generated locally
 - `docker/` — Dockerfile/Compose do backend e stacks opcionais de infraestrutura local
-- `docs/` — canonical docs (EXTRACAO_DADOS, DICIONARIO_DADOS, GUIA_ANALISE, metodologia_tcc.excalidraw, ...)
+- `docs/` — canonical docs (EXTRACAO_DADOS, DICIONARIO_DADOS, GUIA_ANALISE, metodologia_tcc.excalidraw, Fluxogramas_v2, ...)
 - `docs/mtdpipeline.excalidraw` — fluxograma editável do pipeline Make, artefatos e validações de reprodutibilidade
+- `docs/Fluxogramas_v2/` — pacote visual atual dos fluxogramas acadêmicos do Capítulo 3 (Mermaid, SVG e Excalidraw)
 - `.github/agents/` — specialized AI agents (aneel-data-guardian, backend-fastapi-specialist, frontend-next-specialist)
 - `scripts/` — utilities (Postgres loader, artifact checkers, QA automation)
 
@@ -174,6 +175,7 @@ Após mudanças estruturais, mantenha sincronizados:
 - `docs/DATA_QUALITY_AUDIT.md` — backlog e contrato da auditoria numerica
 - `docs/metodologia_tcc.excalidraw` — fluxograma visual da metodologia para banca
 - `docs/mtdpipeline.excalidraw` — fluxograma editável do pipeline Make para a seção 3.5
+- `docs/Fluxogramas_v2/` — pacote visual atual dos fluxogramas do Capítulo 3 exibidos no README
 
 ## Testing
 

@@ -1,0 +1,28 @@
+%% Figura 5 - Fluxograma da arquitetura do painel analitico
+%% O painel e uma camada derivada de exploracao, sem recalculo da evidencia.
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "primaryTextColor": "#111111", "primaryBorderColor": "#111111", "lineColor": "#111111"}, "flowchart": {"curve": "stepBefore", "htmlLabels": true, "nodeSpacing": 70, "rankSpacing": 80}}}%%
+flowchart TD
+    A["<b>TABELAS ANALÍTICAS TRATADAS E VALIDADAS</b><br/>Fonte primária dos indicadores"]
+    B["<b>ARTEFATOS CANÔNICOS</b><br/>Arquivos estruturados para consumo web"]
+    C["<b>CAMADA DE SERVIÇO</b><br/>API sem recálculo dinâmico"]
+    D["<b>INTERFACE DE EXPLORAÇÃO</b><br/>Dashboard interativo"]
+    E["<b>EXPLORAÇÃO VISUAL</b><br/>filtros, rankings, séries e segmentações"]
+    F{"<b>PADRÕES OU OUTLIERS?</b>"}
+    G["<b>INTERPRETAÇÃO DOS RESULTADOS</b><br/>assimetrias, tendências e materialidade"]
+    H["<b>RETORNO À ANÁLISE</b><br/>refinamento de recortes e métricas"]
+    I["<b>APOIO À DISCUSSÃO DO CAPÍTULO 4</b><br/>camada interpretativa derivada"]
+
+    A --> B --> C --> D --> E --> F
+    F -- "SIM" --> G
+    G --> I
+    F -- "NÃO" --> H
+    H -- "novo recorte" --> E
+
+    classDef primaria fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef derivada fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef decisao fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef interpretacao fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    class A primaria;
+    class B,C,D,E,H derivada;
+    class F decisao;
+    class G,I interpretacao;

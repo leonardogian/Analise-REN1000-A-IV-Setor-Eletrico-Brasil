@@ -1,0 +1,29 @@
+%% Figura 4 - Fluxograma da validacao e reprodutibilidade dos dados
+%% Detalhamento do bloco "Validacao e Reprodutibilidade" da Figura 1.
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "primaryTextColor": "#111111", "primaryBorderColor": "#111111", "lineColor": "#111111"}, "flowchart": {"curve": "stepBefore", "htmlLabels": true, "nodeSpacing": 70, "rankSpacing": 80}}}%%
+flowchart TD
+    A["<b>TABELAS ANALÍTICAS GERADAS</b><br/>entrada da Figura 3"]
+    B["<b>VALIDAÇÃO ESTRUTURAL</b><br/>campos, tipos e regimes regulatórios"]
+    C["<b>VERIFICAÇÃO DE COMPLETUDE</b><br/>artefatos esperados e cobertura temporal"]
+    D["<b>AUDITORIA NUMÉRICA E RELACIONAL</b><br/>chaves, denominadores e consistência de agregações"]
+    E["<b>TESTE DE REPRODUTIBILIDADE</b><br/>execução independente do fluxo"]
+    F{"<b>DADOS APROVADOS?</b><br/>decisão lógica"}
+    G["<b>AVANÇO PARA INDICADORES</b><br/>entrada da etapa analítica"]
+    H["<b>CORREÇÃO DE INCONSISTÊNCIAS</b><br/>retorno ao tratamento ou consolidação"]
+    I["<b>RETORNO À FIGURA 1</b><br/>Construção dos Indicadores"]
+
+    A --> B --> C --> D --> E --> F
+    F -- "SIM" --> G
+    G --> I
+    F -- "NÃO" --> H
+    H -- "problema de estrutura" --> B
+    H -- "problema de consolidação" --> A
+
+    classDef validacao fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef decisao fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef aprovado fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef correcao fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    class A,B,C,D,E validacao;
+    class F decisao;
+    class G,I aprovado;
+    class H correcao;

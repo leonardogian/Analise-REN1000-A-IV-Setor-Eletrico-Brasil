@@ -1,0 +1,32 @@
+%% Figura 3 - Fluxograma da consolidacao analitica
+%% Regra critica: nao ha seta da camada derivada para a evidencia cientifica.
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "primaryTextColor": "#111111", "primaryBorderColor": "#111111", "lineColor": "#111111"}, "flowchart": {"curve": "stepBefore", "htmlLabels": true, "nodeSpacing": 70, "rankSpacing": 80}}}%%
+flowchart TD
+    A["<b>DADOS TRATADOS</b><br/>entrada da Figura 2"]
+    B["<b>MODELAGEM ANALÍTICA</b><br/>chaves, dimensões e granularidades"]
+    C["<b>TABELAS ANALÍTICAS</b><br/>indicadores, KPIs, transgressões e segmentações"]
+    D{"<b>CONSISTÊNCIA ANALÍTICA?</b>"}
+    E["<b>CAMADA PRIMÁRIA</b><br/>tabelas auditáveis da pesquisa"]
+    F["<b>CAMADA DERIVADA</b><br/>relatórios, painel e artefatos visuais"]
+    G["<b>EVIDÊNCIA CIENTÍFICA</b><br/>base dos resultados do Capítulo 4"]
+    H["<b>REVISÃO DA MODELAGEM</b><br/>ajuste de chaves, agregações ou granularidade"]
+
+    A --> B --> C --> D
+    D -- "SIM" --> E
+    E --> G
+    E --> F
+    D -- "NÃO" --> H
+    H -- "retorno" --> B
+
+    classDef origem fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef analitica fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef decisao fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef primaria fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef derivada fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef evidencia fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    class A origem;
+    class B,C,H analitica;
+    class D decisao;
+    class E primaria;
+    class F derivada;
+    class G evidencia;

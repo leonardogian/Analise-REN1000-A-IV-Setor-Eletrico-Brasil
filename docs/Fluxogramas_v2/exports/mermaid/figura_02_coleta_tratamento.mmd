@@ -1,0 +1,34 @@
+%% Figura 2 - Fluxograma da coleta e tratamento dos dados
+%% Detalhamento do bloco "Coleta e Tratamento dos Dados" da Figura 1.
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "primaryTextColor": "#111111", "primaryBorderColor": "#111111", "lineColor": "#111111"}, "flowchart": {"curve": "stepBefore", "htmlLabels": true, "nodeSpacing": 70, "rankSpacing": 80}}}%%
+flowchart TD
+    A1["<b>FONTES ANEEL</b><br/>Qualidade comercial e INDGER"]
+    A2["<b>FONTES IBGE</b><br/>Divisão Territorial Brasileira"]
+    A3["<b>BASES FINANCEIRAS</b><br/>holdings e demonstrações públicas"]
+    B["<b>CRITÉRIOS DE SELEÇÃO</b><br/>oficialidade, cobertura temporal e reprodutibilidade"]
+    C["<b>COLETA AUTOMATIZADA</b><br/>extração sistemática das bases públicas"]
+    D["<b>DADOS BRUTOS</b><br/>formatos originais das fontes oficiais"]
+    E["<b>PADRONIZAÇÃO E LIMPEZA</b><br/>encoding, separadores, datas, colunas e duplicidades"]
+    F["<b>INTEGRAÇÃO TERRITORIAL E REGULATÓRIA</b><br/>municípios, distribuidoras, grupos e períodos"]
+    G{"<b>DADOS CONSISTENTES?</b>"}
+    H["<b>DADOS TRATADOS</b><br/>bases limpas e otimizadas"]
+    I["<b>REPROCESSAMENTO</b><br/>correção de inconsistências"]
+    J["<b>ENTRADA DA FIGURA 3</b><br/>Consolidação Analítica"]
+
+    A1 --> B
+    A2 --> B
+    A3 --> B
+    B --> C --> D --> E --> F --> G
+    G -- "SIM" --> H
+    H --> J
+    G -- "NÃO" --> I
+    I -- "correção" --> E
+
+    classDef fonte fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef processo fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef dado fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    classDef decisao fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px;
+    class A1,A2,A3 fonte;
+    class B,C,E,F,I processo;
+    class D,H,J dado;
+    class G decisao;
