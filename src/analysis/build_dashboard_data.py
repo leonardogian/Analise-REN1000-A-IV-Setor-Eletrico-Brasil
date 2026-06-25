@@ -30,12 +30,12 @@ REQUIRED_INPUT_FILES = [
     DIR_ANALYSIS / "fato_indicadores_anuais.csv",
     DIR_ANALYSIS / "dim_distributor_group.csv",
     DIR_ANALYSIS / "dim_distribuidora_porte.csv",
-    DIR_GROUPS / "grupos_anual_2023_2025.csv",
-    DIR_GROUPS / "grupos_tendencia_2023_2025.csv",
+    DIR_GROUPS / "grupos_anual_2023_plus.csv",
+    DIR_GROUPS / "grupos_tendencia_2023_plus.csv",
     DIR_GROUPS / "grupos_benchmark_porte_latest.csv",
-    DIR_GROUPS / "grupos_classe_local_2023_2025.csv",
+    DIR_GROUPS / "grupos_classe_local_2023_plus.csv",
     DIR_GROUPS / "grupos_longa_resumo_2011_2023.csv",
-    DIR_GROUPS / "grupos_mensal_2023_2025.csv",
+    DIR_GROUPS / "grupos_mensal_2023_plus.csv",
     DIR_ANALYSIS / "fato_grupos_algoritmicos.csv",
 ]
 
@@ -98,6 +98,17 @@ def _safe(v):
     if pd.isna(v):
         return None
     return v
+
+
+def safe_mode_label(values: pd.Series, default: str = "N/A") -> str:
+    """Return the first non-null mode value, or a default when all values are missing."""
+    non_null = values.dropna()
+    if non_null.empty:
+        return default
+    mode = non_null.mode()
+    if mode.empty or pd.isna(mode.iloc[0]):
+        return default
+    return str(mode.iloc[0])
 
 
 def _df_to_records(df: pd.DataFrame) -> list[dict]:
@@ -1172,7 +1183,7 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
         rk_agg["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(rk_agg["qtd_fora_prazo"], rk_agg["exposicao_uc_mes"])
         rk_agg["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(rk_agg["compensacao_rs"], rk_agg["exposicao_uc_mes"])
         porte_by_group = df_latest.groupby("group_id")["bucket_porte"].agg(
-            lambda x: x.mode().iloc[0] if len(x) > 0 else "N/A"
+            safe_mode_label
         ).reset_index().rename(columns={"bucket_porte": "porte"})
         rk_agg = rk_agg.merge(porte_by_group, on="group_id", how="left")
 
@@ -1250,7 +1261,10 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
             var = variacao_by_group.get(gid, {})
             record.update(var)
             ranking_records.append(record)
-        ranking_records.sort(key=lambda r: r.get("fora_prazo_por_100k_uc_mes", 0), reverse=True)
+        ranking_records.sort(
+            key=lambda r: r.get("fora_prazo_por_100k_uc_mes") if r.get("fora_prazo_por_100k_uc_mes") is not None else -1,
+            reverse=True,
+        )
         insights["ranking_grupos"] = ranking_records
         
         # Timeseries Tendência
@@ -1393,12 +1407,12 @@ def main() -> None:
     fato_indicadores = _read("fato_indicadores_anuais")
     dim_group = _read("dim_distributor_group")
     dim_porte = _read("dim_distribuidora_porte")
-    grupos_anual = _read("grupos_anual_2023_2025", "grupos")
-    grupos_tendencia = _read("grupos_tendencia_2023_2025", "grupos")
+    grupos_anual = _read("grupos_anual_2023_plus", "grupos")
+    grupos_tendencia = _read("grupos_tendencia_2023_plus", "grupos")
     grupos_benchmark = _read("grupos_benchmark_porte_latest", "grupos")
-    grupos_classe = _read("grupos_classe_local_2023_2025", "grupos")
+    grupos_classe = _read("grupos_classe_local_2023_plus", "grupos")
     grupos_longa = _read("grupos_longa_resumo_2011_2023", "grupos")
-    grupos_mensal = _read("grupos_mensal_2023_2025", "grupos")
+    grupos_mensal = _read("grupos_mensal_2023_plus", "grupos")
     grupos_algoritmicos = _read("fato_grupos_algoritmicos")
 
     distributor_groups = build_distributor_groups(dim_group, grupos_anual)

@@ -97,8 +97,8 @@ CATALOGO = {
         "tier": "nuclear",
         "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/indger-indicadores-gerenciais-da-distribuicao",
         "periodicidade": "mensal",
-        "tamanho_esperado_mb": 7500,  # ZIP descompacta em ~36 CSVs ≈ 7.7 GB + dados-comerciais 107 MB
-        "cobertura_temporal": "2023-01 → 2025-12 (mensal). Atualizado continuamente.",
+        "tamanho_esperado_mb": 7500,  # ZIP descompacta em dezenas de CSVs mensais; cresce conforme novas safras
+        "cobertura_temporal": "desde 2023-01 (mensal). Atualizado continuamente; meses novos são aceitos se contíguos.",
         "recursos": [
             {
                 "nome": "indger-dados-servicos-comerciais.zip",

@@ -174,8 +174,7 @@ Controles obrigatorios da reproducao:
 - `make validate-contracts`: valida colunas, tipos, faixas e cobertura.
 - `make check-artifacts-full`: confirma artefatos esperados.
 - `make qa-data`: audita chaves, taxas, denominadores e cobertura temporal.
-- Cobertura mensal INDGER: exatamente `2023-01` a `2025-12` nas tres tabelas
-  mensais principais.
+- Cobertura mensal INDGER: linha de base `2023-01` a `2025-12` protegida nas tabelas de transgressão; meses posteriores são aceitos quando vierem contíguos no ZIP mensal da ANEEL.
 
 Guia canonico para baixar dados do zero, URLs CKAN, periodicidade, limites e
 troubleshooting: [`docs/EXTRACAO_DADOS.md`](docs/EXTRACAO_DADOS.md).
@@ -322,7 +321,7 @@ oficial atual e Make + FastAPI/Railway + Next.js/Vercel.
 | Fonte | Conteudo | Granularidade |
 |---|---|---|
 | Qualidade do Atendimento Comercial (ANEEL) | Prazos, transgressoes e compensacoes | Anual 2011-2023 por distribuidora/servico |
-| INDGER — Indicadores Gerenciais (ANEEL) | Servicos comerciais mensais com volume e valor | Mensal 2023-01 a 2025-12 |
+| INDGER — Indicadores Gerenciais (ANEEL) | Servicos comerciais mensais com volume e valor | Mensal desde 2023-01; baseline 2023-2025 + safras futuras contíguas |
 | DTB 2024 (IBGE) | Divisao territorial municipal | Municipio |
 
 Todas as fontes usadas sao publicas. O projeto trabalha com informacao agregada

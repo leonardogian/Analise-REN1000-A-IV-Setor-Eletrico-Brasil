@@ -143,7 +143,7 @@ Key files consumed by backend and dashboard:
 3. **Frontend Next.js** — Next.js 14 + React + Tailwind + TanStack Query (`app/frontend-next/`).
 4. **Não commitar raw/base processed** — `data/raw/` e `data/processed/*.{csv,parquet}` base são gerados localmente. `data/processed/analysis/**/*.csv` é versionado para auditoria/demo.
 5. **Dashboard JSONs são gerados** — `data/processed/dashboard/dashboard_*.json` deve ser regenerado com `make dashboard-full` ou `make pipeline`.
-6. **Mensalidade INDGER é contrato** — as três tabelas mensais precisam conter exatamente 36 pares `(ano, mes)` de `2023-01` a `2025-12`; `check-artifacts-full` também exige `dashboard_timeseries.json` até `2025-12`.
+6. **Mensalidade INDGER é contrato evolutivo** — a linha de base `2023-01` a `2025-12` precisa estar presente nas tabelas de transgressão, mas meses posteriores publicados pela ANEEL são aceitos se forem contíguos. A fonte de UCs ativas pode defasar; nesse caso `qa-data` alerta e métricas por UC ficam nulas nos meses sem denominador oficial. `check-artifacts-full` também exige `dashboard_timeseries.json` incluindo `2025-12`.
 
 ## Conventions
 

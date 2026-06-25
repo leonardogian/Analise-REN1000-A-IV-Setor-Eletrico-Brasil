@@ -16,11 +16,11 @@ Localização: `data/processed/analysis/`
 
 | Tabela | Tipo | Granularidade | Anos | Principal Métrica | Status |
 |--------|------|---------------|------|-------------------|--------|
-| **fato_transgressao_mensal_distribuidora** | Fato | Mensal × Distribuidora | 2023–2025 | `qtd_fora_prazo`, `compensacao_rs` | ✅ Validado |
-| **fato_transgressao_mensal_porte** | Fato | Mensal × Distribuidora × Classe (Rural/Urbana) | 2023–2025 | Idem acima | ✅ Validado |
+| **fato_transgressao_mensal_distribuidora** | Fato | Mensal × Distribuidora | 2023–2025 baseline; 2026+ se publicado | `qtd_fora_prazo`, `compensacao_rs` | ✅ Validado |
+| **fato_transgressao_mensal_porte** | Fato | Mensal × Distribuidora × Classe (Rural/Urbana) | 2023–2025 baseline; 2026+ se publicado | Idem acima | ✅ Validado |
 | **fato_indicadores_anuais** | Fato | Anual × Distribuidora × Indicador | 2011–2023 | `taxa_fora_prazo`, `compensacao_rs`, `prazo_medio` | ✅ Validado |
-| **fato_servicos_municipio_mes** | Fato | Mensal × Município × Tipo Serviço × Distribuidora | 2023–2025 | `qtd_serv_realizado`, `qtd_fora_prazo` | ✅ Validado |
-| **fato_uc_ativa_mensal_distribuidora** | Fato | Mensal × Distribuidora | 2023–2025 | `uc_ativa_mes` | ✅ Normalização |
+| **fato_servicos_municipio_mes** | Fato | Mensal × Município × Tipo Serviço × Distribuidora | 2023–2025 baseline; 2026+ se publicado | `qtd_serv_realizado`, `qtd_fora_prazo` | ✅ Validado |
+| **fato_uc_ativa_mensal_distribuidora** | Fato | Mensal × Distribuidora | desde 2023-01; pode defasar | `uc_ativa_mes` | ✅ Normalização / ⚠️ alerta se defasar |
 | **fato_grupos_algoritmicos** | Fato Agregado | Pré-computado por dimensão | 2023–2025 | Consolidados por agrupamento | ✅ Performance |
 | **kpi_regulatorio_anual** | KPI | Anual Brasil (agregado) | 2011–2023 | `taxa_fora_prazo`, `compensacao_rs` | ✅ Agregado |
 | **dim_distribuidora_porte** | Dimensão | Anual × Distribuidora | 2023–2025 | `bucket_porte` (P/M/G/GG), `rank_porte_ano` | ⚠️ Apenas pós-2023 |
@@ -34,8 +34,8 @@ Localização: `data/processed/` (Parquet + CSV)
 | Arquivo | Granularidade | Anos | Fonte Bruta | Validação |
 |---------|---------------|------|-------------|-----------|
 | **qualidade_comercial.parquet** | Anual × Indicador × Distributor | 2011–2023 | ANEEL `qualidade-atendimento-comercial.csv` | ✅ Schema contrato |
-| **indger_servicos_comerciais.parquet** | Mensal × Município × Tipo Serviço × Distributor | 2023–2025 | ANEEL INDGER (36 CSVs mensais) | ✅ Schema contrato |
-| **indger_dados_comerciais.parquet** | Mensal × Município × Distributor | 2023–2025 | ANEEL INDGER | ✅ Schema contrato |
+| **indger_servicos_comerciais.parquet** | Mensal × Município × Tipo Serviço × Distributor | 2023-01+ | ANEEL INDGER (CSVs mensais; baseline 36 períodos + safras futuras contíguas) | ✅ Schema contrato |
+| **indger_dados_comerciais.parquet** | Mensal × Município × Distributor | 2023-01+; pode defasar | ANEEL INDGER | ✅ Schema contrato |
 
 ---
 
@@ -73,13 +73,13 @@ REN 414/2010 (Legacy)           REN 1000/2021 (Vigente)
 ```python
 # Em src/analysis/config.py
 SERIES_HISTORICA = (2011, 2023)    # TCC: análise pré/pós REN1000
-ANOS_COMPARAVEIS = (2023, 2025)    # Dashboard: dados operacionais recentes
+ANOS_COMPARAVEIS = (2023, 2025)    # Dashboard: janela operacional comparativa
 LONGRUN_CUTOFF = 2023              # Limite tabelas anuais longas
 MENSAL_INICIO = 2023               # Dados mensais começam Jan 2023 (INDGER)
-MENSAL_FIM = 2025                  # Até Dez 2025
+MENSAL_BASE_FIM = 2025             # Baseline protegido; meses futuros contíguos são aceitos
 ```
 
-Validação obrigatória da mensalidade INDGER: as tabelas `fato_uc_ativa_mensal_distribuidora`, `fato_transgressao_mensal_porte` e `fato_transgressao_mensal_distribuidora` devem conter exatamente 36 pares `(ano, mes)` de `2023-01` a `2025-12`. O mês é derivado de `_source_file` em serviços comerciais e do dia codificado em `datreferenciainformada` para dados comerciais quando a data aparece como `YYYY-01-DD`.
+Validação obrigatória da mensalidade INDGER: as tabelas de transgressão (`fato_transgressao_mensal_porte` e `fato_transgressao_mensal_distribuidora`) devem conter a linha de base `2023-01` a `2025-12` e podem incluir meses posteriores contíguos. O mês é derivado de `_source_file` em serviços comerciais e do dia codificado em `datreferenciainformada` para dados comerciais quando a data aparece como `YYYY-01-DD`. `fato_uc_ativa_mensal_distribuidora` pode defasar em relação aos serviços; nesses meses as métricas por UC ficam nulas e o QA alerta.
 
 ---
 
@@ -240,7 +240,7 @@ CREATE INDEX idx_dim_porte_ano
 ### Pipeline Implementado
 
 ```
-data/raw/*.csv (ANEEL/IBGE; INDGER serviços = 36 CSVs mensais 2023-2025)
+data/raw/*.csv (ANEEL/IBGE; INDGER serviços = CSVs mensais desde 2023-01, baseline 2023-2025 + safras futuras contíguas)
         ↓
 [1] extract_aneel.py
     ├─ Validação de encoding (utf-8, latin-1, cp1252)

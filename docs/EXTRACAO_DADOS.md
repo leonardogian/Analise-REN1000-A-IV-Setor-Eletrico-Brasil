@@ -93,9 +93,9 @@ Cada fonte declara um campo `tier`:
 | Portal | `dadosabertos.aneel.gov.br` (CKAN) |
 | Dataset (landing) | https://dadosabertos.aneel.gov.br/dataset/indger-indicadores-gerenciais-da-distribuicao |
 | Dataset UUID | `7cacb2c4-b165-4591-a793-9ed20d1f167d` |
-| Recursos | `indger-dados-servicos-comerciais.zip` (descompacta em 36 CSVs mensais), `indger-dados-comerciais.csv`, 2 PDFs de dicionário |
+| Recursos | `indger-dados-servicos-comerciais.zip` (descompacta em CSVs mensais `YYYY-MM`, quantidade cresce conforme novas safras), `indger-dados-comerciais.csv`, 2 PDFs de dicionário |
 | Granularidade | mensal × distribuidora × município × tipo de serviço |
-| Cobertura temporal | 2023-01 → 2025-12 (36 CSVs mensais, verificado em `data/raw/`) |
+| Cobertura temporal | desde `2023-01`; baseline metodológico `2023-01` → `2025-12`, com meses posteriores aceitos se contíguos |
 | Periodicidade na ANEEL | mensal |
 | Tamanho esperado | ZIP ≈ 295 MB em 2026-04-28; descompactado ≈ 7.7 GB; `indger-dados-comerciais.csv` ≈ 107 MB |
 | Encoding | misto (usar cascade — ver §4) |
@@ -252,7 +252,8 @@ Na camada analítica, `build_analysis_tables.py` centraliza a regra:
 
 - Em `indger_servicos_comerciais.parquet`, o mês autoritativo vem de `_source_file` (`indger-dados-servicos-comerciais-YYYY-MM.csv`).
 - Em `indger_dados_comerciais.parquet`, quando todas as datas aparecem como `YYYY-01-DD`, o dia `1..12` é interpretado como mês codificado.
-- As três tabelas mensais precisam cobrir exatamente `2023-01` a `2025-12`.
+- As tabelas de transgressão mensais precisam conter a linha de base `2023-01` a `2025-12`; meses posteriores publicados pela ANEEL são aceitos se formarem extensão contígua.
+- A tabela de UCs ativas pode defasar em relação aos serviços mensais; nesses meses, métricas normalizadas por UC ficam nulas e `qa-data` emite alerta.
 
 Se você importar o Parquet e quiser datas, faça:
 
@@ -262,7 +263,7 @@ df["datreferenciainformada"] = pd.to_datetime(df["datreferenciainformada"], erro
 
 ### 4.6. Deduplicação de arquivos INDGER
 
-O ZIP INDGER gera 36 CSVs mensais de serviços comerciais para 2023-01 a 2025-12. O transform deduplica os caminhos encontrados por `Path.resolve()`, ordena de forma determinística e falha se a contagem esperada deixar de ser 36 sem decisão explícita. Cada linha concatenada recebe `_source_file` para rastreabilidade.
+O ZIP INDGER gera CSVs mensais de serviços comerciais desde 2023-01 e cresce conforme a ANEEL publica novas safras. O transform deduplica os caminhos encontrados por `Path.resolve()`, ordena de forma determinística, valida que a cobertura é contígua desde `2023-01` e exige a linha de base `2023-01` a `2025-12`. Meses posteriores (ex.: `2026-01`) são processados automaticamente se não houver buracos. Cada linha concatenada recebe `_source_file` para rastreabilidade.
 
 ### 4.7. Provenance e download seguro
 
@@ -300,8 +301,18 @@ Três níveis de verificação, do mais simples ao mais profundo.
 ### 5.1. Presença de arquivos
 
 ```bash
-ls -la data/raw/ | grep -c "indger-dados-servicos-comerciais-"
-# esperado: 36  (2023-01 a 2025-12)
+python3 - <<'PY'
+from pathlib import Path
+import re
+files = sorted(Path('data/raw').glob('indger-dados-servicos-comerciais-*.csv'))
+periods = []
+for path in files:
+    match = re.search(r'(20\d{2})-(0[1-9]|1[0-2])\.csv$', path.name)
+    if match:
+        periods.append(f"{match.group(1)}-{match.group(2)}")
+print(len(periods), periods[0], periods[-1])
+PY
+# esperado: pelo menos 36 períodos, de 2023-01 a 2025-12; meses posteriores são OK se contíguos
 
 test -f data/raw/qualidade-atendimento-comercial.csv && echo "qualidade OK"
 test -f data/raw/indger-dados-comerciais.csv && echo "indger OK"
@@ -348,7 +359,7 @@ Para confirmar que o dado está fresco:
 
 ```bash
 ls data/raw/indger-dados-servicos-comerciais-*.csv | sort | tail -1
-# ex: indger-dados-servicos-comerciais-2025-12.csv  → cobertura vai até dez/2025
+# ex: indger-dados-servicos-comerciais-2026-04.csv  → cobertura vai até abr/2026
 ```
 
 Se estiver faltando um mês recente, o portal ANEEL ainda não publicou. Políticas de lag: INDGER costuma ter 60–90 dias de atraso entre mês de referência e publicação.

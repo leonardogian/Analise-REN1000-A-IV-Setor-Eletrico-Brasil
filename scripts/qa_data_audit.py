@@ -13,8 +13,15 @@ import sys
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 DIR_PROCESSED = ROOT / "data" / "processed"
 DIR_ANALYSIS = DIR_PROCESSED / "analysis"
+
+from src.etl.schema_contracts import (  # noqa: E402
+    EXPECTED_INDGER_PERIODS,
+    format_month_period,
+    validate_indger_periods,
+)
 
 
 @dataclass(frozen=True)
@@ -127,7 +134,7 @@ def check_rates_and_denominators(findings: list[Finding]) -> None:
         ("fato_indicadores_anuais.csv", "taxa_fora_prazo", "qtd_serv", "qtd_fora_prazo"),
         ("fato_transgressao_mensal_distribuidora.csv", "taxa_fora_prazo", "qtd_serv_realizado", "qtd_fora_prazo"),
         ("fato_transgressao_mensal_porte.csv", "taxa_fora_prazo", "qtd_serv_realizado", "qtd_fora_prazo"),
-        ("fato_servicos_municipio_mes.csv", "taxa_fora_prazo", "qtd_serv_realizado", "qtd_fora_prazo"),
+        ("fato_servicos_classe_mes.csv", "taxa_fora_prazo", "qtd_serv_realizado", "qtd_fora_prazo"),
         ("kpi_regulatorio_anual.csv", "taxa_fora_prazo", "qtd_serv", "qtd_fora_prazo"),
     ]
     for file_name, rate_col, denom_col, numer_col in checks:
@@ -199,24 +206,44 @@ def check_temporal_coverage(findings: list[Finding]) -> None:
         if missing:
             _add(findings, "ERROR", "ANNUAL_COVERAGE", f"kpi_regulatorio_anual sem anos esperados: {missing}")
 
-    for file_name in [
-        "fato_uc_ativa_mensal_distribuidora.csv",
-        "fato_transgressao_mensal_porte.csv",
-        "fato_transgressao_mensal_distribuidora.csv",
-    ]:
+    monthly_contracts = [
+        ("fato_uc_ativa_mensal_distribuidora.csv", False),
+        ("fato_transgressao_mensal_porte.csv", True),
+        ("fato_transgressao_mensal_distribuidora.csv", True),
+    ]
+    for file_name, require_baseline in monthly_contracts:
         monthly_path = DIR_ANALYSIS / file_name
         if not monthly_path.exists():
             continue
         monthly = _read_csv(monthly_path, usecols=["ano", "mes"])
-        coverage = monthly.groupby("ano")["mes"].nunique().to_dict()
-        for year in [2023, 2024, 2025]:
-            months = int(coverage.get(year, 0))
-            if months != 12:
+        periods = {
+            (int(ano), int(mes))
+            for ano, mes in monthly.dropna(subset=["ano", "mes"])[["ano", "mes"]]
+            .drop_duplicates()
+            .itertuples(index=False, name=None)
+        }
+        errors = validate_indger_periods(
+            periods,
+            context=file_name,
+            require_baseline=require_baseline,
+        )
+        for error in errors:
+            _add(findings, "ERROR", "MONTHLY_COVERAGE", error)
+
+        if not require_baseline:
+            missing_baseline = sorted(EXPECTED_INDGER_PERIODS - periods)
+            if missing_baseline:
+                last_period = max(periods, key=lambda item: item[0] * 12 + item[1]) if periods else None
+                last_label = format_month_period(last_period) if last_period else "sem periodos"
                 _add(
                     findings,
-                    "ERROR",
-                    "MONTHLY_COVERAGE",
-                    f"{file_name}: ano {year} tem {months} meses, esperado 12",
+                    "WARN",
+                    "UC_COVERAGE_LAG",
+                    (
+                        f"{file_name}: fonte de UCs ativas cobre ate {last_label}; "
+                        "metricas normalizadas por UC ficam nulas nos meses posteriores sem denominador oficial. "
+                        f"Primeiros meses ausentes do baseline: {[format_month_period(item) for item in missing_baseline[:8]]}"
+                    ),
                 )
 
 

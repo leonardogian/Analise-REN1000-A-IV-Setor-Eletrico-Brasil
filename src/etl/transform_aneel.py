@@ -15,7 +15,7 @@ explicitly when needed.
 
 from __future__ import annotations
 
-import os
+import re
 import sys
 from pathlib import Path
 
@@ -23,10 +23,12 @@ import pandas as pd
 
 from src.etl.schema_contracts import (
     CSV_ENCODINGS,
+    format_month_period,
     RAW_REQUIRED_COLUMNS,
     RAW_SERVICOS_REQUIRED_COLUMNS,
     missing_required_columns,
     normalize_columns_list,
+    validate_indger_periods,
     validate_processed_base_contracts,
     validate_raw_contracts,
 )
@@ -35,8 +37,7 @@ RAIZ_PROJETO = Path(__file__).resolve().parent.parent.parent
 DIR_RAW = RAIZ_PROJETO / "data" / "raw"
 DIR_PROCESSED = RAIZ_PROJETO / "data" / "processed"
 
-EXPECTED_INDGER_MONTHLY_FILES = 36
-ALLOW_INDGER_FILE_COUNT_DRIFT_ENV = "ALLOW_INDGER_FILE_COUNT_DRIFT"
+INDGER_SERVICOS_MONTH_RE = re.compile(r"(20\d{2})-(0[1-9]|1[0-2])\.csv$")
 
 NUMERIC_COLUMNS = {
     "anoindice",
@@ -231,14 +232,54 @@ def _buscar_indger_servicos_csvs() -> list[Path]:
     if not files:
         return files
 
-    if len(files) != EXPECTED_INDGER_MONTHLY_FILES and os.getenv(ALLOW_INDGER_FILE_COUNT_DRIFT_ENV) != "1":
-        raise RuntimeError(
-            "Quantidade inesperada de CSVs mensais INDGER Servicos Comerciais: "
-            f"{len(files)} encontrados, esperado {EXPECTED_INDGER_MONTHLY_FILES}. "
-            f"Se a janela temporal mudou, atualize a documentacao ou rode com "
-            f"{ALLOW_INDGER_FILE_COUNT_DRIFT_ENV}=1 apos revisar a safra."
-        )
+    _validar_cobertura_indger_servicos_csvs(files)
     return files
+
+
+def _extrair_periodo_indger_servicos_csv(path: Path) -> tuple[int, int] | None:
+    match = INDGER_SERVICOS_MONTH_RE.search(path.name)
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def _validar_cobertura_indger_servicos_csvs(files: list[Path]) -> list[tuple[int, int]]:
+    """Validate monthly INDGER service filenames and return sorted periods."""
+    period_to_file: dict[tuple[int, int], Path] = {}
+    invalid_files: list[str] = []
+    duplicates: list[str] = []
+
+    for path in files:
+        period = _extrair_periodo_indger_servicos_csv(path)
+        if period is None:
+            invalid_files.append(path.name)
+            continue
+        previous = period_to_file.get(period)
+        if previous is not None:
+            duplicates.append(f"{format_month_period(period)} ({previous.name}, {path.name})")
+            continue
+        period_to_file[period] = path
+
+    if invalid_files:
+        raise RuntimeError(
+            "Arquivos INDGER Servicos Comerciais sem periodo YYYY-MM no nome: "
+            + ", ".join(invalid_files[:8])
+        )
+    if duplicates:
+        raise RuntimeError(
+            "Arquivos INDGER Servicos Comerciais duplicados por periodo: "
+            + ", ".join(duplicates[:8])
+        )
+
+    periods = sorted(period_to_file.keys())
+    errors = validate_indger_periods(
+        periods,
+        context="INDGER Servicos Comerciais bruto",
+        require_baseline=True,
+    )
+    if errors:
+        raise RuntimeError("; ".join(errors))
+    return periods
 
 
 def transformar_qualidade_comercial() -> pd.DataFrame | None:
@@ -274,7 +315,13 @@ def transformar_indger_servicos() -> pd.DataFrame | None:
         print(f"  Nenhum CSV de servicos comerciais encontrado em {DIR_RAW}")
         return None
 
+    periodos = _validar_cobertura_indger_servicos_csvs(csvs)
     print(f"  Arquivos mensais unicos: {len(csvs)}")
+    print(
+        "  Cobertura mensal: "
+        f"{format_month_period(periodos[0])} -> {format_month_period(periodos[-1])} "
+        f"({len(periodos)} periodos)"
+    )
     print(f"  Primeiro: {csvs[0].name} | Ultimo: {csvs[-1].name}")
 
     dfs: list[pd.DataFrame] = []

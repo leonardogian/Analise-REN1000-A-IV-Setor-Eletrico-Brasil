@@ -72,6 +72,31 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 DIR_ANALYSIS = ROOT / "data" / "processed" / "analysis"
 DIR_OUT = DIR_ANALYSIS / "grupos"
 
+GROUP_OUTPUT_FILE_MAP = {
+    "monthly": "grupos_mensal_2023_plus.csv",
+    "annual": "grupos_anual_2023_plus.csv",
+    "annual_excl_codes": "grupos_anual_sem_cod_69_93_2023_plus.csv",
+    "trend": "grupos_tendencia_2023_plus.csv",
+    "class_view": "grupos_classe_local_2023_plus.csv",
+    "share_codes": "grupos_share_codigos_69_93_2023_plus.csv",
+    "comparability_alerts": "grupos_alertas_comparabilidade.csv",
+    "long_run": "grupos_longa_2011_2023.csv",
+    "long_summary": "grupos_longa_resumo_2011_2023.csv",
+    "latest_size": "grupos_benchmark_porte_latest.csv",
+    "checks": "grupos_data_quality_checks.csv",
+    "coverage": "grupos_cobertura_mensal.csv",
+    "spikes": "grupos_outliers_taxa.csv",
+}
+
+GROUP_LEGACY_OUTPUT_FILE_MAP = {
+    "monthly": "grupos_mensal_2023_2025.csv",
+    "annual": "grupos_anual_2023_2025.csv",
+    "annual_excl_codes": "grupos_anual_sem_cod_69_93.csv",
+    "trend": "grupos_tendencia_2023_2025.csv",
+    "class_view": "grupos_classe_local_2023_2025.csv",
+    "share_codes": "grupos_share_codigos_69_93.csv",
+}
+
 
 def load_table(name: str, columns: list[str] | None = None) -> pd.DataFrame:
     path = DIR_ANALYSIS / f"{name}.parquet"
@@ -131,7 +156,8 @@ def add_labels(frame: pd.DataFrame, group_labels: dict[str, str]) -> pd.DataFram
 
 
 def build_monthly_view(frame: pd.DataFrame) -> pd.DataFrame:
-    monthly = frame[frame["ano"].between(2023, 2025, inclusive="both")].copy()
+    start_year = ANOS_COMPARAVEIS[0]
+    monthly = frame[frame["ano"] >= start_year].copy()
     return monthly.sort_values(["group_id", "distributor_label", "ano", "mes"]).reset_index(drop=True)
 
 
@@ -242,7 +268,9 @@ def build_annual_monthly_view(frame: pd.DataFrame) -> pd.DataFrame:
     return annual.reset_index(drop=True)
 
 
-def build_trend_table(annual: pd.DataFrame, base_year: int = 2023, last_year: int = 2025) -> pd.DataFrame:
+def build_trend_table(annual: pd.DataFrame, base_year: int = 2023, last_year: int | None = None) -> pd.DataFrame:
+    if last_year is None:
+        last_year = int(annual["ano"].max()) if not annual.empty else base_year
     metrics = [
         "taxa_fora_prazo",
         "fora_prazo_por_100k_uc_mes",
@@ -276,7 +304,8 @@ def build_trend_table(annual: pd.DataFrame, base_year: int = 2023, last_year: in
 
 
 def build_class_view(frame: pd.DataFrame) -> pd.DataFrame:
-    filtered = frame[frame["ano"].between(2023, 2025, inclusive="both")].copy()
+    start_year = ANOS_COMPARAVEIS[0]
+    filtered = frame[frame["ano"] >= start_year].copy()
     grouped = (
         filtered.groupby(
             ["group_id", "group_label", "distributor_id", "distributor_label", "classe_local_servico"],
@@ -356,7 +385,7 @@ def build_latest_size_benchmark(annual_monthly: pd.DataFrame) -> pd.DataFrame:
     latest = annual_monthly[annual_monthly["ano"] == latest_year].copy()
     latest = latest.sort_values(["group_id", "uc_ativa_media_ano"], ascending=[True, False]).reset_index(drop=True)
     latest["rank_porte_grupo"] = (
-        latest.groupby("group_id")["uc_ativa_media_ano"].rank(method="dense", ascending=False).astype(int)
+        latest.groupby("group_id")["uc_ativa_media_ano"].rank(method="dense", ascending=False).astype("Int64")
     )
 
     median_fora = latest.groupby("group_id")["fora_prazo_por_100k_uc_mes"].transform("median")
@@ -404,7 +433,7 @@ def build_service_code_share(
     servicos: pd.DataFrame,
     focus_codes: tuple[str, ...] = EXCLUDED_SERVICE_CODES,
 ) -> pd.DataFrame:
-    frame = servicos[servicos["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")].copy()
+    frame = servicos[servicos["ano"] >= ANOS_COMPARAVEIS[0]].copy()
     frame["codtiposervico"] = frame["codtiposervico"].astype("string").str.strip()
     frame["serv_focus"] = np.where(
         frame["codtiposervico"].isin(focus_codes),
@@ -455,7 +484,7 @@ def build_annual_excluding_codes(
     monthly: pd.DataFrame,
     excluded_codes: tuple[str, ...] = EXCLUDED_SERVICE_CODES,
 ) -> pd.DataFrame:
-    frame = servicos[servicos["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")].copy()
+    frame = servicos[servicos["ano"] >= ANOS_COMPARAVEIS[0]].copy()
     frame["codtiposervico"] = frame["codtiposervico"].astype("string").str.strip()
     frame = frame[~frame["codtiposervico"].isin(excluded_codes)].copy()
 
@@ -498,22 +527,9 @@ def build_annual_excluding_codes(
 
 def write_outputs(outputs: dict[str, pd.DataFrame]) -> None:
     DIR_OUT.mkdir(parents=True, exist_ok=True)
-    file_map = {
-        "monthly": "grupos_mensal_2023_2025.csv",
-        "annual": "grupos_anual_2023_2025.csv",
-        "annual_excl_codes": "grupos_anual_sem_cod_69_93.csv",
-        "trend": "grupos_tendencia_2023_2025.csv",
-        "class_view": "grupos_classe_local_2023_2025.csv",
-        "share_codes": "grupos_share_codigos_69_93.csv",
-        "comparability_alerts": "grupos_alertas_comparabilidade.csv",
-        "long_run": "grupos_longa_2011_2023.csv",
-        "long_summary": "grupos_longa_resumo_2011_2023.csv",
-        "latest_size": "grupos_benchmark_porte_latest.csv",
-        "checks": "grupos_data_quality_checks.csv",
-        "coverage": "grupos_cobertura_mensal.csv",
-        "spikes": "grupos_outliers_taxa.csv",
-    }
-    for key, file_name in file_map.items():
+    for key, file_name in GROUP_OUTPUT_FILE_MAP.items():
+        outputs[key].to_csv(DIR_OUT / file_name, index=False)
+    for key, file_name in GROUP_LEGACY_OUTPUT_FILE_MAP.items():
         outputs[key].to_csv(DIR_OUT / file_name, index=False)
 
 
@@ -537,7 +553,7 @@ def run_all_groups() -> dict[str, pd.DataFrame]:
     monthly_porte = load_table("fato_transgressao_mensal_porte")
     indicadores = load_table("fato_indicadores_anuais")
     servicos = load_table(
-        "fato_servicos_municipio_mes",
+        "fato_servicos_classe_mes",
         columns=[
             "ano",
             "mes",
@@ -555,7 +571,7 @@ def run_all_groups() -> dict[str, pd.DataFrame]:
         ],
     )
     if "ano" in servicos.columns:
-        servicos = servicos[servicos["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")].copy()
+        servicos = servicos[servicos["ano"] >= ANOS_COMPARAVEIS[0]].copy()
 
     monthly_dist = add_labels(
         ensure_group_columns(monthly_dist, distributor_to_group, group_labels, distributor_name_overrides),

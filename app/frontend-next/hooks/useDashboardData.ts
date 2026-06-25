@@ -192,7 +192,7 @@ export function useScatter() {
   });
 }
 
-// ── Transgressões Geográficas (Mapa) ─────────────────────────────────────────
+// ── Transgressões por grupo/distribuidora ────────────────────────────────────
 
 export interface MapGroup {
   id: string;
@@ -221,7 +221,7 @@ export interface TransgressoesPayload {
 
 export function useTransgressoes() {
   return useQuery<TransgressoesPayload>({
-    queryKey: ['transgressoes-map'],
+    queryKey: ['transgressoes'],
     queryFn: () =>
       fetchJsonFirstAvailable<TransgressoesPayload>([
         '/api/v1/transgressoes',

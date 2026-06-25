@@ -18,20 +18,24 @@ DIR_ANALYSIS = ROOT / "data" / "processed" / "analysis"
 REPORT_PATH = ROOT / "reports" / "relatorio_aneel.md"
 
 
+def is_missing_value(value: object) -> bool:
+    return value is None or bool(pd.isna(value))
+
+
 def fmt_int(value: float | int | None) -> str:
-    if value is None or (isinstance(value, float) and np.isnan(value)):
+    if is_missing_value(value):
         return "-"
     return f"{int(round(float(value))):,}".replace(",", ".")
 
 
 def fmt_money(value: float | int | None) -> str:
-    if value is None or (isinstance(value, float) and np.isnan(value)):
+    if is_missing_value(value):
         return "-"
     return f"R$ {float(value):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def fmt_pct(value: float | int | None) -> str:
-    if value is None or (isinstance(value, float) and np.isnan(value)):
+    if is_missing_value(value):
         return "-"
     return f"{float(value) * 100:.3f}%"
 

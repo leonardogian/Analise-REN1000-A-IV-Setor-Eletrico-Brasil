@@ -33,15 +33,15 @@ app/frontend-next/
 │   ├── page.tsx          ← Rota / → Dashboard home (KPIs + tendências)
 │   ├── benchmark/        ← Rota /benchmark → Scatter volume × compensação
 │   ├── evolucao/         ← Rota /evolucao  → Heatmap mensal por holding
-│   ├── mapa/             ← Rota /mapa      → Choropleth geográfico (Leaflet)
+│   ├── mapa/             ← Rota /mapa      → Aviso: recorte geográfico desativado
 │   ├── ranking/          ← Rota /ranking   → Ranking horizontal de grupos
 │   └── transgressoes/    ← Rota /transgressoes → Série temporal bi-eixo
 │
 ├── components/
-│   ├── Sidebar.tsx       ← Navegação lateral (links para as 6 rotas)
+│   ├── Sidebar.tsx       ← Navegação lateral (links para as rotas principais)
 │   ├── KPICard.tsx       ← Card de KPI com variação pré/pós REN 1000
 │   ├── ChartCard.tsx     ← Wrapper de gráfico com skeleton e error state
-│   └── MapView.tsx       ← Componente Leaflet (client-only, dynamic import)
+
 │
 ├── hooks/
 │   └── useDashboardData.ts ← Hooks TanStack Query: useKpiOverview, useScatter,
@@ -75,9 +75,9 @@ Localmente, a variável `API_REWRITE_URL=http://localhost:8051` (definida pelo `
 
 Na home, os dois cards pré-REN do topo usam o agregado histórico de `kpi_overview`. Já os cards pós-REN e as variações do topo são uma visão Brasil fixa recalculada no cliente a partir de `serie_mensal_nacional`, usando a janela operacional 2023–2025; os filtros de empresas afetam apenas os gráficos e cards inferiores.
 
-Os JSONs atuais esperam a mensalidade INDGER corrigida: `serie_mensal_nacional` e `dashboard_timeseries.json` devem conter 36 meses de `2023-01` a `2025-12`. Se a home ou `/evolucao` voltar a mostrar apenas janeiro por ano, regenere os artefatos e rode `make check-artifacts-full`.
+Os JSONs atuais esperam a mensalidade INDGER corrigida: `serie_mensal_nacional` e `dashboard_timeseries.json` devem conter no mínimo a linha de base `2023-01` a `2025-12`; meses posteriores podem aparecer quando o ZIP mensal da ANEEL trouxer safras contíguas. Se a home ou `/evolucao` voltar a mostrar apenas janeiro por ano, regenere os artefatos e rode `make check-artifacts-full`.
 
-Na rota `/mapa`, os filtros de holdings iniciam em visão setorial sem recorte pré-selecionado; os chips são ordenados pelo rótulo dos grupos disponíveis nos dados, sem destacar uma holding como foco padrão.
+O recorte geográfico/municipal foi desativado no frontend e no pipeline pesado. A rota `/mapa` permanece apenas como aviso leve; o menu principal usa as análises por distribuidora, grupo econômico, porte, período regulatório e códigos de serviço.
 
 ---
 
@@ -137,5 +137,4 @@ Mudanças em `data/processed/dashboard/dashboard_*.json` alteram o dado exibido 
 | `@tanstack/react-query` | 5.x | Cache e sincronização de dados assíncronos |
 | `zustand` | 5.x | Estado global de filtros |
 | `recharts` | 3.x | Gráficos (line, bar, scatter, heatmap) |
-| `react-leaflet` / `leaflet` | 4.x / 1.9 | Mapa geográfico interativo |
 | `tailwindcss` | 3.4 | Design system utilitário (dark mode) |

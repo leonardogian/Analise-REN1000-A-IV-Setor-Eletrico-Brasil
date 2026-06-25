@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
 
 import pandas as pd
@@ -233,16 +234,16 @@ ANALYSIS_DTYPE_CONTRACTS: dict[str, dict[str, str]] = {
 
 ANALYSIS_RANGE_CONTRACTS: dict[str, dict[str, tuple[float | None, float | None]]] = {
     "fato_indicadores_anuais.csv": {
-        "ano": (2011, 2025),
+        "ano": (2011, None),
         "taxa_fora_prazo": (0.0, 1.0),
     },
     "fato_transgressao_mensal_porte.csv": {
-        "ano": (2023, 2025),
+        "ano": (2023, None),
         "mes": (1, 12),
         "taxa_fora_prazo": (0.0, 1.0),
     },
     "fato_transgressao_mensal_distribuidora.csv": {
-        "ano": (2023, 2025),
+        "ano": (2023, None),
         "mes": (1, 12),
         "taxa_fora_prazo": (0.0, 1.0),
     },
@@ -256,11 +257,104 @@ ANALYSIS_RANGE_CONTRACTS: dict[str, dict[str, tuple[float | None, float | None]]
 }
 
 EXPECTED_REGIMES = {"REN_414", "REN_1000", "TRANSICAO"}
-EXPECTED_INDGER_PERIODS = {(ano, mes) for ano in range(2023, 2026) for mes in range(1, 13)}
+MonthPeriod = tuple[int, int]
+INDGER_BASE_START: MonthPeriod = (2023, 1)
+INDGER_BASE_END: MonthPeriod = (2025, 12)
+
+
+def _month_index(period: MonthPeriod) -> int:
+    ano, mes = int(period[0]), int(period[1])
+    if mes < 1 or mes > 12:
+        raise ValueError(f"mes invalido: {period}")
+    return ano * 12 + mes - 1
+
+
+def _period_from_month_index(index: int) -> MonthPeriod:
+    ano, zero_based_month = divmod(index, 12)
+    return ano, zero_based_month + 1
+
+
+def month_periods_between(start: MonthPeriod, end: MonthPeriod) -> list[MonthPeriod]:
+    """Return all monthly periods between start and end, inclusive."""
+    start_index = _month_index(start)
+    end_index = _month_index(end)
+    if end_index < start_index:
+        return []
+    return [_period_from_month_index(index) for index in range(start_index, end_index + 1)]
+
+
+def format_month_period(period: MonthPeriod) -> str:
+    return f"{int(period[0])}-{int(period[1]):02d}"
+
+
+EXPECTED_INDGER_PERIODS = set(month_periods_between(INDGER_BASE_START, INDGER_BASE_END))
+INDGER_BASE_LABEL = f"{format_month_period(INDGER_BASE_START)} a {format_month_period(INDGER_BASE_END)}"
+
+
+def validate_indger_periods(
+    periods: Iterable[MonthPeriod],
+    *,
+    context: str,
+    require_baseline: bool = True,
+) -> list[str]:
+    """Validate INDGER monthly coverage while allowing future contiguous months.
+
+    The thesis baseline remains 2023-01..2025-12. New ANEEL monthly service
+    files after 2025-12 are expected to appear over time, so they must not break
+    the pipeline when they form a contiguous extension. Sources that may lag
+    (notably UC active counts) can opt out of the full-baseline requirement but
+    still must start at 2023-01 and have no holes inside their available window.
+    """
+    normalized: set[MonthPeriod] = set()
+    invalid: list[object] = []
+
+    for period in periods:
+        try:
+            ano, mes = int(period[0]), int(period[1])
+            if mes < 1 or mes > 12:
+                raise ValueError
+            normalized.add((ano, mes))
+        except Exception:
+            invalid.append(period)
+
+    errors: list[str] = []
+    if invalid:
+        errors.append(f"{context}: periodos mensais invalidos: {invalid[:6]}")
+    if not normalized:
+        errors.append(f"{context}: nenhum periodo mensal INDGER encontrado")
+        return errors
+
+    first = min(normalized, key=_month_index)
+    last = max(normalized, key=_month_index)
+    if first != INDGER_BASE_START:
+        errors.append(
+            f"{context}: cobertura mensal INDGER deve iniciar em "
+            f"{format_month_period(INDGER_BASE_START)}, mas inicia em {format_month_period(first)}"
+        )
+
+    expected_available = set(month_periods_between(first, last))
+    missing_inside = sorted(expected_available - normalized, key=_month_index)
+    if missing_inside:
+        errors.append(
+            f"{context}: cobertura mensal INDGER nao contigua de "
+            f"{format_month_period(first)} a {format_month_period(last)}; "
+            f"faltantes={[format_month_period(item) for item in missing_inside[:8]]}"
+        )
+
+    missing_baseline = sorted(EXPECTED_INDGER_PERIODS - normalized, key=_month_index)
+    if require_baseline and missing_baseline:
+        errors.append(
+            f"{context}: baseline mensal INDGER incompleto ({INDGER_BASE_LABEL}); "
+            f"faltantes={[format_month_period(item) for item in missing_baseline[:8]]}"
+        )
+
+    return errors
+
+
 ANALYSIS_MONTHLY_PERIOD_CONTRACTS = {
-    "fato_uc_ativa_mensal_distribuidora.csv",
-    "fato_transgressao_mensal_porte.csv",
-    "fato_transgressao_mensal_distribuidora.csv",
+    "fato_uc_ativa_mensal_distribuidora.csv": {"require_baseline": False},
+    "fato_transgressao_mensal_porte.csv": {"require_baseline": True},
+    "fato_transgressao_mensal_distribuidora.csv": {"require_baseline": True},
 }
 
 
@@ -379,7 +473,8 @@ def _validate_regime_values(frame: pd.DataFrame, path: Path) -> list[str]:
 
 
 def _validate_monthly_periods(frame: pd.DataFrame, path: Path) -> list[str]:
-    if path.name not in ANALYSIS_MONTHLY_PERIOD_CONTRACTS:
+    contract = ANALYSIS_MONTHLY_PERIOD_CONTRACTS.get(path.name)
+    if contract is None:
         return []
     if not {"ano", "mes"}.issubset(frame.columns):
         return []
@@ -387,15 +482,11 @@ def _validate_monthly_periods(frame: pd.DataFrame, path: Path) -> list[str]:
         (int(row.ano), int(row.mes))
         for row in frame[["ano", "mes"]].dropna().drop_duplicates().itertuples(index=False)
     }
-    if periods == EXPECTED_INDGER_PERIODS:
-        return []
-    missing = sorted(EXPECTED_INDGER_PERIODS - periods)
-    extra = sorted(periods - EXPECTED_INDGER_PERIODS)
-    return [
-        "analysis monthly coverage mismatch: "
-        f"{path} has {len(periods)} periods; expected 36 from 2023-01 to 2025-12; "
-        f"missing={missing[:6]} extra={extra[:6]}"
-    ]
+    return validate_indger_periods(
+        periods,
+        context=f"analysis monthly coverage mismatch: {path}",
+        require_baseline=bool(contract.get("require_baseline", True)),
+    )
 
 
 def validate_raw_contracts(raw_dir: Path, incluir_complementares: bool = False) -> list[str]:

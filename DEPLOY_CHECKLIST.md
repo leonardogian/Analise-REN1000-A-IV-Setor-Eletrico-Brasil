@@ -15,7 +15,7 @@ páginas `.html` ou `vercel.json` da raiz como referência para o deploy oficial
 - [ ] Rodar `make validate-contracts-processed` para validar contratos processados quando não houver raw local completo.
 - [ ] Rodar `make check-artifacts-full` para confirmar todos os CSVs/JSONs canônicos.
 - [ ] Rodar `make qa-data` e revisar erros/alertas.
-- [ ] Confirmar que as tabelas mensais cobrem exatamente `2023-01` a `2025-12`.
+- [ ] Confirmar que as tabelas mensais de transgressão cobrem ao menos `2023-01` a `2025-12` e que eventuais meses posteriores são contíguos.
 - [ ] Confirmar que `data/processed/dashboard/dashboard_timeseries.json` inclui `2025-12`.
 
 ## 2. Código

@@ -154,7 +154,7 @@ def export_legacy(outputs: dict[str, pd.DataFrame]) -> bool:
         "",
         "Este relatório é derivado de `src.analysis.grupos_diagnostico` para manter artefatos legados.",
         "",
-        "## Resumo anual 2023-2025",
+        "## Resumo anual operacional (2023+)",
         _frame_to_markdown(
             annual_legacy[
                 [
@@ -168,13 +168,13 @@ def export_legacy(outputs: dict[str, pd.DataFrame]) -> bool:
             ]
         ),
         "",
-        "## Tendência 2023 -> 2025",
+        "## Tendência 2023 -> último ano disponível",
         _frame_to_markdown(
             trend_legacy[
                 [
                     "neo_distribuidora",
                     "fora_prazo_por_100k_uc_mes_2023",
-                    "fora_prazo_por_100k_uc_mes_2025",
+                    next((col for col in trend_legacy.columns if col.startswith("fora_prazo_por_100k_uc_mes_") and col != "fora_prazo_por_100k_uc_mes_2023"), "fora_prazo_por_100k_uc_mes_2023"),
                     "delta_fora_prazo_por_100k_uc_mes_pct",
                 ]
             ]
@@ -187,12 +187,12 @@ def export_legacy(outputs: dict[str, pd.DataFrame]) -> bool:
 
 def load_existing_group_outputs() -> dict[str, pd.DataFrame] | None:
     file_map = {
-        "monthly": "grupos_mensal_2023_2025.csv",
-        "annual": "grupos_anual_2023_2025.csv",
-        "annual_excl_codes": "grupos_anual_sem_cod_69_93.csv",
-        "trend": "grupos_tendencia_2023_2025.csv",
-        "class_view": "grupos_classe_local_2023_2025.csv",
-        "share_codes": "grupos_share_codigos_69_93.csv",
+        "monthly": "grupos_mensal_2023_plus.csv",
+        "annual": "grupos_anual_2023_plus.csv",
+        "annual_excl_codes": "grupos_anual_sem_cod_69_93_2023_plus.csv",
+        "trend": "grupos_tendencia_2023_plus.csv",
+        "class_view": "grupos_classe_local_2023_plus.csv",
+        "share_codes": "grupos_share_codigos_69_93_2023_plus.csv",
         "comparability_alerts": "grupos_alertas_comparabilidade.csv",
         "long_run": "grupos_longa_2011_2023.csv",
         "long_summary": "grupos_longa_resumo_2011_2023.csv",

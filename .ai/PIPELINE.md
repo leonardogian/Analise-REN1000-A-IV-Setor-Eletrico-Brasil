@@ -59,7 +59,7 @@ ANEEL API (CSVs)
 - Deriva a referência mensal INDGER com parser próprio:
   - `indger_servicos_comerciais.parquet`: mês autoritativo vem de `_source_file` (`indger-dados-servicos-comerciais-YYYY-MM.csv`).
   - `indger_dados_comerciais.parquet`: quando `datreferenciainformada` aparece como `YYYY-01-DD`, usa o dia `1..12` como mês codificado.
-  - A análise falha se as tabelas mensais não cobrirem exatamente `2023-01` a `2025-12`.
+  - A análise exige a linha de base `2023-01` a `2025-12` nas tabelas de transgressão e aceita meses posteriores se forem contíguos; UCs ativas podem defasar com alerta de QA.
 - Gera tabelas analíticas em `data/processed/analysis/`:
 
 | Arquivo | Descrição |
@@ -134,7 +134,7 @@ extract → transform → analysis ─┬─→ report
 
 `make pipeline` executa tudo em ordem: `update-data → analysis → report → grupos → neoenergia-diagnostico (compatibilidade legada) → dashboard → dashboard-transgressoes → validate-contracts → check-artifacts-full → qa-data`
 
-As validações finais protegem a mensalidade INDGER: `validate-contracts` exige 36 pares `(ano, mes)` nas três tabelas mensais, `check-artifacts-full` exige série mensal do dashboard além de janeiro e incluindo `2025-12`, e `qa-data` reporta erro se a cobertura mensal regredir.
+As validações finais protegem a mensalidade INDGER: `validate-contracts` exige a linha de base 2023–2025 nas tabelas de transgressão e aceita safras futuras contíguas, `check-artifacts-full` exige série mensal do dashboard além de janeiro e incluindo `2025-12`, e `qa-data` reporta erro se a cobertura mensal regredir (ou alerta se a fonte de UCs ativas estiver defasada).
 
 ## Como Regenerar Tudo do Zero
 

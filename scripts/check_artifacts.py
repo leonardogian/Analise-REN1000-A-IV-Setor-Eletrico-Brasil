@@ -20,12 +20,12 @@ CORE_REQUIRED = [
 ]
 
 FULL_REQUIRED = CORE_REQUIRED + [
-    "data/processed/analysis/grupos/grupos_mensal_2023_2025.csv",
-    "data/processed/analysis/grupos/grupos_anual_2023_2025.csv",
-    "data/processed/analysis/grupos/grupos_anual_sem_cod_69_93.csv",
-    "data/processed/analysis/grupos/grupos_tendencia_2023_2025.csv",
-    "data/processed/analysis/grupos/grupos_classe_local_2023_2025.csv",
-    "data/processed/analysis/grupos/grupos_share_codigos_69_93.csv",
+    "data/processed/analysis/grupos/grupos_mensal_2023_plus.csv",
+    "data/processed/analysis/grupos/grupos_anual_2023_plus.csv",
+    "data/processed/analysis/grupos/grupos_anual_sem_cod_69_93_2023_plus.csv",
+    "data/processed/analysis/grupos/grupos_tendencia_2023_plus.csv",
+    "data/processed/analysis/grupos/grupos_classe_local_2023_plus.csv",
+    "data/processed/analysis/grupos/grupos_share_codigos_69_93_2023_plus.csv",
     "data/processed/analysis/grupos/grupos_alertas_comparabilidade.csv",
     "data/processed/analysis/grupos/grupos_longa_2011_2023.csv",
     "data/processed/analysis/grupos/grupos_longa_resumo_2011_2023.csv",
@@ -179,6 +179,12 @@ def check_dashboard_monthly_coverage(payload: dict) -> list[str]:
                 "dashboard JSON serie_mensal_nacional missing monthly periods: "
                 + ", ".join(missing[:8])
             )
+        fact_latest = latest_monthly_fact_period()
+        if fact_latest and fact_latest not in periods:
+            errors.append(
+                "dashboard JSON serie_mensal_nacional missing latest monthly fact period: "
+                + fact_latest
+            )
         if periods and all(period.endswith("-01") for period in periods):
             errors.append("dashboard JSON serie_mensal_nacional has only January periods")
 
@@ -203,6 +209,25 @@ def check_dashboard_monthly_coverage(payload: dict) -> list[str]:
     if dates and all(date.endswith("-01") for date in dates):
         errors.append("dashboard timeseries JSON has only January dates")
     return errors
+
+
+def latest_monthly_fact_period() -> str | None:
+    path = Path("data/processed/analysis/fato_transgressao_mensal_distribuidora.csv")
+    if not path.exists():
+        return None
+    latest: tuple[int, int] | None = None
+    with path.open("r", encoding="utf-8", newline="") as fp:
+        reader = csv.DictReader(fp)
+        for row in reader:
+            try:
+                period = (int(row.get("ano", "")), int(row.get("mes", "")))
+            except ValueError:
+                continue
+            if latest is None or period > latest:
+                latest = period
+    if latest is None:
+        return None
+    return f"{latest[0]}-{latest[1]:02d}"
 
 
 def check_grouping_regression() -> list[str]:

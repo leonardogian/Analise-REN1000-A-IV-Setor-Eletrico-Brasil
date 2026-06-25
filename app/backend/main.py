@@ -73,12 +73,12 @@ REQUIRED_INPUTS = [
     ANALYSIS_DIR / "fato_indicadores_anuais.csv",
     ANALYSIS_DIR / "dim_distributor_group.csv",
     ANALYSIS_DIR / "dim_distribuidora_porte.csv",
-    GROUPS_DIR / "grupos_anual_2023_2025.csv",
-    GROUPS_DIR / "grupos_tendencia_2023_2025.csv",
+    GROUPS_DIR / "grupos_anual_2023_plus.csv",
+    GROUPS_DIR / "grupos_tendencia_2023_plus.csv",
     GROUPS_DIR / "grupos_benchmark_porte_latest.csv",
-    GROUPS_DIR / "grupos_classe_local_2023_2025.csv",
+    GROUPS_DIR / "grupos_classe_local_2023_plus.csv",
     GROUPS_DIR / "grupos_longa_resumo_2011_2023.csv",
-    GROUPS_DIR / "grupos_mensal_2023_2025.csv",
+    GROUPS_DIR / "grupos_mensal_2023_plus.csv",
     ANALYSIS_DIR / "fato_grupos_algoritmicos.csv",
 ]
 

@@ -12,6 +12,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
 
 from src.analysis.config import (
     ANOS_COMPARAVEIS,
@@ -35,6 +36,7 @@ from src.analysis.distributor_groups import (
     load_distributor_name_overrides,
     load_group_overrides,
 )
+from src.etl.schema_contracts import validate_indger_periods
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DIR_PROCESSED = ROOT / "data" / "processed"
@@ -43,7 +45,20 @@ DOMAIN_INDICATORS_PATH = ROOT / "data" / "raw" / "dominio-indicadores.csv"
 
 FAMILIAS_VALIDAS = {"QS", "QV", "PM", "CR"}
 INDGER_SOURCE_MONTH_RE = re.compile(r"(20\d{2})-(0[1-9]|1[0-2])\.csv$")
-EXPECTED_INDGER_PERIODS = {(ano, mes) for ano in range(2023, 2026) for mes in range(1, 13)}
+
+
+def build_indger_servicos_analysis_filters() -> list[tuple[str, str, str]]:
+    """Return Parquet filters for the current analytical INDGER service window.
+
+    INDGER Servicos Comerciais is the monthly REN 1000 operational source. The
+    dashboard should follow newly published months after the baseline instead of
+    freezing at 2025, while keeping the start anchored at 2023-01 (first monthly
+    INDGER service period used by the project).
+    """
+    start_year, _ = ANOS_COMPARAVEIS
+    return [
+        ("_source_file", ">=", f"indger-dados-servicos-comerciais-{start_year}-01.csv"),
+    ]
 
 
 def parse_br_number(series: pd.Series) -> pd.Series:
@@ -148,19 +163,23 @@ def derive_indger_year_month(frame: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
-def assert_expected_indger_periods(frame: pd.DataFrame, table_name: str) -> None:
+def assert_expected_indger_periods(
+    frame: pd.DataFrame,
+    table_name: str,
+    *,
+    require_baseline: bool = True,
+) -> None:
     periods = {
         (int(row.ano), int(row.mes))
         for row in frame[["ano", "mes"]].dropna().drop_duplicates().itertuples(index=False)
     }
-    if periods != EXPECTED_INDGER_PERIODS:
-        missing = sorted(EXPECTED_INDGER_PERIODS - periods)
-        extra = sorted(periods - EXPECTED_INDGER_PERIODS)
-        raise RuntimeError(
-            f"Cobertura mensal INDGER inesperada em {table_name}: "
-            f"{len(periods)} periodos encontrados; esperado 36 para 2023-01 a 2025-12. "
-            f"Ausentes={missing[:6]} extras={extra[:6]}"
-        )
+    errors = validate_indger_periods(
+        periods,
+        context=f"Cobertura mensal INDGER inesperada em {table_name}",
+        require_baseline=require_baseline,
+    )
+    if errors:
+        raise RuntimeError("; ".join(errors))
 
 
 def safe_read_csv(path: Path, sep: str = ";") -> pd.DataFrame:
@@ -628,61 +647,32 @@ def build_uc_ativa_mensal_distribuidora(
     return monthly.sort_values(["ano", "mes", "group_id", "distributor_id"]).reset_index(drop=True)
 
 
-def build_fato_servicos_municipio_mes(
+def build_fato_servicos_classe_mes(
     distributor_to_group: dict[str, str],
     group_labels: dict[str, str],
     distributor_name_overrides: dict[str, dict[str, str]],
 ) -> pd.DataFrame:
+    """Build lightweight monthly service aggregates for the operational dashboard.
+
+    This reads all INDGER service months from 2023 onward, preserving service-code
+    granularity needed by the diagnostics while dropping municipality-level detail
+    that made routine refreshes too memory-intensive.
+    """
     path = DIR_PROCESSED / "indger_servicos_comerciais.parquet"
     if not path.exists():
         raise FileNotFoundError(f"Missing file: {path}")
 
-    frame = pd.read_parquet(
-        path,
-        columns=[
-            "datreferenciainformada",
-            "sigagente",
-            "nomagente",
-            "codmunicipioibge",
-            "codtiposervico",
-            "dsctiposervico",
-            "dscprazo",
-            "qtdservrealizado",
-            "qtdservrealizdescprazo",
-            "vlrpagocompensacao",
-            "_source_file",
-        ],
-    )
-
-    frame["sigagente"] = frame["sigagente"].astype("string").str.strip()
-    frame["nomagente"] = frame["nomagente"].astype("string").str.strip()
-    frame["dsctiposervico"] = frame["dsctiposervico"].astype("string").str.strip()
-    frame["dscprazo"] = frame["dscprazo"].astype("string").str.strip()
-
-    frame = derive_indger_year_month(frame)
-    frame = frame.dropna(subset=["ano", "mes", "sigagente"])
-    frame["ano"] = frame["ano"].astype(int)
-    frame["mes"] = frame["mes"].astype(int)
-    frame = annotate_distributor_group(
-        frame,
-        sig_col="sigagente",
-        name_col="nomagente",
-        distributor_to_group=distributor_to_group,
-        group_labels=group_labels,
-        distributor_name_overrides=distributor_name_overrides,
-    )
-    frame = ensure_name_columns(frame)
-
-    frame["codmunicipioibge"] = (
-        frame["codmunicipioibge"].astype("string").str.replace(".0", "", regex=False).str.strip()
-    )
-    frame["codtiposervico"] = frame["codtiposervico"].astype("string").str.strip()
-
-    frame["qtd_serv_realizado"] = parse_br_number(frame["qtdservrealizado"])
-    frame["qtd_fora_prazo"] = parse_br_number(frame["qtdservrealizdescprazo"])
-    frame["compensacao_rs"] = parse_br_number(frame["vlrpagocompensacao"])
-    frame["classe_local_servico"] = frame["dsctiposervico"].apply(lambda v: classify_segment(normalize_text(v)))
-
+    columns = [
+        "datreferenciainformada",
+        "sigagente",
+        "nomagente",
+        "codtiposervico",
+        "dsctiposervico",
+        "qtdservrealizado",
+        "qtdservrealizdescprazo",
+        "vlrpagocompensacao",
+        "_source_file",
+    ]
     keys = [
         "ano",
         "mes",
@@ -693,41 +683,76 @@ def build_fato_servicos_municipio_mes(
         "distributor_name_sig",
         "distributor_name_legal",
         "distributor_label",
-        "codmunicipioibge",
         "codtiposervico",
-        "dsctiposervico",
-        "dscprazo",
         "classe_local_servico",
     ]
+    metric_cols = ["qtd_serv_realizado", "qtd_fora_prazo", "compensacao_rs"]
+    source_file_start = f"indger-dados-servicos-comerciais-{ANOS_COMPARAVEIS[0]}-01.csv"
+
+    partials: list[pd.DataFrame] = []
+    parquet_file = pq.ParquetFile(path)
+    for batch in parquet_file.iter_batches(batch_size=250_000, columns=columns):
+        frame = batch.to_pandas()
+        if frame.empty:
+            continue
+
+        source_file = frame["_source_file"].astype("string").fillna("")
+        frame = frame[source_file >= source_file_start].copy()
+        if frame.empty:
+            continue
+
+        frame["sigagente"] = frame["sigagente"].astype("string").str.strip()
+        frame["nomagente"] = frame["nomagente"].astype("string").str.strip()
+        frame["codtiposervico"] = frame["codtiposervico"].astype("string").str.strip()
+        frame["dsctiposervico"] = frame["dsctiposervico"].astype("string").str.strip()
+        frame = derive_indger_year_month(frame)
+        frame = frame.dropna(subset=["ano", "mes", "sigagente"])
+        if frame.empty:
+            continue
+        frame["ano"] = frame["ano"].astype(int)
+        frame["mes"] = frame["mes"].astype(int)
+        frame = annotate_distributor_group(
+            frame,
+            sig_col="sigagente",
+            name_col="nomagente",
+            distributor_to_group=distributor_to_group,
+            group_labels=group_labels,
+            distributor_name_overrides=distributor_name_overrides,
+        )
+        frame = ensure_name_columns(frame)
+
+        frame["qtd_serv_realizado"] = parse_br_number(frame["qtdservrealizado"])
+        frame["qtd_fora_prazo"] = parse_br_number(frame["qtdservrealizdescprazo"])
+        frame["compensacao_rs"] = parse_br_number(frame["vlrpagocompensacao"])
+        frame["classe_local_servico"] = frame["dsctiposervico"].apply(lambda v: classify_segment(normalize_text(v)))
+
+        partials.append(
+            frame.groupby(keys, dropna=False, as_index=False)[metric_cols]
+            .sum()
+        )
+
+    if not partials:
+        return pd.DataFrame(columns=keys + metric_cols + ["taxa_fora_prazo"])
 
     fact = (
-        frame.groupby(keys, dropna=False)[["qtd_serv_realizado", "qtd_fora_prazo", "compensacao_rs"]]
+        pd.concat(partials, ignore_index=True)
+        .groupby(keys, dropna=False, as_index=False)[metric_cols]
         .sum()
-        .reset_index()
     )
-
-    fact["taxa_fora_prazo"] = calc_taxa_fora_prazo(fact["qtd_fora_prazo"], fact["qtd_serv_realizado"])
-    fact["flag_taxa_fora_prazo_invalida"] = (
-        (fact["qtd_serv_realizado"] > 0)
-        & (fact["qtd_fora_prazo"] > fact["qtd_serv_realizado"])
-    ).fillna(False)
-    fact["periodo_regulatorio"] = classify_periodo_regulatorio(fact["ano"])
-    fact["regime_regulatorio"] = classify_regime_regulatorio(fact["ano"])
-    fact["ano_comparavel_principal"] = fact["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")
-
-    return fact.sort_values(
-        ["ano", "mes", "group_id", "distributor_id", "codmunicipioibge", "codtiposervico"]
-    ).reset_index(drop=True)
+    fact["taxa_fora_prazo"] = calc_taxa_fora_prazo(
+        fact["qtd_fora_prazo"], fact["qtd_serv_realizado"]
+    )
+    return fact.sort_values(["ano", "mes", "group_id", "distributor_id", "classe_local_servico"]).reset_index(drop=True)
 
 
 def build_fato_transgressao_mensal_porte(
-    fato_servicos_municipio_mes: pd.DataFrame,
+    fato_servicos: pd.DataFrame,
     uc_ativa_mensal_distribuidora: pd.DataFrame,
     dim_porte: pd.DataFrame,
 ) -> pd.DataFrame:
     """Monthly transgression/compensation by distributor, normalized by size."""
     mensal = (
-        fato_servicos_municipio_mes.groupby(
+        fato_servicos.groupby(
             [
                 "ano",
                 "mes",
@@ -782,7 +807,7 @@ def build_fato_transgressao_mensal_porte(
     mensal["compensacao_media_por_transgressao_rs"] = calc_compensacao_media_por_transgressao(mensal["compensacao_rs"], mensal["qtd_fora_prazo"])
     mensal["periodo_regulatorio"] = classify_periodo_regulatorio(mensal["ano"])
     mensal["regime_regulatorio"] = classify_regime_regulatorio(mensal["ano"])
-    mensal["ano_comparavel_principal"] = mensal["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")
+    mensal["ano_comparavel_principal"] = mensal["ano"] >= ANOS_COMPARAVEIS[0]
 
     return mensal.sort_values(
         ["ano", "mes", "group_id", "distributor_id", "classe_local_servico"]
@@ -811,6 +836,7 @@ def build_fato_transgressao_mensal_distribuidora(
                 "uc_ativa_media_mensal",
             ],
             as_index=False,
+            dropna=False,
         )
         .agg(
             qtd_serv_realizado=("qtd_serv_realizado", "sum"),
@@ -828,7 +854,7 @@ def build_fato_transgressao_mensal_distribuidora(
     fact["compensacao_media_por_transgressao_rs"] = calc_compensacao_media_por_transgressao(fact["compensacao_rs"], fact["qtd_fora_prazo"])
     fact["periodo_regulatorio"] = classify_periodo_regulatorio(fact["ano"])
     fact["regime_regulatorio"] = classify_regime_regulatorio(fact["ano"])
-    fact["ano_comparavel_principal"] = fact["ano"].between(*ANOS_COMPARAVEIS, inclusive="both")
+    fact["ano_comparavel_principal"] = fact["ano"] >= ANOS_COMPARAVEIS[0]
     return fact.sort_values(["ano", "mes", "group_id", "distributor_id"]).reset_index(drop=True)
 
 
@@ -885,56 +911,6 @@ def build_kpi_overview(fato_indicadores: pd.DataFrame) -> pd.DataFrame:
     yearly["taxa_fora_prazo"] = calc_taxa_fora_prazo(yearly["qtd_fora_prazo"], yearly["qtd_serv"])
     yearly["regime_regulatorio"] = classify_regime_regulatorio(yearly["ano"])
     return yearly.sort_values("ano").reset_index(drop=True)
-
-
-def build_geographic_monthly_base(
-    fato_servicos_municipio_mes: pd.DataFrame,
-    uc_ativa_mensal_distribuidora: pd.DataFrame,
-) -> pd.DataFrame:
-    """Approximate municipal UC exposure by proportional allocation per distributor-month."""
-    if fato_servicos_municipio_mes.empty:
-        return pd.DataFrame()
-
-    base = fato_servicos_municipio_mes.copy()
-    service_totals = (
-        base.groupby(["ano", "mes", "group_id", "distributor_id"], as_index=False)["qtd_serv_realizado"]
-        .sum()
-        .rename(columns={"qtd_serv_realizado": "qtd_serv_total_dist_mes"})
-    )
-    base = base.merge(
-        service_totals,
-        on=["ano", "mes", "group_id", "distributor_id"],
-        how="left",
-    )
-    base = base.merge(
-        uc_ativa_mensal_distribuidora[["ano", "mes", "group_id", "distributor_id", "uc_ativa_mes"]],
-        on=["ano", "mes", "group_id", "distributor_id"],
-        how="left",
-    )
-    base["qtd_serv_total_dist_mes"] = base["qtd_serv_total_dist_mes"].fillna(0.0)
-    base["uc_ativa_mes"] = base["uc_ativa_mes"].fillna(0.0)
-    base["share_serv_dist_mes"] = np.where(
-        base["qtd_serv_total_dist_mes"] > 0,
-        base["qtd_serv_realizado"] / base["qtd_serv_total_dist_mes"],
-        0.0,
-    )
-    # AVISO (PROXY GEOGRÁFICO): O INDGER fornece UCs apenas por distribuidora, não por município.
-    # Esta estimativa de exposição assume que a demanda/falhas dos serviços é igualmente
-    # distribuída pelas UCs, o que não é necessariamente verdade (ex: periferias X áreas nobres).
-    base["exposicao_uc_mes"] = base["uc_ativa_mes"] * base["share_serv_dist_mes"]
-
-    municipal = (
-        base.groupby(["ano", "mes", "codmunicipioibge"], as_index=False)
-        .agg(
-            qtd_serv_realizado=("qtd_serv_realizado", "sum"),
-            qtd_fora_prazo=("qtd_fora_prazo", "sum"),
-            compensacao_rs=("compensacao_rs", "sum"),
-            exposicao_uc_mes=("exposicao_uc_mes", "sum"),
-        )
-    )
-    municipal["periodo_regulatorio"] = classify_periodo_regulatorio(municipal["ano"])
-    municipal["regime_regulatorio"] = classify_regime_regulatorio(municipal["ano"])
-    return municipal
 
 
 def build_dimension_snapshot(
@@ -1089,10 +1065,10 @@ def build_dimension_snapshot(
 def build_algorithmic_group_snapshot(
     *,
     fato_transgressao_mensal_distribuidora: pd.DataFrame,
-    fato_servicos_municipio_mes: pd.DataFrame,
     uc_ativa_mensal_distribuidora: pd.DataFrame,
     dim_distributor_group: pd.DataFrame,
 ) -> pd.DataFrame:
+    """Build algorithmic group snapshots (economic and porte dimensions only)."""
     monthly_dist = fato_transgressao_mensal_distribuidora.copy()
     monthly_dist["exposicao_uc_mes"] = monthly_dist["uc_ativa_mes"]
 
@@ -1100,45 +1076,27 @@ def build_algorithmic_group_snapshot(
         dim_distributor_group[["group_id", "group_label"]]
         .dropna(subset=["group_id"])
         .drop_duplicates(subset=["group_id"])
-        .assign(group_id=lambda df: df["group_id"].astype("string"))
     )
-    monthly_economic = monthly_dist.merge(group_lookup, on="group_id", how="left")
-    monthly_economic["group_label"] = monthly_economic["group_label"].fillna(monthly_economic["group_id"])
+    monthly_dist = monthly_dist.merge(group_lookup, on="group_id", how="left")
+    monthly_dist["group_label"] = monthly_dist["group_label"].fillna(monthly_dist["group_id"])
 
     economic = build_dimension_snapshot(
-        monthly_economic,
+        monthly_dist,
         dimension_id="economico",
         dimension_label="Grupo Econômico",
         id_col="group_id",
         label_col="group_label",
     )
 
-    porte_base = monthly_dist.dropna(subset=["bucket_porte"]).copy()
-    porte_base["bucket_porte"] = porte_base["bucket_porte"].astype("string")
     porte = build_dimension_snapshot(
-        porte_base,
+        monthly_dist.dropna(subset=["bucket_porte"]),
         dimension_id="porte",
         dimension_label="Porte",
         id_col="bucket_porte",
         label_col="bucket_porte",
     )
 
-    geographic_base = build_geographic_monthly_base(
-        fato_servicos_municipio_mes=fato_servicos_municipio_mes,
-        uc_ativa_mensal_distribuidora=uc_ativa_mensal_distribuidora,
-    )
-    geographic_base["codmunicipioibge"] = geographic_base["codmunicipioibge"].astype("string").str.strip()
-    geographic = build_dimension_snapshot(
-        geographic_base,
-        dimension_id="geografico",
-        dimension_label="Geográfico (IBGE)",
-        id_col="codmunicipioibge",
-        label_col="codmunicipioibge",
-    )
-
-    out = pd.concat([economic, porte, geographic], ignore_index=True, sort=False)
-    return out.sort_values(["dimension_id", "label", "periodo_regulatorio"]).reset_index(drop=True)
-
+    return pd.concat([economic, porte], ignore_index=True)
 
 def augment_dim_group_with_historical(
     dim_group: pd.DataFrame,
@@ -1222,7 +1180,7 @@ def run_all() -> dict[str, pd.DataFrame]:
     uc_ativa_mensal = build_uc_ativa_mensal_distribuidora(
         distributor_to_group, group_labels, distributor_name_overrides
     )
-    fato_servicos = build_fato_servicos_municipio_mes(
+    fato_servicos = build_fato_servicos_classe_mes(
         distributor_to_group, group_labels, distributor_name_overrides
     )
     fato_transgressao_mensal_porte = build_fato_transgressao_mensal_porte(
@@ -1231,7 +1189,11 @@ def run_all() -> dict[str, pd.DataFrame]:
     fato_transgressao_mensal_distribuidora = build_fato_transgressao_mensal_distribuidora(
         fato_transgressao_mensal_porte
     )
-    assert_expected_indger_periods(uc_ativa_mensal, "fato_uc_ativa_mensal_distribuidora")
+    assert_expected_indger_periods(
+        uc_ativa_mensal,
+        "fato_uc_ativa_mensal_distribuidora",
+        require_baseline=False,
+    )
     assert_expected_indger_periods(fato_transgressao_mensal_porte, "fato_transgressao_mensal_porte")
     assert_expected_indger_periods(
         fato_transgressao_mensal_distribuidora,
@@ -1242,7 +1204,6 @@ def run_all() -> dict[str, pd.DataFrame]:
     fato_indicadores = ensure_name_columns(fato_indicadores)
     dim_porte = ensure_name_columns(dim_porte)
     uc_ativa_mensal = ensure_name_columns(uc_ativa_mensal)
-    fato_servicos = ensure_name_columns(fato_servicos)
     fato_transgressao_mensal_porte = ensure_name_columns(fato_transgressao_mensal_porte)
     fato_transgressao_mensal_distribuidora = ensure_name_columns(fato_transgressao_mensal_distribuidora)
     kpi_overview = build_kpi_overview(fato_indicadores)
@@ -1250,7 +1211,6 @@ def run_all() -> dict[str, pd.DataFrame]:
     dim_group = augment_dim_group_with_historical(dim_group, fato_indicadores)
     algorithmic_group_snapshot = build_algorithmic_group_snapshot(
         fato_transgressao_mensal_distribuidora=fato_transgressao_mensal_distribuidora,
-        fato_servicos_municipio_mes=fato_servicos,
         uc_ativa_mensal_distribuidora=uc_ativa_mensal,
         dim_distributor_group=dim_group,
     )
@@ -1268,7 +1228,7 @@ def run_all() -> dict[str, pd.DataFrame]:
         "dim_distribuidora_porte": dim_porte,
         "fato_uc_ativa_mensal_distribuidora": uc_ativa_mensal,
         "fato_indicadores_anuais": fato_indicadores,
-        "fato_servicos_municipio_mes": fato_servicos,
+        "fato_servicos_classe_mes": fato_servicos,
         "fato_transgressao_mensal_porte": fato_transgressao_mensal_porte,
         "fato_transgressao_mensal_distribuidora": fato_transgressao_mensal_distribuidora,
     }
@@ -1283,7 +1243,7 @@ def run_all() -> dict[str, pd.DataFrame]:
     save_table(dim_group, "dim_distributor_group")
     save_table(uc_ativa_mensal, "fato_uc_ativa_mensal_distribuidora")
     save_table(fato_indicadores, "fato_indicadores_anuais")
-    save_table(fato_servicos, "fato_servicos_municipio_mes", write_csv=False)
+    save_table(fato_servicos, "fato_servicos_classe_mes")
     save_table(fato_transgressao_mensal_porte, "fato_transgressao_mensal_porte")
     save_table(fato_transgressao_mensal_distribuidora, "fato_transgressao_mensal_distribuidora")
     save_table(kpi_overview, "kpi_regulatorio_anual")
@@ -1295,7 +1255,7 @@ def run_all() -> dict[str, pd.DataFrame]:
         "dim_distributor_group": dim_group,
         "fato_uc_ativa_mensal_distribuidora": uc_ativa_mensal,
         "fato_indicadores_anuais": fato_indicadores,
-        "fato_servicos_municipio_mes": fato_servicos,
+        "fato_servicos_classe_mes": fato_servicos,
         "fato_transgressao_mensal_porte": fato_transgressao_mensal_porte,
         "fato_transgressao_mensal_distribuidora": fato_transgressao_mensal_distribuidora,
         "kpi_regulatorio_anual": kpi_overview,

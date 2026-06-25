@@ -1,72 +1,72 @@
 {
   "data": [
     {
-      "x": 8719,
-      "y": 0.05652599894501215,
+      "x": 9226,
+      "y": 0.1674688577492163,
       "label": "Amazonas Energia — AMAZONAS ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "amazonas"
     },
     {
-      "x": 6860,
-      "y": 0.301159132345512,
+      "x": 6994,
+      "y": 0.9212323288225103,
       "label": "CEA Equatorial — COMPANHIA DE ELETRICIDADE DO AMAPA",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "equatorial"
     },
     {
-      "x": 35769,
-      "y": 0.2143090774865778,
+      "x": 37141,
+      "y": 0.7051410470884457,
       "label": "CEEE Equatorial — COMPANHIA ESTADUAL DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "equatorial"
     },
     {
-      "x": 46112,
-      "y": 0.09900054955254131,
+      "x": 54217,
+      "y": 0.32291219298210194,
       "label": "CPFL Paulista — COMPANHIA PAULISTA DE FORÇA E LUZ",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "cpfl"
     },
     {
-      "x": 14578,
-      "y": 0.07301527635752439,
+      "x": 15845,
+      "y": 0.22692568633747406,
       "label": "CPFL Piratininga — COMPANHIA PIRATININGA DE FORÇA E LUZ",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "cpfl"
     },
     {
-      "x": 3986,
-      "y": 0.08314139269074439,
+      "x": 4149,
+      "y": 0.24924351132117173,
       "label": "CPFL Santa Cruz — COMPANHIA JAGUARI DE ENERGIA - CPFL SANTA CRUZ",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "cpfl"
     },
     {
-      "x": 20,
-      "y": 0.001094698795180723,
+      "x": 21,
+      "y": 0.0032531328320802005,
       "label": "Castro-Dis — COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA DE CASTRO",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "castro_dis"
     },
     {
-      "x": 69,
-      "y": 0.013733864682961389,
+      "x": 72,
+      "y": 0.0423173140942381,
       "label": "Cedrap — COOPERATIVA DE ELETRIFICAÇÃO DA REGIÃO DO ALTO DA PARAÍBA",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "cedrap"
     },
     {
-      "x": 41,
-      "y": 0.04634829575167225,
+      "x": 47,
+      "y": 0.16344691860945199,
       "label": "Cedri — COOPERATIVA DE ELETRIFICAÇÃO E DISTRIBUIÇÃO DA REGIÃO DE ITARIRI",
       "regra": "REN 1000",
       "porte": "P",
@@ -74,62 +74,62 @@
     },
     {
       "x": 39,
-      "y": 0.0032125344744859544,
+      "y": 0.009198574747565007,
       "label": "Cegero — COOPERATIVA DE ELETRICIDADE DE SÃO LUDGERO",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "cegero"
     },
     {
-      "x": 22,
-      "y": 0.003957442529698775,
+      "x": 25,
+      "y": 0.01464067477085094,
       "label": "Cejama — COOPERATIVA DE ELETRICIDADE JACINTO MACHADO",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "cejama"
     },
     {
-      "x": 515112,
-      "y": 0.20276679065108852,
+      "x": 564472,
+      "y": null,
       "label": "Celesc-Dis — CELESC DISTRIBUIÇÃO S.A.",
       "regra": "REN 1000",
-      "porte": "GG",
+      "porte": "N/A",
       "holding": "celesc"
     },
     {
-      "x": 136,
-      "y": 0.00477785680908415,
+      "x": 137,
+      "y": 0.04122207026735496,
       "label": "Celetro — COOPERATIVA DE ELETRIFICAÇÃO CENTRO JACUÍ LTDA.",
       "regra": "REN 1000",
-      "porte": "M",
+      "porte": "G",
       "holding": "celetro"
     },
     {
-      "x": 214588,
-      "y": 0.4198795524712809,
+      "x": 233995,
+      "y": 1.264640133402953,
       "label": "Cemig-D — CEMIG DISTRIBUIÇÃO S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "cemig"
     },
     {
-      "x": 179,
-      "y": 0.012780087192934476,
+      "x": 189,
+      "y": 0.03784024255737432,
       "label": "Cemirim — COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO DA REGIÃO DE MOGI MIRIM",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "cemirim"
     },
     {
-      "x": 140,
-      "y": 0.01349373897819109,
+      "x": 145,
+      "y": 0.04379900802137031,
       "label": "Ceprag — COOPERATIVA DE ELETRICIDADE PRAIA GRANDE",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "ceprag"
     },
     {
-      "x": 37,
+      "x": 41,
       "y": 0.0,
       "label": "Ceral Anitápolis — COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA DE ANITÁPOLIS",
       "regra": "REN 1000",
@@ -137,72 +137,72 @@
       "holding": "ceral"
     },
     {
-      "x": 35,
-      "y": 0.013304687165278987,
+      "x": 40,
+      "y": 0.0395695823110956,
       "label": "Ceral Araruama — COOPERATIVA DE ELETRIFICAÇÃO RURAL DE ARARUAMA",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "ceral"
     },
     {
-      "x": 162,
-      "y": 0.037851570806847916,
+      "x": 180,
+      "y": 0.13369263504037912,
       "label": "Ceraçá — COOPERATIVA DISTRIBUIDORA DE ENERGIA VALE DO ARAÇÁ",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "ceraca"
     },
     {
-      "x": 49,
-      "y": 0.013223125197251828,
+      "x": 52,
+      "y": 0.04411458816974649,
       "label": "Cerbranorte — COOPERATIVA DE ELETRIFICAÇÃO DE BRAÇO DO NORTE",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "cerbranorte"
     },
     {
-      "x": 965,
-      "y": 0.0006374211271837576,
+      "x": 1170,
+      "y": 0.004590812050288606,
       "label": "Cerci — COOPERATIVA DE ELETRIFICAÇÃO RURAL CACHOEIRAS- ITABORAÍ LTDA",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "cerci"
     },
     {
-      "x": 111,
-      "y": 0.1648038441750223,
+      "x": 112,
+      "y": 0.9513119830141107,
       "label": "Cercos — COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO RURAL CENTRO SUL DE SERGIPE LTDA",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "cercos"
     },
     {
-      "x": 238,
-      "y": 0.034810948999905715,
+      "x": 263,
+      "y": 0.1208774804100154,
       "label": "Cerej — COOPERATIVA DE PRESTAÇÃO DE SERVIÇOS PÚBLICOS DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA SENADOR ESTEVES JÚNIOR",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "cerej"
     },
     {
-      "x": 246,
-      "y": 0.004055991457356424,
+      "x": 270,
+      "y": 0.01155505588254745,
       "label": "Ceres — COOPERATIVA DE ELETRIFICAÇÃO RURAL DE RESENDE LTDA.",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "ceres"
     },
     {
-      "x": 263,
-      "y": 0.029761880545299824,
+      "x": 269,
+      "y": 0.09468695611756382,
       "label": "Cerfox — COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA FONTOURA XAVIER",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "cerfox"
     },
     {
-      "x": 84,
-      "y": 0.008066148268654786,
+      "x": 88,
+      "y": 0.03785938480853735,
       "label": "Cergal — COOPERATIVA DE ELETRIFICAÇÃO RURAL ANITA GARIBALDI LTDA",
       "regra": "REN 1000",
       "porte": "M",
@@ -210,15 +210,15 @@
     },
     {
       "x": 6,
-      "y": 6.908796971183408e-06,
+      "y": 1.9343108050601572e-05,
       "label": "Cergapa — COOPERATIVA DE ELETRICIDADE DE GRÃO PARÁ",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "cergapa"
     },
     {
-      "x": 95,
-      "y": 0.015236687674876575,
+      "x": 99,
+      "y": 0.045058905369925725,
       "label": "Cergral — COOPERATIVA DE ELETRICIDADE DE GRAVATAL",
       "regra": "REN 1000",
       "porte": "P",
@@ -226,22 +226,22 @@
     },
     {
       "x": 27,
-      "y": 0.009548730148899195,
+      "y": 0.026963067743428836,
       "label": "Ceriluz — COOPERATIVA REGIONAL DE ENERGIA E DESENVOLVIMENTO IJUÍ LTDA",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "ceriluz"
     },
     {
-      "x": 62,
-      "y": 0.015197845921657405,
+      "x": 64,
+      "y": 0.04809136215916296,
       "label": "Cerim — COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO DA REGIÃO DE ITU-MAIRINQUE",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "cerim"
     },
     {
-      "x": 9,
+      "x": 11,
       "y": 0.0,
       "label": "Ceripa — COOPERATIVA DE ELETRIFICAÇÃO RURAL DE ITAÍ-PARANAPANEMA-AVARÉ",
       "regra": "REN 1000",
@@ -249,15 +249,15 @@
       "holding": "ceripa"
     },
     {
-      "x": 22,
-      "y": 0.0030837161231051903,
+      "x": 29,
+      "y": 0.013777099973668043,
       "label": "Ceris — COOPERATIVA DE ELETRIFICAÇÃO RURAL DA REGIÃO DE ITAPECERICA DA SERRA",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "ceris"
     },
     {
-      "x": 97,
+      "x": 99,
       "y": 0.0,
       "label": "Cermc — COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO DA REGIÃO DE MOGI DAS CRUZES",
       "regra": "REN 1000",
@@ -265,31 +265,31 @@
       "holding": "cermc"
     },
     {
-      "x": 537,
-      "y": 0.08430130689682858,
+      "x": 558,
+      "y": 0.26013544236585573,
       "label": "Cermissões — COOPERATIVA DE DISTRIBUIÇÃO E GERAÇÃO DE ENERGIA DAS MISSÕES",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "cermissoes"
     },
     {
-      "x": 170,
-      "y": 0.07519479978621653,
+      "x": 189,
+      "y": 0.24447430776521564,
       "label": "Cermoful — COOPERATIVA FUMACENSE DE ELETRICIDADE",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "cermoful"
     },
     {
-      "x": 51,
-      "y": 0.002479276123759486,
+      "x": 54,
+      "y": 0.015351008748437778,
       "label": "Cernhe — COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO RURAL DA REGIÃO DE NOVO HORIZONTE",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "cernhe"
     },
     {
-      "x": 27,
+      "x": 31,
       "y": 0.0,
       "label": "Cerpalo — COOPERATIVA DE ELETRIFICAÇÃO DE PAULO LOPES",
       "regra": "REN 1000",
@@ -297,15 +297,15 @@
       "holding": "cerpalo"
     },
     {
-      "x": 7,
-      "y": 0.009388533350926964,
+      "x": 8,
+      "y": 0.026834244767112953,
       "label": "Cerpro — COOPERATIVA DE ELETRIFICAÇÃO RURAL DA REGIÃO DE PROMISSÃO",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "cerpro"
     },
     {
-      "x": 23,
+      "x": 25,
       "y": 0.0,
       "label": "Cerrp — COOPERATIVA DE ELETRIFICAÇÃO E DESENVOLVIMENTO DA REGIÃO DE SÃO JOSÉ DO RIO PRETO",
       "regra": "REN 1000",
@@ -313,80 +313,80 @@
       "holding": "cerrp"
     },
     {
-      "x": 18,
-      "y": 0.031057069510268563,
+      "x": 19,
+      "y": 0.087739470013947,
       "label": "Cersad — COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA SALTO DONNER",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "cersad"
     },
     {
-      "x": 41,
-      "y": 0.01133310581217634,
+      "x": 44,
+      "y": 0.03240017076870788,
       "label": "Cersul — COOPERATIVA DE DISTRIBUIÇÃOI DE ENERGIA",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "cersul"
     },
     {
-      "x": 186,
-      "y": 0.013901424642315991,
+      "x": 197,
+      "y": 0.041554782498695465,
       "label": "Certaja Energia — COOPERATIVA REGIONAL DE ENERGIA TAQUARI JACUÍ",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "certaja"
     },
     {
-      "x": 333,
-      "y": 0.061197840959889165,
+      "x": 342,
+      "y": 0.1773176773329707,
       "label": "Certel Energia — COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA TEUTÔNIA",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "certel"
     },
     {
-      "x": 52,
-      "y": 0.010355572751070994,
+      "x": 68,
+      "y": 0.09957299022927349,
       "label": "Certhil — COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA ENTRE RIOS LTDA",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "certhil"
     },
     {
-      "x": 69,
-      "y": 0.026716670041364153,
+      "x": 73,
+      "y": 0.08058293378149047,
       "label": "Certrel — COOPERATIVA DE ENERGIA TREVISO",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "certrel"
     },
     {
-      "x": 38,
-      "y": 0.001450112175863928,
+      "x": 40,
+      "y": 0.004237865311308767,
       "label": "Cervam — COOPERATIVA DE ENERGIZAÇÃO E DE DESENVOLVIMENTO DO VALE DO MOGI",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "cervam"
     },
     {
-      "x": 142,
-      "y": 0.0037325553487419713,
+      "x": 144,
+      "y": 0.013526691474398757,
       "label": "Cetril — COOPERATIVA DE ELETRIFICAÇÃO DE IBIÚNA E REGIÃO",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "cetril"
     },
     {
-      "x": 390,
-      "y": 0.0002155717954551938,
+      "x": 523,
+      "y": 0.0023955027004178005,
       "label": "Chesp — COMPANHIA HIDROELÉTRICA SÃO PATRÍCIO",
       "regra": "REN 1000",
-      "porte": "G",
+      "porte": "M",
       "holding": "chesp"
     },
     {
-      "x": 336,
-      "y": 0.029322990791385457,
+      "x": 396,
+      "y": 0.1262556120687971,
       "label": "Cocel — COMPANHIA CAMPOLARGUENSE DE ENERGIA",
       "regra": "REN 1000",
       "porte": "G",
@@ -401,16 +401,16 @@
       "holding": "codesam"
     },
     {
-      "x": 298,
-      "y": 0.04751442136096173,
+      "x": 306,
+      "y": 0.15180265281946465,
       "label": "Coopera — COOPERATIVA PIONEIRA DE ELETRIFICAÇÃO",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "coopera"
     },
     {
-      "x": 107,
-      "y": 0.010213354023441723,
+      "x": 130,
+      "y": 0.03139347749583742,
       "label": "Cooperaliança — COOPERATIVA ALIANÇA",
       "regra": "REN 1000",
       "porte": "G",
@@ -418,15 +418,15 @@
     },
     {
       "x": 6,
-      "y": 0.002863344540115873,
+      "y": 0.008076902938673997,
       "label": "Coopercocal — COOPERATIVA ENERGÉTICA COCAL",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "coopercocal"
     },
     {
-      "x": 14,
-      "y": 0.0018979285306945327,
+      "x": 16,
+      "y": 0.005339953265747951,
       "label": "Cooperluz — COOPERATIVA DISTRIBUIDORA DE ENERGIA FRONTEIRA NOROESTE",
       "regra": "REN 1000",
       "porte": "M",
@@ -434,15 +434,15 @@
     },
     {
       "x": 13,
-      "y": 0.0629880400483073,
+      "y": 0.18160620015725035,
       "label": "Coopermila — COOPERATIVA DE ELETRIFICAÇÃO LAURO MÜLLER",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "coopermila"
     },
     {
-      "x": 127,
-      "y": 0.08804202457217052,
+      "x": 132,
+      "y": 0.28642405781520636,
       "label": "Coopernorte — COOPERATIVA REGIONAL DE DISTRIBUIÇÃO DE ENERGIA DO LITORAL NORTE",
       "regra": "REN 1000",
       "porte": "P",
@@ -450,14 +450,14 @@
     },
     {
       "x": 372,
-      "y": 0.39276232197605837,
+      "y": 1.6359197948820077,
       "label": "Coopersul — COOPERATIVA REGIONAL DE ELETRIFICAÇÃO RURAL FRONTEIRA SUL LTDA",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "coopersul"
     },
     {
-      "x": 2,
+      "x": 3,
       "y": 0.0,
       "label": "Cooperzem — COOPERZEM COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA ELÉTRICA",
       "regra": "REN 1000",
@@ -466,263 +466,263 @@
     },
     {
       "x": 32,
-      "y": 0.0031136718316198005,
+      "y": 0.009510475153311255,
       "label": "Coorsel — COOPERATIVA REGIONAL SUL DE ELETRIFICAÇÃO RURAL",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "coorsel"
     },
     {
-      "x": 28520,
-      "y": 0.03677320446725497,
+      "x": 33775,
+      "y": 0.12924774064162578,
       "label": "Copel-Dis — COPEL DISTRIBUIÇÃO S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "copel"
     },
     {
-      "x": 1470,
-      "y": 0.05336571218166834,
+      "x": 1561,
+      "y": 1.167179097174949,
       "label": "Coprel — COPREL COOPERATIVA DE ENERGIA",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "coprel"
     },
     {
-      "x": 62,
-      "y": 0.02342829597178651,
+      "x": 63,
+      "y": 0.071682613499563,
       "label": "Creluz-D — COOPERATIVA DE DISTRIBUIÇÃO DE ENERGIA",
       "regra": "REN 1000",
-      "porte": "M",
+      "porte": "G",
       "holding": "creluz_d"
     },
     {
-      "x": 173,
-      "y": 0.04131451136877496,
+      "x": 202,
+      "y": 0.19943699034179632,
       "label": "Creral — COOPERATIVA REGIONAL DE ELETRIFICAÇÃO RURAL DO ALTO URUGUAI",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "creral"
     },
     {
-      "x": 4001,
-      "y": 0.06622930420230187,
+      "x": 4517,
+      "y": 0.25387667047548923,
       "label": "Dcelt — DISTRIBUIDORA CATARINENSE DE ENERGIA ELÉTRICA S/A.",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "dcelt"
     },
     {
-      "x": 388,
-      "y": 0.01843722266894127,
+      "x": 397,
+      "y": 0.06364683956563057,
       "label": "Demei — DEPARTAMENTO MUNICIPAL DE ENERGIA DE IJUÍ",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "demei"
     },
     {
-      "x": 5051,
-      "y": 0.0966171679374459,
+      "x": 5268,
+      "y": 0.33769451080308927,
       "label": "Dmed — DME DISTRIBUIÇÃO S.A.",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "dmed"
     },
     {
-      "x": 29335,
-      "y": 0.2635758581622172,
+      "x": 31143,
+      "y": 0.7986916213711667,
       "label": "EDP ES — EDP ESPÍRITO SANTO DISTRIBUIÇÃO DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "edp"
     },
     {
-      "x": 32641,
-      "y": 0.19710695053769609,
+      "x": 36521,
+      "y": 0.6905787322947373,
       "label": "EDP SP — EDP SÃO PAULO DISTRIBUIÇÃO DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "edp"
     },
     {
-      "x": 456,
-      "y": 0.0005306907003293565,
+      "x": 487,
+      "y": 0.00245609750682681,
       "label": "Eflul — EMPRESA FORÇA E LUZ DE URUSSANGA LTDA.",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "eflul"
     },
     {
-      "x": 1035,
-      "y": 0.017579191816445794,
+      "x": 1157,
+      "y": 0.058259488357281404,
       "label": "Eletrocar — CENTRAIS ELÉTRICAS DE CARAZINHO S.A.",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "eletrocar"
     },
     {
-      "x": 85312,
-      "y": 0.3852855433340952,
+      "x": 93324,
+      "y": 1.2819845013712599,
       "label": "Enel CE — COMPANHIA ENERGÉTICA DO CEARÁ",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "enel"
     },
     {
-      "x": 54241,
-      "y": 0.30621389317361053,
+      "x": 67139,
+      "y": 1.0168957463136536,
       "label": "Enel GO — CELG DISTRIBUIÇÃO S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "enel"
     },
     {
-      "x": 36122,
-      "y": 0.19011806082947108,
+      "x": 38004,
+      "y": 0.5627421704752752,
       "label": "Enel RJ — AMPLA ENERGIA E SERVIÇOS S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "enel"
     },
     {
-      "x": 62691,
-      "y": 0.11548314808528044,
+      "x": 68516,
+      "y": 0.42558405358835194,
       "label": "Enel SP — ELETROPAULO METROPOLITANA ELETRICIDADE DE SÃO PAULO S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "enel"
     },
     {
-      "x": 15225,
-      "y": 0.3562792595454398,
+      "x": 16183,
+      "y": 1.1369055779912896,
       "label": "Energisa AC — ENERGISA ACRE - DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "energisa"
     },
     {
-      "x": 22393,
-      "y": 0.18935881680486796,
+      "x": 25697,
+      "y": 0.8224569321926873,
       "label": "Energisa MS — ENERGISA MATO GROSSO DO SUL DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
-      "porte": "G",
+      "porte": "GG",
       "holding": "energisa"
     },
     {
-      "x": 49995,
-      "y": 0.35615212651282385,
+      "x": 57295,
+      "y": 1.1795837216046232,
       "label": "Energisa MT — ENERGISA MATO GROSSO DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "energisa"
     },
     {
-      "x": 9077,
-      "y": 0.08567365063232327,
+      "x": 10064,
+      "y": 0.31285459566871926,
       "label": "Energisa Minas Rio — ENERGISA MINAS RIO - DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "energisa"
     },
     {
-      "x": 52380,
-      "y": 0.13178748110756952,
+      "x": 58025,
+      "y": 0.47023398691114293,
       "label": "Energisa PB — ENERGISA PARAÍBA DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "energisa"
     },
     {
-      "x": 30864,
-      "y": 0.47953641219303755,
+      "x": 32464,
+      "y": 1.9461398592412709,
       "label": "Energisa RO — ENERGISA RONDÔNIA DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "energisa"
     },
     {
-      "x": 11376,
-      "y": 0.06761119944671677,
+      "x": 12430,
+      "y": 0.22709254349930644,
       "label": "Energisa SE — ENERGISA SERGIPE DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "energisa"
     },
     {
-      "x": 11079,
-      "y": 0.0942552547663818,
+      "x": 12348,
+      "y": 0.32046868653201527,
       "label": "Energisa Sul-Sudeste — ENERGISA SUL-SUDESTE DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "energisa"
     },
     {
-      "x": 12243,
-      "y": 0.11221282482726484,
+      "x": 14088,
+      "y": 0.4219938682418044,
       "label": "Energisa TO — ENERGISA TOCANTINS DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "energisa"
     },
     {
-      "x": 15998,
-      "y": 0.16033912808572037,
+      "x": 18026,
+      "y": 0.6068541165850527,
       "label": "Equatorial AL — EQUATORIAL ALAGOAS DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "equatorial"
     },
     {
-      "x": 22713,
-      "y": 0.18528595710039775,
+      "x": 24532,
+      "y": 0.6559221569743787,
       "label": "Equatorial MA — EQUATORIAL MARANHÃO DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "equatorial"
     },
     {
-      "x": 17884,
-      "y": 0.20480618294163203,
+      "x": 19831,
+      "y": 0.6713676420940136,
       "label": "Equatorial PA — EQUATORIAL PARÁ DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "equatorial"
     },
     {
-      "x": 29379,
-      "y": 0.3237475590500565,
+      "x": 33319,
+      "y": 1.1927830091513951,
       "label": "Equatorial PI — EQUATORIAL PIAUÍ DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "equatorial"
     },
     {
-      "x": 291,
-      "y": 0.008165921170508109,
+      "x": 301,
+      "y": 0.023037813024684745,
       "label": "Forcel — FORÇA E LUZ CORONEL VIVIDA LTDA",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "forcel"
     },
     {
-      "x": 37,
-      "y": 0.0022694380162019967,
+      "x": 40,
+      "y": 0.018253335947308925,
       "label": "Hidropan — HIDROPAN DISTRIBUIÇÃO DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "hidropan"
     },
     {
-      "x": 27,
-      "y": 0.0012623745383147286,
+      "x": 28,
+      "y": 0.0034620658982246763,
       "label": "João Cesa — EMPRESA FORÇA E LUZ JOÃO CESA LTDA.",
       "regra": "REN 1000",
       "porte": "P",
       "holding": "joao"
     },
     {
-      "x": 10596,
-      "y": 0.09472083545464056,
+      "x": 11310,
+      "y": 0.2692131767416051,
       "label": "Light — LIGHT SERVIÇOS DE ELETRICIDADE S.A.",
       "regra": "REN 1000",
       "porte": "GG",
@@ -730,87 +730,87 @@
     },
     {
       "x": 13,
-      "y": 0.0033373907816491707,
+      "y": 0.01018308180055547,
       "label": "Mux Energia — MUXFELDT, MARIN & CIA LTDA",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "mux"
     },
     {
-      "x": 10153,
-      "y": 0.32323459157753254,
+      "x": 10574,
+      "y": 1.0479216470393145,
       "label": "Neoenergia Brasília — NEOENERGIA DISTRIBUIÇÃO BRASÍLIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "neoenergia"
     },
     {
-      "x": 87449,
-      "y": 0.3935598908236679,
+      "x": 94128,
+      "y": 1.3884208825237652,
       "label": "Neoenergia Coelba — COMPANHIA DE ELETRICIDADE DO ESTADO DA BAHIA",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "neoenergia"
     },
     {
-      "x": 12549,
-      "y": 0.10666022746525274,
+      "x": 13027,
+      "y": 0.3791978385019178,
       "label": "Neoenergia Cosern — COMPANHIA ENERGÉTICA DO RIO GRANDE DO NORTE",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "neoenergia"
     },
     {
-      "x": 5040,
-      "y": 0.020459018717126104,
+      "x": 5112,
+      "y": 0.06546587352165648,
       "label": "Neoenergia Elektro — ELEKTRO REDES S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "neoenergia"
     },
     {
-      "x": 40142,
-      "y": 0.1947984322682862,
+      "x": 42293,
+      "y": 0.6248392727381941,
       "label": "Neoenergia Pernambuco — COMPANHIA ENERGÉTICA DE PERNAMBUCO",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "neoenergia"
     },
     {
-      "x": 94,
-      "y": 0.008037695345617492,
+      "x": 100,
+      "y": 0.023619199195034756,
       "label": "Nova Palma — NOVA PALMA ENERGIA LTDA.",
       "regra": "REN 1000",
       "porte": "M",
       "holding": "nova"
     },
     {
-      "x": 14177,
-      "y": 0.07325385090064712,
+      "x": 15699,
+      "y": 0.23777649251653085,
       "label": "RGE — RGE SUL DISTRIBUIDORA DE ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "GG",
       "holding": "rge"
     },
     {
-      "x": 3564,
-      "y": 0.1884466763801639,
+      "x": 3789,
+      "y": 0.6038193113355794,
       "label": "Roraima Energia — RORAIMA ENERGIA S.A.",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "roraima"
     },
     {
-      "x": 696,
-      "y": 0.04747584221554737,
+      "x": 714,
+      "y": 0.1490598150753915,
       "label": "Santa Maria — EMPRESA LUZ E FORÇA SANTA MARIA S.A.",
       "regra": "REN 1000",
       "porte": "G",
       "holding": "santa"
     },
     {
-      "x": 183,
-      "y": 0.015267838226351065,
+      "x": 195,
+      "y": 0.04863662023813185,
       "label": "Sulgipe — COMPANHIA SUL SERGIPANA DE ELETRICIDADE",
       "regra": "REN 1000",
       "porte": "G",
