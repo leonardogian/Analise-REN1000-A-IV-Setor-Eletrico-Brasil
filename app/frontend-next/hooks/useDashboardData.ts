@@ -219,6 +219,45 @@ export interface TransgressoesPayload {
   insights: unknown;
 }
 
+export interface MunicipioMapaItem {
+  codmunicipioibge: string;
+  nome_municipio: string;
+  uf_code: string;
+  uf: string;
+  uf_nome: string;
+  qtd_serv_realizado: number;
+  qtd_fora_prazo: number;
+  compensacao_rs: number;
+  taxa_fora_prazo: number | null;
+  meses_com_dados: number;
+}
+
+export interface MunicipioMapaUf {
+  uf_code: string;
+  uf: string;
+  uf_nome: string;
+  municipio_count: number;
+  qtd_serv_realizado: number;
+  qtd_fora_prazo: number;
+  compensacao_rs: number;
+  taxa_fora_prazo: number | null;
+}
+
+export interface MunicipiosMapaPayload {
+  meta: {
+    generated_at_utc: string;
+    input_rows: number;
+    municipality_count: number;
+    municipality_month_rows: number;
+    period_start: string;
+    period_end: string;
+    period_count: number;
+    grain: string;
+  };
+  ufs: MunicipioMapaUf[];
+  municipios: MunicipioMapaItem[];
+}
+
 export function useTransgressoes() {
   return useQuery<TransgressoesPayload>({
     queryKey: ['transgressoes'],
@@ -226,6 +265,17 @@ export function useTransgressoes() {
       fetchJsonFirstAvailable<TransgressoesPayload>([
         '/api/v1/transgressoes',
         '/dashboard_transgressoes.json',
+      ]),
+  });
+}
+
+export function useMunicipiosMapa() {
+  return useQuery<MunicipiosMapaPayload>({
+    queryKey: ['municipios-mapa'],
+    queryFn: () =>
+      fetchJsonFirstAvailable<MunicipiosMapaPayload>([
+        '/api/v1/municipios-mapa',
+        '/dashboard_municipios.json',
       ]),
   });
 }

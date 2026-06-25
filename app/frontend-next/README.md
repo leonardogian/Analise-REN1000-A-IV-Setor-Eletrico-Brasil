@@ -33,7 +33,7 @@ app/frontend-next/
 │   ├── page.tsx          ← Rota / → Dashboard home (KPIs + tendências)
 │   ├── benchmark/        ← Rota /benchmark → Scatter volume × compensação
 │   ├── evolucao/         ← Rota /evolucao  → Heatmap mensal por holding
-│   ├── mapa/             ← Rota /mapa      → Aviso: recorte geográfico desativado
+│   ├── mapa/             ← Rota /mapa      → Mapa municipal agregado experimental
 │   ├── ranking/          ← Rota /ranking   → Ranking horizontal de grupos
 │   └── transgressoes/    ← Rota /transgressoes → Série temporal bi-eixo
 │
@@ -77,7 +77,7 @@ Na home, os dois cards pré-REN do topo usam o agregado histórico de `kpi_overv
 
 Os JSONs atuais esperam a mensalidade INDGER corrigida: `serie_mensal_nacional` e `dashboard_timeseries.json` devem conter no mínimo a linha de base `2023-01` a `2025-12`; meses posteriores podem aparecer quando o ZIP mensal da ANEEL trouxer safras contíguas. Se a home ou `/evolucao` voltar a mostrar apenas janeiro por ano, regenere os artefatos e rode `make check-artifacts-full`.
 
-O recorte geográfico/municipal foi desativado no frontend e no pipeline pesado. A rota `/mapa` permanece apenas como aviso leve; o menu principal usa as análises por distribuidora, grupo econômico, porte, período regulatório e códigos de serviço.
+O recorte municipal pesado continua fora do pipeline principal. Nesta branch experimental, `/mapa` foi reativado com `dashboard_municipios.json`, gerado sob demanda por `make mapa-municipios`: o payload agrega INDGER 2023+ por município/UF, usa malha GeoJSON externa por UF no cliente e evita recriar a tabela municipal detalhada de ~22 milhões de linhas no fluxo principal.
 
 ---
 

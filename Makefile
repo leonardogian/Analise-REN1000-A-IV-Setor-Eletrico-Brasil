@@ -16,7 +16,7 @@ COMPOSE_BACKEND := $(COMPOSE) -f docker/docker-compose.yml
 .PHONY: help \
 	venv venv-recreate install doctor \
 	extract extract-aneel extract-aneel-full extract-ibge transform update-data \
-	analysis report grupos-diagnostico neoenergia-diagnostico load-postgres \
+	analysis report grupos-diagnostico neoenergia-diagnostico mapa-municipios load-postgres \
 	dashboard dashboard-transgressoes dashboard-full pipeline clean-analysis \
 	preflight-backend backend dev-serve stack-next site site-clean site-refresh site-full site-railway \
 	frontend-next-install frontend-next frontend-next-railway frontend-next-build frontend-next-clean \
@@ -38,6 +38,7 @@ help:
 	@echo "  make extract                baixa fontes nucleares ANEEL + IBGE"
 	@echo "  make transform              gera dados tratados em data/processed/"
 	@echo "  make analysis               gera tabelas analiticas"
+	@echo "  make mapa-municipios        gera JSON municipal agregado opcional para /mapa"
 	@echo "  make qa-data                auditoria numerica dos artefatos"
 	@echo ""
 	@echo "Aplicacao:"
@@ -109,6 +110,9 @@ grupos-diagnostico:
 
 neoenergia-diagnostico:
 	$(PYTHON) -m src.analysis.neoenergia_diagnostico
+
+mapa-municipios:
+	$(PYTHON) -m src.analysis.build_municipal_map_data
 
 load-postgres:
 	$(PYTHON) scripts/load_to_postgres.py
@@ -230,6 +234,7 @@ test-fast:
 	  src/analysis/grupos_diagnostico.py \
 	  src/analysis/neoenergia_diagnostico.py \
 	  src/analysis/build_dashboard_data.py \
+	  src/analysis/build_municipal_map_data.py \
 	  src/analysis/dashboard_transgressoes.py \
 	  app/backend/main.py \
 	  app/backend/core/database.py \

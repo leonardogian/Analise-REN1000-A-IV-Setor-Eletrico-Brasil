@@ -206,6 +206,7 @@ comece em `data/processed/analysis/` e `reports/tcc_claims_audit.md`.
 | Transformar raw em processed | `make transform` |
 | Gerar tabelas analiticas | `make analysis` |
 | Gerar relatorio e JSONs | `make dashboard-full` |
+| Gerar mapa municipal opcional | `make mapa-municipios` |
 | Rodar pipeline completo | `make pipeline` |
 | Validacao rapida | `make test-fast` |
 | Smoke completo | `make test-smoke` |
