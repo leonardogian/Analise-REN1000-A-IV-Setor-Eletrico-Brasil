@@ -233,11 +233,15 @@ test-fast:
 	  src/analysis/dashboard_transgressoes.py \
 	  app/backend/main.py \
 	  app/backend/core/database.py \
+	  app/backend/core/postgres_dashboard.py \
+	  scripts/load_to_postgres.py \
 	  scripts/test_backend_dependency_degradation.py \
+	  scripts/test_postgres_dashboard_contracts.py \
 	  scripts/test_indger_temporal_contracts.py \
 	  scripts/test_gitignore_contracts.py
 	$(PYTHON) scripts/smoke_imports.py
 	$(PYTHON) scripts/test_backend_dependency_degradation.py
+	$(PYTHON) scripts/test_postgres_dashboard_contracts.py
 	$(PYTHON) scripts/test_indger_temporal_contracts.py
 	$(PYTHON) scripts/test_gitignore_contracts.py
 	@$(MAKE) validate-contracts-processed

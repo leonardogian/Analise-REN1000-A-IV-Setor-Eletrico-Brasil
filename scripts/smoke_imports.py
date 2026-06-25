@@ -13,6 +13,7 @@ MODULES = [
     "src.analysis.neoenergia_diagnostico",
     "src.analysis.build_dashboard_data",
     "app.backend.main",
+    "app.backend.core.postgres_dashboard",
 ]
 
 OPTIONAL_DEPENDENCIES = {

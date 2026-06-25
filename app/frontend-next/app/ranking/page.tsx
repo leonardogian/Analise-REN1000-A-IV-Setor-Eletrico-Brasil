@@ -1,6 +1,6 @@
 'use client';
 
-import { useSerieMensalNacional } from '@/hooks/useDashboardData';
+import { useRanking, useSerieMensalNacional } from '@/hooks/useDashboardData';
 import { ChartCard, ChartSkeleton, ErrorMessage } from '@/components/ChartCard';
 import { fmtPct, fmtMoney, fmtNum, fmtVar } from '@/lib/format';
 import { COLORS } from '@/lib/colors';
@@ -13,6 +13,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  ReferenceLine,
 } from 'recharts';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -40,11 +41,17 @@ const METRICS: { key: Metric; label: string; fmt: (v: number) => string }[] = [
 
 export default function RankingPage() {
   const { data, isLoading, error } = useSerieMensalNacional();
+  const {
+    data: rankingData,
+    isLoading: isRankingLoading,
+    error: rankingError,
+  } = useRanking();
   const [metric, setMetric] = useState<Metric>('fora_prazo_por_100k_uc_mes');
   const [scope, setScope] = useState<ScopeMode>('all');
   const [selectedHoldings, setSelectedHoldings] = useState<string[]>([]);
 
   const metricCfg = METRICS.find((m) => m.key === metric)!;
+  const isVariationMetric = metric === 'variacao_taxa_pct';
 
   const holdingOptions = useMemo(() => {
     const rows = data ?? [];
@@ -67,6 +74,23 @@ export default function RankingPage() {
   }, [holdingOptions, selectedHoldings.length]);
 
   const rankedRows = useMemo<RankedEntity[]>(() => {
+    if (metric === 'variacao_taxa_pct') {
+      return (rankingData?.data ?? [])
+        .map((r) => ({
+          grupo: r.grupo,
+          qtd_serv: 0,
+          qtd_fora_prazo: Number(r.qtd_fora_prazo) || 0,
+          compensacao_rs: Number(r.compensacao_rs) || 0,
+          uc_ativa_total: 0,
+          taxa_fora_prazo: Number(r.taxa_fora_prazo) || 0,
+          fora_prazo_por_100k_uc_mes: Number(r.fora_prazo_por_100k_uc_mes) || 0,
+          compensacao_rs_por_uc_mes: Number(r.compensacao_rs_por_uc_mes) || 0,
+          variacao_taxa_pct: Number(r.variacao_taxa_pct),
+        }))
+        .filter((r) => Number.isFinite(r.variacao_taxa_pct))
+        .sort((a, b) => a.variacao_taxa_pct - b.variacao_taxa_pct);
+    }
+
     const rows = data ?? [];
 
     const groupDist = new Map<string, Set<string>>();
@@ -144,12 +168,15 @@ export default function RankingPage() {
         };
       })
       .sort((a, b) => (b[metric] as number) - (a[metric] as number));
-  }, [data, holdingOptions, metric, scope, selectedHoldings]);
+  }, [data, holdingOptions, metric, rankingData, scope, selectedHoldings]);
 
   const sorted = rankedRows.slice(0, 20);
 
-  if (isLoading) return <ChartSkeleton />;
+  if (isLoading || (isVariationMetric && isRankingLoading)) return <ChartSkeleton />;
   if (error) return <ErrorMessage message={(error as Error).message} />;
+  if (isVariationMetric && rankingError) {
+    return <ErrorMessage message={(rankingError as Error).message} />;
+  }
 
   return (
     <div className="space-y-6 max-w-7xl">
@@ -214,7 +241,20 @@ export default function RankingPage() {
         </div>
       </div>
 
-      <ChartCard title={metricCfg.label} subtitle="Ordenado do maior para o menor">
+      <ChartCard
+        title={metricCfg.label}
+        subtitle={
+          isVariationMetric
+            ? 'Variação pós-REN vs pré-REN; valores negativos indicam redução da taxa e aparecem à esquerda do zero.'
+            : 'Ordenado do maior para o menor'
+        }
+      >
+        {isVariationMetric && (
+          <div className="mb-4 rounded-lg border border-[#00C65A]/15 bg-[#00C65A]/5 px-3 py-2 text-xs text-zinc-400">
+            <span className="font-semibold text-[#00C65A]">Leitura:</span>{' '}
+            variação negativa não é dado ausente; é melhora/redução da taxa. O ranking abaixo ordena as maiores reduções primeiro.
+          </div>
+        )}
         <ResponsiveContainer width="100%" height={420}>
           <BarChart
             data={sorted}
@@ -224,6 +264,7 @@ export default function RankingPage() {
             <CartesianGrid stroke="rgba(255,255,255,0.05)" horizontal={false} />
             <XAxis
               type="number"
+              domain={isVariationMetric ? ['dataMin', 'dataMax'] : [0, 'dataMax']}
               tickFormatter={metricCfg.fmt}
               tick={{ fill: '#71717a', fontSize: 10 }}
               axisLine={false}
@@ -247,16 +288,44 @@ export default function RankingPage() {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               formatter={(v: any) => [metricCfg.fmt(v as number), metricCfg.label]}
             />
+            {isVariationMetric && (
+              <ReferenceLine x={0} stroke="rgba(255,255,255,0.28)" strokeDasharray="3 3" />
+            )}
             <Bar dataKey={metric} radius={[0, 4, 4, 0]}>
-              {sorted.map((_, i) => (
+              {sorted.map((row, i) => (
                 <Cell
                   key={i}
-                  fill={i === 0 ? COLORS.red : i < 3 ? COLORS.amber : COLORS.blue}
+                  fill={
+                    isVariationMetric
+                      ? row.variacao_taxa_pct < 0
+                        ? COLORS.green
+                        : COLORS.red
+                      : i === 0
+                        ? COLORS.red
+                        : i < 3
+                          ? COLORS.amber
+                          : COLORS.blue
+                  }
                 />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+        {isVariationMetric && sorted.length > 0 && (
+          <div className="mt-4 grid gap-2 md:grid-cols-2">
+            {sorted.slice(0, 8).map((row) => (
+              <div
+                key={row.grupo}
+                className="flex items-center justify-between gap-3 rounded-lg border border-white/5 bg-white/[0.025] px-3 py-2 text-xs"
+              >
+                <span className="truncate text-zinc-400" title={row.grupo}>{row.grupo}</span>
+                <span className={row.variacao_taxa_pct < 0 ? 'font-semibold text-[#00C65A]' : 'font-semibold text-red-400'}>
+                  {fmtVar(row.variacao_taxa_pct)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </ChartCard>
     </div>
   );

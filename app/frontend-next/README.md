@@ -32,9 +32,9 @@ app/frontend-next/
 │   ├── layout.tsx        ← Layout raiz (Sidebar + providers)
 │   ├── page.tsx          ← Rota / → Dashboard home (KPIs + tendências)
 │   ├── benchmark/        ← Rota /benchmark → Scatter volume × compensação
-│   ├── evolucao/         ← Rota /evolucao  → Heatmap mensal por holding
+│   ├── evolucao/         ← Rota /evolucao  → Heatmap mensal com seletor de indicador/período
 │   ├── mapa/             ← Rota /mapa      → Aviso: recorte geográfico desativado
-│   ├── ranking/          ← Rota /ranking   → Ranking horizontal de grupos
+│   ├── ranking/          ← Rota /ranking   → Ranking horizontal; variação pré×pós usa negativos como melhora
 │   └── transgressoes/    ← Rota /transgressoes → Série temporal bi-eixo
 │
 ├── components/
@@ -69,13 +69,13 @@ Browser → /api/dashboard
 Railway → https://tcc-ren1000x414-production.up.railway.app/api/dashboard
 ```
 
-O mesmo vale para os arquivos `dashboard_*.json`; a fonte canônica é `data/processed/dashboard/`, servida pelo backend em `/dashboard_*.json`.
+O mesmo vale para os arquivos `dashboard_*.json`; a fonte canônica é `data/processed/dashboard/`, servida pelo backend em `/dashboard_*.json`. A rota `/evolucao` usa `/api/v1/timeseries-tendencia`/`dashboard_timeseries.json` porque essa versão preserva o recorte de holdings e subgrupos/distribuidoras necessário para a tela.
 
 Localmente, a variável `API_REWRITE_URL=http://localhost:8051` (definida pelo `make frontend-next`) aponta os rewrites pro backend local em vez do Railway.
 
 Na home, os dois cards pré-REN do topo usam o agregado histórico de `kpi_overview`. Já os cards pós-REN e as variações do topo são uma visão Brasil fixa recalculada no cliente a partir de `serie_mensal_nacional`, usando a janela operacional 2023–2025; os filtros de empresas afetam apenas os gráficos e cards inferiores.
 
-Os JSONs atuais esperam a mensalidade INDGER corrigida: `serie_mensal_nacional` e `dashboard_timeseries.json` devem conter no mínimo a linha de base `2023-01` a `2025-12`; meses posteriores podem aparecer quando o ZIP mensal da ANEEL trouxer safras contíguas. Se a home ou `/evolucao` voltar a mostrar apenas janeiro por ano, regenere os artefatos e rode `make check-artifacts-full`.
+Os JSONs atuais esperam a mensalidade INDGER corrigida: `serie_mensal_nacional` e `dashboard_timeseries.json` devem conter no mínimo a linha de base `2023-01` a `2025-12`; meses posteriores podem aparecer quando o ZIP mensal da ANEEL trouxer safras contíguas. Em `/evolucao`, os indicadores brutos (`Quantidade fora do prazo`, `Compensação paga` e `Taxa fora do prazo`) devem ir até o último mês carregado pelo ETL, por exemplo `2026-04` quando essa for a última safra. As métricas normalizadas por UC podem ficar nulas nos meses em que o denominador ainda não foi publicado; nesse caso, só elas recuam para os últimos meses com UC válida. Se a home ou `/evolucao` voltar a mostrar apenas janeiro por ano, regenere os artefatos e rode `make check-artifacts-full`. Na aba Ranking, `variacao_taxa_pct` vem de `dashboard_groups_ranking.json`; valores negativos representam redução/melhora da taxa e devem ser exibidos, não filtrados como ausentes.
 
 O recorte geográfico/municipal foi desativado no frontend e no pipeline pesado. A rota `/mapa` permanece apenas como aviso leve; o menu principal usa as análises por distribuidora, grupo econômico, porte, período regulatório e códigos de serviço.
 

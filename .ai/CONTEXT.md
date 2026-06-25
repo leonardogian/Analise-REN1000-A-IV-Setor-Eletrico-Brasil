@@ -11,7 +11,7 @@ distribuidoras de energia elétrica do Brasil. O foco é setorial: transgressõe
 compensações financeiras e normalização por UC, com recortes por distribuidora,
 grupo econômico, porte, território e período regulatório.
 
-> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos do dashboard como caminho crítico e trata PostgreSQL/Redis como dependências degradáveis. O Vanilla foi movido para a branch `legacy/vanilla-dashboard`. A rodada atual corrigiu o parsing mensal INDGER para preservar a linha de base `2023-01` a `2025-12`, permitir meses posteriores contíguos sem quebrar o `make pipeline`, adicionou contratos/auditorias de cobertura mensal e criou `reports/tcc_claims_audit.md` para separar números certificados pelo pipeline de fontes externas exploratórias. Em 2026-06-01, docs/planos legados de agentes e fluxos Kestra obsoletos foram removidos da main; o contexto ativo de IA fica em `.ai/`, `AGENTS.md`, `CLAUDE.md` e `.github/agents/`. Os fluxogramas acadêmicos atuais do Capítulo 3 ficam em `docs/Fluxogramas_v2/`, com Mermaid canônico, SVGs para GitHub e Excalidraw editável.
+> **🎯 Fase Atual do Projeto:** ETL e backend estão operacionais; o frontend oficial é o Next.js/React em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos do dashboard como fallback/caminho crítico e trata PostgreSQL/Redis como dependências degradáveis. A primeira trilha PostgreSQL opcional foi iniciada em `/api/v2/timeseries-tendencia`: usa `grupos_mensal_2023_plus` quando carregada e retorna `dashboard_timeseries.json` quando o banco não está disponível. O Vanilla foi movido para a branch `legacy/vanilla-dashboard`. A rodada atual corrigiu o parsing mensal INDGER para preservar a linha de base `2023-01` a `2025-12`, permitir meses posteriores contíguos sem quebrar o `make pipeline`, adicionou contratos/auditorias de cobertura mensal e criou `reports/tcc_claims_audit.md` para separar números certificados pelo pipeline de fontes externas exploratórias. Em 2026-06-01, docs/planos legados de agentes e fluxos Kestra obsoletos foram removidos da main; o contexto ativo de IA fica em `.ai/`, `AGENTS.md`, `CLAUDE.md` e `.github/agents/`. Os fluxogramas acadêmicos atuais do Capítulo 3 ficam em `docs/Fluxogramas_v2/`, com Mermaid canônico, SVGs para GitHub e Excalidraw editável.
 
 > **🔄 ROTINA OBRIGATÓRIA PARA IAs:**
 >
@@ -33,7 +33,7 @@ grupo econômico, porte, território e período regulatório.
 | Versionamento | Git (branch: main)                               |
 
 > **Frontend oficial:** o Next.js (`app/frontend-next/`) roda na porta `3051` via `make frontend-next` ou `make stack-next`. Em produção, `app/frontend-next/vercel.json` deve manter `script-src 'unsafe-inline'` na CSP para o boot/hydration do App Router. A porta `8051` é do backend FastAPI local (`make backend`/`make dev-serve`).
-> O `/health` do backend separa `dashboard_artifacts_ready`, `database_connected` e `redis_connected`; se os JSONs existem, Postgres/Redis indisponíveis devem aparecer como modo degradado, não como quebra dos endpoints públicos do dashboard.
+> O `/health` do backend separa `dashboard_artifacts_ready`, `database_connected` e `redis_connected`; se os JSONs existem, Postgres/Redis indisponíveis devem aparecer como modo degradado, não como quebra dos endpoints públicos do dashboard. `/api/v2/db-status` mostra as tabelas PostgreSQL carregadas para a trilha de filtros server-side.
 > Na home, os cards pré-REN do topo permanecem no agregado histórico `kpi_overview`; os cards pós-REN e deltas do topo são calculados como visão Brasil fixa sobre `serie_mensal_nacional` na janela operacional 2023–2025. Os filtros de empresas continuam restritos aos gráficos e cards inferiores.
 > A cobertura mensal INDGER é contrato evolutivo: `fato_transgressao_mensal_porte` e `fato_transgressao_mensal_distribuidora` devem conter a linha de base `2023-01` a `2025-12` e podem incluir meses posteriores contíguos. `fato_uc_ativa_mensal_distribuidora` pode defasar conforme publicação da ANEEL; nesses meses, métricas por UC ficam nulas e `qa-data` emite alerta.
 
@@ -61,7 +61,7 @@ TCC_leo_main/
 │
 ├── app/
 │   ├── frontend-next/        ← Dashboard oficial Next.js/React
-│   └── backend/main.py       ← FastAPI: endpoints REST + JSONs publicos
+│   └── backend/              ← FastAPI: endpoints REST, JSONs publicos e consultas PostgreSQL opcionais
 │
 ├── data/
 │   ├── raw/                  ← CSVs brutos da ANEEL (não versionados)

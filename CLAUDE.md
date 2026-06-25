@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TCC (undergraduate thesis) analyzing the efficacy of ANEEL Normative Resolution no. 1.000/2021 on commercial service quality in Brazil's electricity distribution sector. Focus: service deadline transgressions, financial compensations (R$), and normalization by UC (consumer units), with cuts by distributor, economic group, size, geography, and regulatory period.
 
-**Current phase:** ETL e backend FastAPI estão operacionais; o frontend oficial é o Next.js em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos como caminho crítico do dashboard e trata PostgreSQL/Redis como dependências degradáveis para persistência/cache. O dashboard Vanilla clássico foi movido para a branch `legacy/vanilla-dashboard`. A rodada de reprodutibilidade reforçou extração segura, contratos de schema, deduplicação INDGER e dashboard com agregações ponderadas. Em 2026-05-31, o parsing mensal INDGER foi corrigido para preservar `2023-01` a `2025-12` e o TCC ganhou auditoria rastreável em `reports/tcc_claims_audit.md`. `make pipeline` agora termina com validações. Em 2026-06-01, o repositório foi enxugado para remover docs/planos legados de agentes e fluxos Kestra obsoletos; o contexto ativo de IA fica em `.ai/`, `AGENTS.md`, `CLAUDE.md` e `.github/agents/`. Os fluxogramas acadêmicos atuais do Capítulo 3 ficam em `docs/Fluxogramas_v2/`, com Mermaid canônico, SVGs para GitHub e Excalidraw editável.
+**Current phase:** ETL e backend FastAPI estão operacionais; o frontend oficial é o Next.js em `app/frontend-next/` (`tcc-frontend-react` na Vercel). O backend Railway serve os JSONs canônicos como fallback/caminho crítico do dashboard e trata PostgreSQL/Redis como dependências degradáveis para persistência/cache. Há uma trilha PostgreSQL opcional iniciada em `/api/v2/timeseries-tendencia`, que usa `grupos_mensal_2023_plus` quando carregada e volta para `dashboard_timeseries.json` quando o banco não está disponível. O dashboard Vanilla clássico foi movido para a branch `legacy/vanilla-dashboard`. A rodada de reprodutibilidade reforçou extração segura, contratos de schema, deduplicação INDGER e dashboard com agregações ponderadas. Em 2026-05-31, o parsing mensal INDGER foi corrigido para preservar `2023-01` a `2025-12` e o TCC ganhou auditoria rastreável em `reports/tcc_claims_audit.md`. `make pipeline` agora termina com validações. Em 2026-06-01, o repositório foi enxugado para remover docs/planos legados de agentes e fluxos Kestra obsoletos; o contexto ativo de IA fica em `.ai/`, `AGENTS.md`, `CLAUDE.md` e `.github/agents/`. Os fluxogramas acadêmicos atuais do Capítulo 3 ficam em `docs/Fluxogramas_v2/`, com Mermaid canônico, SVGs para GitHub e Excalidraw editável.
 
 ## Essential Commands
 
@@ -45,6 +45,9 @@ make site-railway           # Next.js local usando backend Railway (como Vercel)
 make stack-next             # Backend local + frontend Next.js num único comando
 make backend                # FastAPI em http://localhost:8051
 make dev-serve              # Regenera JSONs e sobe backend com --reload
+make load-postgres          # Carrega CSVs/Parquets tratados no PostgreSQL opcional
+# Carga curta para smoke do endpoint v2:
+# LOAD_POSTGRES_TABLES=grupos_mensal_2023_plus make load-postgres
 
 # Tests
 make test-fast          # compile + imports + schema contracts + core artifacts
@@ -86,7 +89,7 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 ### Deploy híbrido (Vercel + Railway)
 
 - **Frontend oficial (Vercel)**: Next.js em `app/frontend-next/`; rewrites em `next.config.mjs` encaminham `/api/*` e `/dashboard_*.json` para o Railway.
-- **Backend (Railway)**: FastAPI em `app/backend/main.py`, servindo `/api/*` e `/dashboard_*.json` a partir dos JSONs canônicos. PostgreSQL e Redis são dependências degradáveis para persistência/cache; falha isolada nelas não deve impedir a entrega dos JSONs. URL base: `https://tcc-ren1000x414-production.up.railway.app`.
+- **Backend (Railway)**: FastAPI em `app/backend/main.py`, servindo `/api/*` e `/dashboard_*.json` a partir dos JSONs canônicos. PostgreSQL e Redis são dependências degradáveis para persistência/cache; falha isolada nelas não deve impedir a entrega dos JSONs. `/api/v2/db-status` diagnostica tabelas carregadas e `/api/v2/timeseries-tendencia` consulta PostgreSQL quando `grupos_mensal_2023_plus` existe, com fallback JSON. URL base: `https://tcc-ren1000x414-production.up.railway.app`.
 - **Healthcheck Railway**: `/health` expõe `dashboard_artifacts_ready`, `database_connected` e `redis_connected`. Status `degraded` com artefatos prontos ainda permite diagnosticar Postgres/Redis sem derrubar o dashboard público.
 - **Headers do Next.js**: `app/frontend-next/vercel.json` mantém CSP com `script-src 'unsafe-inline'` para permitir boot/hydration do App Router; remover isso deixa a produção presa em skeleton/loading.
 - **Sincronização de produção**: mudanças em `app/backend/main.py` ou `data/processed/dashboard/dashboard_*.json` exigem redeploy do Railway para atualizar endpoints como `/api/v1/groups-ranking`, `/api/v1/transgressoes` e os JSONs públicos.
@@ -97,6 +100,7 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 - `src/etl/` — extraction and transformation scripts (ANEEL + IBGE)
 - `src/analysis/` — analytical table builders, report generators
 - `app/backend/main.py` — FastAPI (9 endpoints)
+- `app/backend/core/postgres_dashboard.py` — consultas PostgreSQL opcionais para endpoints `/api/v2/*`
 - `app/frontend-next/` — frontend oficial em Next.js 14 (7 páginas, Tailwind, TanStack Query)
 - `data/processed/dashboard/` — JSONs canônicos `dashboard_*.json` servidos pelo backend/Railway
 - `data/processed/analysis/` — versioned analytical CSVs; Parquet mirrors are generated locally

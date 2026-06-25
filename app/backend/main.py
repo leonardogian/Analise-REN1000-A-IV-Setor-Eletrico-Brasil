@@ -16,6 +16,11 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.backend.core.database import db_manager
+from app.backend.core.postgres_dashboard import (
+    PostgresDashboardUnavailable,
+    fetch_timeseries_tendencia,
+    table_status,
+)
 
 load_dotenv()
 
@@ -277,6 +282,57 @@ def api_groups_ranking() -> dict[str, Any]:
 @app.get("/api/v1/transgressoes")
 def api_transgressoes() -> dict[str, Any]:
     return _load_chart_payload("transgressoes")
+
+
+async def _postgres_timeseries_or_json(
+    *, group_id: str | None = None, start: str | None = None, end: str | None = None
+) -> dict[str, Any]:
+    if db_manager.pool:
+        try:
+            payload = await fetch_timeseries_tendencia(
+                db_manager.pool, group_id=group_id, start=start, end=end
+            )
+            return {"source": "postgres", **payload}
+        except (PostgresDashboardUnavailable, ValueError):
+            pass
+        except Exception:
+            # Postgres is optional: keep the public dashboard functional via JSON.
+            pass
+
+    payload = _load_chart_payload("timeseries_tendencia")
+    return {"source": "json", **payload}
+
+
+@app.get("/api/v2/db-status")
+async def api_v2_db_status() -> dict[str, Any]:
+    if not db_manager.pool:
+        return {
+            "available": False,
+            "tables_ready": False,
+            "present_tables": [],
+            "missing_tables": [],
+            "row_counts": {},
+        }
+    try:
+        return await table_status(db_manager.pool)
+    except Exception as exc:
+        return {
+            "available": False,
+            "tables_ready": False,
+            "present_tables": [],
+            "missing_tables": [],
+            "row_counts": {},
+            "error": type(exc).__name__,
+        }
+
+
+@app.get("/api/v2/timeseries-tendencia")
+async def api_v2_timeseries_tendencia(
+    group_id: str | None = None,
+    start: str | None = None,
+    end: str | None = None,
+) -> dict[str, Any]:
+    return await _postgres_timeseries_or_json(group_id=group_id, start=start, end=end)
 
 
 def _dashboard_json_response(file_name: str) -> FileResponse:

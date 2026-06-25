@@ -109,9 +109,10 @@ para ajustar a prancha visual.
 - Artefatos auditaveis em `data/processed/analysis/`, versionados para revisao
   e demonstracao.
 - JSONs derivados em `data/processed/dashboard/`, consumidos pelo backend e pelo
-  frontend.
-- API FastAPI em `app/backend/`, publicada no Railway e resiliente a falhas
-  isoladas de PostgreSQL/Redis.
+  frontend como fallback estavel.
+- API FastAPI em `app/backend/`, publicada no Railway, com caminho PostgreSQL
+  opcional para filtros server-side e resiliente a falhas isoladas de
+  PostgreSQL/Redis.
 - Dashboard oficial Next.js/React em `app/frontend-next/`, publicado na Vercel.
 - Documentacao metodologica para o TCC em `docs/`, `.ai/` e `reports/`.
 
@@ -206,6 +207,7 @@ comece em `data/processed/analysis/` e `reports/tcc_claims_audit.md`.
 | Transformar raw em processed | `make transform` |
 | Gerar tabelas analiticas | `make analysis` |
 | Gerar relatorio e JSONs | `make dashboard-full` |
+| Carregar tabelas no PostgreSQL | `make load-postgres` |
 | Rodar pipeline completo | `make pipeline` |
 | Validacao rapida | `make test-fast` |
 | Smoke completo | `make test-smoke` |
@@ -217,6 +219,26 @@ comece em `data/processed/analysis/` e `reports/tcc_claims_audit.md`.
 
 Use sempre `python3` ou os targets `make`. Nesta maquina, nao assuma que o
 binario `python` existe.
+
+### PostgreSQL opcional para filtros
+
+O backend mantém os JSONs canônicos como fallback, mas também expõe a primeira
+rota Postgres-backed em `/api/v2/timeseries-tendencia`. Quando o pool PostgreSQL
+está disponível e a tabela `grupos_mensal_2023_plus` foi carregada, a resposta
+vem com `source: "postgres"`; caso contrário, a API retorna o
+`dashboard_timeseries.json` com `source: "json"`.
+
+Para uma carga curta de smoke local:
+
+```bash
+docker compose -f docker/docker-compose.db.yml up -d postgres
+LOAD_POSTGRES_TABLES=grupos_mensal_2023_plus make load-postgres
+```
+
+Para carregar todas as tabelas analíticas versionadas/geradas, rode apenas
+`make load-postgres`. O script aceita CSVs versionados em
+`data/processed/analysis/**/*.csv` e Parquets locais quando existirem, criando
+índices básicos para filtros por mês, grupo, porte, classe e distribuidora.
 
 ## Aplicacao Local
 

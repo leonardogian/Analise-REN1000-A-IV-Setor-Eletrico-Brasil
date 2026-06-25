@@ -206,8 +206,29 @@ def check_dashboard_monthly_coverage(payload: dict) -> list[str]:
     dates = {str(row.get("date")) for row in rows if isinstance(row, dict) and row.get("date")}
     if "2025-12" not in dates:
         errors.append("dashboard timeseries JSON missing date 2025-12")
+    fact_latest = latest_monthly_fact_period()
+    if fact_latest and fact_latest not in dates:
+        errors.append("dashboard timeseries JSON missing latest monthly fact period: " + fact_latest)
     if dates and all(date.endswith("-01") for date in dates):
         errors.append("dashboard timeseries JSON has only January dates")
+
+    if fact_latest:
+        latest_rows = [
+            row
+            for row in rows
+            if isinstance(row, dict) and row.get("date") == fact_latest and row.get("tipo") != "nacional"
+        ]
+        raw_fields = ("qtd_serv_realizado", "qtd_fora_prazo", "compensacao_rs", "taxa_fora_prazo")
+        missing_raw = [
+            field
+            for field in raw_fields
+            if not any(isinstance(row.get(field), (int, float)) for row in latest_rows)
+        ]
+        if missing_raw:
+            errors.append(
+                "dashboard timeseries JSON latest period lacks raw ETL metrics: "
+                + ", ".join(missing_raw)
+            )
     return errors
 
 
