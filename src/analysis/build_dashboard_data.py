@@ -1090,6 +1090,28 @@ def build_cross_group_insights(group_dimensions: list[dict], top_n: int = 5) -> 
 def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.DataFrame, grupos_classe: pd.DataFrame) -> dict:
     insights = {}
 
+    def _short_entity_label(value: object) -> str:
+        """Return the concise public label before the legal-name separator."""
+        if value is None:
+            return ""
+        text = str(value).strip()
+        if not text or text.lower() in {"nan", "none", "<na>"}:
+            return ""
+        return text.split(" — ")[0].strip() if text else ""
+
+    def _first_label(values: object) -> str:
+        if isinstance(values, pd.DataFrame):
+            candidates = values.iloc[:, 0].dropna().tolist()
+        elif isinstance(values, pd.Series):
+            candidates = values.dropna().tolist()
+        else:
+            candidates = [values]
+        for value in candidates:
+            label = _short_entity_label(value)
+            if label:
+                return label
+        return ""
+
     def _with_group_label(frame: pd.DataFrame) -> pd.DataFrame:
         out = frame.copy()
         if "group_label" in out.columns:
@@ -1134,23 +1156,59 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
     scat_data = []
     if not fato_mensal.empty:
         df = _with_group_label(fato_mensal)
-        res_scatter = df.groupby(["distributor_label", "periodo_regulatorio"], as_index=False).agg({
-            "qtd_fora_prazo": "sum",
-            "compensacao_rs": "sum",
-            "uc_ativa_mes": "sum",
-            "bucket_porte": "first",
-            "group_id": "first",
-        })
+        df["uc_ativa_mes"] = pd.to_numeric(df["uc_ativa_mes"], errors="coerce")
+        df_scatter = df[df["uc_ativa_mes"] > 0].copy()
+        df_scatter["period_key"] = [
+            f"{int(ano)}-{int(mes):02d}"
+            for ano, mes in zip(df_scatter["ano"].tolist(), df_scatter["mes"].tolist())
+        ]
+        group_display_lookup: dict[str, str] = {}
+        if {"group_id", "group_label", "distributor_id", "distributor_label"}.issubset(df.columns):
+            for gid, block in df.groupby("group_id", dropna=False):
+                gid_text = str(gid)
+                distributor_count = block["distributor_id"].dropna().astype(str).nunique()
+                if distributor_count == 1:
+                    label = _first_label(block["distributor_label"])
+                else:
+                    label = _first_label(block["group_label"])
+                    if label.upper().startswith("GRUPO "):
+                        label = label[6:].strip()
+                group_display_lookup[gid_text] = label or default_group_label(gid_text)
+        res_scatter = df_scatter.groupby(["distributor_label", "periodo_regulatorio"], as_index=False).agg(
+            qtd_fora_prazo=("qtd_fora_prazo", "sum"),
+            compensacao_rs=("compensacao_rs", "sum"),
+            uc_ativa_mes=("uc_ativa_mes", "sum"),
+            bucket_porte=("bucket_porte", "first"),
+            group_id=("group_id", "first"),
+            periodo_inicio=("period_key", "min"),
+            periodo_fim=("period_key", "max"),
+            meses_uc_validos=("period_key", "nunique"),
+        )
         res_scatter["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(res_scatter["compensacao_rs"], res_scatter["uc_ativa_mes"])
+        res_scatter["falhas_por_100k_uc_mes"] = calc_fora_prazo_por_100k(
+            res_scatter["qtd_fora_prazo"], res_scatter["uc_ativa_mes"]
+        )
+        res_scatter["uc_ativa_mes_total"] = res_scatter["uc_ativa_mes"]
 
-        for _, row in res_scatter.iterrows():
+        for row in res_scatter.itertuples(index=False):
+            group_id = getattr(row, "group_id")
+            bucket_porte = getattr(row, "bucket_porte")
+            uc_total = getattr(row, "uc_ativa_mes_total")
             scat_data.append({
-                "x": int(row["qtd_fora_prazo"]),
-                "y": _safe(row["compensacao_rs_por_uc_mes"]),
-                "label": row["distributor_label"],
-                "regra": "REN 414" if row["periodo_regulatorio"] == "pre_2022" else "REN 1000",
-                "porte": str(row["bucket_porte"]) if pd.notna(row["bucket_porte"]) else "N/A",
-                "holding": str(row["group_id"]) if pd.notna(row["group_id"]) else "N/A",
+                "x": int(uc_total) if pd.notna(uc_total) else 0,
+                "y": _safe(getattr(row, "falhas_por_100k_uc_mes")),
+                "compensacao_rs_por_uc_mes": _safe(getattr(row, "compensacao_rs_por_uc_mes")),
+                "uc_ativa_mes_total": int(uc_total) if pd.notna(uc_total) else None,
+                "compensacao_total_rs": _safe(getattr(row, "compensacao_rs")),
+                "qtd_fora_prazo_total": int(getattr(row, "qtd_fora_prazo")),
+                "label": getattr(row, "distributor_label"),
+                "regra": "REN 414" if getattr(row, "periodo_regulatorio") == "pre_2022" else "REN 1000",
+                "porte": str(bucket_porte) if pd.notna(bucket_porte) else "N/A",
+                "holding": str(group_id) if pd.notna(group_id) else "N/A",
+                "holding_label": group_display_lookup.get(str(group_id), str(group_id)),
+                "periodo_inicio": getattr(row, "periodo_inicio"),
+                "periodo_fim": getattr(row, "periodo_fim"),
+                "meses_uc_validos": int(getattr(row, "meses_uc_validos")),
             })
     # Nota: dados REN 414 (pre_2022) de fato_indicadores não incluídos no scatter
     # pois faltam métricas per-UC para o período (uc_ativa_media_mensal é nulo),

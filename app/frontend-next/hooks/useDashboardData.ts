@@ -173,12 +173,20 @@ export function useGroupViews() {
 // ── Scatter (Benchmark) ──────────────────────────────────────────────────────
 
 export interface ScatterItem {
-  x: number; // volume fora do prazo
-  y: number; // compensação R$/UC-mês
+  x: number; // UC-mês total (tamanho da distribuidora)
+  y: number; // falhas por 100k UC-mês
   label: string;
   regra: string;
   porte: string;
   holding: string;
+  holding_label?: string;
+  periodo_inicio?: string;
+  periodo_fim?: string;
+  meses_uc_validos?: number;
+  compensacao_rs_por_uc_mes?: number;
+  uc_ativa_mes_total?: number;
+  compensacao_total_rs?: number;
+  qtd_fora_prazo_total?: number;
 }
 
 export function useScatter() {

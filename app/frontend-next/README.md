@@ -77,6 +77,8 @@ Na home, os dois cards pré-REN do topo usam o agregado histórico de `kpi_overv
 
 Os JSONs atuais esperam a mensalidade INDGER corrigida: `serie_mensal_nacional` e `dashboard_timeseries.json` devem conter no mínimo a linha de base `2023-01` a `2025-12`; meses posteriores podem aparecer quando o ZIP mensal da ANEEL trouxer safras contíguas. Se a home ou `/evolucao` voltar a mostrar apenas janeiro por ano, regenere os artefatos e rode `make check-artifacts-full`.
 
+Na rota `/benchmark`, `dashboard_scatter.json` usa apenas meses em que `uc_ativa_mes > 0` para calcular `R$/UC-mês`. O payload também traz `holding_label`, `periodo_inicio`, `periodo_fim` e `meses_uc_validos` para evitar exibir slugs internos de grupos independentes (ex.: `joao`) e deixar explícita a cobertura comparável do denominador UC.
+
 O recorte municipal pesado continua fora do pipeline principal. Nesta branch experimental, `/mapa` foi reativado com `dashboard_municipios.json`, gerado sob demanda por `make mapa-municipios`: o payload agrega INDGER 2023+ por município/UF, usa malha GeoJSON externa por UF no cliente e evita recriar a tabela municipal detalhada de ~22 milhões de linhas no fluxo principal.
 
 ---
