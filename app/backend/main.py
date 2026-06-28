@@ -37,6 +37,7 @@ CHART_JSON_FILES = {
     "radar_slas": "dashboard_radar.json",
     "groups_ranking": "dashboard_groups_ranking.json",
     "transgressoes": "dashboard_transgressoes.json",
+    "municipios_mapa": "dashboard_municipios.json",
 }
 DASHBOARD_PUBLIC_JSON_FILES = frozenset({"dashboard_data.json", *CHART_JSON_FILES.values()})
 
@@ -282,6 +283,11 @@ def api_groups_ranking() -> dict[str, Any]:
 @app.get("/api/v1/transgressoes")
 def api_transgressoes() -> dict[str, Any]:
     return _load_chart_payload("transgressoes")
+
+
+@app.get("/api/v1/municipios-mapa")
+def api_municipios_mapa() -> dict[str, Any]:
+    return _load_chart_payload("municipios_mapa")
 
 
 async def _postgres_timeseries_or_json(

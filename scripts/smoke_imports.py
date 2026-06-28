@@ -12,6 +12,7 @@ MODULES = [
     "src.analysis.build_report",
     "src.analysis.neoenergia_diagnostico",
     "src.analysis.build_dashboard_data",
+    "src.analysis.build_municipal_map_data",
     "app.backend.main",
     "app.backend.core.postgres_dashboard",
 ]

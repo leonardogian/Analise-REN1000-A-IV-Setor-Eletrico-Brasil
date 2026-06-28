@@ -32,6 +32,7 @@ python3 -m src.analysis.dashboard_transgressoes  # dashboard_transgressoes.json
 # Generating dashboard data
 make grupos-diagnostico     # data/processed/analysis/grupos/
 make neoenergia-diagnostico # legacy compatibility artifacts for one group
+make mapa-municipios        # optional dashboard_municipios.json for experimental /mapa
 make dashboard-full         # analysis + report + groups + compatibility artifacts + all JSONs
 make clean-analysis         # remove data/processed/analysis/ outputs
 

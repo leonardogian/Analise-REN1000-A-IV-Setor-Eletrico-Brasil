@@ -35,7 +35,14 @@ const PORTE_LABELS: Record<string, string> = {
   GG: 'GG — Muito Grande',
 };
 
-function formatHolding(id: string): string {
+function shortEntityLabel(label?: string): string {
+  if (!label) return '';
+  return label.split(' — ')[0].replace(/^Grupo\s+/i, '').trim();
+}
+
+function formatHolding(id: string, label?: string): string {
+  const conciseLabel = shortEntityLabel(label);
+  if (conciseLabel) return conciseLabel;
   const map: Record<string, string> = {
     neoenergia: 'Neoenergia',
     cpfl: 'CPFL',
@@ -61,6 +68,10 @@ function median(arr: number[]): number {
   return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
 }
 
+function fmtInt(v: number): string {
+  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(v);
+}
+
 function ScatterTooltip({
   active,
   payload,
@@ -79,21 +90,29 @@ function ScatterTooltip({
         background: 'rgba(17,17,19,0.97)',
         border: `1px solid ${PORTE_COLORS[d.porte] ?? COLORS.blue}55`,
         borderRadius: 8,
-        minWidth: 200,
+        minWidth: 240,
       }}
     >
       <p className="font-semibold text-zinc-100">{parts[0]}</p>
       {parts[1] && <p className="text-zinc-500 text-[10px]">{parts[1]}</p>}
       <div className="border-t border-white/10 pt-1.5 space-y-1">
         <div className="flex justify-between gap-4">
-          <span className="text-zinc-500">Volume fora do prazo</span>
-          <span className="text-zinc-100 font-medium">{fmtNum(d.x)}</span>
+          <span className="text-zinc-500">Tamanho (UC-mês)</span>
+          <span className="text-zinc-100 font-medium">{fmtInt(d.x)}</span>
         </div>
         <div className="flex justify-between gap-4">
-          <span className="text-zinc-500">Compensação</span>
+          <span className="text-zinc-500">Falhas / 100k UC-mês</span>
           <span className="font-semibold" style={{ color: PORTE_COLORS[d.porte] ?? COLORS.blue }}>
-            {fmtMoney(d.y)}/UC-mês
+            {fmtNum(d.y)}
           </span>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-zinc-500">R$/UC-mês</span>
+          <span className="text-zinc-300">{fmtMoney(d.compensacao_rs_por_uc_mes ?? 0)}</span>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-zinc-500">Volume de falhas</span>
+          <span className="text-zinc-300">{fmtInt(d.qtd_fora_prazo_total ?? 0)}</span>
         </div>
         <div className="flex justify-between gap-4">
           <span className="text-zinc-500">Porte</span>
@@ -102,9 +121,17 @@ function ScatterTooltip({
           </span>
         </div>
         <div className="flex justify-between gap-4">
-          <span className="text-zinc-500">Holding</span>
-          <span className="text-zinc-300">{formatHolding(d.holding)}</span>
+          <span className="text-zinc-500">Grupo/operadora</span>
+          <span className="text-zinc-300">{formatHolding(d.holding, d.holding_label)}</span>
         </div>
+        {d.periodo_inicio && d.periodo_fim && (
+          <div className="flex justify-between gap-4">
+            <span className="text-zinc-500">Cobertura UC</span>
+            <span className="text-zinc-300">
+              {d.periodo_inicio}–{d.periodo_fim} · {d.meses_uc_validos ?? 0} meses
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -156,31 +183,32 @@ export default function BenchmarkPage() {
     };
   }, [filtered]);
 
-  // ── Bar chart: top 15 by volume ───────────────────────────────────────────────
+  // ── Bar chart: top 15 por R$/UC-mês ─────────────────────────────────────────
   const barData = useMemo(
     () =>
       [...filtered]
-        .sort((a, b) => b.x - a.x)
+        .sort((a, b) => (b.compensacao_rs_por_uc_mes ?? 0) - (a.compensacao_rs_por_uc_mes ?? 0))
         .slice(0, 15)
         .map((d) => ({ ...d, name: d.label.split(' — ')[0].slice(0, 22) })),
     [filtered]
   );
 
-  // ── Holdings efficiency ranking ───────────────────────────────────────────────
+  // ── Group/operator efficiency ranking ─────────────────────────────────────────
   const holdingsRanking = useMemo(() => {
-    const byHolding = new Map<string, { totalX: number; totalY: number; count: number }>();
+    const byHolding = new Map<string, { totalX: number; totalY: number; count: number; label?: string }>();
     for (const d of filtered) {
       if (!byHolding.has(d.holding))
-        byHolding.set(d.holding, { totalX: 0, totalY: 0, count: 0 });
+        byHolding.set(d.holding, { totalX: 0, totalY: 0, count: 0, label: d.holding_label });
       const e = byHolding.get(d.holding)!;
       e.totalX += d.x;
       e.totalY += d.y;
       e.count += 1;
+      if (!e.label && d.holding_label) e.label = d.holding_label;
     }
     return [...byHolding.entries()]
       .map(([id, s]) => ({
         id,
-        name: formatHolding(id),
+        name: formatHolding(id, s.label),
         avgY: s.count > 0 ? s.totalY / s.count : 0,
         totalX: s.totalX,
         count: s.count,
@@ -225,7 +253,7 @@ export default function BenchmarkPage() {
         <div>
           <h1 className="text-xl font-bold text-zinc-100">Benchmark</h1>
           <p className="text-sm text-zinc-500 mt-0.5">
-            Comparativo entre distribuidoras por porte · volume × compensação R$/UC-mês
+            Comparativo por porte · volume × compensação R$/UC-mês nos meses com UC ativa oficial
           </p>
         </div>
         {/* Porte filter chips */}
@@ -271,7 +299,7 @@ export default function BenchmarkPage() {
           <KPICard
             title="Maior Volume"
             value={kpis.topVolLabel.slice(0, 20)}
-            sub="Total de serviços fora do prazo"
+            sub="Serviços fora do prazo no recorte comparável"
             variant="red"
           />
           <KPICard
@@ -312,7 +340,7 @@ export default function BenchmarkPage() {
                 </span>
               </div>
               <div>
-                <span className="text-zinc-500 block">Volume Total</span>
+                <span className="text-zinc-500 block">Volume comparável</span>
                 <span className="text-sm font-bold text-zinc-100">{fmtNum(s.totalVol)}</span>
               </div>
               <div>
@@ -326,23 +354,20 @@ export default function BenchmarkPage() {
         ))}
       </div>
 
-      {/* Scatter Plot — principal */}
+      {/* Scatter Plot: Falhas por 100k UC-mês vs tamanho */}
       <ChartCard
-        title="Volume × Compensação por Distribuidora"
-        subtitle="Cada ponto = 1 distribuidora · linhas tracejadas = mediana do conjunto"
+        title="Falhas por 100k UC-mês × Tamanho da Distribuidora"
+        subtitle="Eixo X = UC-mês (exposição); Eixo Y = falhas por 100k UC-mês · meses com UC oficial"
       >
         <div className="flex gap-4 mb-3 text-[10px] text-zinc-500">
           <span>
-            ↗ Alto volume + alto custo:{' '}
-            <span className="text-red-400 font-medium">alto risco</span>
+            ↗ Grande + muitas falhas: <span className="text-red-400 font-medium">alto risco</span>
           </span>
           <span>
-            ↙ Baixo volume + baixo custo:{' '}
-            <span className="text-[#00C65A] font-medium">referência</span>
+            ↙ Pequena + poucas falhas: <span className="text-[#00C65A] font-medium">referência</span>
           </span>
           <span>
-            ↘ Alto volume + baixo custo:{' '}
-            <span className="text-[#1A8FE3] font-medium">eficiência de escala</span>
+            ↘ Grande + poucas falhas: <span className="text-[#1A8FE3] font-medium">eficiência de escala</span>
           </span>
         </div>
         <ResponsiveContainer width="100%" height={420}>
@@ -351,13 +376,13 @@ export default function BenchmarkPage() {
             <XAxis
               type="number"
               dataKey="x"
-              name="Volume"
-              tickFormatter={(v) => fmtNum(v)}
+              name="UC-mês"
+              tickFormatter={(v) => fmtInt(v)}
               tick={{ fill: '#71717a', fontSize: 10 }}
               axisLine={false}
               tickLine={false}
               label={{
-                value: 'Volume fora do prazo',
+                value: 'UC-mês (tamanho)',
                 position: 'insideBottom',
                 offset: -4,
                 fill: '#52525b',
@@ -367,14 +392,14 @@ export default function BenchmarkPage() {
             <YAxis
               type="number"
               dataKey="y"
-              name="R$/UC-mês"
-              tickFormatter={(v) => fmtMoney(v)}
+              name="Falhas/100k UC-mês"
+              tickFormatter={(v) => fmtNum(v)}
               tick={{ fill: '#71717a', fontSize: 10 }}
               axisLine={false}
               tickLine={false}
               width={62}
               label={{
-                value: 'R$/UC-mês',
+                value: 'Falhas / 100k UC-mês',
                 angle: -90,
                 position: 'insideLeft',
                 offset: 8,
@@ -421,10 +446,10 @@ export default function BenchmarkPage() {
         </ResponsiveContainer>
       </ChartCard>
 
-      {/* Horizontal bar chart: volume × compensação */}
+      {/* Horizontal bar chart: top 15 por compensação total */}
       <ChartCard
-        title="Top 15 por Volume Fora do Prazo"
-        subtitle="Barras = volume · tooltip mostra R$/UC-mês"
+        title="Top 15 por Compensação Total"
+        subtitle="Barras = compensação total em R$ · tooltip mostra eficiência"
       >
         <ResponsiveContainer width="100%" height={460}>
           <BarChart
@@ -435,10 +460,17 @@ export default function BenchmarkPage() {
             <CartesianGrid stroke="rgba(255,255,255,0.05)" horizontal={false} />
             <XAxis
               type="number"
-              tickFormatter={(v) => fmtNum(v)}
+              tickFormatter={(v) => fmtMoney(v)}
               tick={{ fill: '#71717a', fontSize: 10 }}
               axisLine={false}
               tickLine={false}
+              label={{
+                value: 'Compensação (R$)',
+                position: 'insideBottom',
+                offset: -4,
+                fill: '#52525b',
+                fontSize: 10,
+              }}
             />
             <YAxis
               type="category"
@@ -459,12 +491,12 @@ export default function BenchmarkPage() {
                 const d = (entry?.payload as ScatterItem | undefined);
                 const v = Number(vRaw ?? 0);
                 return [
-                  `${fmtNum(v)} fora do prazo · ${fmtMoney(d?.y)}/UC-mês`,
-                  `${PORTE_LABELS[d?.porte ?? ''] ?? d?.porte ?? ''}`,
+                  `R$ ${fmtMoney(v)}`,
+                  `${PORTE_LABELS[d?.porte ?? ''] ?? d?.porte ?? ''} · ${fmtNum(d?.y ?? 0)} falhas/100k UC-mês`,
                 ];
               }}
             />
-            <Bar dataKey="x" radius={[0, 4, 4, 0]}>
+            <Bar dataKey="compensacao_total_rs" radius={[0, 4, 4, 0]}>
               {barData.map((d, i) => (
                 <Cell
                   key={i}
@@ -478,11 +510,11 @@ export default function BenchmarkPage() {
         </ResponsiveContainer>
       </ChartCard>
 
-      {/* Holdings Efficiency Ranking */}
+      {/* Group/operator efficiency ranking */}
       {holdingsRanking.length >= 2 && (
         <ChartCard
-          title="Eficiência por Grupo Econômico"
-          subtitle="Média de compensação R$/UC-mês por holding · menor = melhor performance"
+          title="Eficiência por grupo/operadora"
+          subtitle="Média de compensação R$/UC-mês no recorte com UC oficial · menor = melhor performance"
         >
           <ResponsiveContainer width="100%" height={360}>
             <BarChart
@@ -536,7 +568,7 @@ export default function BenchmarkPage() {
           </ResponsiveContainer>
           <p className="text-[10px] text-zinc-600 mt-2">
             Os primeiros (menor R$/UC-mês) indicam melhor eficiência regulatória.
-            Volume total calculado sobre distribuidoras no filtro atual.
+            Volume calculado no mesmo recorte comparável usado para R$/UC-mês.
           </p>
         </ChartCard>
       )}

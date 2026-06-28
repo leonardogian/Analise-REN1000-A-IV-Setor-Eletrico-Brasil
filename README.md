@@ -208,6 +208,7 @@ comece em `data/processed/analysis/` e `reports/tcc_claims_audit.md`.
 | Gerar tabelas analiticas | `make analysis` |
 | Gerar relatorio e JSONs | `make dashboard-full` |
 | Carregar tabelas no PostgreSQL | `make load-postgres` |
+| Gerar mapa municipal opcional | `make mapa-municipios` |
 | Rodar pipeline completo | `make pipeline` |
 | Validacao rapida | `make test-fast` |
 | Smoke completo | `make test-smoke` |

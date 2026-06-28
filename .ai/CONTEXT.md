@@ -36,6 +36,7 @@ grupo econômico, porte, território e período regulatório.
 > O `/health` do backend separa `dashboard_artifacts_ready`, `database_connected` e `redis_connected`; se os JSONs existem, Postgres/Redis indisponíveis devem aparecer como modo degradado, não como quebra dos endpoints públicos do dashboard. `/api/v2/db-status` mostra as tabelas PostgreSQL carregadas para a trilha de filtros server-side.
 > Na home, os cards pré-REN do topo permanecem no agregado histórico `kpi_overview`; os cards pós-REN e deltas do topo são calculados como visão Brasil fixa sobre `serie_mensal_nacional` na janela operacional 2023–2025. Os filtros de empresas continuam restritos aos gráficos e cards inferiores.
 > A cobertura mensal INDGER é contrato evolutivo: `fato_transgressao_mensal_porte` e `fato_transgressao_mensal_distribuidora` devem conter a linha de base `2023-01` a `2025-12` e podem incluir meses posteriores contíguos. `fato_uc_ativa_mensal_distribuidora` pode defasar conforme publicação da ANEEL; nesses meses, métricas por UC ficam nulas e `qa-data` emite alerta.
+> Branch experimental `feat/mapa-municipios-agregado`: `/mapa` usa `dashboard_municipios.json`, gerado por `make mapa-municipios`, com agregado município/UF 2023+ separado do pipeline principal para não reintroduzir a tabela municipal detalhada pesada.
 
 ## Estrutura do Repositório
 

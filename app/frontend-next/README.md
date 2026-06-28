@@ -32,9 +32,9 @@ app/frontend-next/
 │   ├── layout.tsx        ← Layout raiz (Sidebar + providers)
 │   ├── page.tsx          ← Rota / → Dashboard home (KPIs + tendências)
 │   ├── benchmark/        ← Rota /benchmark → Scatter volume × compensação
-│   ├── evolucao/         ← Rota /evolucao  → Heatmap mensal com seletor de indicador/período
-│   ├── mapa/             ← Rota /mapa      → Aviso: recorte geográfico desativado
-│   ├── ranking/          ← Rota /ranking   → Ranking horizontal; variação pré×pós usa negativos como melhora
+│   ├── evolucao/         ← Rota /evolucao  → Heatmap mensal por holding
+│   ├── mapa/             ← Rota /mapa      → Mapa municipal agregado experimental
+│   ├── ranking/          ← Rota /ranking   → Ranking horizontal de grupos
 │   └── transgressoes/    ← Rota /transgressoes → Série temporal bi-eixo
 │
 ├── components/
@@ -77,7 +77,9 @@ Na home, os dois cards pré-REN do topo usam o agregado histórico de `kpi_overv
 
 Os JSONs atuais esperam a mensalidade INDGER corrigida: `serie_mensal_nacional` e `dashboard_timeseries.json` devem conter no mínimo a linha de base `2023-01` a `2025-12`; meses posteriores podem aparecer quando o ZIP mensal da ANEEL trouxer safras contíguas. Em `/evolucao`, os indicadores brutos (`Quantidade fora do prazo`, `Compensação paga` e `Taxa fora do prazo`) devem ir até o último mês carregado pelo ETL, por exemplo `2026-04` quando essa for a última safra. As métricas normalizadas por UC podem ficar nulas nos meses em que o denominador ainda não foi publicado; nesse caso, só elas recuam para os últimos meses com UC válida. Se a home ou `/evolucao` voltar a mostrar apenas janeiro por ano, regenere os artefatos e rode `make check-artifacts-full`. Na aba Ranking, `variacao_taxa_pct` vem de `dashboard_groups_ranking.json`; valores negativos representam redução/melhora da taxa e devem ser exibidos, não filtrados como ausentes.
 
-O recorte geográfico/municipal foi desativado no frontend e no pipeline pesado. A rota `/mapa` permanece apenas como aviso leve; o menu principal usa as análises por distribuidora, grupo econômico, porte, período regulatório e códigos de serviço.
+Na rota `/benchmark`, `dashboard_scatter.json` usa apenas meses em que `uc_ativa_mes > 0` para calcular `R$/UC-mês`. O payload também traz `holding_label`, `periodo_inicio`, `periodo_fim` e `meses_uc_validos` para evitar exibir slugs internos de grupos independentes (ex.: `joao`) e deixar explícita a cobertura comparável do denominador UC.
+
+O recorte municipal pesado continua fora do pipeline principal. Nesta branch experimental, `/mapa` foi reativado com `dashboard_municipios.json`, gerado sob demanda por `make mapa-municipios`: o payload agrega INDGER 2023+ por município/UF, usa malha GeoJSON externa por UF no cliente e evita recriar a tabela municipal detalhada de ~22 milhões de linhas no fluxo principal.
 
 ---
 

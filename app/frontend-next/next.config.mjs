@@ -11,6 +11,7 @@ const JSON_FILES = [
   'dashboard_heatmap.json',
   'dashboard_radar.json',
   'dashboard_groups_ranking.json',
+  'dashboard_municipios.json',
 ];
 
 const nextConfig = {

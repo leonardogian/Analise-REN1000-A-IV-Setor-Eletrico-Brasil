@@ -184,12 +184,20 @@ export function useGroupViews() {
 // ── Scatter (Benchmark) ──────────────────────────────────────────────────────
 
 export interface ScatterItem {
-  x: number; // volume fora do prazo
-  y: number; // compensação R$/UC-mês
+  x: number; // UC-mês total (tamanho da distribuidora)
+  y: number; // falhas por 100k UC-mês
   label: string;
   regra: string;
   porte: string;
   holding: string;
+  holding_label?: string;
+  periodo_inicio?: string;
+  periodo_fim?: string;
+  meses_uc_validos?: number;
+  compensacao_rs_por_uc_mes?: number;
+  uc_ativa_mes_total?: number;
+  compensacao_total_rs?: number;
+  qtd_fora_prazo_total?: number;
 }
 
 export function useScatter() {
@@ -230,6 +238,45 @@ export interface TransgressoesPayload {
   insights: unknown;
 }
 
+export interface MunicipioMapaItem {
+  codmunicipioibge: string;
+  nome_municipio: string;
+  uf_code: string;
+  uf: string;
+  uf_nome: string;
+  qtd_serv_realizado: number;
+  qtd_fora_prazo: number;
+  compensacao_rs: number;
+  taxa_fora_prazo: number | null;
+  meses_com_dados: number;
+}
+
+export interface MunicipioMapaUf {
+  uf_code: string;
+  uf: string;
+  uf_nome: string;
+  municipio_count: number;
+  qtd_serv_realizado: number;
+  qtd_fora_prazo: number;
+  compensacao_rs: number;
+  taxa_fora_prazo: number | null;
+}
+
+export interface MunicipiosMapaPayload {
+  meta: {
+    generated_at_utc: string;
+    input_rows: number;
+    municipality_count: number;
+    municipality_month_rows: number;
+    period_start: string;
+    period_end: string;
+    period_count: number;
+    grain: string;
+  };
+  ufs: MunicipioMapaUf[];
+  municipios: MunicipioMapaItem[];
+}
+
 export function useTransgressoes() {
   return useQuery<TransgressoesPayload>({
     queryKey: ['transgressoes'],
@@ -237,6 +284,17 @@ export function useTransgressoes() {
       fetchJsonFirstAvailable<TransgressoesPayload>([
         '/api/v1/transgressoes',
         '/dashboard_transgressoes.json',
+      ]),
+  });
+}
+
+export function useMunicipiosMapa() {
+  return useQuery<MunicipiosMapaPayload>({
+    queryKey: ['municipios-mapa'],
+    queryFn: () =>
+      fetchJsonFirstAvailable<MunicipiosMapaPayload>([
+        '/api/v1/municipios-mapa',
+        '/dashboard_municipios.json',
       ]),
   });
 }
