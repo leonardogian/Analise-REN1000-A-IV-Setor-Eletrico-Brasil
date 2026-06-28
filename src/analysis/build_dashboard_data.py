@@ -1334,7 +1334,6 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
                 compensacao_rs=("compensacao_rs", "sum"),
                 exposicao_uc_mes=("uc_ativa_mes", "sum"),
             ).sort_values("date_str")
-            res["taxa_fora_prazo"] = calc_taxa_fora_prazo(res["qtd_fora_prazo"], res["qtd_serv_realizado"])
             res["fora_prazo_por_100k_uc_mes"] = calc_fora_prazo_por_100k(res["qtd_fora_prazo"], res["exposicao_uc_mes"])
             res["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(res["compensacao_rs"], res["exposicao_uc_mes"])
             res["grupo"] = label
@@ -1382,11 +1381,6 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
                 "grupo": row["grupo"],
                 "tipo": row["tipo"],
                 "date": row["date_str"],
-                "qtd_serv_realizado": _safe(row.get("qtd_serv_realizado")),
-                "qtd_fora_prazo": _safe(row.get("qtd_fora_prazo")),
-                "compensacao_rs": _safe(row.get("compensacao_rs")),
-                "taxa_fora_prazo": _safe(row.get("taxa_fora_prazo")),
-                "exposicao_uc_mes": _safe(row.get("exposicao_uc_mes")),
                 "fora_prazo_por_100k_uc_mes": _safe(row.get("fora_prazo_por_100k_uc_mes")),
                 "compensacao_rs_por_uc_mes": _safe(row.get("compensacao_rs_por_uc_mes")),
                 "periodo_regulatorio": periodo,

@@ -43,19 +43,9 @@ export interface TimeseriesPoint {
   grupo: string;
   tipo: string;
   date: string;
-  qtd_serv_realizado?: number | null;
-  qtd_fora_prazo?: number | null;
-  compensacao_rs?: number | null;
-  taxa_fora_prazo?: number | null;
-  exposicao_uc_mes?: number | null;
-  fora_prazo_por_100k_uc_mes: number | null;
-  compensacao_rs_por_uc_mes: number | null;
+  fora_prazo_por_100k_uc_mes: number;
+  compensacao_rs_por_uc_mes: number;
   periodo_regulatorio: string;
-}
-
-export interface TimeseriesPayload {
-  data: TimeseriesPoint[];
-  source?: string;
 }
 
 export interface RankingItem {
@@ -135,12 +125,11 @@ export function useDashboardData() {
 }
 
 export function useTimeseries() {
-  return useQuery<TimeseriesPayload>({
-    queryKey: ['timeseries', 'detailed-v1-raw-latest'],
+  return useQuery<{ data: TimeseriesPoint[] }>({
+    queryKey: ['timeseries'],
     queryFn: () =>
-      fetchJsonFirstAvailable<TimeseriesPayload>([
+      fetchJsonFirstAvailable<{ data: TimeseriesPoint[] }>([
         '/api/v1/timeseries-tendencia',
-        '/api/v2/timeseries-tendencia',
         '/dashboard_timeseries.json',
       ]),
   });
