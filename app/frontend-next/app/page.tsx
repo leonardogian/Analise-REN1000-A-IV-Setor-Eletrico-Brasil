@@ -412,9 +412,9 @@ export default function HomePage() {
         row.urbana_qtd_serv_realizado +
         row.rural_qtd_serv_realizado +
         row.nao_classificado_qtd_serv_realizado;
-      const groupBServ = Math.max(row.total_qtd_serv_realizado - row.grupo_a_qtd_serv_realizado, 0);
-      const groupBFora = Math.max(row.total_qtd_fora_prazo - row.grupo_a_qtd_fora_prazo, 0);
-      const groupBComp = Math.max(row.total_compensacao_rs - row.grupo_a_compensacao_rs, 0);
+      const groupBServ = row.urbana_qtd_serv_realizado + row.rural_qtd_serv_realizado;
+      const groupBFora = row.urbana_qtd_fora_prazo + row.rural_qtd_fora_prazo;
+      const groupBComp = row.urbana_compensacao_rs + row.rural_compensacao_rs;
       const allocateUc = (part: number, total: number) => (ucExposure > 0 && total > 0 ? (ucExposure * part) / total : 0);
 
       return {
@@ -449,7 +449,7 @@ export default function HomePage() {
   // UC data only available for years where uc_ativa_mes > 0 (ANEEL stopped publishing UC for 2025+)
   const ucAvailableSeries = useMemo(
     () => serviceTypeSeries.filter(
-      (row) => (row.urbana_uc_media || 0) + (row.rural_uc_media || 0) + (row.nao_classificado_uc_media || 0) + (row.grupo_a_uc_media || 0) + (row.grupo_b_uc_media || 0) > 0
+      (row) => (row.urbana_uc_media || 0) + (row.rural_uc_media || 0) + (row.grupo_a_uc_media || 0) + (row.grupo_b_uc_media || 0) > 0
     ),
     [serviceTypeSeries],
   );
@@ -462,7 +462,6 @@ export default function HomePage() {
         { name: 'Urbana', value: latestServiceRow.urbana_qtd_fora_prazo, color: COLORS.blue },
         { name: 'Rural', value: latestServiceRow.rural_qtd_fora_prazo, color: COLORS.amber },
         { name: 'Grupo A', value: latestServiceRow.grupo_a_qtd_fora_prazo, color: COLORS.green },
-        { name: 'Não classificado', value: latestServiceRow.nao_classificado_qtd_fora_prazo, color: '#71717a' },
       ];
     }
     return [
@@ -478,7 +477,6 @@ export default function HomePage() {
         { name: 'Urbana', value: latestServiceRow.urbana_compensacao_rs, color: COLORS.blue },
         { name: 'Rural', value: latestServiceRow.rural_compensacao_rs, color: COLORS.amber },
         { name: 'Grupo A', value: latestServiceRow.grupo_a_compensacao_rs, color: COLORS.green },
-        { name: 'Não classificado', value: latestServiceRow.nao_classificado_compensacao_rs, color: '#71717a' },
       ];
     }
     return [
@@ -799,7 +797,7 @@ export default function HomePage() {
 
       <ChartCard
         title="Tipo de Serviço por Ano · Classe/localidade ANEEL"
-        subtitle="Comparação anual exata por quantidade, valor e volume nas quatro categorias reais do endpoint v2 da Home"
+        subtitle="Comparação anual por categorias classificadas; registros 'Não classificado' ficam fora da visualização"
       >
         <div className="flex flex-wrap gap-2 mb-3">
           {SERVICE_METRIC_OPTIONS.map((opt) => (
@@ -838,7 +836,6 @@ export default function HomePage() {
               <Bar dataKey={`urbana_${localidadeKeyPrefix}`} stackId="local" name="Urbana" fill={COLORS.blue} />
               <Bar dataKey={`rural_${localidadeKeyPrefix}`} stackId="local" name="Rural" fill={COLORS.amber} />
               <Bar dataKey={`grupo_a_${localidadeKeyPrefix}`} stackId="local" name="Grupo A" fill={COLORS.green} />
-              <Bar dataKey={`nao_classificado_${localidadeKeyPrefix}`} stackId="local" name="Não classificado" fill="#71717a" />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -846,7 +843,7 @@ export default function HomePage() {
 
       <ChartCard
         title="Tipo de Serviço por Ano · Grupo A x Grupo B"
-        subtitle="Grupo A = tarifa de alta tensão (grandes consumidores); Grupo B = tarifa de baixa tensão (maioria das UCs). Zeros reais preservados."
+        subtitle="Grupo A = alta tensão; Grupo B = baixa tensão classificada (Urbana + Rural). 'Não classificado' não entra no gráfico."
       >
         {serviceTypeUnavailable ? renderServiceTypeFallback() : (
           <ResponsiveContainer width="100%" height={300}>
@@ -878,7 +875,7 @@ export default function HomePage() {
 
       <ChartCard
         title="UC Média Anual por Tipo"
-        subtitle="Quantidade de UCs por tipo (Urbana/Rural e Grupo A/B) — apenas anos com dados publicados pela ANEEL"
+        subtitle="Quantidade de UCs por tipo — apenas anos com dados publicados pela ANEEL e categorias classificadas"
       >
         {serviceTypeUnavailable ? renderServiceTypeFallback() : ucAvailableSeries.length === 0 ? (
           <div className="h-[300px] flex items-center justify-center rounded-lg border border-white/5 bg-white/[0.02]">
@@ -907,14 +904,13 @@ export default function HomePage() {
                 <Legend />
                 <Line type="monotone" dataKey="urbana_uc_media" name="UC Urbana (baixa tensão)" stroke={COLORS.blue} strokeWidth={2} dot={{ r: 2 }} />
                 <Line type="monotone" dataKey="rural_uc_media" name="UC Rural (baixa tensão)" stroke={COLORS.amber} strokeWidth={2} dot={{ r: 2 }} />
-                <Line type="monotone" dataKey="nao_classificado_uc_media" name="UC Não classificado (baixa tensão)" stroke="#71717a" strokeWidth={2} dot={{ r: 2 }} />
                 <Line type="monotone" dataKey="grupo_a_uc_media" name="UC Grupo A (alta tensão)" stroke={COLORS.green} strokeWidth={2} dot={{ r: 2 }} />
                 <Line type="monotone" dataKey="grupo_b_uc_media" name="UC Grupo B (baixa tensão)" stroke={COLORS.red} strokeWidth={2} dot={{ r: 2 }} />
               </ComposedChart>
             </ResponsiveContainer>
             <p className="text-xs text-zinc-500 mt-3">
               A ANEEL não publicou dados de UCs ativas para 2025-2026. Este gráfico mostra apenas {ucAvailableSeries.length > 0 ? `${ucAvailableSeries[0].ano}-${ucAvailableSeries.at(-1)?.ano}` : 'anos com dados'}.
-              Grupo A = tarifa de alta tensão (grandes consumidores); Grupo B = tarifa de baixa tensão (maioria das UCs).
+              Grupo A = tarifa de alta tensão; Grupo B = baixa tensão classificada (Urbana + Rural). Registros sem classe/localidade ficam fora deste gráfico.
             </p>
           </>
         )}
@@ -946,7 +942,7 @@ export default function HomePage() {
             Grupo A x Grupo B
           </button>
           <span className="text-[11px] text-zinc-500 self-center ml-1">
-            Grupo A = alta tensão; Grupo B = baixa tensão
+            Grupo A = alta tensão; Grupo B = baixa tensão; não classificados ocultos
           </span>
         </div>
 
@@ -1043,11 +1039,9 @@ export default function HomePage() {
                   <Line type="monotone" yAxisId="left" dataKey="urbana_qtd_fora_prazo" name="Urbana · Fora do prazo" stroke={COLORS.blue} strokeWidth={2} dot={{ r: 2 }} />
                   <Line type="monotone" yAxisId="left" dataKey="rural_qtd_fora_prazo" name="Rural · Fora do prazo" stroke={COLORS.amber} strokeWidth={2} dot={{ r: 2 }} />
                   <Line type="monotone" yAxisId="left" dataKey="grupo_a_qtd_fora_prazo" name="Grupo A · Fora do prazo" stroke={COLORS.green} strokeWidth={2} dot={{ r: 2 }} />
-                  <Line type="monotone" yAxisId="left" dataKey="nao_classificado_qtd_fora_prazo" name="Não classificado · Fora do prazo" stroke="#71717a" strokeWidth={2} dot={{ r: 2 }} />
                   <Line type="monotone" yAxisId="right" dataKey="urbana_compensacao_rs" name="Urbana · R$" stroke={COLORS.blue} strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
                   <Line type="monotone" yAxisId="right" dataKey="rural_compensacao_rs" name="Rural · R$" stroke={COLORS.amber} strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
                   <Line type="monotone" yAxisId="right" dataKey="grupo_a_compensacao_rs" name="Grupo A · R$" stroke={COLORS.green} strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
-                  <Line type="monotone" yAxisId="right" dataKey="nao_classificado_compensacao_rs" name="Não classificado · R$" stroke="#71717a" strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
                 </>
               ) : (
                 <>

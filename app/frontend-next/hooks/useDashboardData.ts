@@ -216,26 +216,46 @@ export function useGroupViews() {
 
 export interface ScatterItem {
   x: number; // UC-mês total (tamanho da distribuidora)
-  y: number; // falhas por 100k UC-mês
+  y: number; // falhas médias por mês no período selecionado
   label: string;
   regra: string;
   porte: string;
   holding: string;
   holding_label?: string;
+  period_id?: string;
+  period_label?: string;
   periodo_inicio?: string;
   periodo_fim?: string;
   meses_uc_validos?: number;
+  falhas_media_mensal?: number;
+  falhas_por_100k_uc_mes?: number;
   compensacao_rs_por_uc_mes?: number;
+  compensacao_rs_por_falha?: number;
   uc_ativa_mes_total?: number;
   compensacao_total_rs?: number;
   qtd_fora_prazo_total?: number;
 }
 
+export interface ScatterPeriodOption {
+  id: string;
+  label: string;
+  periodo_inicio?: string;
+  periodo_fim?: string;
+  meses_uc_validos?: number;
+  n_distribuidoras?: number;
+}
+
+export interface ScatterResponse {
+  data: ScatterItem[];
+  periods?: ScatterPeriodOption[];
+  default_period?: string | null;
+}
+
 export function useScatter() {
-  return useQuery<{ data: ScatterItem[] }>({
-    queryKey: ['scatter'],
+  return useQuery<ScatterResponse>({
+    queryKey: ['scatter', 'absolute-failures-v2'],
     queryFn: () =>
-      fetchJsonFirstAvailable<{ data: ScatterItem[] }>([
+      fetchJsonFirstAvailable<ScatterResponse>([
         '/api/v1/scatter-eficiencia',
         '/dashboard_scatter.json',
       ]),

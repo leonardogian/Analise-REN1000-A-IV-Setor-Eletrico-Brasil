@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -1154,6 +1155,7 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
 
     # Scatter Eficiência — combina fato_mensal (pos_2022) + fato_indicadores (pre_2022)
     scat_data = []
+    scatter_periods = []
     if not fato_mensal.empty:
         df = _with_group_label(fato_mensal)
         df["uc_ativa_mes"] = pd.to_numeric(df["uc_ativa_mes"], errors="coerce")
@@ -1174,47 +1176,87 @@ def build_franquias_insights(fato_mensal: pd.DataFrame, fato_indicadores: pd.Dat
                     if label.upper().startswith("GRUPO "):
                         label = label[6:].strip()
                 group_display_lookup[gid_text] = label or default_group_label(gid_text)
-        res_scatter = df_scatter.groupby(["distributor_label", "periodo_regulatorio"], as_index=False).agg(
-            qtd_fora_prazo=("qtd_fora_prazo", "sum"),
-            compensacao_rs=("compensacao_rs", "sum"),
-            uc_ativa_mes=("uc_ativa_mes", "sum"),
-            bucket_porte=("bucket_porte", "first"),
-            group_id=("group_id", "first"),
-            periodo_inicio=("period_key", "min"),
-            periodo_fim=("period_key", "max"),
-            meses_uc_validos=("period_key", "nunique"),
-        )
-        res_scatter["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(res_scatter["compensacao_rs"], res_scatter["uc_ativa_mes"])
-        res_scatter["falhas_por_100k_uc_mes"] = calc_fora_prazo_por_100k(
-            res_scatter["qtd_fora_prazo"], res_scatter["uc_ativa_mes"]
-        )
-        res_scatter["uc_ativa_mes_total"] = res_scatter["uc_ativa_mes"]
+        def append_scatter_period(period_df: pd.DataFrame, period_id: str, period_label: str) -> None:
+            if period_df.empty:
+                return
+            res_scatter = period_df.groupby(["distributor_label", "periodo_regulatorio"], as_index=False).agg(
+                qtd_fora_prazo=("qtd_fora_prazo", "sum"),
+                compensacao_rs=("compensacao_rs", "sum"),
+                uc_ativa_mes=("uc_ativa_mes", "sum"),
+                bucket_porte=("bucket_porte", "first"),
+                group_id=("group_id", "first"),
+                periodo_inicio=("period_key", "min"),
+                periodo_fim=("period_key", "max"),
+                meses_uc_validos=("period_key", "nunique"),
+            )
+            res_scatter["compensacao_rs_por_uc_mes"] = calc_compensacao_por_uc(
+                res_scatter["compensacao_rs"], res_scatter["uc_ativa_mes"]
+            )
+            res_scatter["falhas_por_100k_uc_mes"] = calc_fora_prazo_por_100k(
+                res_scatter["qtd_fora_prazo"], res_scatter["uc_ativa_mes"]
+            )
+            res_scatter["falhas_media_mensal"] = np.where(
+                res_scatter["meses_uc_validos"] > 0,
+                res_scatter["qtd_fora_prazo"] / res_scatter["meses_uc_validos"],
+                np.nan,
+            )
+            res_scatter["compensacao_rs_por_falha"] = np.where(
+                res_scatter["qtd_fora_prazo"] > 0,
+                res_scatter["compensacao_rs"] / res_scatter["qtd_fora_prazo"],
+                np.nan,
+            )
+            res_scatter["uc_ativa_mes_total"] = res_scatter["uc_ativa_mes"]
 
-        for row in res_scatter.itertuples(index=False):
-            group_id = getattr(row, "group_id")
-            bucket_porte = getattr(row, "bucket_porte")
-            uc_total = getattr(row, "uc_ativa_mes_total")
-            scat_data.append({
-                "x": int(uc_total) if pd.notna(uc_total) else 0,
-                "y": _safe(getattr(row, "falhas_por_100k_uc_mes")),
-                "compensacao_rs_por_uc_mes": _safe(getattr(row, "compensacao_rs_por_uc_mes")),
-                "uc_ativa_mes_total": int(uc_total) if pd.notna(uc_total) else None,
-                "compensacao_total_rs": _safe(getattr(row, "compensacao_rs")),
-                "qtd_fora_prazo_total": int(getattr(row, "qtd_fora_prazo")),
-                "label": getattr(row, "distributor_label"),
-                "regra": "REN 414" if getattr(row, "periodo_regulatorio") == "pre_2022" else "REN 1000",
-                "porte": str(bucket_porte) if pd.notna(bucket_porte) else "N/A",
-                "holding": str(group_id) if pd.notna(group_id) else "N/A",
-                "holding_label": group_display_lookup.get(str(group_id), str(group_id)),
-                "periodo_inicio": getattr(row, "periodo_inicio"),
-                "periodo_fim": getattr(row, "periodo_fim"),
-                "meses_uc_validos": int(getattr(row, "meses_uc_validos")),
-            })
+            valid_rows = 0
+            for row in res_scatter.itertuples(index=False):
+                group_id = getattr(row, "group_id")
+                bucket_porte = getattr(row, "bucket_porte")
+                uc_total = getattr(row, "uc_ativa_mes_total")
+                qtd_total = getattr(row, "qtd_fora_prazo")
+                if pd.isna(uc_total) or uc_total <= 0:
+                    continue
+                valid_rows += 1
+                scat_data.append({
+                    "period_id": period_id,
+                    "period_label": period_label,
+                    "x": int(uc_total),
+                    "y": _safe(getattr(row, "falhas_media_mensal")),
+                    "falhas_media_mensal": _safe(getattr(row, "falhas_media_mensal")),
+                    "falhas_por_100k_uc_mes": _safe(getattr(row, "falhas_por_100k_uc_mes")),
+                    "compensacao_rs_por_uc_mes": _safe(getattr(row, "compensacao_rs_por_uc_mes")),
+                    "compensacao_rs_por_falha": _safe(getattr(row, "compensacao_rs_por_falha")),
+                    "uc_ativa_mes_total": int(uc_total),
+                    "compensacao_total_rs": _safe(getattr(row, "compensacao_rs")),
+                    "qtd_fora_prazo_total": int(qtd_total) if pd.notna(qtd_total) else 0,
+                    "label": getattr(row, "distributor_label"),
+                    "regra": "REN 414" if getattr(row, "periodo_regulatorio") == "pre_2022" else "REN 1000",
+                    "porte": str(bucket_porte) if pd.notna(bucket_porte) else "N/A",
+                    "holding": str(group_id) if pd.notna(group_id) else "N/A",
+                    "holding_label": group_display_lookup.get(str(group_id), str(group_id)),
+                    "periodo_inicio": getattr(row, "periodo_inicio"),
+                    "periodo_fim": getattr(row, "periodo_fim"),
+                    "meses_uc_validos": int(getattr(row, "meses_uc_validos")),
+                })
+
+            if valid_rows:
+                scatter_periods.append({
+                    "id": period_id,
+                    "label": period_label,
+                    "periodo_inicio": period_df["period_key"].min(),
+                    "periodo_fim": period_df["period_key"].max(),
+                    "meses_uc_validos": int(period_df["period_key"].nunique()),
+                    "n_distribuidoras": valid_rows,
+                })
+
+        append_scatter_period(df_scatter, "all", "Todo período com UC")
+        for year in sorted(pd.to_numeric(df_scatter["ano"], errors="coerce").dropna().astype(int).unique()):
+            append_scatter_period(df_scatter[df_scatter["ano"] == year], str(year), str(year))
     # Nota: dados REN 414 (pre_2022) de fato_indicadores não incluídos no scatter
     # pois faltam métricas per-UC para o período (uc_ativa_media_mensal é nulo),
     # tornando os eixos incomparáveis. A comparação pre/pos REN 1000 é feita
     # via ranking_grupos (variacao_taxa_pct, variacao_comp_pct).
     insights["scatter_eficiencia"] = scat_data
+    insights["scatter_periods"] = scatter_periods
 
     # Ranking de Grupos Econômicos — métricas agregadas + variação pre/pos REN 1000
     if not fato_mensal.empty:
@@ -1542,9 +1584,14 @@ def main() -> None:
         {"data": franquias_insights.get("heatmap_transgressoes", [])},
         indent=2,
     )
+    scatter_periods = franquias_insights.get("scatter_periods", [])
     _write_dashboard_json(
         "dashboard_scatter.json",
-        {"data": franquias_insights.get("scatter_eficiencia", [])},
+        {
+            "data": franquias_insights.get("scatter_eficiencia", []),
+            "periods": scatter_periods,
+            "default_period": "all" if any(p.get("id") == "all" for p in scatter_periods) else None,
+        },
         indent=2,
     )
     _write_dashboard_json(
