@@ -1,5 +1,7 @@
 # TCC — ANEEL REN 1.000/2021
 
+> **Status atual (2026-06):** ETL e pipeline completos; frontend oficial Next.js no Vercel; backend FastAPI no Railway. Dashboard operacional com gráficos corrigidos para lidar com ausência de dados UC para 2025-2026.
+
 Analise setorial da eficacia da **Resolucao Normativa ANEEL no. 1.000/2021**
 na qualidade comercial das distribuidoras de energia eletrica do Brasil.
 
