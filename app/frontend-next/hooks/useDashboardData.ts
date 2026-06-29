@@ -43,6 +43,11 @@ export interface TimeseriesPoint {
   grupo: string;
   tipo: string;
   date: string;
+  qtd_serv_realizado: number;
+  qtd_fora_prazo: number;
+  compensacao_rs: number;
+  taxa_fora_prazo: number;
+  exposicao_uc_mes: number;
   fora_prazo_por_100k_uc_mes: number;
   compensacao_rs_por_uc_mes: number;
   periodo_regulatorio: string;
@@ -72,6 +77,23 @@ export interface SerieMensalNacionalItem {
   fora_prazo_por_100k_uc_mes: number;
   compensacao_rs_por_uc_mes: number;
   bucket_porte: string;
+}
+
+export interface HomeServiceTypeItem {
+  ano: number;
+  group_id: string;
+  distributor_id: string;
+  classe_local_servico: string;
+  qtd_serv_realizado: number;
+  qtd_fora_prazo: number;
+  compensacao_rs: number;
+  uc_ativa_mes: number;
+  meses_observados: number;
+}
+
+interface SourceResponse<T> {
+  source: string;
+  data: T;
 }
 
 export interface ClasseLocalItem {
@@ -155,6 +177,13 @@ export function useSerieMensalNacional() {
       );
       return res.data;
     },
+  });
+}
+
+export function useHomeServiceTypes() {
+  return useQuery<SourceResponse<HomeServiceTypeItem[]>>({
+    queryKey: ['home-service-types', 'v2-postgres'],
+    queryFn: () => fetchJson<SourceResponse<HomeServiceTypeItem[]>>('/api/v2/home-service-types'),
   });
 }
 

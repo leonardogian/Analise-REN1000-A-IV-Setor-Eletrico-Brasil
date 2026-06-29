@@ -90,7 +90,7 @@ src/analysis/build_analysis_tables.py       -> data/processed/analysis/*.csv  (v
 ### Deploy híbrido (Vercel + Railway)
 
 - **Frontend oficial (Vercel)**: Next.js em `app/frontend-next/`; rewrites em `next.config.mjs` encaminham `/api/*` e `/dashboard_*.json` para o Railway.
-- **Backend (Railway)**: FastAPI em `app/backend/main.py`, servindo `/api/*` e `/dashboard_*.json` a partir dos JSONs canônicos. PostgreSQL e Redis são dependências degradáveis para persistência/cache; falha isolada nelas não deve impedir a entrega dos JSONs. `/api/v2/db-status` diagnostica tabelas carregadas e `/api/v2/timeseries-tendencia` consulta PostgreSQL quando `grupos_mensal_2023_plus` existe, com fallback JSON. URL base: `https://tcc-ren1000x414-production.up.railway.app`.
+- **Backend (Railway)**: FastAPI em `app/backend/main.py`, servindo `/api/*` e `/dashboard_*.json` a partir dos JSONs canônicos. PostgreSQL e Redis são dependências degradáveis para persistência/cache; falha isolada nelas não deve impedir a entrega dos JSONs. `/api/v2/db-status` diagnostica tabelas carregadas; `/api/v2/timeseries-tendencia` consulta PostgreSQL quando `grupos_mensal_2023_plus` existe, com fallback JSON; `/api/v2/home-service-types` alimenta os gráficos inferiores da Home a partir de `fato_transgressao_mensal_porte`, com fallback CSV exato e preservação de zeros (`grupo_a`, `urbana`, `rural`, `nao_classificado`). URL base: `https://tcc-ren1000x414-production.up.railway.app`.
 - **Healthcheck Railway**: `/health` expõe `dashboard_artifacts_ready`, `database_connected` e `redis_connected`. Status `degraded` com artefatos prontos ainda permite diagnosticar Postgres/Redis sem derrubar o dashboard público.
 - **Headers do Next.js**: `app/frontend-next/vercel.json` mantém CSP com `script-src 'unsafe-inline'` para permitir boot/hydration do App Router; remover isso deixa a produção presa em skeleton/loading.
 - **Sincronização de produção**: mudanças em `app/backend/main.py` ou `data/processed/dashboard/dashboard_*.json` exigem redeploy do Railway para atualizar endpoints como `/api/v1/groups-ranking`, `/api/v1/transgressoes` e os JSONs públicos.
@@ -118,6 +118,7 @@ Frontend Next.js consome endpoints REST via rewrites para o Railway:
 
 - `/api/dashboard/{section}` — fatias do payload principal
 - `/api/v1/timeseries-tendencia`, `/scatter-eficiencia`, `/heatmap-transgressoes`, `/radar-slas`, `/groups-ranking`, `/transgressoes` — micro-payloads otimizados
+- `/api/v2/home-service-types` — fonte PostgreSQL/CSV exata para os gráficos inferiores da Home por classe/localidade, mantendo 2025/2026 e filtros coerentes com os totais anuais
 - `/dashboard_*.json` — fallback público servido de `data/processed/dashboard/`
 
 Backend endpoints (`app/backend/main.py`):

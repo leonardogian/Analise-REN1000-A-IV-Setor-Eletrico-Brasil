@@ -2,7 +2,7 @@
 
 import {
   useDashboardData,
-  useGroupViews,
+  useHomeServiceTypes,
   useSerieMensalNacional,
   type SerieMensalNacionalItem,
 } from '@/hooks/useDashboardData';
@@ -64,12 +64,16 @@ interface ServiceSplitRow {
   estimated: boolean;
   urbana_qtd_fora_prazo: number;
   rural_qtd_fora_prazo: number;
+  nao_classificado_qtd_fora_prazo: number;
   urbana_compensacao_rs: number;
   rural_compensacao_rs: number;
+  nao_classificado_compensacao_rs: number;
   urbana_qtd_serv_realizado: number;
   rural_qtd_serv_realizado: number;
+  nao_classificado_qtd_serv_realizado: number;
   urbana_uc_media: number;
   rural_uc_media: number;
+  nao_classificado_uc_media: number;
   grupo_a_qtd_fora_prazo: number;
   grupo_b_qtd_fora_prazo: number;
   grupo_a_compensacao_rs: number;
@@ -190,7 +194,11 @@ function summarizeYearTotals(
 export default function HomePage() {
   const { data, isLoading, error } = useDashboardData();
   const { data: serieMensalNacional } = useSerieMensalNacional();
-  const { data: groupViews } = useGroupViews();
+  const {
+    data: homeServiceTypes,
+    isLoading: serviceTypesLoading,
+    error: serviceTypesError,
+  } = useHomeServiceTypes();
 
   const [lineMetric, setLineMetric] = useState<MetricKey>('taxa_fora_prazo');
   const [barMetric, setBarMetric] = useState<MetricKey>('compensacao_rs');
@@ -199,7 +207,7 @@ export default function HomePage() {
   const [serviceMetric, setServiceMetric] = useState<ServiceMetric>('qtd_fora_prazo');
   const [compositionDimension, setCompositionDimension] = useState<CompositionDimension>('localidade');
 
-  const holdingOptions = useMemo(() => {
+  const distributorsByGroup = useMemo(() => {
     const rows = serieMensalNacional ?? [];
     const byGroup = new Map<string, Set<string>>();
     for (const row of rows) {
@@ -207,11 +215,15 @@ export default function HomePage() {
       set.add(row.distributor_id);
       byGroup.set(row.group_id, set);
     }
-    return [...byGroup.entries()]
+    return byGroup;
+  }, [serieMensalNacional]);
+
+  const holdingOptions = useMemo(() => {
+    return [...distributorsByGroup.entries()]
       .filter(([, distributors]) => distributors.size > 1)
       .map(([groupId]) => groupId)
       .sort((a, b) => a.localeCompare(b));
-  }, [serieMensalNacional]);
+  }, [distributorsByGroup]);
 
   useEffect(() => {
     if (holdingOptions.length > 0 && selectedHoldings.length === 0) {
@@ -221,24 +233,31 @@ export default function HomePage() {
 
   const filteredMonthlyRows = useMemo(() => {
     const rows = serieMensalNacional ?? [];
-    const byGroup = new Map<string, Set<string>>();
-    for (const row of rows) {
-      const set = byGroup.get(row.group_id) ?? new Set<string>();
-      set.add(row.distributor_id);
-      byGroup.set(row.group_id, set);
-    }
     const selectedSet = new Set(selectedHoldings.length ? selectedHoldings : holdingOptions);
 
     return rows.filter((row) => {
-      const isHolding = (byGroup.get(row.group_id)?.size ?? 0) > 1;
+      const isHolding = (distributorsByGroup.get(row.group_id)?.size ?? 0) > 1;
       if (companyScope === 'all') return true;
       if (companyScope === 'holdings') return isHolding && selectedSet.has(row.group_id);
       if (companyScope === 'small') return !isHolding;
       return isHolding && selectedSet.has(row.group_id);
     });
-  }, [companyScope, holdingOptions, selectedHoldings, serieMensalNacional]);
+  }, [companyScope, distributorsByGroup, holdingOptions, selectedHoldings, serieMensalNacional]);
 
   const yearlyTotals = useMemo(() => buildAnnualTotals(filteredMonthlyRows), [filteredMonthlyRows]);
+
+  const filteredServiceRows = useMemo(() => {
+    const rows = homeServiceTypes?.data ?? [];
+    const selectedSet = new Set(selectedHoldings.length ? selectedHoldings : holdingOptions);
+
+    return rows.filter((row) => {
+      const isHolding = (distributorsByGroup.get(row.group_id)?.size ?? 0) > 1;
+      if (companyScope === 'all') return true;
+      if (companyScope === 'holdings') return isHolding && selectedSet.has(row.group_id);
+      if (companyScope === 'small') return !isHolding;
+      return isHolding && selectedSet.has(row.group_id);
+    });
+  }, [companyScope, distributorsByGroup, holdingOptions, homeServiceTypes?.data, selectedHoldings]);
 
   const nationalYearlyTotals = useMemo(
     () => buildAnnualTotals(serieMensalNacional ?? []),
@@ -309,273 +328,123 @@ export default function HomePage() {
   }, [companyScope, data?.serie_anual, yearlyTotals]);
 
   const serviceTypeSeries = useMemo<ServiceSplitRow[]>(() => {
-    const distByClassProfiles = new Map<string, {
-      serv: { a: number; rural: number; urbana: number; total: number };
-      fora: { a: number; rural: number; urbana: number; total: number };
-      comp: { a: number; rural: number; urbana: number; total: number };
-    }>();
+    type ServiceAccumulator = ServiceSplitRow & {
+      total_qtd_fora_prazo: number;
+      total_compensacao_rs: number;
+      total_qtd_serv_realizado: number;
+      total_uc_ativa_mes: number;
+    };
 
-    for (const gv of Object.values(groupViews ?? {})) {
-      for (const item of gv.classe_local ?? []) {
-        const dist = item.distributor_id;
-        const cls = (item.classe_local_servico || '').toLowerCase();
-        const qtdServ = Number(item.qtd_serv_realizado) || 0;
-        const qtdFora = Number(item.qtd_fora_prazo) || 0;
-        const comp = Number(item.compensacao_rs) || 0;
-        const curr = distByClassProfiles.get(dist) ?? {
-          serv: { a: 0, rural: 0, urbana: 0, total: 0 },
-          fora: { a: 0, rural: 0, urbana: 0, total: 0 },
-          comp: { a: 0, rural: 0, urbana: 0, total: 0 },
-        };
+    const createYear = (year: number): ServiceAccumulator => ({
+      ano: year,
+      monthsObserved: 0,
+      estimated: false,
+      urbana_qtd_fora_prazo: 0,
+      rural_qtd_fora_prazo: 0,
+      nao_classificado_qtd_fora_prazo: 0,
+      urbana_compensacao_rs: 0,
+      rural_compensacao_rs: 0,
+      nao_classificado_compensacao_rs: 0,
+      urbana_qtd_serv_realizado: 0,
+      rural_qtd_serv_realizado: 0,
+      nao_classificado_qtd_serv_realizado: 0,
+      urbana_uc_media: 0,
+      rural_uc_media: 0,
+      nao_classificado_uc_media: 0,
+      grupo_a_qtd_fora_prazo: 0,
+      grupo_b_qtd_fora_prazo: 0,
+      grupo_a_compensacao_rs: 0,
+      grupo_b_compensacao_rs: 0,
+      grupo_a_qtd_serv_realizado: 0,
+      grupo_b_qtd_serv_realizado: 0,
+      grupo_a_uc_media: 0,
+      grupo_b_uc_media: 0,
+      total_qtd_fora_prazo: 0,
+      total_compensacao_rs: 0,
+      total_qtd_serv_realizado: 0,
+      total_uc_ativa_mes: 0,
+    });
 
-        curr.serv.total += qtdServ;
-        curr.fora.total += qtdFora;
-        curr.comp.total += comp;
+    const byYear = new Map<number, ServiceAccumulator>();
 
-        if (cls === 'grupo_a') {
-          curr.serv.a += qtdServ;
-          curr.fora.a += qtdFora;
-          curr.comp.a += comp;
-        }
-        if (cls === 'rural') {
-          curr.serv.rural += qtdServ;
-          curr.fora.rural += qtdFora;
-          curr.comp.rural += comp;
-        }
-        if (cls === 'urbana') {
-          curr.serv.urbana += qtdServ;
-          curr.fora.urbana += qtdFora;
-          curr.comp.urbana += comp;
-        }
-
-        distByClassProfiles.set(dist, curr);
-      }
-    }
-
-    const globalShares = (() => {
-      let aServ = 0;
-      let aFora = 0;
-      let aComp = 0;
-      let ruralServ = 0;
-      let ruralFora = 0;
-      let ruralComp = 0;
-      let urbanaServ = 0;
-      let urbanaFora = 0;
-      let urbanaComp = 0;
-      let totalServ = 0;
-      let totalFora = 0;
-      let totalComp = 0;
-
-      for (const v of distByClassProfiles.values()) {
-        aServ += v.serv.a;
-        aFora += v.fora.a;
-        aComp += v.comp.a;
-        ruralServ += v.serv.rural;
-        ruralFora += v.fora.rural;
-        ruralComp += v.comp.rural;
-        urbanaServ += v.serv.urbana;
-        urbanaFora += v.fora.urbana;
-        urbanaComp += v.comp.urbana;
-        totalServ += v.serv.total;
-        totalFora += v.fora.total;
-        totalComp += v.comp.total;
-      }
-
-      const localServTotal = urbanaServ + ruralServ;
-      const localForaTotal = urbanaFora + ruralFora;
-      const localCompTotal = urbanaComp + ruralComp;
-
-      return {
-        aServ: totalServ > 0 ? aServ / totalServ : 0.08,
-        aFora: totalFora > 0 ? aFora / totalFora : 0.08,
-        aComp: totalComp > 0 ? aComp / totalComp : 0.08,
-        ruralServ: localServTotal > 0 ? ruralServ / localServTotal : 0.25,
-        urbanaServ: localServTotal > 0 ? urbanaServ / localServTotal : 0.75,
-        ruralFora: localForaTotal > 0 ? ruralFora / localForaTotal : 0.25,
-        urbanaFora: localForaTotal > 0 ? urbanaFora / localForaTotal : 0.75,
-        ruralComp: localCompTotal > 0 ? ruralComp / localCompTotal : 0.25,
-        urbanaComp: localCompTotal > 0 ? urbanaComp / localCompTotal : 0.75,
-      };
-    })();
-
-    const byYear = new Map<number, ServiceSplitRow>();
-
-    for (const row of filteredMonthlyRows) {
+    for (const row of filteredServiceRows) {
       const year = Number(row.ano);
-      const month = Number(row.mes);
-      if (!Number.isFinite(year) || !Number.isFinite(month)) continue;
+      if (!Number.isFinite(year)) continue;
 
       const qtdServ = Number(row.qtd_serv_realizado) || 0;
       const qtdFora = Number(row.qtd_fora_prazo) || 0;
       const comp = Number(row.compensacao_rs) || 0;
+      const cls = (row.classe_local_servico || 'nao_classificado').toLowerCase();
+      const current = byYear.get(year) ?? createYear(year);
 
-      const distShare = distByClassProfiles.get(row.distributor_id);
+      current.total_qtd_fora_prazo += qtdFora;
+      current.total_compensacao_rs += comp;
+      current.total_qtd_serv_realizado += qtdServ;
+      current.total_uc_ativa_mes += Number(row.uc_ativa_mes) || 0;
+      current.monthsObserved = Math.max(current.monthsObserved, Number(row.meses_observados) || 0);
 
-      const aShareServ = distShare && distShare.serv.total > 0 ? distShare.serv.a / distShare.serv.total : globalShares.aServ;
-      const aShareFora = distShare && distShare.fora.total > 0 ? distShare.fora.a / distShare.fora.total : globalShares.aFora;
-      const aShareComp = distShare && distShare.comp.total > 0 ? distShare.comp.a / distShare.comp.total : globalShares.aComp;
-      const bShareServ = Math.max(0, 1 - aShareServ);
-      const bShareFora = Math.max(0, 1 - aShareFora);
-      const bShareComp = Math.max(0, 1 - aShareComp);
-
-      const urbanaServRaw = distShare && distShare.serv.total > 0 ? distShare.serv.urbana / distShare.serv.total : globalShares.urbanaServ;
-      const ruralServRaw = distShare && distShare.serv.total > 0 ? distShare.serv.rural / distShare.serv.total : globalShares.ruralServ;
-      const localServNorm = Math.max(urbanaServRaw + ruralServRaw, 1e-9);
-
-      const urbanaForaRaw = distShare && distShare.fora.total > 0 ? distShare.fora.urbana / distShare.fora.total : globalShares.urbanaFora;
-      const ruralForaRaw = distShare && distShare.fora.total > 0 ? distShare.fora.rural / distShare.fora.total : globalShares.ruralFora;
-      const localForaNorm = Math.max(urbanaForaRaw + ruralForaRaw, 1e-9);
-
-      const urbanaCompRaw = distShare && distShare.comp.total > 0 ? distShare.comp.urbana / distShare.comp.total : globalShares.urbanaComp;
-      const ruralCompRaw = distShare && distShare.comp.total > 0 ? distShare.comp.rural / distShare.comp.total : globalShares.ruralComp;
-      const localCompNorm = Math.max(urbanaCompRaw + ruralCompRaw, 1e-9);
-
-      const urbanaShareServ = urbanaServRaw / localServNorm;
-      const ruralShareServ = ruralServRaw / localServNorm;
-      const urbanaShareFora = urbanaForaRaw / localForaNorm;
-      const ruralShareFora = ruralForaRaw / localForaNorm;
-      const urbanaShareComp = urbanaCompRaw / localCompNorm;
-      const ruralShareComp = ruralCompRaw / localCompNorm;
-
-      const current = byYear.get(year) ?? {
-        ano: year,
-        monthsObserved: 0,
-        estimated: false,
-        urbana_qtd_fora_prazo: 0,
-        rural_qtd_fora_prazo: 0,
-        urbana_compensacao_rs: 0,
-        rural_compensacao_rs: 0,
-        urbana_qtd_serv_realizado: 0,
-        rural_qtd_serv_realizado: 0,
-        urbana_uc_media: 0,
-        rural_uc_media: 0,
-        grupo_a_qtd_fora_prazo: 0,
-        grupo_b_qtd_fora_prazo: 0,
-        grupo_a_compensacao_rs: 0,
-        grupo_b_compensacao_rs: 0,
-        grupo_a_qtd_serv_realizado: 0,
-        grupo_b_qtd_serv_realizado: 0,
-        grupo_a_uc_media: 0,
-        grupo_b_uc_media: 0,
-      };
-
-      current.urbana_qtd_fora_prazo += qtdFora * urbanaShareFora;
-      current.rural_qtd_fora_prazo += qtdFora * ruralShareFora;
-      current.urbana_compensacao_rs += comp * urbanaShareComp;
-      current.rural_compensacao_rs += comp * ruralShareComp;
-      current.urbana_qtd_serv_realizado += qtdServ * urbanaShareServ;
-      current.rural_qtd_serv_realizado += qtdServ * ruralShareServ;
-      current.urbana_uc_media += (Number(row.uc_ativa_mes) || 0) * urbanaShareServ;
-      current.rural_uc_media += (Number(row.uc_ativa_mes) || 0) * ruralShareServ;
-
-      current.grupo_a_qtd_fora_prazo += qtdFora * aShareFora;
-      current.grupo_b_qtd_fora_prazo += qtdFora * bShareFora;
-      current.grupo_a_compensacao_rs += comp * aShareComp;
-      current.grupo_b_compensacao_rs += comp * bShareComp;
-      current.grupo_a_qtd_serv_realizado += qtdServ * aShareServ;
-      current.grupo_b_qtd_serv_realizado += qtdServ * bShareServ;
-      current.grupo_a_uc_media += (Number(row.uc_ativa_mes) || 0) * aShareServ;
-      current.grupo_b_uc_media += (Number(row.uc_ativa_mes) || 0) * bShareServ;
-
-      const monthBit = 1 << month;
-      current.monthsObserved |= monthBit;
+      if (cls === 'urbana') {
+        current.urbana_qtd_fora_prazo += qtdFora;
+        current.urbana_compensacao_rs += comp;
+        current.urbana_qtd_serv_realizado += qtdServ;
+      } else if (cls === 'rural') {
+        current.rural_qtd_fora_prazo += qtdFora;
+        current.rural_compensacao_rs += comp;
+        current.rural_qtd_serv_realizado += qtdServ;
+      } else if (cls === 'grupo_a') {
+        current.grupo_a_qtd_fora_prazo += qtdFora;
+        current.grupo_a_compensacao_rs += comp;
+        current.grupo_a_qtd_serv_realizado += qtdServ;
+      } else {
+        current.nao_classificado_qtd_fora_prazo += qtdFora;
+        current.nao_classificado_compensacao_rs += comp;
+        current.nao_classificado_qtd_serv_realizado += qtdServ;
+      }
 
       byYear.set(year, current);
     }
 
     const rows = [...byYear.values()].map((row) => {
-      let count = 0;
-      for (let i = 1; i <= 12; i += 1) {
-        if (row.monthsObserved & (1 << i)) count += 1;
-      }
-      const monthsObserved = Math.max(count, 1);
+      const monthsObserved = Math.max(yearlyTotals.get(row.ano)?.monthsObserved ?? row.monthsObserved, 1);
       const factor = 12 / monthsObserved;
+      const ucExposure = yearlyTotals.get(row.ano)?.uc_exposicao_mes ?? row.total_uc_ativa_mes;
+      const localServiceTotal =
+        row.urbana_qtd_serv_realizado +
+        row.rural_qtd_serv_realizado +
+        row.nao_classificado_qtd_serv_realizado;
+      const groupBServ = Math.max(row.total_qtd_serv_realizado - row.grupo_a_qtd_serv_realizado, 0);
+      const groupBFora = Math.max(row.total_qtd_fora_prazo - row.grupo_a_qtd_fora_prazo, 0);
+      const groupBComp = Math.max(row.total_compensacao_rs - row.grupo_a_compensacao_rs, 0);
+      const allocateUc = (part: number, total: number) => (ucExposure > 0 && total > 0 ? (ucExposure * part) / total : 0);
 
       return {
         ...row,
         monthsObserved,
         urbana_qtd_fora_prazo: row.urbana_qtd_fora_prazo * factor,
         rural_qtd_fora_prazo: row.rural_qtd_fora_prazo * factor,
+        nao_classificado_qtd_fora_prazo: row.nao_classificado_qtd_fora_prazo * factor,
         urbana_compensacao_rs: row.urbana_compensacao_rs * factor,
         rural_compensacao_rs: row.rural_compensacao_rs * factor,
+        nao_classificado_compensacao_rs: row.nao_classificado_compensacao_rs * factor,
         urbana_qtd_serv_realizado: row.urbana_qtd_serv_realizado * factor,
         rural_qtd_serv_realizado: row.rural_qtd_serv_realizado * factor,
-        urbana_uc_media: row.urbana_uc_media,
-        rural_uc_media: row.rural_uc_media,
+        nao_classificado_qtd_serv_realizado: row.nao_classificado_qtd_serv_realizado * factor,
+        urbana_uc_media: allocateUc(row.urbana_qtd_serv_realizado, localServiceTotal),
+        rural_uc_media: allocateUc(row.rural_qtd_serv_realizado, localServiceTotal),
+        nao_classificado_uc_media: allocateUc(row.nao_classificado_qtd_serv_realizado, localServiceTotal),
         grupo_a_qtd_fora_prazo: row.grupo_a_qtd_fora_prazo * factor,
-        grupo_b_qtd_fora_prazo: row.grupo_b_qtd_fora_prazo * factor,
+        grupo_b_qtd_fora_prazo: groupBFora * factor,
         grupo_a_compensacao_rs: row.grupo_a_compensacao_rs * factor,
-        grupo_b_compensacao_rs: row.grupo_b_compensacao_rs * factor,
+        grupo_b_compensacao_rs: groupBComp * factor,
         grupo_a_qtd_serv_realizado: row.grupo_a_qtd_serv_realizado * factor,
-        grupo_b_qtd_serv_realizado: row.grupo_b_qtd_serv_realizado * factor,
-        grupo_a_uc_media: row.grupo_a_uc_media,
-        grupo_b_uc_media: row.grupo_b_uc_media,
+        grupo_b_qtd_serv_realizado: groupBServ * factor,
+        grupo_a_uc_media: allocateUc(row.grupo_a_qtd_serv_realizado, row.total_qtd_serv_realizado),
+        grupo_b_uc_media: allocateUc(groupBServ, row.total_qtd_serv_realizado),
       };
     });
 
-    // Extensão para anos anteriores usando totais anuais históricos + shares estruturais
-    if (companyScope === 'all') {
-      const hasYear = new Set(rows.map((r) => r.ano));
-      const annualRows = data?.serie_anual ?? [];
-      const ucRef = rows.length > 0
-        ? rows.reduce((acc, r) => acc + r.urbana_uc_media + r.rural_uc_media, 0) / rows.length
-        : 95000000;
-
-      for (const annual of annualRows) {
-        if (annual.ano >= 2023 || hasYear.has(annual.ano)) continue;
-        const totalServ = Number(annual.qtd_serv) || 0;
-        const totalFora = Number(annual.qtd_fora_prazo) || 0;
-        const totalComp = Number(annual.compensacao_rs) || 0;
-
-        rows.push({
-          ano: annual.ano,
-          monthsObserved: 12,
-          estimated: true,
-          urbana_qtd_fora_prazo: totalFora * globalShares.urbanaFora,
-          rural_qtd_fora_prazo: totalFora * globalShares.ruralFora,
-          urbana_compensacao_rs: totalComp * globalShares.urbanaComp,
-          rural_compensacao_rs: totalComp * globalShares.ruralComp,
-          urbana_qtd_serv_realizado: totalServ * globalShares.urbanaServ,
-          rural_qtd_serv_realizado: totalServ * globalShares.ruralServ,
-          urbana_uc_media: ucRef * globalShares.urbanaServ,
-          rural_uc_media: ucRef * globalShares.ruralServ,
-          grupo_a_qtd_fora_prazo: totalFora * globalShares.aFora,
-          grupo_b_qtd_fora_prazo: totalFora * (1 - globalShares.aFora),
-          grupo_a_compensacao_rs: totalComp * globalShares.aComp,
-          grupo_b_compensacao_rs: totalComp * (1 - globalShares.aComp),
-          grupo_a_qtd_serv_realizado: totalServ * globalShares.aServ,
-          grupo_b_qtd_serv_realizado: totalServ * (1 - globalShares.aServ),
-          grupo_a_uc_media: ucRef * globalShares.aServ,
-          grupo_b_uc_media: ucRef * (1 - globalShares.aServ),
-        });
-      }
-    }
-
     return rows.sort((a, b) => a.ano - b.ano);
-  }, [companyScope, data?.serie_anual, filteredMonthlyRows, groupViews]);
-
-  const groupAFidelity = useMemo(() => {
-    const classTotals = new Map<string, number>();
-    for (const gv of Object.values(groupViews ?? {})) {
-      for (const item of gv.classe_local ?? []) {
-        const dist = item.distributor_id;
-        classTotals.set(dist, (classTotals.get(dist) ?? 0) + (Number(item.qtd_serv_realizado) || 0));
-      }
-    }
-
-    let covered = 0;
-    let total = 0;
-    for (const row of filteredMonthlyRows) {
-      const serv = Number(row.qtd_serv_realizado) || 0;
-      total += serv;
-      if ((classTotals.get(row.distributor_id) ?? 0) > 0) covered += serv;
-    }
-    const coverage = total > 0 ? covered / total : 0;
-
-    if (coverage >= 0.9) return { level: 'alta', coverage };
-    if (coverage >= 0.75) return { level: 'media', coverage };
-    return { level: 'baixa', coverage };
-  }, [filteredMonthlyRows, groupViews]);
+  }, [filteredServiceRows, yearlyTotals]);
 
   const latestServiceRow = serviceTypeSeries.at(-1);
   const compositionQtdData = useMemo(() => {
@@ -584,6 +453,8 @@ export default function HomePage() {
       return [
         { name: 'Urbana', value: latestServiceRow.urbana_qtd_fora_prazo, color: COLORS.blue },
         { name: 'Rural', value: latestServiceRow.rural_qtd_fora_prazo, color: COLORS.amber },
+        { name: 'Grupo A', value: latestServiceRow.grupo_a_qtd_fora_prazo, color: COLORS.green },
+        { name: 'Não classificado', value: latestServiceRow.nao_classificado_qtd_fora_prazo, color: '#71717a' },
       ];
     }
     return [
@@ -598,6 +469,8 @@ export default function HomePage() {
       return [
         { name: 'Urbana', value: latestServiceRow.urbana_compensacao_rs, color: COLORS.blue },
         { name: 'Rural', value: latestServiceRow.rural_compensacao_rs, color: COLORS.amber },
+        { name: 'Grupo A', value: latestServiceRow.grupo_a_compensacao_rs, color: COLORS.green },
+        { name: 'Não classificado', value: latestServiceRow.nao_classificado_compensacao_rs, color: '#71717a' },
       ];
     }
     return [
@@ -605,6 +478,21 @@ export default function HomePage() {
       { name: 'Grupo B', value: latestServiceRow.grupo_b_compensacao_rs, color: COLORS.red },
     ];
   }, [compositionDimension, latestServiceRow]);
+
+  const serviceTypeUnavailable = serviceTypesLoading || !!serviceTypesError || serviceTypeSeries.length === 0;
+  const renderServiceTypeFallback = () => {
+    if (serviceTypesLoading) return <ChartSkeleton />;
+    if (serviceTypesError) {
+      return <ErrorMessage message={`Erro ao carregar tipos de serviço: ${(serviceTypesError as Error).message}`} />;
+    }
+    return (
+      <div className="h-[300px] flex items-center justify-center rounded-lg border border-white/5 bg-white/[0.02]">
+        <p className="text-sm text-zinc-500">
+          Sem dados de classe/localidade para o filtro selecionado.
+        </p>
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -625,6 +513,7 @@ export default function HomePage() {
   const total2023 = yearlyTotals.get(2023);
   const total2024 = yearlyTotals.get(2024);
   const total2025 = yearlyTotals.get(2025);
+  const total2026 = yearlyTotals.get(2026);
   const anosPreLabel = kpi?.anos_pre?.length
     ? `${Math.min(...kpi.anos_pre)}-${Math.max(...kpi.anos_pre)}`
     : '2011-2021';
@@ -649,13 +538,6 @@ export default function HomePage() {
     : serviceMetric === 'qtd_serv_realizado'
       ? 'qtd_serv_realizado'
       : 'qtd_fora_prazo';
-
-  const groupABadgeColor =
-    groupAFidelity.level === 'alta'
-      ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
-      : groupAFidelity.level === 'media'
-        ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
-        : 'text-red-400 border-red-500/30 bg-red-500/10';
 
   return (
     <div className="space-y-6 max-w-7xl">
@@ -862,13 +744,13 @@ export default function HomePage() {
       </ChartCard>
 
       <div>
-        <h2 className="text-lg font-semibold text-zinc-100">Totais 2023–2025 (Escopo Selecionado)</h2>
+        <h2 className="text-lg font-semibold text-zinc-100">Totais por Ano (Escopo Selecionado)</h2>
         <p className="text-sm text-zinc-500 mt-0.5">
-          Valores e quantidades recalculados conforme os filtros de empresas.
+          Valores e quantidades recalculados conforme os filtros; anos parciais aparecem anualizados.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
         <KPICard
           title="Compensação 2023"
           value={fmtMoney(total2023?.compensacao_rs ?? null)}
@@ -893,11 +775,23 @@ export default function HomePage() {
           sub="quantidade anual"
           variant="amber"
         />
+        <KPICard
+          title="Compensação 2026"
+          value={fmtMoney(total2026?.compensacao_rs ?? null)}
+          sub={total2026 ? `anualizado (${total2026.monthsObserved} meses)` : 'sem dados'}
+          variant="red"
+        />
+        <KPICard
+          title="Fora do Prazo 2026"
+          value={fmtNum(total2026?.qtd_fora_prazo ?? null)}
+          sub={total2026 ? `anualizado (${total2026.monthsObserved} meses)` : 'sem dados'}
+          variant="amber"
+        />
       </div>
 
       <ChartCard
-        title="Tipo de Serviço por Ano · Urbana x Rural"
-        subtitle="Comparação anual por quantidade, valor e volume de serviços (observado + estimado quando aplicável)"
+        title="Tipo de Serviço por Ano · Classe/localidade ANEEL"
+        subtitle="Comparação anual exata por quantidade, valor e volume nas quatro categorias reais do endpoint v2 da Home"
       >
         <div className="flex flex-wrap gap-2 mb-3">
           {SERVICE_METRIC_OPTIONS.map((opt) => (
@@ -915,91 +809,92 @@ export default function HomePage() {
           ))}
         </div>
 
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={serviceTypeSeries} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
-            <CartesianGrid stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="ano" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis
-              tickFormatter={(v) => serviceMetricFormatter(serviceMetric, Number(v))}
-              tick={{ fill: '#71717a', fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              width={78}
-            />
-            <Tooltip
-              contentStyle={{ background: 'rgba(17,17,19,0.97)', border: `1px solid ${COLORS.green}55`, borderRadius: 8 }}
-              labelStyle={{ color: '#fafafa', fontWeight: 600 }}
-              formatter={(v, name) => [serviceMetricFormatter(serviceMetric, Number(v ?? 0)), name]}
-            />
-            <Legend />
-            <Bar dataKey={`urbana_${localidadeKeyPrefix}`} stackId="local" name="Urbana" fill={COLORS.blue} />
-            <Bar dataKey={`rural_${localidadeKeyPrefix}`} stackId="local" name="Rural" fill={COLORS.amber} />
-          </BarChart>
-        </ResponsiveContainer>
+        {serviceTypeUnavailable ? renderServiceTypeFallback() : (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={serviceTypeSeries} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
+              <CartesianGrid stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="ano" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis
+                tickFormatter={(v) => serviceMetricFormatter(serviceMetric, Number(v))}
+                tick={{ fill: '#71717a', fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                width={78}
+              />
+              <Tooltip
+                contentStyle={{ background: 'rgba(17,17,19,0.97)', border: `1px solid ${COLORS.green}55`, borderRadius: 8 }}
+                labelStyle={{ color: '#fafafa', fontWeight: 600 }}
+                formatter={(v, name) => [serviceMetricFormatter(serviceMetric, Number(v ?? 0)), name]}
+              />
+              <Legend />
+              <Bar dataKey={`urbana_${localidadeKeyPrefix}`} stackId="local" name="Urbana" fill={COLORS.blue} />
+              <Bar dataKey={`rural_${localidadeKeyPrefix}`} stackId="local" name="Rural" fill={COLORS.amber} />
+              <Bar dataKey={`grupo_a_${localidadeKeyPrefix}`} stackId="local" name="Grupo A" fill={COLORS.green} />
+              <Bar dataKey={`nao_classificado_${localidadeKeyPrefix}`} stackId="local" name="Não classificado" fill="#71717a" />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </ChartCard>
 
       <ChartCard
         title="Tipo de Serviço por Ano · Grupo A x Grupo B"
-        subtitle="Grupo B é o complemento de Grupo A por distribuidora; qualidade de cobertura indicada abaixo"
+        subtitle="Grupo B é o complemento direto de Grupo A no dado anual exato; zeros reais são preservados"
       >
-        <div className="mb-3 flex items-center gap-2">
-          <span className={`text-xs px-2 py-1 rounded-md border ${groupABadgeColor}`}>
-            Fidelidade Grupo A: {groupAFidelity.level.toUpperCase()} ({fmtPct(groupAFidelity.coverage, 1)} de cobertura)
-          </span>
-          {serviceTypeSeries.some((r) => r.estimated) && (
-            <span className="text-xs text-zinc-500">Anos anteriores a 2023 incluem estimativa por shares estruturais.</span>
-          )}
-        </div>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={serviceTypeSeries} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
-            <CartesianGrid stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="ano" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis
-              tickFormatter={(v) => serviceMetricFormatter(serviceMetric, Number(v))}
-              tick={{ fill: '#71717a', fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              width={78}
-            />
-            <Tooltip
-              contentStyle={{ background: 'rgba(17,17,19,0.97)', border: `1px solid ${COLORS.green}55`, borderRadius: 8 }}
-              labelStyle={{ color: '#fafafa', fontWeight: 600 }}
-              formatter={(v, name) => [serviceMetricFormatter(serviceMetric, Number(v ?? 0)), name]}
-            />
-            <Legend />
-            <Bar dataKey={`grupo_a_${localidadeKeyPrefix}`} stackId="classe" name="Grupo A" fill={COLORS.green} />
-            <Bar dataKey={`grupo_b_${localidadeKeyPrefix}`} stackId="classe" name="Grupo B" fill={COLORS.red} />
-          </BarChart>
-        </ResponsiveContainer>
+        {serviceTypeUnavailable ? renderServiceTypeFallback() : (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={serviceTypeSeries} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
+              <CartesianGrid stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="ano" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis
+                tickFormatter={(v) => serviceMetricFormatter(serviceMetric, Number(v))}
+                tick={{ fill: '#71717a', fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                width={78}
+              />
+              <Tooltip
+                contentStyle={{ background: 'rgba(17,17,19,0.97)', border: `1px solid ${COLORS.green}55`, borderRadius: 8 }}
+                labelStyle={{ color: '#fafafa', fontWeight: 600 }}
+                formatter={(v, name) => [serviceMetricFormatter(serviceMetric, Number(v ?? 0)), name]}
+              />
+              <Legend />
+              <Bar dataKey={`grupo_a_${localidadeKeyPrefix}`} stackId="classe" name="Grupo A" fill={COLORS.green} />
+              <Bar dataKey={`grupo_b_${localidadeKeyPrefix}`} stackId="classe" name="Grupo B" fill={COLORS.red} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </ChartCard>
 
       <ChartCard
         title="UC Média Anual por Tipo"
         subtitle="Quantidade de UCs por tipo (Urbana/Rural e Grupo A/B) para comparação de base"
       >
-        <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart data={serviceTypeSeries} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
-            <CartesianGrid stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="ano" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis
-              tickFormatter={(v) => fmtNum(Number(v))}
-              tick={{ fill: '#71717a', fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              width={78}
-            />
-            <Tooltip
-              contentStyle={{ background: 'rgba(17,17,19,0.97)', border: `1px solid ${COLORS.green}55`, borderRadius: 8 }}
-              labelStyle={{ color: '#fafafa', fontWeight: 600 }}
-              formatter={(v, name) => [fmtNum(Number(v ?? 0)), name]}
-            />
-            <Legend />
-            <Line type="monotone" dataKey="urbana_uc_media" name="UC Urbana" stroke={COLORS.blue} strokeWidth={2} dot={{ r: 2 }} />
-            <Line type="monotone" dataKey="rural_uc_media" name="UC Rural" stroke={COLORS.amber} strokeWidth={2} dot={{ r: 2 }} />
-            <Line type="monotone" dataKey="grupo_a_uc_media" name="UC Grupo A" stroke={COLORS.green} strokeWidth={2} dot={{ r: 2 }} />
-            <Line type="monotone" dataKey="grupo_b_uc_media" name="UC Grupo B" stroke={COLORS.red} strokeWidth={2} dot={{ r: 2 }} />
-          </ComposedChart>
-        </ResponsiveContainer>
+        {serviceTypeUnavailable ? renderServiceTypeFallback() : (
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={serviceTypeSeries} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
+              <CartesianGrid stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="ano" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis
+                tickFormatter={(v) => fmtNum(Number(v))}
+                tick={{ fill: '#71717a', fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                width={78}
+              />
+              <Tooltip
+                contentStyle={{ background: 'rgba(17,17,19,0.97)', border: `1px solid ${COLORS.green}55`, borderRadius: 8 }}
+                labelStyle={{ color: '#fafafa', fontWeight: 600 }}
+                formatter={(v, name) => [fmtNum(Number(v ?? 0)), name]}
+              />
+              <Legend />
+              <Line type="monotone" dataKey="urbana_uc_media" name="UC Urbana" stroke={COLORS.blue} strokeWidth={2} dot={{ r: 2 }} />
+              <Line type="monotone" dataKey="rural_uc_media" name="UC Rural" stroke={COLORS.amber} strokeWidth={2} dot={{ r: 2 }} />
+              <Line type="monotone" dataKey="nao_classificado_uc_media" name="UC Não classificado" stroke="#71717a" strokeWidth={2} dot={{ r: 2 }} />
+              <Line type="monotone" dataKey="grupo_a_uc_media" name="UC Grupo A" stroke={COLORS.green} strokeWidth={2} dot={{ r: 2 }} />
+              <Line type="monotone" dataKey="grupo_b_uc_media" name="UC Grupo B" stroke={COLORS.red} strokeWidth={2} dot={{ r: 2 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
       </ChartCard>
 
       <ChartCard
@@ -1015,7 +910,7 @@ export default function HomePage() {
                 : 'border-white/10 text-zinc-400'
             }`}
           >
-            Urbana x Rural
+            Classe/localidade
           </button>
           <button
             onClick={() => setCompositionDimension('classe')}
@@ -1029,108 +924,116 @@ export default function HomePage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="rounded-xl border border-white/10 p-3">
-            <p className="text-xs text-zinc-400 mb-2">Quantidade fora do prazo</p>
-            <ResponsiveContainer width="100%" height={240}>
-              <PieChart>
-                <Pie
-                  data={compositionQtdData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={78}
-                  label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(1)}%`}
-                >
-                  {compositionQtdData.map((entry) => (
-                    <Cell key={`qtd-${entry.name}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(v) => fmtNum(Number(v ?? 0))} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+        {serviceTypeUnavailable ? renderServiceTypeFallback() : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-white/10 p-3">
+              <p className="text-xs text-zinc-400 mb-2">Quantidade fora do prazo</p>
+              <ResponsiveContainer width="100%" height={240}>
+                <PieChart>
+                  <Pie
+                    data={compositionQtdData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={78}
+                    label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(1)}%`}
+                  >
+                    {compositionQtdData.map((entry) => (
+                      <Cell key={`qtd-${entry.name}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v) => fmtNum(Number(v ?? 0))} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
 
-          <div className="rounded-xl border border-white/10 p-3">
-            <p className="text-xs text-zinc-400 mb-2">Compensação (R$)</p>
-            <ResponsiveContainer width="100%" height={240}>
-              <PieChart>
-                <Pie
-                  data={compositionCompData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={78}
-                  label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(1)}%`}
-                >
-                  {compositionCompData.map((entry) => (
-                    <Cell key={`comp-${entry.name}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(v) => fmtMoney(Number(v ?? 0))} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="rounded-xl border border-white/10 p-3">
+              <p className="text-xs text-zinc-400 mb-2">Compensação (R$)</p>
+              <ResponsiveContainer width="100%" height={240}>
+                <PieChart>
+                  <Pie
+                    data={compositionCompData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={78}
+                    label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(1)}%`}
+                  >
+                    {compositionCompData.map((entry) => (
+                      <Cell key={`comp-${entry.name}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v) => fmtMoney(Number(v ?? 0))} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-        </div>
+        )}
       </ChartCard>
 
       <ChartCard
         title="Tendência Comparada por Tipo"
         subtitle="Linhas para quantidade fora do prazo (eixo esquerdo) e compensação em R$ (eixo direito)"
       >
-        <ResponsiveContainer width="100%" height={320}>
-          <ComposedChart data={serviceTypeSeries} margin={{ top: 4, right: 18, bottom: 0, left: 4 }}>
-            <CartesianGrid stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="ano" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis
-              yAxisId="left"
-              tickFormatter={(v) => fmtNum(Number(v))}
-              tick={{ fill: '#71717a', fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              width={78}
-            />
-            <YAxis
-              yAxisId="right"
-              orientation="right"
-              tickFormatter={(v) => fmtMoney(Number(v))}
-              tick={{ fill: '#71717a', fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              width={88}
-            />
-            <Tooltip
-              contentStyle={{ background: 'rgba(17,17,19,0.97)', border: `1px solid ${COLORS.green}55`, borderRadius: 8 }}
-              labelStyle={{ color: '#fafafa', fontWeight: 600 }}
-              formatter={(value, name) => {
-                const numericValue = Number(value ?? 0);
-                if (String(name).includes('R$')) return [fmtMoney(numericValue), name];
-                return [fmtNum(numericValue), name];
-              }}
-            />
-            <Legend />
+        {serviceTypeUnavailable ? renderServiceTypeFallback() : (
+          <ResponsiveContainer width="100%" height={320}>
+            <ComposedChart data={serviceTypeSeries} margin={{ top: 4, right: 18, bottom: 0, left: 4 }}>
+              <CartesianGrid stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="ano" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis
+                yAxisId="left"
+                tickFormatter={(v) => fmtNum(Number(v))}
+                tick={{ fill: '#71717a', fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                width={78}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                tickFormatter={(v) => fmtMoney(Number(v))}
+                tick={{ fill: '#71717a', fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                width={88}
+              />
+              <Tooltip
+                contentStyle={{ background: 'rgba(17,17,19,0.97)', border: `1px solid ${COLORS.green}55`, borderRadius: 8 }}
+                labelStyle={{ color: '#fafafa', fontWeight: 600 }}
+                formatter={(value, name) => {
+                  const numericValue = Number(value ?? 0);
+                  if (String(name).includes('R$')) return [fmtMoney(numericValue), name];
+                  return [fmtNum(numericValue), name];
+                }}
+              />
+              <Legend />
 
-            {compositionDimension === 'localidade' ? (
-              <>
-                <Line type="monotone" yAxisId="left" dataKey="urbana_qtd_fora_prazo" name="Urbana · Fora do prazo" stroke={COLORS.blue} strokeWidth={2} dot={{ r: 2 }} />
-                <Line type="monotone" yAxisId="left" dataKey="rural_qtd_fora_prazo" name="Rural · Fora do prazo" stroke={COLORS.amber} strokeWidth={2} dot={{ r: 2 }} />
-                <Line type="monotone" yAxisId="right" dataKey="urbana_compensacao_rs" name="Urbana · R$" stroke={COLORS.blue} strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
-                <Line type="monotone" yAxisId="right" dataKey="rural_compensacao_rs" name="Rural · R$" stroke={COLORS.amber} strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
-              </>
-            ) : (
-              <>
-                <Line type="monotone" yAxisId="left" dataKey="grupo_a_qtd_fora_prazo" name="Grupo A · Fora do prazo" stroke={COLORS.green} strokeWidth={2} dot={{ r: 2 }} />
-                <Line type="monotone" yAxisId="left" dataKey="grupo_b_qtd_fora_prazo" name="Grupo B · Fora do prazo" stroke={COLORS.red} strokeWidth={2} dot={{ r: 2 }} />
-                <Line type="monotone" yAxisId="right" dataKey="grupo_a_compensacao_rs" name="Grupo A · R$" stroke={COLORS.green} strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
-                <Line type="monotone" yAxisId="right" dataKey="grupo_b_compensacao_rs" name="Grupo B · R$" stroke={COLORS.red} strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
-              </>
-            )}
-          </ComposedChart>
-        </ResponsiveContainer>
+              {compositionDimension === 'localidade' ? (
+                <>
+                  <Line type="monotone" yAxisId="left" dataKey="urbana_qtd_fora_prazo" name="Urbana · Fora do prazo" stroke={COLORS.blue} strokeWidth={2} dot={{ r: 2 }} />
+                  <Line type="monotone" yAxisId="left" dataKey="rural_qtd_fora_prazo" name="Rural · Fora do prazo" stroke={COLORS.amber} strokeWidth={2} dot={{ r: 2 }} />
+                  <Line type="monotone" yAxisId="left" dataKey="grupo_a_qtd_fora_prazo" name="Grupo A · Fora do prazo" stroke={COLORS.green} strokeWidth={2} dot={{ r: 2 }} />
+                  <Line type="monotone" yAxisId="left" dataKey="nao_classificado_qtd_fora_prazo" name="Não classificado · Fora do prazo" stroke="#71717a" strokeWidth={2} dot={{ r: 2 }} />
+                  <Line type="monotone" yAxisId="right" dataKey="urbana_compensacao_rs" name="Urbana · R$" stroke={COLORS.blue} strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
+                  <Line type="monotone" yAxisId="right" dataKey="rural_compensacao_rs" name="Rural · R$" stroke={COLORS.amber} strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
+                  <Line type="monotone" yAxisId="right" dataKey="grupo_a_compensacao_rs" name="Grupo A · R$" stroke={COLORS.green} strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
+                  <Line type="monotone" yAxisId="right" dataKey="nao_classificado_compensacao_rs" name="Não classificado · R$" stroke="#71717a" strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
+                </>
+              ) : (
+                <>
+                  <Line type="monotone" yAxisId="left" dataKey="grupo_a_qtd_fora_prazo" name="Grupo A · Fora do prazo" stroke={COLORS.green} strokeWidth={2} dot={{ r: 2 }} />
+                  <Line type="monotone" yAxisId="left" dataKey="grupo_b_qtd_fora_prazo" name="Grupo B · Fora do prazo" stroke={COLORS.red} strokeWidth={2} dot={{ r: 2 }} />
+                  <Line type="monotone" yAxisId="right" dataKey="grupo_a_compensacao_rs" name="Grupo A · R$" stroke={COLORS.green} strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
+                  <Line type="monotone" yAxisId="right" dataKey="grupo_b_compensacao_rs" name="Grupo B · R$" stroke={COLORS.red} strokeOpacity={0.6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
+                </>
+              )}
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
       </ChartCard>
     </div>
   );

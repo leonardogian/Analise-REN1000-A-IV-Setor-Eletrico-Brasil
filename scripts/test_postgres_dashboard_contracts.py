@@ -10,7 +10,58 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from app.backend import main as backend_main
+from app.backend.core import postgres_dashboard
 from scripts import load_to_postgres
+
+
+class _FakeAcquire:
+    def __init__(self, conn: "_FakeConnection") -> None:
+        self.conn = conn
+
+    async def __aenter__(self) -> "_FakeConnection":
+        return self.conn
+
+    async def __aexit__(self, *_args: object) -> None:
+        return None
+
+
+class _FakePool:
+    def __init__(self) -> None:
+        self.conn = _FakeConnection()
+
+    def acquire(self) -> _FakeAcquire:
+        return _FakeAcquire(self.conn)
+
+
+class _FakeConnection:
+    async def fetchval(self, _query: str, table_name: str) -> bool:
+        return table_name == postgres_dashboard.HOME_SERVICE_TYPES_TABLE
+
+    async def fetch(self, _query: str, *_args: object) -> list[dict]:
+        return [
+            {
+                "ano": 2023,
+                "group_id": "grupo_teste",
+                "distributor_id": "dist_teste",
+                "classe_local_servico": "grupo_a",
+                "qtd_serv_realizado": 0,
+                "qtd_fora_prazo": 0,
+                "compensacao_rs": 0,
+                "uc_ativa_mes": 0,
+                "meses_observados": 1,
+            },
+            {
+                "ano": 2023,
+                "group_id": "grupo_teste",
+                "distributor_id": "dist_teste",
+                "classe_local_servico": "rural",
+                "qtd_serv_realizado": 10,
+                "qtd_fora_prazo": 2,
+                "compensacao_rs": 100.5,
+                "uc_ativa_mes": 1234,
+                "meses_observados": 1,
+            },
+        ]
 
 
 def test_v2_timeseries_falls_back_to_json_without_postgres() -> None:
@@ -29,6 +80,45 @@ def test_v2_timeseries_falls_back_to_json_without_postgres() -> None:
     assert payload["source"] == "json"
     assert isinstance(payload["data"], list)
     assert payload["data"], "fallback should return the canonical dashboard_timeseries.json data"
+
+
+def test_home_service_types_fetch_preserves_zero_class_rows_from_postgres() -> None:
+    """Home lower charts must use exact class/locality rows, including real zeros."""
+
+    payload = asyncio.run(postgres_dashboard.fetch_home_service_types(_FakePool()))
+
+    assert payload["data"][0] == {
+        "ano": 2023,
+        "group_id": "grupo_teste",
+        "distributor_id": "dist_teste",
+        "classe_local_servico": "grupo_a",
+        "qtd_serv_realizado": 0.0,
+        "qtd_fora_prazo": 0.0,
+        "compensacao_rs": 0.0,
+        "uc_ativa_mes": 0.0,
+        "meses_observados": 1,
+    }
+    assert payload["data"][1]["classe_local_servico"] == "rural"
+    assert payload["data"][1]["compensacao_rs"] == 100.5
+
+
+def test_v2_home_service_types_falls_back_to_exact_csv_without_postgres() -> None:
+    """The Home endpoint should stay exact even when PostgreSQL is unavailable locally."""
+
+    async def run() -> dict:
+        original_pool = backend_main.db_manager.pool
+        backend_main.db_manager.pool = None
+        try:
+            return await backend_main.api_v2_home_service_types()
+        finally:
+            backend_main.db_manager.pool = original_pool
+
+    payload = asyncio.run(run())
+
+    assert payload["source"] == "csv"
+    assert isinstance(payload["data"], list)
+    assert payload["data"], "fallback should be built from fato_transgressao_mensal_porte.csv"
+    assert {"ano", "group_id", "distributor_id", "classe_local_servico"}.issubset(payload["data"][0])
 
 
 def test_postgres_loader_discovers_versioned_analysis_csvs(tmp_path: Path) -> None:
@@ -79,6 +169,8 @@ def test_postgres_loader_can_filter_sources_for_quick_smoke(tmp_path: Path) -> N
 
 def main() -> None:
     test_v2_timeseries_falls_back_to_json_without_postgres()
+    test_home_service_types_fetch_preserves_zero_class_rows_from_postgres()
+    test_v2_home_service_types_falls_back_to_exact_csv_without_postgres()
     test_postgres_loader_discovers_versioned_analysis_csvs(Path("/tmp/postgres-loader-test"))
     test_postgres_loader_builds_core_indexes_for_filtering()
     test_postgres_loader_can_filter_sources_for_quick_smoke(Path("/tmp/postgres-loader-filter-test"))

@@ -223,17 +223,20 @@ binario `python` existe.
 
 ### PostgreSQL opcional para filtros
 
-O backend mantém os JSONs canônicos como fallback, mas também expõe a primeira
-rota Postgres-backed em `/api/v2/timeseries-tendencia`. Quando o pool PostgreSQL
-está disponível e a tabela `grupos_mensal_2023_plus` foi carregada, a resposta
-vem com `source: "postgres"`; caso contrário, a API retorna o
-`dashboard_timeseries.json` com `source: "json"`.
+O backend mantém os JSONs canônicos como fallback, mas também expõe rotas
+Postgres-backed em `/api/v2/*`. `/api/v2/timeseries-tendencia` usa
+`grupos_mensal_2023_plus` quando carregada e volta para
+`dashboard_timeseries.json` com `source: "json"`. A Home usa
+`/api/v2/home-service-types` para os gráficos inferiores de classe/localidade,
+consultando `fato_transgressao_mensal_porte` e preservando linhas reais zeradas
+(`grupo_a`, `urbana`, `rural`, `nao_classificado`); sem PostgreSQL, a rota monta
+o mesmo contrato a partir do CSV analítico exato.
 
 Para uma carga curta de smoke local:
 
 ```bash
 docker compose -f docker/docker-compose.db.yml up -d postgres
-LOAD_POSTGRES_TABLES=grupos_mensal_2023_plus make load-postgres
+LOAD_POSTGRES_TABLES=grupos_mensal_2023_plus,fato_transgressao_mensal_porte make load-postgres
 ```
 
 Para carregar todas as tabelas analíticas versionadas/geradas, rode apenas

@@ -7,9 +7,10 @@ from decimal import Decimal
 from typing import Any, Iterable
 
 TIMESERIES_TABLE = "grupos_mensal_2023_plus"
+HOME_SERVICE_TYPES_TABLE = "fato_transgressao_mensal_porte"
 CORE_TABLES = (
     "fato_transgressao_mensal_distribuidora",
-    "fato_transgressao_mensal_porte",
+    HOME_SERVICE_TYPES_TABLE,
     "fato_uc_ativa_mensal_distribuidora",
     "fato_indicadores_anuais",
     "dim_distributor_group",
@@ -47,6 +48,10 @@ def _number_or_none(value: Any) -> float | None:
     if isinstance(value, Decimal):
         return float(value)
     return float(value)
+
+
+def _number_or_zero(value: Any) -> float:
+    return _number_or_none(value) or 0.0
 
 
 def _ratio_or_none(numerator: Any, denominator: Any, multiplier: float = 1.0) -> float | None:
@@ -195,4 +200,47 @@ async def fetch_timeseries_tendencia(
             }
         )
 
+    return {"data": data}
+
+
+async def fetch_home_service_types(pool: Any) -> dict[str, Any]:
+    """Return exact annual class/locality rows for the Home lower charts."""
+    if pool is None:
+        raise PostgresDashboardUnavailable("PostgreSQL pool is not initialized.")
+    if not await table_exists(pool, HOME_SERVICE_TYPES_TABLE):
+        raise PostgresDashboardUnavailable(f"Table {HOME_SERVICE_TYPES_TABLE} is not loaded.")
+
+    query = f"""
+        SELECT
+            ano,
+            group_id,
+            distributor_id,
+            classe_local_servico,
+            SUM(qtd_serv_realizado)::double precision AS qtd_serv_realizado,
+            SUM(qtd_fora_prazo)::double precision AS qtd_fora_prazo,
+            SUM(compensacao_rs)::double precision AS compensacao_rs,
+            SUM(COALESCE(uc_ativa_mes, 0))::double precision AS uc_ativa_mes,
+            COUNT(DISTINCT (ano::text || '-' || LPAD(mes::text, 2, '0')))::integer AS meses_observados
+        FROM {HOME_SERVICE_TYPES_TABLE}
+        GROUP BY ano, group_id, distributor_id, classe_local_servico
+        ORDER BY ano, group_id, distributor_id, classe_local_servico
+    """
+
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(query)
+
+    data = [
+        {
+            "ano": int(row["ano"]),
+            "group_id": str(row["group_id"]),
+            "distributor_id": str(row["distributor_id"]),
+            "classe_local_servico": str(row["classe_local_servico"]),
+            "qtd_serv_realizado": _number_or_zero(row["qtd_serv_realizado"]),
+            "qtd_fora_prazo": _number_or_zero(row["qtd_fora_prazo"]),
+            "compensacao_rs": _number_or_zero(row["compensacao_rs"]),
+            "uc_ativa_mes": _number_or_zero(row["uc_ativa_mes"]),
+            "meses_observados": int(row["meses_observados"] or 0),
+        }
+        for row in rows
+    ]
     return {"data": data}

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,6 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from app.backend.core.database import db_manager
 from app.backend.core.postgres_dashboard import (
     PostgresDashboardUnavailable,
+    fetch_home_service_types,
     fetch_timeseries_tendencia,
     table_status,
 )
@@ -143,6 +145,72 @@ def _load_chart_payload(key: str) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Invalid payload format in {file_name}.")
 
     return payload
+
+
+def _csv_number(row: dict[str, str], key: str) -> float:
+    raw = row.get(key)
+    if raw in (None, ""):
+        return 0.0
+    try:
+        return float(raw)
+    except ValueError:
+        return 0.0
+
+
+def _load_home_service_types_csv() -> dict[str, Any]:
+    """Build the Home lower-chart contract from the exact analytical CSV fallback."""
+    path = ANALYSIS_DIR / "fato_transgressao_mensal_porte.csv"
+    if not path.exists():
+        raise HTTPException(
+            status_code=503,
+            detail="fato_transgressao_mensal_porte.csv not found. Run `make dashboard-full` first.",
+        )
+
+    grouped: dict[tuple[int, str, str, str], dict[str, Any]] = {}
+    months: dict[tuple[int, str, str, str], set[int]] = {}
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            try:
+                year = int(row.get("ano") or 0)
+                month = int(row.get("mes") or 0)
+            except ValueError:
+                continue
+            if year <= 0 or month <= 0:
+                continue
+
+            key = (
+                year,
+                str(row.get("group_id") or ""),
+                str(row.get("distributor_id") or ""),
+                str(row.get("classe_local_servico") or "nao_classificado"),
+            )
+            current = grouped.get(key)
+            if current is None:
+                current = {
+                    "ano": year,
+                    "group_id": key[1],
+                    "distributor_id": key[2],
+                    "classe_local_servico": key[3],
+                    "qtd_serv_realizado": 0.0,
+                    "qtd_fora_prazo": 0.0,
+                    "compensacao_rs": 0.0,
+                    "uc_ativa_mes": 0.0,
+                    "meses_observados": 0,
+                }
+                grouped[key] = current
+
+            current["qtd_serv_realizado"] += _csv_number(row, "qtd_serv_realizado")
+            current["qtd_fora_prazo"] += _csv_number(row, "qtd_fora_prazo")
+            current["compensacao_rs"] += _csv_number(row, "compensacao_rs")
+            current["uc_ativa_mes"] += _csv_number(row, "uc_ativa_mes")
+            months.setdefault(key, set()).add(month)
+
+    data = []
+    for key, current in sorted(grouped.items()):
+        current["meses_observados"] = len(months.get(key, set()))
+        data.append(current)
+    return {"data": data}
 
 
 def _artifact_status() -> dict[str, Any]:
@@ -309,6 +377,21 @@ async def _postgres_timeseries_or_json(
     return {"source": "json", **payload}
 
 
+async def _postgres_home_service_types_or_csv() -> dict[str, Any]:
+    if db_manager.pool:
+        try:
+            payload = await fetch_home_service_types(db_manager.pool)
+            return {"source": "postgres", **payload}
+        except PostgresDashboardUnavailable:
+            pass
+        except Exception:
+            # PostgreSQL is optional; the exact analysis CSV remains the fallback.
+            pass
+
+    payload = _load_home_service_types_csv()
+    return {"source": "csv", **payload}
+
+
 @app.get("/api/v2/db-status")
 async def api_v2_db_status() -> dict[str, Any]:
     if not db_manager.pool:
@@ -339,6 +422,11 @@ async def api_v2_timeseries_tendencia(
     end: str | None = None,
 ) -> dict[str, Any]:
     return await _postgres_timeseries_or_json(group_id=group_id, start=start, end=end)
+
+
+@app.get("/api/v2/home-service-types")
+async def api_v2_home_service_types() -> dict[str, Any]:
+    return await _postgres_home_service_types_or_csv()
 
 
 def _dashboard_json_response(file_name: str) -> FileResponse:
