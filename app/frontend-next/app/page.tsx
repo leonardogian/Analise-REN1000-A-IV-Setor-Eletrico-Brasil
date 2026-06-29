@@ -43,11 +43,13 @@ interface YearMetricRow {
   ano: number;
   taxa_fora_prazo: number | null;
   qtd_fora_prazo: number | null;
+  qtd_serv_realizado: number | null;
   compensacao_rs: number | null;
   compensacao_rs_100k_uc: number | null;
   qtd_fora_prazo_100k_uc: number | null;
   annualized: boolean;
   monthsObserved: number;
+  ucMonthsObserved: number;
 }
 
 interface YearTotals {
@@ -56,6 +58,7 @@ interface YearTotals {
   qtd_serv_realizado: number;
   uc_exposicao_mes: number;
   monthsObserved: number;
+  ucMonthsObserved: number;
 }
 
 interface ServiceSplitRow {
@@ -82,6 +85,7 @@ interface ServiceSplitRow {
   grupo_b_qtd_serv_realizado: number;
   grupo_a_uc_media: number;
   grupo_b_uc_media: number;
+  ucMonthsObserved: number;
 }
 
 const POST_REN_START = 2023;
@@ -124,6 +128,7 @@ function serviceMetricFormatter(metric: ServiceMetric, value: number): string {
 function buildAnnualTotals(rows: readonly SerieMensalNacionalItem[]): Map<number, YearTotals> {
   const byYear = new Map<number, YearTotals>();
   const monthKeysByYear = new Map<number, Set<number>>();
+  const ucMonthKeysByYear = new Map<number, Set<number>>();
 
   for (const row of rows) {
     const year = Number(row.ano);
@@ -136,18 +141,26 @@ function buildAnnualTotals(rows: readonly SerieMensalNacionalItem[]): Map<number
       qtd_serv_realizado: 0,
       uc_exposicao_mes: 0,
       monthsObserved: 12,
+      ucMonthsObserved: 0,
     };
 
     curr.qtd_fora_prazo += Number(row.qtd_fora_prazo) || 0;
     curr.compensacao_rs += Number(row.compensacao_rs) || 0;
     curr.qtd_serv_realizado += Number(row.qtd_serv_realizado) || 0;
-    curr.uc_exposicao_mes += Number(row.uc_ativa_mes) || 0;
+    const ucAtivaMes = Number(row.uc_ativa_mes) || 0;
+    curr.uc_exposicao_mes += ucAtivaMes;
 
     byYear.set(year, curr);
 
     const monthSet = monthKeysByYear.get(year) ?? new Set<number>();
     monthSet.add(month);
     monthKeysByYear.set(year, monthSet);
+
+    if (ucAtivaMes > 0) {
+      const ucMonthSet = ucMonthKeysByYear.get(year) ?? new Set<number>();
+      ucMonthSet.add(month);
+      ucMonthKeysByYear.set(year, ucMonthSet);
+    }
   }
 
   for (const [year, total] of byYear.entries()) {
@@ -157,6 +170,7 @@ function buildAnnualTotals(rows: readonly SerieMensalNacionalItem[]): Map<number
     total.compensacao_rs *= annualFactor;
     total.qtd_serv_realizado *= annualFactor;
     total.monthsObserved = monthsObserved;
+    total.ucMonthsObserved = ucMonthKeysByYear.get(year)?.size ?? 0;
     byYear.set(year, total);
   }
 
@@ -175,6 +189,7 @@ function summarizeYearTotals(
     qtd_serv_realizado: 0,
     uc_exposicao_mes: 0,
     monthsObserved: 0,
+    ucMonthsObserved: 0,
   };
 
   for (let year = startYear; year <= endYear; year += 1) {
@@ -185,6 +200,7 @@ function summarizeYearTotals(
     summary.qtd_serv_realizado += total.qtd_serv_realizado;
     summary.uc_exposicao_mes += total.uc_exposicao_mes;
     summary.monthsObserved += total.monthsObserved;
+    summary.ucMonthsObserved += total.ucMonthsObserved;
     yearsObserved += 1;
   }
 
@@ -292,11 +308,13 @@ export default function HomePage() {
           ano: item.ano,
           taxa_fora_prazo: item.taxa_fora_prazo,
           qtd_fora_prazo: item.qtd_fora_prazo,
+          qtd_serv_realizado: item.qtd_serv,
           compensacao_rs: item.compensacao_rs,
           compensacao_rs_100k_uc: ucProxy > 0 ? (item.compensacao_rs / ucProxy) * 100000 : null,
           qtd_fora_prazo_100k_uc: ucProxy > 0 ? (item.qtd_fora_prazo / ucProxy) * 100000 : null,
           annualized: false,
           monthsObserved: 12,
+          ucMonthsObserved: 12,
         });
       }
     }
@@ -316,11 +334,13 @@ export default function HomePage() {
         ano: year,
         taxa_fora_prazo: taxa,
         qtd_fora_prazo: total.qtd_fora_prazo,
+        qtd_serv_realizado: total.qtd_serv_realizado,
         compensacao_rs: total.compensacao_rs,
         compensacao_rs_100k_uc: comp100k,
         qtd_fora_prazo_100k_uc: qtd100k,
         annualized: total.monthsObserved < 12,
         monthsObserved: total.monthsObserved,
+        ucMonthsObserved: total.ucMonthsObserved,
       });
     }
 
@@ -359,6 +379,7 @@ export default function HomePage() {
       grupo_b_qtd_serv_realizado: 0,
       grupo_a_uc_media: 0,
       grupo_b_uc_media: 0,
+      ucMonthsObserved: 0,
       total_qtd_fora_prazo: 0,
       total_compensacao_rs: 0,
       total_qtd_serv_realizado: 0,
@@ -420,6 +441,7 @@ export default function HomePage() {
       return {
         ...row,
         monthsObserved,
+        ucMonthsObserved: yearlyTotals.get(row.ano)?.ucMonthsObserved ?? 0,
         urbana_qtd_fora_prazo: row.urbana_qtd_fora_prazo * factor,
         rural_qtd_fora_prazo: row.rural_qtd_fora_prazo * factor,
         nao_classificado_qtd_fora_prazo: row.nao_classificado_qtd_fora_prazo * factor,
@@ -446,11 +468,31 @@ export default function HomePage() {
     return rows.sort((a, b) => a.ano - b.ano);
   }, [filteredServiceRows, yearlyTotals]);
 
-  // UC data only available for years where uc_ativa_mes > 0 (ANEEL stopped publishing UC for 2025+)
-  const ucAvailableSeries = useMemo(
-    () => serviceTypeSeries.filter(
-      (row) => (row.urbana_uc_media || 0) + (row.rural_uc_media || 0) + (row.grupo_a_uc_media || 0) + (row.grupo_b_uc_media || 0) > 0
-    ),
+  // UC data is comparable only when the denominator has 12 published months.
+  // 2024 currently has UC data for January only, so plotting it as "annual" creates a fake cliff.
+  const ucComparableSeries = useMemo(
+    () => serviceTypeSeries.filter((row) => {
+      const hasUc =
+        (row.urbana_uc_media || 0) +
+        (row.rural_uc_media || 0) +
+        (row.grupo_a_uc_media || 0) +
+        (row.grupo_b_uc_media || 0) > 0;
+      return hasUc && row.ucMonthsObserved >= 12;
+    }),
+    [serviceTypeSeries],
+  );
+
+  const ucPartialYears = useMemo(
+    () => serviceTypeSeries
+      .filter((row) => {
+        const hasUc =
+          (row.urbana_uc_media || 0) +
+          (row.rural_uc_media || 0) +
+          (row.grupo_a_uc_media || 0) +
+          (row.grupo_b_uc_media || 0) > 0;
+        return hasUc && row.ucMonthsObserved > 0 && row.ucMonthsObserved < 12;
+      })
+      .map((row) => `${row.ano} (${row.ucMonthsObserved} mês${row.ucMonthsObserved === 1 ? '' : 'es'} de UC)`),
     [serviceTypeSeries],
   );
 
@@ -709,8 +751,17 @@ export default function HomePage() {
               }}
               labelFormatter={(label, payload) => {
                 const row = payload?.[0]?.payload as YearMetricRow | undefined;
-                if (row?.annualized) return `${label} (anualizado; ${row.monthsObserved} meses)`;
-                return String(label);
+                if (!row) return String(label);
+                const yearLabel = row.annualized
+                  ? `${label} (anualizado; ${row.monthsObserved} meses)`
+                  : String(label);
+                const servicos = row.qtd_serv_realizado != null
+                  ? `serviços: ${fmtNum(row.qtd_serv_realizado)}`
+                  : null;
+                const taxa = row.taxa_fora_prazo != null
+                  ? `taxa: ${fmtPct(row.taxa_fora_prazo)}`
+                  : null;
+                return [yearLabel, servicos, taxa].filter(Boolean).join(' · ');
               }}
             />
 
@@ -745,7 +796,8 @@ export default function HomePage() {
         </ResponsiveContainer>
 
         <p className="text-xs text-zinc-500 mt-3">
-          Para escopos filtrados por empresa, a série detalhada começa em 2023. A taxa fora do prazo é sempre ponderada por volume: soma fora do prazo / soma de serviços.
+          Para escopos filtrados por empresa, a série detalhada começa em 2023. A taxa fora do prazo é sempre ponderada por volume: soma fora do prazo / soma de serviços realizados.
+          Por isso um ano pode ter menos falhas absolutas e taxa parecida/maior se o total de serviços também caiu.
         </p>
       </ChartCard>
 
@@ -875,18 +927,18 @@ export default function HomePage() {
 
       <ChartCard
         title="UC Média Anual por Tipo"
-        subtitle="Quantidade de UCs por tipo — apenas anos com dados publicados pela ANEEL e categorias classificadas"
+        subtitle="Quantidade de UCs por tipo — apenas anos com 12 meses de UC publicados pela ANEEL"
       >
-        {serviceTypeUnavailable ? renderServiceTypeFallback() : ucAvailableSeries.length === 0 ? (
+        {serviceTypeUnavailable ? renderServiceTypeFallback() : ucComparableSeries.length === 0 ? (
           <div className="h-[300px] flex items-center justify-center rounded-lg border border-white/5 bg-white/[0.02]">
             <p className="text-sm text-zinc-500">
-              Sem dados de UC disponíveis para o filtro selecionado.
+              Sem anos com dados publicados de UCs ativas para o filtro atual.
             </p>
           </div>
         ) : (
           <>
             <ResponsiveContainer width="100%" height={300}>
-              <ComposedChart data={ucAvailableSeries} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
+              <ComposedChart data={ucComparableSeries} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
                 <CartesianGrid stroke="rgba(255,255,255,0.05)" />
                 <XAxis dataKey="ano" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis
@@ -909,8 +961,9 @@ export default function HomePage() {
               </ComposedChart>
             </ResponsiveContainer>
             <p className="text-xs text-zinc-500 mt-3">
-              A ANEEL não publicou dados de UCs ativas para 2025-2026. Este gráfico mostra apenas {ucAvailableSeries.length > 0 ? `${ucAvailableSeries[0].ano}-${ucAvailableSeries.at(-1)?.ano}` : 'anos com dados'}.
-              Grupo A = tarifa de alta tensão; Grupo B = baixa tensão classificada (Urbana + Rural). Registros sem classe/localidade ficam fora deste gráfico.
+              Este gráfico mostra apenas anos com 12 meses de denominador UC: {ucComparableSeries.length > 0 ? `${ucComparableSeries[0].ano}${ucComparableSeries.length > 1 ? `-${ucComparableSeries.at(-1)?.ano}` : ''}` : 'nenhum'}.
+              {ucPartialYears.length > 0 ? ` Anos omitidos por cobertura parcial: ${ucPartialYears.join(', ')}.` : ''}
+              A ANEEL não publicou dados completos de UCs ativas para 2025-2026. Grupo A = alta tensão; Grupo B = baixa tensão classificada (Urbana + Rural).
             </p>
           </>
         )}
