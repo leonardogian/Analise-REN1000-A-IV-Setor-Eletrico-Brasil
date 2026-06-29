@@ -49,7 +49,8 @@ export function fmtMoney(v: number | null | undefined): string {
 
 export function fmtVar(v: number | null | undefined): string {
   if (v == null || isNaN(v)) return '—';
-  return (v > 0 ? '+' : '') + Number(v).toFixed(1) + '%';
+  const prefix = v > 0 ? '+' : '';
+  return prefix + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
 }
 
 export function safeSum(arr: (number | null | undefined)[]): number {

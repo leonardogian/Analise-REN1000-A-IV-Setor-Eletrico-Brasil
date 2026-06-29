@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { API_BASE } from '@/lib/colors';
+import { API_BASE } from '@/lib/config';
 
 // ── Tipos espelhando dashboard_data.json ──────────────────────────────────────
 
@@ -172,10 +172,17 @@ export function useSerieMensalNacional() {
   return useQuery<SerieMensalNacionalItem[]>({
     queryKey: ['serie-mensal-nacional'],
     queryFn: async () => {
-      const res = await fetchJson<DashboardSectionResponse<SerieMensalNacionalItem[]>>(
-        '/api/dashboard/serie_mensal_nacional'
-      );
-      return res.data;
+      try {
+        const res = await fetchJson<DashboardSectionResponse<SerieMensalNacionalItem[]>>(
+          '/api/dashboard/serie_mensal_nacional'
+        );
+        return res.data;
+      } catch {
+        const fallback = await fetchJson<{ serie_mensal_nacional: SerieMensalNacionalItem[] }>(
+          '/dashboard_data.json'
+        );
+        return fallback.serie_mensal_nacional;
+      }
     },
   });
 }
@@ -183,7 +190,13 @@ export function useSerieMensalNacional() {
 export function useHomeServiceTypes() {
   return useQuery<SourceResponse<HomeServiceTypeItem[]>>({
     queryKey: ['home-service-types', 'v2-postgres'],
-    queryFn: () => fetchJson<SourceResponse<HomeServiceTypeItem[]>>('/api/v2/home-service-types'),
+    queryFn: async () => {
+      try {
+        return await fetchJson<SourceResponse<HomeServiceTypeItem[]>>('/api/v2/home-service-types');
+      } catch {
+        return { source: 'unavailable', data: [] };
+      }
+    },
   });
 }
 
@@ -253,7 +266,7 @@ export interface MapSeriesItem {
 export interface TransgressoesPayload {
   series: MapSeriesItem[];
   groups: MapGroup[];
-  insights: unknown;
+  insights: Record<string, unknown> | null;
 }
 
 export interface MunicipioMapaItem {

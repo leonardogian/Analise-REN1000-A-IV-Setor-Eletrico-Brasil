@@ -786,13 +786,13 @@ export default function HomePage() {
         <KPICard
           title="Compensação 2026"
           value={fmtMoney(total2026?.compensacao_rs ?? null)}
-          sub={total2026 ? `anualizado (${total2026.monthsObserved} meses)` : 'sem dados'}
+          sub={total2026 ? (total2026.monthsObserved < 12 ? `anualizado (${total2026.monthsObserved} meses)` : 'escopo selecionado') : 'sem dados'}
           variant="red"
         />
         <KPICard
           title="Fora do Prazo 2026"
           value={fmtNum(total2026?.qtd_fora_prazo ?? null)}
-          sub={total2026 ? `anualizado (${total2026.monthsObserved} meses)` : 'sem dados'}
+          sub={total2026 ? (total2026.monthsObserved < 12 ? `anualizado (${total2026.monthsObserved} meses)` : 'escopo selecionado') : 'sem dados'}
           variant="amber"
         />
       </div>

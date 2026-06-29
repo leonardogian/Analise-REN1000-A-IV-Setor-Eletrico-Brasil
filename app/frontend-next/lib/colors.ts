@@ -25,5 +25,3 @@ export const DISTRIBUTOR_PALETTE = [
   '#f59e0b',
 ] as const;
 
-/** URL base da API — vazio porque Next.js rewrites proxyam /api/* para Railway */
-export const API_BASE = '';
