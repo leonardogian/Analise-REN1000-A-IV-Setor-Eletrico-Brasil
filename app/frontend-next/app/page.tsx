@@ -446,6 +446,14 @@ export default function HomePage() {
     return rows.sort((a, b) => a.ano - b.ano);
   }, [filteredServiceRows, yearlyTotals]);
 
+  // UC data only available for years where uc_ativa_mes > 0 (ANEEL stopped publishing UC for 2025+)
+  const ucAvailableSeries = useMemo(
+    () => serviceTypeSeries.filter(
+      (row) => (row.urbana_uc_media || 0) + (row.rural_uc_media || 0) + (row.nao_classificado_uc_media || 0) + (row.grupo_a_uc_media || 0) + (row.grupo_b_uc_media || 0) > 0
+    ),
+    [serviceTypeSeries],
+  );
+
   const latestServiceRow = serviceTypeSeries.at(-1);
   const compositionQtdData = useMemo(() => {
     if (!latestServiceRow) return [] as Array<{ name: string; value: number; color: string }>;
@@ -838,7 +846,7 @@ export default function HomePage() {
 
       <ChartCard
         title="Tipo de Serviço por Ano · Grupo A x Grupo B"
-        subtitle="Grupo B é o complemento direto de Grupo A no dado anual exato; zeros reais são preservados"
+        subtitle="Grupo A = tarifa de alta tensão (grandes consumidores); Grupo B = tarifa de baixa tensão (maioria das UCs). Zeros reais preservados."
       >
         {serviceTypeUnavailable ? renderServiceTypeFallback() : (
           <ResponsiveContainer width="100%" height={300}>
@@ -855,9 +863,12 @@ export default function HomePage() {
               <Tooltip
                 contentStyle={{ background: 'rgba(17,17,19,0.97)', border: `1px solid ${COLORS.green}55`, borderRadius: 8 }}
                 labelStyle={{ color: '#fafafa', fontWeight: 600 }}
-                formatter={(v, name) => [serviceMetricFormatter(serviceMetric, Number(v ?? 0)), name]}
+                formatter={(v, name) => {
+                  const label = name === 'Grupo A' ? 'Grupo A (alta tensão)' : name === 'Grupo B' ? 'Grupo B (baixa tensão)' : name;
+                  return [serviceMetricFormatter(serviceMetric, Number(v ?? 0)), label];
+                }}
               />
-              <Legend />
+              <Legend formatter={(v) => (v === 'Grupo A' ? 'Grupo A (alta tensão)' : v === 'Grupo B' ? 'Grupo B (baixa tensão)' : v)} />
               <Bar dataKey={`grupo_a_${localidadeKeyPrefix}`} stackId="classe" name="Grupo A" fill={COLORS.green} />
               <Bar dataKey={`grupo_b_${localidadeKeyPrefix}`} stackId="classe" name="Grupo B" fill={COLORS.red} />
             </BarChart>
@@ -867,33 +878,45 @@ export default function HomePage() {
 
       <ChartCard
         title="UC Média Anual por Tipo"
-        subtitle="Quantidade de UCs por tipo (Urbana/Rural e Grupo A/B) para comparação de base"
+        subtitle="Quantidade de UCs por tipo (Urbana/Rural e Grupo A/B) — apenas anos com dados publicados pela ANEEL"
       >
-        {serviceTypeUnavailable ? renderServiceTypeFallback() : (
-          <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={serviceTypeSeries} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
-              <CartesianGrid stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="ano" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis
-                tickFormatter={(v) => fmtNum(Number(v))}
-                tick={{ fill: '#71717a', fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-                width={78}
-              />
-              <Tooltip
-                contentStyle={{ background: 'rgba(17,17,19,0.97)', border: `1px solid ${COLORS.green}55`, borderRadius: 8 }}
-                labelStyle={{ color: '#fafafa', fontWeight: 600 }}
-                formatter={(v, name) => [fmtNum(Number(v ?? 0)), name]}
-              />
-              <Legend />
-              <Line type="monotone" dataKey="urbana_uc_media" name="UC Urbana" stroke={COLORS.blue} strokeWidth={2} dot={{ r: 2 }} />
-              <Line type="monotone" dataKey="rural_uc_media" name="UC Rural" stroke={COLORS.amber} strokeWidth={2} dot={{ r: 2 }} />
-              <Line type="monotone" dataKey="nao_classificado_uc_media" name="UC Não classificado" stroke="#71717a" strokeWidth={2} dot={{ r: 2 }} />
-              <Line type="monotone" dataKey="grupo_a_uc_media" name="UC Grupo A" stroke={COLORS.green} strokeWidth={2} dot={{ r: 2 }} />
-              <Line type="monotone" dataKey="grupo_b_uc_media" name="UC Grupo B" stroke={COLORS.red} strokeWidth={2} dot={{ r: 2 }} />
-            </ComposedChart>
-          </ResponsiveContainer>
+        {serviceTypeUnavailable ? renderServiceTypeFallback() : ucAvailableSeries.length === 0 ? (
+          <div className="h-[300px] flex items-center justify-center rounded-lg border border-white/5 bg-white/[0.02]">
+            <p className="text-sm text-zinc-500">
+              Sem dados de UC disponíveis para o filtro selecionado.
+            </p>
+          </div>
+        ) : (
+          <>
+            <ResponsiveContainer width="100%" height={300}>
+              <ComposedChart data={ucAvailableSeries} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
+                <CartesianGrid stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="ano" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis
+                  tickFormatter={(v) => fmtNum(Number(v))}
+                  tick={{ fill: '#71717a', fontSize: 11 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={78}
+                />
+                <Tooltip
+                  contentStyle={{ background: 'rgba(17,17,19,0.97)', border: `1px solid ${COLORS.green}55`, borderRadius: 8 }}
+                  labelStyle={{ color: '#fafafa', fontWeight: 600 }}
+                  formatter={(v, name) => [fmtNum(Number(v ?? 0)), name]}
+                />
+                <Legend />
+                <Line type="monotone" dataKey="urbana_uc_media" name="UC Urbana (baixa tensão)" stroke={COLORS.blue} strokeWidth={2} dot={{ r: 2 }} />
+                <Line type="monotone" dataKey="rural_uc_media" name="UC Rural (baixa tensão)" stroke={COLORS.amber} strokeWidth={2} dot={{ r: 2 }} />
+                <Line type="monotone" dataKey="nao_classificado_uc_media" name="UC Não classificado (baixa tensão)" stroke="#71717a" strokeWidth={2} dot={{ r: 2 }} />
+                <Line type="monotone" dataKey="grupo_a_uc_media" name="UC Grupo A (alta tensão)" stroke={COLORS.green} strokeWidth={2} dot={{ r: 2 }} />
+                <Line type="monotone" dataKey="grupo_b_uc_media" name="UC Grupo B (baixa tensão)" stroke={COLORS.red} strokeWidth={2} dot={{ r: 2 }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+            <p className="text-xs text-zinc-500 mt-3">
+              A ANEEL não publicou dados de UCs ativas para 2025-2026. Este gráfico mostra apenas {ucAvailableSeries.length > 0 ? `${ucAvailableSeries[0].ano}-${ucAvailableSeries.at(-1)?.ano}` : 'anos com dados'}.
+              Grupo A = tarifa de alta tensão (grandes consumidores); Grupo B = tarifa de baixa tensão (maioria das UCs).
+            </p>
+          </>
         )}
       </ChartCard>
 
@@ -922,6 +945,9 @@ export default function HomePage() {
           >
             Grupo A x Grupo B
           </button>
+          <span className="text-[11px] text-zinc-500 self-center ml-1">
+            Grupo A = alta tensão; Grupo B = baixa tensão
+          </span>
         </div>
 
         {serviceTypeUnavailable ? renderServiceTypeFallback() : (
