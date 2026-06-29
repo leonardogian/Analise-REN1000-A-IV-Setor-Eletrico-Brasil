@@ -2,73 +2,78 @@
 
 ## Commits
 
-Usar **Conventional Commits** em português:
+Conventional Commits em português, mensagens curtas:
 
 ```
-feat: dashboard interativo com nova rota
-fix: porta do make backend para 8051
-docs: README com showcase do dashboard
-refactor: separação das tabelas analíticas
+feat: adicionar endpoint de transgressões por porte
+fix: corrigir gráfica UC para anos sem dados da ANEEL
+docs: atualizar README com novos gráficos
+refactor: separar build_analysis_tables por fonte
+chore: atualizar requirements.txt
 ```
 
-Prefixos: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`
+Para ajustes visuais/cosméticos do dashboard, use `ajustes finos no dashboard` (commit único, mensagem única).
 
-## Estrutura de Scripts Python
+## Scripts Python
 
 - Todos em `src/etl/` e `src/analysis/`
 - Executados como módulo: `python3 -m src.analysis.build_report`
 - Cada script tem `if __name__ == "__main__": main()`
-- O Makefile usa `.venv/bin/python` quando disponível (fallback: `python3`)
+- Use `python3` (não `python`) — Makefile já trata via variável PYTHON
 
 ## Nomes de Arquivos
 
 - Scripts: `snake_case.py`
-- CSVs analíticos: `snake_case.csv` (convenção do pipeline)
-- Frontend Next.js: componentes React em `PascalCase.tsx`; hooks em `useNome.ts`
+- CSVs analíticos: `snake_case.csv`
+- Frontend Next.js: componentes `PascalCase.tsx`, hooks `useNome.ts`
 - Docs: `UPPER_CASE.md` para guias, `snake_case.md` para relatórios
 
 ## Dados
 
-- **NÃO versionar** dados brutos/processados (`.gitignore`)
-- **SIM versionar** tabelas analíticas em `data/processed/analysis/`
-- `data/processed/dashboard/dashboard_*.json` é gerado e versionado para demo/deploy; regenere com `make dashboard-full` depois do ETL
-- Formato preferido para leitura: `.parquet` (mais rápido, menor)
-- Formato para humanos/debug: `.csv`
+- **NÃO versionar:** `data/raw/` e `data/processed/*.csv`/`*.parquet` base (`.gitignore`)
+- **SIM versionar:** `data/processed/analysis/**/*.csv` e `data/processed/dashboard/dashboard_*.json`
+- **JSONs são gerados:** `make dashboard-full` ou `make pipeline` — nunca edite manualmente
+- Leitura rápida: `.parquet`; debug/humano: `.csv`
 
-## Dashboard (Frontend Oficial)
+## Frontend (Next.js 14)
 
-- **Next.js 14 + React + Tailwind** em `app/frontend-next/`
-- **TanStack Query** para consumo dos endpoints `/api/*`
-- **Recharts/Leaflet** para gráficos e mapa
-- **Rewrites** em `next.config.mjs` apontam `/api/*` e `/dashboard_*.json` para o backend
+- Em `app/frontend-next/`
+- TanStack Query para fetch `/api/*`
+- Recharts para gráficos, Leaflet para mapa
+- Rewrites em `next.config.mjs` → Railway (prod) ou `:8051` (dev)
+- **Grupo A = alta tensão; Grupo B = baixa tensão** — sempre documente em legendas/tooltips
+- **UC 2025-2026 ausente:** ANEEL não publicou; gráficos que dependem de UC mostram só anos disponíveis
 
-## Branch
+## Branch e Worktrees
 
 - Branch principal: `main`
-- Não existem branches de feature ativas
+- Worktrees: `TCC_leo_main` (desenvolvimento) + `TCC_leo_db_backend_spike` (main)
+- Push para `origin/main` dispara deploy Vercel automático
 
-## Ambiente
+## Deploy
 
-- OS: Linux (Ubuntu)
-- Python: Usar `python3` (não `python`)
-- Venv: `.venv/` no root do projeto
-- IDE: VS Code (configuração em `.vscode/`, ignorada no Git)
+- **Vercel:** `tcc-frontend-react` → auto-deploy de `main`. CSP com `unsafe-inline`.
+- **Railway:** `tcc-ren1000x414-production.up.railway.app` → redeploy manual após mudanças em `app/backend/` ou JSONs.
+- **Local:** `make stack-next` (backend + frontend) ou `API_REWRITE_URL=http://localhost:8051 npm run dev`
+
+## ⛔ Não Fazer
+
+1. **Nunca** alterar porta 8051/3051 sem verificar portas livres
+2. **Nunca** usar `python` — usar `python3` ou `make`
+3. **Nunca** commitar dados brutos (`data/raw/`)
+4. **Nunca** editar `dashboard_*.json` manualmente — regenere
+5. **Nunca** criar `.py` fora de `app/backend/` na raiz (conflita Vercel)
+6. **Nunca** rodar `npm run build` enquanto `npm run dev` está ativo (corrompe `.next/`)
+7. **Nunca** servir frontend por `file://` — use `make stack-next`
 
 ## Testes
 
-Não há framework de teste formal (pytest). Os testes existentes são:
+Sem pytest. Testes são Make targets:
 
-- `make test-fast`: Compila scripts + verifica imports + contratos + artefatos core
-- `make test-smoke`: Roda análise + grupos + dashboard + validação completa
-- `scripts/check_artifacts.py`: Verifica artefatos (`--profile core|full`)
-- `scripts/smoke_imports.py`: Testa se imports dos módulos funcionam
-- `scripts/validate_schema_contracts.py`: Valida contratos de schema raw/processed
-
-## Coisas para NÃO Fazer
-
-1. **NÃO alterar a porta 8051** (local dev e Docker) sem verificar portas livres.
-2. **NÃO usar `python`** — usar `python3` ou `make` (que trata automaticamente)
-3. **NÃO commitar dados brutos** (`data/raw/`) — são muito grandes
-4. **NÃO editar manualmente `data/processed/dashboard/dashboard_*.json`** — gere pelos scripts e revise o diff
-5. **NÃO criar servidor Python solto fora de `app/backend/`** — isso conflita com build/deploy Vercel.
-6. **NÃO servir o frontend oficial por `file://`** — use `make stack-next` ou `make frontend-next`.
+```bash
+make test-fast          # imports + schema + artefatos core
+make test-smoke         # grupos + dashboard + validação completa
+make validate-contracts # schema contracts raw + processed
+make qa-data            # auditoria numérica
+scripts/check_artifacts.py --profile core|full  # presença de artefatos
+```
